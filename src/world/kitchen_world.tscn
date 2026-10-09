@@ -1,0 +1,64 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://src/world/kitchen_world.gd" id="1_world"]
+[ext_resource type="Texture2D" path="res://assets/kitchen/kitchen-background-v1.png" id="2_background"]
+[ext_resource type="Script" path="res://src/world/kitchen_player.gd" id="3_player"]
+[ext_resource type="Texture2D" path="res://assets/kitchen/chef-v1.png" id="4_chef"]
+
+[sub_resource type="RectangleShape2D" id="TopShape"]
+size = Vector2(1280, 252)
+
+[sub_resource type="RectangleShape2D" id="SideShape"]
+size = Vector2(96, 800)
+
+[sub_resource type="RectangleShape2D" id="BottomShape"]
+size = Vector2(1280, 36)
+
+[sub_resource type="CapsuleShape2D" id="FeetShape"]
+radius = 12.0
+height = 28.0
+
+[node name="KitchenWorld" type="Node2D"]
+process_mode = 1
+texture_filter = 1
+script = ExtResource("1_world")
+
+[node name="Background" type="Sprite2D" parent="."]
+texture = ExtResource("2_background")
+centered = false
+scale = Vector2(0.8070618, 0.8064516)
+
+[node name="CountersAndWalls" type="StaticBody2D" parent="."]
+collision_layer = 1
+collision_mask = 0
+
+[node name="Top" type="CollisionShape2D" parent="CountersAndWalls"]
+position = Vector2(640, 126)
+shape = SubResource("TopShape")
+
+[node name="Left" type="CollisionShape2D" parent="CountersAndWalls"]
+position = Vector2(48, 400)
+shape = SubResource("SideShape")
+
+[node name="Right" type="CollisionShape2D" parent="CountersAndWalls"]
+position = Vector2(1232, 400)
+shape = SubResource("SideShape")
+
+[node name="Bottom" type="CollisionShape2D" parent="CountersAndWalls"]
+position = Vector2(640, 782)
+shape = SubResource("BottomShape")
+
+[node name="Player" type="CharacterBody2D" parent="."]
+position = Vector2(640, 530)
+collision_layer = 2
+collision_mask = 1
+motion_mode = 1
+script = ExtResource("3_player")
+
+[node name="Feet" type="CollisionShape2D" parent="Player"]
+shape = SubResource("FeetShape")
+
+[node name="Sprite2D" type="Sprite2D" parent="Player"]
+position = Vector2(0, -47)
+scale = Vector2(0.07, 0.07)
+texture = ExtResource("4_chef")

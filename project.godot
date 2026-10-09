@@ -1,0 +1,67 @@
+; Phase 0 framework. Locked engine and toolchain: dependencies.lock.json.
+config_version=5
+
+[application]
+config/name="小镇食堂 · 烹饪厨房"
+run/main_scene="res://src/app/main.tscn"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+config/use_custom_user_dir=true
+config/custom_user_dir_name="TownDinerPhase0"
+
+[display]
+window/size/viewport_width=1280
+window/size/viewport_height=800
+window/size/window_width_override=1280
+window/size/window_height_override=800
+window/stretch/mode="canvas_items"
+
+[rendering]
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+environment/defaults/default_clear_color=Color(0.055, 0.105, 0.105, 1)
+
+[input]
+world_left={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":65), Object(InputEventKey,"physical_keycode":4194319)]
+}
+world_right={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":68), Object(InputEventKey,"physical_keycode":4194321)]
+}
+world_up={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":87), Object(InputEventKey,"physical_keycode":4194320)]
+}
+world_down={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":83), Object(InputEventKey,"physical_keycode":4194322)]
+}
+world_interact={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":69)]
+}
+lane_left_up={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":87)]}
+lane_left_left={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":65)]}
+lane_left_down={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":83)]}
+lane_left_right={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":68)]}
+lane_right_up={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":4194320)]}
+lane_right_left={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":4194319)]}
+lane_right_down={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":4194322)]}
+lane_right_right={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":4194321)]}
+cook_action={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":32)]
+}
+probe_hold={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":32)]
+}
+pause={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":4194305)]
+}
+restart_probe={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":82)]
+}

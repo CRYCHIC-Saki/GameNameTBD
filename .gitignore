@@ -1,0 +1,15 @@
+.godot/
+.tools/
+artifacts/
+build/
+*.tmp
+# Local environment settings; keep shareable examples.
+.env
+.env.*
+!.env.example
+!.env.sample
+# Operating system metadata.
+.DS_Store
+Thumbs.db
+Desktop.ini
+# Keep .gd.uid and resource import configuration under version control.

@@ -1,0 +1,69 @@
+{
+  "schema_version": 2,
+  "scope": "COOKING_PROTOTYPE",
+  "parameter_status": "PROPOSED",
+  "source_note": "大纲§3、§4、附录A/B/C支持机制；以下全部新增数值是可调原型建议，未作平衡验收。不是Onboarding案例88分或星级。",
+  "active": ["recipe.tomato_egg"],
+  "recipe": {
+    "id": "recipe.tomato_egg", "name": "番茄炒蛋（原型）",
+    "required_ingredients": ["tomato", "egg"],
+    "required_steps": ["cut", "heat"], "required_cut": ["tomato"],
+    "expects_aroma": true, "expected_aroma": ["tomato", "egg"],
+    "description": "必须有番茄、鸡蛋；番茄切过，两种食材加热。可自由排工序，漏项仍能交付。"
+  },
+  "ingredients": [
+    {"id":"tomato","name":"番茄","category":"food","can_cut":true,"max_amount":1,
+      "base_flavor":[[12,20,8,4],[8,10,6,3],[0,0,0,0],[0,0,0,0],[0,0,0,0],[3,6,3,2],[0,0,0,0]],
+      "texture":{"A":0.2,"B":0.1,"C":-0.1},"aroma":{}},
+    {"id":"egg","name":"鸡蛋","category":"food","can_cut":false,"max_amount":1,
+      "base_flavor":[[0,0,0,0],[1,2,1,0],[0,0,0,0],[0,0,0,0],[1,2,1,0],[5,14,8,4],[0,0,0,0]],
+      "texture":{"A":-0.5,"B":-0.3,"C":-0.2},"aroma":{}},
+    {"id":"sugar","name":"白糖","category":"seasoning","can_cut":false,"max_amount":4,
+      "base_flavor":[[0,0,0,0],[24,22,15,8],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],
+      "texture":{"A":0,"B":0,"C":0},"aroma":{}},
+    {"id":"salt","name":"盐","category":"seasoning","can_cut":false,"max_amount":4,
+      "base_flavor":[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[14,20,10,4],[0,0,0,0],[0,0,0,0]],
+      "texture":{"A":0,"B":0,"C":0},"aroma":{}}
+  ],
+  "cut_shapes": {"chunk":{"name":"大块","fine":0.25},"dice":{"name":"小丁","fine":0.8}},
+  "qte": {
+    "cut":{"beats":8,"interval_sec":0.5,"lead_in_sec":1.0,"perfect_sec":0.06,"good_sec":0.14,"input_offset_sec":0.0,"good_quality":0.6},
+    "heat":{"duration_sec":6.0,"target_power_min":0.4,"target_power_max":0.7,"initial_power":0.5}
+  },
+  "rules": {
+    "room_temperature_c":22.0,"cooling_tau_sec":90.0,"max_temperature_c":120.0,
+    "degrees_per_heat_dose":14.0,"minimum_cooking_dose":1.0,
+    "cut_release_front":0.6,"cut_release_after":0.2,
+    "heat_taste_delta":[-0.8,0.5,0.2,0,0,1.2,0],
+    "heat_front_loss_per_dose":0.02,"heat_after_gain_per_dose":0.5,
+    "heat_tenderness_per_dose":0.35,"heat_overcook_dose":3.6,"heat_overcook_hardness":0.7,
+    "heat_crisp_loss_per_dose":0.08,
+    "heated_aroma":{"tomato":20.0,"egg":15.0},
+    "caramel_ingredient_id":"sugar","caramel_min_temperature_c":80.0,"caramel_aroma_per_dose":10.0,
+    "quality_weights":{"cut":1.0,"heat":1.0},"extra_step_penalty":3.0,
+    "missing_required_multiplier":0.4,"no_aroma_quality_multiplier":0.7,"no_aroma_harmony_penalty":15.0,
+    "harmony_base":60.0,"harmony_pair_bonus":20.0,"harmony_aroma_bonus":10.0,
+    "harmony_texture_bonus":10.0,"harmony_texture_ingredient":"egg","harmony_texture_axis":"A","harmony_texture_min":0.4,
+    "temperature_bands":[
+      {"id":"cold","max_c":40.0,"taste_factors":[1.15,1,1.1,0.8,1,0.8,0.8],"slot_factors":[1,1,1.05,1]},
+      {"id":"warm","max_c":65.0,"taste_factors":[1,1.15,1,1,1.1,1,1],"slot_factors":[1,1,1,1]},
+      {"id":"hot","max_c":120.0,"taste_factors":[0.8,1,1,1.1,1,1.2,1.1],"slot_factors":[1.05,1,1,1]}
+    ]
+  },
+  "scoring_rules":{"quality_weight":0.35,"harmony_weight":0.25,"requirements_weight":0.4},
+  "customers":[
+    {"id":"customer.sweet_chunk","name":"喜欢甜口的客人","description":"甜口、热一些；番茄大块、鸡蛋嫩，要闻到番茄香。","requirements":[
+      {"id":"sweet_front","label":"前味甜度 30–60","kind":"flavor","taste":1,"slot":0,"min":30,"max":60,"weight":3,"scale":40},
+      {"id":"hot","label":"温度 55–80℃","kind":"temperature","min":55,"max":80,"weight":2,"scale":40},
+      {"id":"chunk","label":"番茄大块：细碎度 ≤0.35","kind":"fine","ingredient_id":"tomato","max":0.35,"weight":2,"scale":0.65},
+      {"id":"tender","label":"鸡蛋嫩：A ≥0.4","kind":"texture","ingredient_id":"egg","axis":"A","min":0.4,"weight":2,"scale":1.4},
+      {"id":"tomato_aroma","label":"有番茄香","kind":"aroma","tag":"tomato","min":20,"weight":1,"scale":20}
+    ]},
+    {"id":"customer.savory_dice","name":"喜欢咸口的客人","description":"咸口、少甜；番茄小丁，温热就好。未对鸡蛋口感或香味提要求。","requirements":[
+      {"id":"salty_main","label":"主味咸度 18–35","kind":"flavor","taste":4,"slot":1,"min":18,"max":35,"weight":3,"scale":35},
+      {"id":"less_sweet","label":"主味甜度 ≤15","kind":"flavor","taste":1,"slot":1,"max":15,"weight":2,"scale":40},
+      {"id":"dice","label":"番茄小丁：细碎度 ≥0.65","kind":"fine","ingredient_id":"tomato","min":0.65,"weight":3,"scale":0.65},
+      {"id":"warm","label":"温度 40–65℃","kind":"temperature","min":40,"max":65,"weight":2,"scale":40}
+    ]}
+  ]
+}

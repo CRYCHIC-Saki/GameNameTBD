@@ -1,0 +1,3422 @@
+{
+  "schema_version": 3,
+  "scope": "COOKING_SYSTEM",
+  "parameter_status": "PROPOSED",
+  "units": {
+    "amount": "portion：标准份；调料推荐0.1份",
+    "time": "seconds",
+    "temperature": "celsius",
+    "flavor": "0–100",
+    "texture": "-1–1"
+  },
+  "active": {
+    "ingredients": [
+      "tomato",
+      "egg",
+      "sugar",
+      "salt",
+      "beef",
+      "nuts",
+      "oil",
+      "starch",
+      "culture",
+      "cucumber",
+      "cherry_tomato",
+      "vinegar",
+      "soy_sauce",
+      "wine",
+      "ginger",
+      "garlic",
+      "pepper",
+      "scallion"
+    ],
+    "recipes": [
+      "tomato_egg",
+      "test.cold_salad",
+      "test.reaction_pan",
+      "steamed_egg",
+      "beef_stew"
+    ]
+  },
+  "ingredients": [
+    {
+      "id": "tomato",
+      "name": "番茄",
+      "scope": "PROTOTYPE",
+      "category": "vegetable",
+      "subcategory": "tomato",
+      "quality": 0.8,
+      "base_tastes": [
+        34,
+        18,
+        0,
+        0,
+        0,
+        16,
+        0
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": 0.2,
+        "B": 0.1,
+        "C": 0
+      },
+      "aroma": {
+        "tomato": 4
+      },
+      "region": [
+        "test.kitchen"
+      ],
+      "special": [
+        "cuttable"
+      ],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    },
+    {
+      "id": "egg",
+      "name": "鸡蛋",
+      "scope": "PROTOTYPE",
+      "category": "protein",
+      "subcategory": "egg",
+      "quality": 0.8,
+      "base_tastes": [
+        0,
+        4,
+        0,
+        0,
+        2,
+        35,
+        0
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": 0.45,
+        "B": -0.1,
+        "C": 0.1
+      },
+      "aroma": {
+        "egg": 3
+      },
+      "region": [
+        "test.kitchen"
+      ],
+      "special": [
+        "protein"
+      ],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    },
+    {
+      "id": "sugar",
+      "name": "白糖",
+      "scope": "PROTOTYPE",
+      "category": "seasoning",
+      "subcategory": "sugar",
+      "quality": 0.8,
+      "base_tastes": [
+        0,
+        75,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
+      "aroma": {},
+      "region": [
+        "test.kitchen"
+      ],
+      "special": [
+        "sugar"
+      ],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    },
+    {
+      "id": "salt",
+      "name": "食盐",
+      "scope": "PROTOTYPE",
+      "category": "seasoning",
+      "subcategory": "salt",
+      "quality": 0.8,
+      "base_tastes": [
+        0,
+        0,
+        0,
+        0,
+        80,
+        0,
+        0
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
+      "aroma": {},
+      "region": [
+        "test.kitchen"
+      ],
+      "special": [],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    },
+    {
+      "id": "beef",
+      "name": "测试牛肉",
+      "scope": "TEST_ONLY",
+      "category": "meat",
+      "subcategory": "beef",
+      "quality": 0.8,
+      "base_tastes": [
+        0,
+        5,
+        0,
+        0,
+        2,
+        40,
+        0
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": -0.3,
+        "B": -0.6,
+        "C": 0
+      },
+      "aroma": {
+        "meat": 2
+      },
+      "region": [
+        "test.kitchen"
+      ],
+      "special": [
+        "meat",
+        "protein",
+        "fat",
+        "cuttable"
+      ],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    },
+    {
+      "id": "nuts",
+      "name": "测试坚果",
+      "scope": "TEST_ONLY",
+      "category": "nuts",
+      "subcategory": "peanut",
+      "quality": 0.8,
+      "base_tastes": [
+        0,
+        8,
+        0,
+        0,
+        0,
+        15,
+        0
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": -0.4,
+        "B": 0.6,
+        "C": 0
+      },
+      "aroma": {
+        "nut": 3
+      },
+      "region": [
+        "test.kitchen"
+      ],
+      "special": [
+        "nuts",
+        "protein",
+        "fat",
+        "cuttable"
+      ],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    },
+    {
+      "id": "oil",
+      "name": "测试食用油",
+      "scope": "TEST_ONLY",
+      "category": "seasoning",
+      "subcategory": "oil",
+      "quality": 0.8,
+      "base_tastes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": 0,
+        "B": 0,
+        "C": 0.2
+      },
+      "aroma": {},
+      "region": [
+        "test.kitchen"
+      ],
+      "special": [
+        "fat"
+      ],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    },
+    {
+      "id": "starch",
+      "name": "测试淀粉",
+      "scope": "TEST_ONLY",
+      "category": "seasoning",
+      "subcategory": "starch",
+      "quality": 0.8,
+      "base_tastes": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": 0,
+        "B": 0,
+        "C": 0.6
+      },
+      "aroma": {},
+      "region": [
+        "test.kitchen"
+      ],
+      "special": [
+        "starch"
+      ],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    },
+    {
+      "id": "culture",
+      "name": "测试发酵菌种",
+      "scope": "TEST_ONLY",
+      "category": "seasoning",
+      "subcategory": "culture",
+      "quality": 0.8,
+      "base_tastes": [
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
+      "aroma": {},
+      "region": [
+        "test.kitchen"
+      ],
+      "special": [
+        "culture"
+      ],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    },
+    {
+      "id": "cucumber",
+      "name": "测试冷黄瓜",
+      "scope": "TEST_ONLY",
+      "category": "vegetable",
+      "subcategory": "cucumber",
+      "quality": 0.8,
+      "base_tastes": [
+        4,
+        5,
+        0,
+        0,
+        0,
+        8,
+        0
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": 0,
+        "B": 0.7,
+        "C": 0
+      },
+      "aroma": {
+        "fresh": 8
+      },
+      "region": [
+        "test.kitchen"
+      ],
+      "special": [
+        "cuttable"
+      ],
+      "temperature_c": 8,
+      "max_amount": 10,
+      "available": true
+    },
+    {
+      "id": "cherry_tomato",
+      "name": "测试小番茄",
+      "scope": "TEST_ONLY",
+      "category": "vegetable",
+      "subcategory": "tomato",
+      "quality": 0.8,
+      "base_tastes": [
+        25,
+        32,
+        0,
+        0,
+        0,
+        14,
+        0
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": 0.3,
+        "B": 0.2,
+        "C": 0
+      },
+      "aroma": {
+        "tomato": 5
+      },
+      "region": [
+        "test.kitchen"
+      ],
+      "special": [
+        "cuttable"
+      ],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    },
+    {
+      "id": "vinegar",
+      "name": "醋",
+      "scope": "TEST_ONLY",
+      "category": "seasoning",
+      "subcategory": "vinegar",
+      "quality": 0.8,
+      "base_tastes": [
+        65,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
+      "aroma": {},
+      "region": [
+        "test.kitchen"
+      ],
+      "special": [],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    },
+    {
+      "id": "soy_sauce",
+      "name": "酱油",
+      "scope": "TEST_ONLY",
+      "category": "seasoning",
+      "subcategory": "soy_sauce",
+      "quality": 0.8,
+      "base_tastes": [
+        0,
+        4,
+        0,
+        0,
+        55,
+        35,
+        0
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
+      "aroma": {},
+      "region": [
+        "test.kitchen"
+      ],
+      "special": [],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    },
+    {
+      "id": "wine",
+      "name": "料酒",
+      "scope": "TEST_ONLY",
+      "category": "seasoning",
+      "subcategory": "wine",
+      "quality": 0.8,
+      "base_tastes": [
+        5,
+        5,
+        5,
+        0,
+        0,
+        8,
+        0
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
+      "aroma": {},
+      "region": [
+        "test.kitchen"
+      ],
+      "special": [],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    },
+    {
+      "id": "ginger",
+      "name": "姜",
+      "scope": "TEST_ONLY",
+      "category": "seasoning",
+      "subcategory": "ginger",
+      "quality": 0.8,
+      "base_tastes": [
+        0,
+        0,
+        0,
+        18,
+        0,
+        0,
+        0
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
+      "aroma": {},
+      "region": [
+        "test.kitchen"
+      ],
+      "special": [],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    },
+    {
+      "id": "garlic",
+      "name": "蒜",
+      "scope": "TEST_ONLY",
+      "category": "seasoning",
+      "subcategory": "garlic",
+      "quality": 0.8,
+      "base_tastes": [
+        0,
+        0,
+        0,
+        12,
+        0,
+        12,
+        0
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
+      "aroma": {},
+      "region": [
+        "test.kitchen"
+      ],
+      "special": [],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    },
+    {
+      "id": "pepper",
+      "name": "花椒",
+      "scope": "TEST_ONLY",
+      "category": "seasoning",
+      "subcategory": "pepper",
+      "quality": 0.8,
+      "base_tastes": [
+        0,
+        0,
+        3,
+        5,
+        0,
+        0,
+        50
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
+      "aroma": {},
+      "region": [
+        "test.kitchen"
+      ],
+      "special": [],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    },
+    {
+      "id": "scallion",
+      "name": "葱",
+      "scope": "TEST_ONLY",
+      "category": "seasoning",
+      "subcategory": "scallion",
+      "quality": 0.8,
+      "base_tastes": [
+        0,
+        2,
+        0,
+        5,
+        0,
+        8,
+        0
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
+      "aroma": {},
+      "region": [
+        "test.kitchen"
+      ],
+      "special": [],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    }
+  ],
+  "recipes": [
+    {
+      "version": 1,
+      "is_custom": false,
+      "expects_aroma": true,
+      "expected_aroma": [
+        "tomato",
+        "egg"
+      ],
+      "allowed_ingredients": [
+        "tomato",
+        "cherry_tomato",
+        "egg",
+        "sugar",
+        "salt",
+        "oil",
+        "starch"
+      ],
+      "required_steps": [
+        "cut",
+        "heat"
+      ],
+      "recommended_steps": [
+        "preheat",
+        "cut",
+        "stir",
+        "heat",
+        "season",
+        "plate"
+      ],
+      "ideal_flavor": [],
+      "ideal_temperature": [
+        55,
+        70
+      ],
+      "ideal_texture": {},
+      "san_cost": {
+        "event": "deliver",
+        "amount": 0
+      },
+      "variant_ids": [],
+      "id": "tomato_egg",
+      "name": "番茄炒蛋",
+      "scope": "PROTOTYPE",
+      "required_ingredients": [
+        {
+          "id": "tomato",
+          "substitute_category": "vegetable",
+          "substitute_subcategory": "tomato",
+          "min_amount": 1,
+          "min_fine": 0.1,
+          "max_fine": 0.85,
+          "min_heat_dose": 0.5
+        },
+        {
+          "id": "egg",
+          "min_amount": 1,
+          "min_fine": 0,
+          "max_fine": 1,
+          "min_heat_dose": 0.5
+        }
+      ]
+    },
+    {
+      "version": 1,
+      "is_custom": false,
+      "expects_aroma": true,
+      "expected_aroma": [
+        "fresh"
+      ],
+      "allowed_ingredients": [
+        "cucumber",
+        "salt",
+        "sugar"
+      ],
+      "required_steps": [
+        "stir"
+      ],
+      "recommended_steps": [
+        "cut",
+        "stir",
+        "season",
+        "plate"
+      ],
+      "ideal_flavor": [],
+      "ideal_temperature": [
+        0,
+        18
+      ],
+      "ideal_texture": {},
+      "san_cost": {
+        "event": "deliver",
+        "amount": 0
+      },
+      "variant_ids": [],
+      "id": "test.cold_salad",
+      "name": "TEST_ONLY 冷拌黄瓜",
+      "scope": "TEST_ONLY",
+      "required_ingredients": [
+        {
+          "id": "cucumber",
+          "min_amount": 1,
+          "min_fine": 0,
+          "max_fine": 1
+        }
+      ]
+    },
+    {
+      "version": 1,
+      "is_custom": false,
+      "expects_aroma": true,
+      "expected_aroma": [
+        "meat",
+        "caramel",
+        "complex"
+      ],
+      "allowed_ingredients": [
+        "tomato",
+        "egg",
+        "sugar",
+        "salt",
+        "beef",
+        "nuts",
+        "oil",
+        "starch",
+        "culture",
+        "cucumber",
+        "cherry_tomato"
+      ],
+      "required_steps": [
+        "heat"
+      ],
+      "recommended_steps": [
+        "preheat",
+        "cut",
+        "stir",
+        "heat",
+        "boil",
+        "season",
+        "starch",
+        "ferment",
+        "plate"
+      ],
+      "ideal_flavor": [],
+      "ideal_temperature": [
+        60,
+        90
+      ],
+      "ideal_texture": {},
+      "san_cost": {
+        "event": "deliver",
+        "amount": 5
+      },
+      "variant_ids": [
+        "test.dark_pan"
+      ],
+      "id": "test.reaction_pan",
+      "name": "TEST_ONLY 反应试锅",
+      "scope": "TEST_ONLY",
+      "required_ingredients": [
+        {
+          "id": "beef",
+          "substitute_category": "nuts",
+          "min_amount": 1,
+          "min_fine": 0,
+          "max_fine": 1
+        }
+      ]
+    },
+    {
+      "version": 1,
+      "is_custom": false,
+      "expects_aroma": false,
+      "expected_aroma": [],
+      "allowed_ingredients": [
+        "egg",
+        "salt",
+        "sugar",
+        "oil"
+      ],
+      "required_steps": [
+        "cut",
+        "season",
+        "steam",
+        "plate"
+      ],
+      "recommended_steps": [
+        "cut",
+        "season",
+        "steam",
+        "plate"
+      ],
+      "ideal_flavor": [],
+      "ideal_temperature": [
+        55,
+        70
+      ],
+      "ideal_texture": {},
+      "san_cost": {
+        "event": "deliver",
+        "amount": 0
+      },
+      "variant_ids": [],
+      "id": "steamed_egg",
+      "name": "番茄蒸蛋",
+      "scope": "TEST_ONLY",
+      "required_ingredients": [
+        {
+          "id": "tomato",
+          "substitute_category": "vegetable",
+          "substitute_subcategory": "tomato",
+          "min_amount": 1,
+          "min_fine": 0.1,
+          "max_fine": 0.85,
+          "min_heat_dose": 0.5
+        },
+        {
+          "id": "egg",
+          "min_amount": 1,
+          "min_fine": 0,
+          "max_fine": 1,
+          "min_heat_dose": 0.5
+        }
+      ],
+      "guided_profile": "steam"
+    },
+    {
+      "version": 1,
+      "is_custom": false,
+      "expects_aroma": false,
+      "expected_aroma": [],
+      "allowed_ingredients": [
+        "beef",
+        "salt",
+        "sugar",
+        "oil"
+      ],
+      "required_steps": [
+        "boil",
+        "plate"
+      ],
+      "recommended_steps": [
+        "preheat",
+        "season",
+        "boil",
+        "plate"
+      ],
+      "ideal_flavor": [],
+      "ideal_temperature": [
+        55,
+        70
+      ],
+      "ideal_texture": {},
+      "san_cost": {
+        "event": "deliver",
+        "amount": 0
+      },
+      "variant_ids": [],
+      "id": "beef_stew",
+      "name": "炖牛肉",
+      "scope": "TEST_ONLY",
+      "required_ingredients": [
+        {
+          "id": "beef",
+          "min_amount": 1,
+          "min_fine": 0,
+          "max_fine": 1,
+          "min_heat_dose": 0
+        }
+      ],
+      "guided_profile": "simmer"
+    }
+  ],
+  "operations": {
+    "cut": {
+      "id": "cut",
+      "name": "切菜",
+      "qte": "rhythm",
+      "target": "instance",
+      "quality_weight": 1
+    },
+    "preheat": {
+      "id": "preheat",
+      "name": "热锅点火",
+      "qte": "charge",
+      "target": "batch",
+      "quality_weight": 1
+    },
+    "stir": {
+      "id": "stir",
+      "name": "翻炒搅拌",
+      "qte": "rhythm",
+      "target": "batch",
+      "quality_weight": 1
+    },
+    "heat": {
+      "id": "heat",
+      "name": "炒制控温",
+      "qte": "maintain",
+      "target": "batch",
+      "quality_weight": 1
+    },
+    "boil": {
+      "id": "boil",
+      "name": "炖煮控温",
+      "qte": "maintain",
+      "target": "batch",
+      "quality_weight": 1
+    },
+    "season": {
+      "id": "season",
+      "name": "顺序调味",
+      "qte": "sequence",
+      "target": "batch",
+      "quality_weight": 1
+    },
+    "starch": {
+      "id": "starch",
+      "name": "勾芡",
+      "qte": "window",
+      "target": "batch",
+      "quality_weight": 1
+    },
+    "ferment": {
+      "id": "ferment",
+      "name": "发酵搅拌",
+      "qte": "sequence",
+      "target": "batch",
+      "quality_weight": 1
+    },
+    "plate": {
+      "id": "plate",
+      "name": "把握出锅",
+      "qte": "window",
+      "target": "dish",
+      "quality_weight": 1
+    },
+    "steam": {
+      "quality_weight": 1,
+      "name": "上笼蒸制",
+      "id": "steam",
+      "qte": "charge",
+      "target": "batch"
+    }
+  },
+  "qtes": {
+    "charge": {
+      "kind": "charge",
+      "timeout_sec": 4,
+      "target_min_sec": 1.2,
+      "target_max_sec": 1.6,
+      "good_margin_sec": 0.25,
+      "good_quality": 0.6,
+      "perfect_quality": 0.95,
+      "good_grade_quality": 0.6
+    },
+    "rhythm": {
+      "kind": "rhythm",
+      "beats": 8,
+      "interval_sec": 0.5,
+      "lead_in_sec": 1,
+      "perfect_sec": 0.06,
+      "good_sec": 0.14,
+      "good_quality": 0.6,
+      "input_offset_sec": 0,
+      "perfect_quality": 0.95,
+      "good_grade_quality": 0.6,
+      "error_weight": 1
+    },
+    "window": {
+      "kind": "window",
+      "target_sec": 1.8,
+      "perfect_sec": 0.06,
+      "good_sec": 0.14,
+      "timeout_sec": 2.5,
+      "input_offset_sec": 0,
+      "good_quality": 0.6,
+      "perfect_quality": 0.95,
+      "good_grade_quality": 0.6
+    },
+    "maintain": {
+      "kind": "maintain",
+      "duration_sec": 6,
+      "target_min": 0.4,
+      "target_max": 0.7,
+      "initial_value": 0.5,
+      "disturbance_amplitude": 0.24,
+      "disturbance_period_sec": 2,
+      "good_quality": 0.6,
+      "perfect_quality": 0.95,
+      "good_grade_quality": 0.6
+    },
+    "sequence": {
+      "kind": "sequence",
+      "sequence": [
+        "up",
+        "left",
+        "down",
+        "right"
+      ],
+      "timeout_sec": 5,
+      "good_quality": 0.6,
+      "perfect_quality": 0.95,
+      "good_grade_quality": 0.6,
+      "error_weight": 1
+    }
+  },
+  "reactions": [
+    {
+      "id": "maillard",
+      "name": "美拉德",
+      "trigger": "heat",
+      "requires_any": [
+        "meat",
+        "nuts"
+      ],
+      "requires_all": [
+        "sugar"
+      ],
+      "min_temperature": 110,
+      "min_duration": 2,
+      "flavor_delta": [
+        -3,
+        2,
+        2,
+        0,
+        0,
+        9,
+        0
+      ],
+      "aroma": {
+        "roasted": 12
+      },
+      "harmony_delta": 3
+    },
+    {
+      "id": "caramelization",
+      "name": "焦糖化",
+      "trigger": "heat",
+      "requires_any": [
+        "sugar"
+      ],
+      "requires_all": [],
+      "min_temperature": 140,
+      "min_duration": 2,
+      "flavor_delta": [
+        0,
+        -8,
+        10,
+        0,
+        0,
+        0,
+        0
+      ],
+      "aroma": {
+        "caramel": 15
+      },
+      "harmony_delta": 2
+    },
+    {
+      "id": "hydrolysis",
+      "name": "蛋白质水解",
+      "trigger": "boil",
+      "requires_any": [
+        "meat",
+        "nuts"
+      ],
+      "requires_all": [],
+      "min_temperature": 70,
+      "min_duration": 3,
+      "flavor_delta": [
+        0,
+        0,
+        2,
+        0,
+        0,
+        10,
+        0
+      ],
+      "aroma": {},
+      "harmony_delta": 2
+    },
+    {
+      "id": "fat_oxidation",
+      "name": "脂肪氧化",
+      "trigger": "heat",
+      "requires_any": [
+        "fat"
+      ],
+      "requires_all": [],
+      "min_temperature": 140,
+      "min_duration": 8,
+      "flavor_delta": [
+        10,
+        0,
+        15,
+        0,
+        0,
+        0,
+        0
+      ],
+      "aroma": {
+        "stale_oil": 18
+      },
+      "harmony_delta": -12
+    },
+    {
+      "id": "starch_gel",
+      "name": "淀粉糊化",
+      "trigger": "starch",
+      "requires_any": [
+        "starch"
+      ],
+      "requires_all": [],
+      "min_temperature": 60,
+      "min_duration": 0,
+      "flavor_delta": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "aroma": {},
+      "harmony_delta": 8,
+      "texture_delta": {
+        "C": 0.2
+      }
+    },
+    {
+      "id": "fermentation",
+      "name": "发酵",
+      "trigger": "ferment",
+      "requires_any": [
+        "culture"
+      ],
+      "requires_all": [],
+      "min_temperature": -20,
+      "min_duration": 3,
+      "flavor_delta": [
+        12,
+        0,
+        3,
+        0,
+        0,
+        12,
+        0
+      ],
+      "aroma": {
+        "complex": 15
+      },
+      "harmony_delta": 4
+    },
+    {
+      "id": "cut_oxidation",
+      "name": "切开后久置氧化",
+      "trigger": "exposure",
+      "requires_any": [
+        "cuttable"
+      ],
+      "requires_all": [],
+      "min_temperature": -20,
+      "min_duration": 12,
+      "flavor_delta": [
+        0,
+        -5,
+        5,
+        0,
+        0,
+        -5,
+        0
+      ],
+      "aroma": {},
+      "harmony_delta": -3
+    }
+  ],
+  "cut_shapes": {
+    "slice": {
+      "name": "片",
+      "fine": 0.15
+    },
+    "chunk": {
+      "name": "块",
+      "fine": 0.25
+    },
+    "strip": {
+      "name": "条",
+      "fine": 0.5
+    },
+    "dice": {
+      "name": "丁",
+      "fine": 0.8
+    }
+  },
+  "rules": {
+    "room_temperature_c": 22,
+    "cooling_tau_sec": 90,
+    "max_temperature_c": 220,
+    "min_temperature_c": -50,
+    "degrees_per_heat_dose": 35,
+    "boil_max_temperature_c": 98,
+    "heat_taste_delta": [
+      -1,
+      1,
+      0.8,
+      0,
+      0,
+      1,
+      0
+    ],
+    "heat_front_loss_per_dose": 0.015,
+    "heat_after_gain_per_dose": 0.3,
+    "heat_tenderness_per_dose": 0.1,
+    "heat_overcook_dose": 4,
+    "heat_overcook_hardness": 0.2,
+    "cut_release_front": 0.8,
+    "cut_release_after": 0.25,
+    "stir_aroma_gain": 2,
+    "cut_miss_delay_sec": 0.3,
+    "cut_miss_san_cost": 1,
+    "quality_bonus_max": 5,
+    "extra_step_penalty": 3,
+    "extra_ingredient_penalty": 3,
+    "missing_required_multiplier": 0.4,
+    "no_aroma_quality_multiplier": 0.7,
+    "no_aroma_harmony_penalty": 15,
+    "custom_completion_cap": 90,
+    "harmony_aroma_bonus": 10,
+    "harmony_texture_bonus": 5,
+    "negative_aromas": [
+      "stale_oil"
+    ],
+    "negative_aroma_penalty": 10,
+    "compound_threshold": 20,
+    "dominant_epsilon": 0.000001,
+    "harmony_pairs": {
+      "0:1": 1,
+      "0:2": -1,
+      "1:4": -1,
+      "1:5": 1,
+      "2:5": -1,
+      "3:4": 1,
+      "3:6": 1,
+      "4:5": 1
+    },
+    "harmony_levels": [
+      {
+        "min": -1000,
+        "score": 25
+      },
+      {
+        "min": -2,
+        "score": 40
+      },
+      {
+        "min": 0,
+        "score": 55
+      },
+      {
+        "min": 2,
+        "score": 70
+      },
+      {
+        "min": 4,
+        "score": 85
+      }
+    ],
+    "perfect_grade_threshold": 0.95,
+    "temperature_bands": [
+      {
+        "max_c": 40,
+        "taste_factors": [
+          1.2,
+          1,
+          1.1,
+          0.75,
+          1,
+          0.8,
+          0.75
+        ],
+        "slot_factors": [
+          1,
+          1,
+          1.1,
+          1
+        ]
+      },
+      {
+        "max_c": 65,
+        "taste_factors": [
+          1,
+          1.15,
+          1,
+          1,
+          1.15,
+          1,
+          1
+        ],
+        "slot_factors": [
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "max_c": 1000,
+        "taste_factors": [
+          0.8,
+          1,
+          1,
+          1.15,
+          1,
+          1.2,
+          1.15
+        ],
+        "slot_factors": [
+          1.1,
+          1,
+          1,
+          1
+        ]
+      }
+    ],
+    "preheat_transfer": 0.35,
+    "season_error_overpour": 0.5,
+    "maximum_instances": 64,
+    "cut_injury_probability": 0.2,
+    "cut_injury_quality_threshold": 0.6,
+    "plate_early_aroma_factor": 0.7,
+    "plate_miss_aroma_factor": 0.5,
+    "plate_late_heat_dose": 1.5,
+    "heat_crispness_loss_per_dose": 0.04
+  },
+  "scoring_rules": {
+    "quality_weight": 0.35,
+    "harmony_weight": 0.25,
+    "requirements_weight": 0.4,
+    "star_thresholds": [
+      0,
+      40,
+      55,
+      70,
+      85
+    ]
+  },
+  "customers": [
+    {
+      "id": "sweet",
+      "name": "喜欢甜口大块的客人",
+      "description": "偏甜、大块、温热",
+      "requirements": [
+        {
+          "id": "sweetness",
+          "label": "主味要甜",
+          "kind": "flavor",
+          "taste": 1,
+          "slot": 1,
+          "min": 25,
+          "max": 55,
+          "weight": 2,
+          "scale": 100
+        },
+        {
+          "id": "large",
+          "label": "番茄大块",
+          "kind": "fine",
+          "ingredient_id": "tomato",
+          "min": 0,
+          "max": 0.35,
+          "weight": 1,
+          "scale": 1
+        },
+        {
+          "id": "warm",
+          "label": "温热",
+          "kind": "temperature",
+          "min": 50,
+          "max": 70,
+          "weight": 1,
+          "scale": 100
+        }
+      ]
+    },
+    {
+      "id": "savory",
+      "name": "喜欢咸鲜小丁的客人",
+      "description": "咸鲜、小丁、鸡蛋嫩",
+      "requirements": [
+        {
+          "id": "savory",
+          "label": "主味鲜",
+          "kind": "flavor",
+          "taste": 5,
+          "slot": 1,
+          "min": 40,
+          "max": 80,
+          "weight": 2,
+          "scale": 100
+        },
+        {
+          "id": "small",
+          "label": "番茄小丁",
+          "kind": "fine",
+          "ingredient_id": "tomato",
+          "min": 0.6,
+          "max": 1,
+          "weight": 1,
+          "scale": 1
+        },
+        {
+          "id": "tender",
+          "label": "鸡蛋嫩",
+          "kind": "texture",
+          "ingredient_id": "egg",
+          "axis": "A",
+          "min": 0.5,
+          "max": 1,
+          "weight": 1,
+          "scale": 2
+        }
+      ]
+    }
+  ],
+  "variants": [
+    {
+      "id": "test.dark_pan",
+      "scope": "TEST_ONLY",
+      "name": "测试：异色试锅",
+      "probability": 0.5,
+      "flavor_delta": [
+        0,
+        10,
+        5,
+        0,
+        0,
+        0,
+        5
+      ],
+      "aroma": {
+        "strange": 10
+      },
+      "san_cost": {
+        "event": "deliver",
+        "amount": 5
+      }
+    }
+  ],
+  "sources": [
+    "大纲§3–4、§6；Onboarding L1/L2；所有量级PROPOSED；涩不映射到七味"
+  ],
+  "pc_operations": {
+    "bpm": 120,
+    "max_fine_steps": 8,
+    "diagonal_release_bonus": 0.1,
+    "stir_texture_gain": 0.12,
+    "stir_harmony_gain": 3,
+    "modules": {
+      "cut": {
+        "kind": "rhythm",
+        "pc_module": "M1",
+        "directional_cut": true,
+        "beats": 2,
+        "interval_sec": 0.5,
+        "lead_in_sec": 1,
+        "perfect_sec": 0.05,
+        "good_sec": 0.1,
+        "good_quality": 0.6
+      },
+      "preheat": {
+        "kind": "window",
+        "pc_module": "M2",
+        "target_sec": 2,
+        "perfect_sec": 0.05,
+        "good_sec": 0.1,
+        "timeout_sec": 2.3,
+        "sweep_period_sec": 2,
+        "good_quality": 0.6
+      },
+      "stir": {
+        "kind": "sequence",
+        "pc_module": "M3",
+        "on_beat": true,
+        "sequence": [
+          "up",
+          "left",
+          "down",
+          "right",
+          "primary"
+        ],
+        "timeout_sec": 5,
+        "lead_in_sec": 0.5,
+        "interval_sec": 0.5,
+        "perfect_sec": 0.05,
+        "good_sec": 0.1,
+        "good_quality": 0.6
+      },
+      "heat": {
+        "kind": "maintain",
+        "pc_module": "M4",
+        "attraction": true,
+        "duration_sec": 16,
+        "target_min": 0.4,
+        "target_max": 0.65,
+        "initial_value": 0.25,
+        "disturbance_amplitude": 0.35,
+        "disturbance_period_sec": 1,
+        "hover_strength": 0.8,
+        "drag_strength": 3.5
+      },
+      "boil": {
+        "kind": "maintain",
+        "pc_module": "M5",
+        "attraction": true,
+        "duration_sec": 16,
+        "target_min": 0.32,
+        "target_max": 0.73,
+        "initial_value": 0.5,
+        "disturbance_amplitude": 0.12,
+        "disturbance_period_sec": 2,
+        "hover_strength": 0.8,
+        "drag_strength": 3.5
+      },
+      "season": {
+        "kind": "sequence",
+        "pc_module": "M6",
+        "on_beat": true,
+        "cabinet": true,
+        "sequence": [
+          "spice:salt",
+          "spice:sugar",
+          "spice:oil"
+        ],
+        "allowed_actions": [
+          "spice:salt",
+          "spice:sugar",
+          "spice:vinegar",
+          "spice:soy_sauce",
+          "spice:oil",
+          "spice:wine",
+          "spice:ginger",
+          "spice:garlic",
+          "spice:pepper",
+          "spice:scallion",
+          "spice:starch"
+        ],
+        "timeout_sec": 5,
+        "lead_in_sec": 0.5,
+        "interval_sec": 0.5,
+        "perfect_sec": 0.05,
+        "good_sec": 0.1,
+        "good_quality": 0.6,
+        "portion": 0.1
+      },
+      "starch": {
+        "kind": "sequence",
+        "pc_module": "M3",
+        "on_beat": true,
+        "sequence": [
+          "left",
+          "right",
+          "primary"
+        ],
+        "timeout_sec": 4,
+        "lead_in_sec": 0.5,
+        "interval_sec": 0.5,
+        "perfect_sec": 0.05,
+        "good_sec": 0.1,
+        "good_quality": 0.6
+      },
+      "ferment": {
+        "kind": "sequence",
+        "pc_module": "M3",
+        "on_beat": true,
+        "sequence": [
+          "up",
+          "down",
+          "primary"
+        ],
+        "timeout_sec": 4,
+        "lead_in_sec": 0.5,
+        "interval_sec": 0.5,
+        "perfect_sec": 0.05,
+        "good_sec": 0.1,
+        "good_quality": 0.6
+      },
+      "plate": {
+        "kind": "charge",
+        "pc_module": "M7",
+        "timeout_sec": 4,
+        "target_min_sec": 0.95,
+        "target_max_sec": 1.05,
+        "good_margin_sec": 0.1,
+        "good_quality": 0.6
+      },
+      "steam": {
+        "kind": "charge",
+        "pc_module": "M3",
+        "timeout_sec": 6,
+        "target_min_sec": 3.95,
+        "target_max_sec": 4.05,
+        "good_margin_sec": 0.15,
+        "good_quality": 0.6
+      },
+      "oil": {
+        "kind": "sequence",
+        "pc_module": "M3",
+        "on_beat": true,
+        "sequence": [
+          "up",
+          "left",
+          "primary"
+        ],
+        "timeout_sec": 4,
+        "lead_in_sec": 0.5,
+        "interval_sec": 0.5,
+        "perfect_sec": 0.05,
+        "good_sec": 0.1,
+        "good_quality": 0.6
+      }
+    },
+    "weights": {
+      "cut": 0.1,
+      "preheat": 0.1,
+      "stir": 0.25,
+      "heat": 0.3,
+      "boil": 0.3,
+      "season": 0.2,
+      "starch": 0.1,
+      "ferment": 0.1,
+      "plate": 0.15,
+      "steam": 0.3
+    },
+    "sheets": {
+      "stir_fry": {
+        "id": "stir_fry",
+        "name": "炒菜节拍表",
+        "bpm": 120,
+        "events": [
+          {
+            "beat": 0,
+            "operation": "preheat",
+            "parameters": {}
+          },
+          {
+            "beat": 6,
+            "operation": "season",
+            "parameters": {
+              "ingredient_id": "oil",
+              "amount": 0.1,
+              "mode": "common"
+            }
+          },
+          {
+            "beat": 10,
+            "operation": "heat",
+            "parameters": {}
+          },
+          {
+            "beat": 10,
+            "operation": "stir",
+            "parameters": {}
+          },
+          {
+            "beat": 18,
+            "operation": "season",
+            "parameters": {
+              "ingredient_id": "salt",
+              "amount": 0.1
+            }
+          },
+          {
+            "beat": 28,
+            "operation": "stir",
+            "parameters": {}
+          },
+          {
+            "beat": 44,
+            "operation": "plate",
+            "parameters": {}
+          }
+        ]
+      },
+      "steam": {
+        "id": "steam",
+        "name": "蒸制节拍表 · 机制样例",
+        "bpm": 120,
+        "events": [
+          {
+            "beat": 0,
+            "operation": "season",
+            "parameters": {
+              "ingredient_id": "salt",
+              "amount": 0.1
+            }
+          },
+          {
+            "beat": 6,
+            "operation": "steam",
+            "parameters": {}
+          },
+          {
+            "beat": 20,
+            "operation": "plate",
+            "parameters": {}
+          }
+        ]
+      }
+    },
+    "dual_target_offsets": [
+      -0.15,
+      0.2
+    ],
+    "document_sheets": {
+      "prepare": {
+        "id": "prepare",
+        "dish": "prepare",
+        "bpm": 120,
+        "groups": {
+          "cut": {
+            "operation": "cut",
+            "label": "切配番茄",
+            "parameters": {}
+          }
+        },
+        "beats": [
+          {
+            "t": 1,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 2,
+            "lanes": {
+              "hand": {
+                "group": "cut",
+                "op": "cut",
+                "input": "primary",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 3,
+            "lanes": {
+              "hand": {
+                "group": "cut",
+                "op": "cut",
+                "input": "primary",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 4,
+            "lanes": {
+              "hand": {
+                "group": "cut",
+                "op": "cut",
+                "input": "primary",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 5,
+            "lanes": {
+              "hand": {
+                "group": "cut",
+                "op": "cut",
+                "input": "primary",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 6,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 7,
+            "lanes": {
+              "hand": {
+                "group": "cut",
+                "op": "cut",
+                "input": "primary",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 8,
+            "lanes": {
+              "hand": {
+                "group": "cut",
+                "op": "cut",
+                "input": "primary",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 9,
+            "rest": true,
+            "lanes": {}
+          }
+        ]
+      },
+      "tomato_egg": {
+        "id": "tomato_egg",
+        "dish": "tomato_egg",
+        "bpm": 120,
+        "groups": {
+          "ignite": {
+            "operation": "preheat",
+            "label": "热锅点火",
+            "parameters": {}
+          },
+          "oil": {
+            "operation": "season",
+            "label": "下油",
+            "parameters": {
+              "ingredient_id": "oil",
+              "amount": 0.1,
+              "mode": "common"
+            }
+          },
+          "load": {
+            "operation": "stir",
+            "label": "下料",
+            "parameters": {}
+          },
+          "stir-a": {
+            "operation": "stir",
+            "label": "翻炒 · 稳住火候",
+            "parameters": {}
+          },
+          "stir-b": {
+            "operation": "stir",
+            "label": "翻炒 · 均匀受热",
+            "parameters": {}
+          },
+          "stir-c": {
+            "operation": "stir",
+            "label": "翻炒 · 收拢食材",
+            "parameters": {}
+          },
+          "heat": {
+            "operation": "heat",
+            "label": "炒制控温",
+            "parameters": {}
+          },
+          "season": {
+            "operation": "season",
+            "label": "顺序调味",
+            "parameters": {
+              "ingredient_id": "salt",
+              "amount": 0.1,
+              "mode": "precise"
+            }
+          },
+          "starch": {
+            "operation": "starch",
+            "label": "勾芡",
+            "parameters": {
+              "ingredient_id": "starch",
+              "amount": 0.1
+            }
+          },
+          "plate": {
+            "operation": "plate",
+            "label": "把握出锅",
+            "parameters": {}
+          }
+        },
+        "beats": [
+          {
+            "t": 1,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 2,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 3,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 4,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 5,
+            "lanes": {
+              "hand": {
+                "group": "ignite",
+                "op": "preheat",
+                "input": "primary",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 6,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 7,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 8,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 9,
+            "lanes": {
+              "hand": {
+                "group": "oil",
+                "op": "season",
+                "input": "up",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 10,
+            "lanes": {
+              "hand": {
+                "group": "oil",
+                "op": "season",
+                "input": "left",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 11,
+            "lanes": {
+              "hand": {
+                "group": "oil",
+                "op": "season",
+                "input": "primary",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 12,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 13,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 14,
+            "lanes": {
+              "hand": {
+                "group": "load",
+                "op": "stir",
+                "input": "up",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 15,
+            "lanes": {
+              "hand": {
+                "group": "load",
+                "op": "stir",
+                "input": "right",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 16,
+            "lanes": {
+              "hand": {
+                "group": "load",
+                "op": "stir",
+                "input": "primary",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 17,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 18,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 19,
+            "lanes": {
+              "hand": {
+                "group": "stir-a",
+                "op": "stir",
+                "input": "up",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 20,
+            "lanes": {
+              "hand": {
+                "group": "stir-a",
+                "op": "stir",
+                "input": "left",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 21,
+            "lanes": {
+              "hand": {
+                "group": "stir-a",
+                "op": "stir",
+                "input": "down",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 22,
+            "lanes": {
+              "hand": {
+                "group": "stir-a",
+                "op": "stir",
+                "input": "right",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 23,
+            "lanes": {
+              "hand": {
+                "group": "stir-a",
+                "op": "stir",
+                "input": "primary",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 24,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 25,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 26,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 27,
+            "lanes": {
+              "hand": {
+                "group": "stir-b",
+                "op": "stir",
+                "input": "up",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 28,
+            "lanes": {
+              "hand": {
+                "group": "stir-b",
+                "op": "stir",
+                "input": "left",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 29,
+            "lanes": {
+              "hand": {
+                "group": "stir-b",
+                "op": "stir",
+                "input": "down",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 30,
+            "lanes": {
+              "hand": {
+                "group": "stir-b",
+                "op": "stir",
+                "input": "right",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 31,
+            "lanes": {
+              "hand": {
+                "group": "stir-b",
+                "op": "stir",
+                "input": "primary",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 32,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 33,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 34,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 35,
+            "lanes": {
+              "hand": {
+                "group": "stir-c",
+                "op": "stir",
+                "input": "up",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 36,
+            "lanes": {
+              "hand": {
+                "group": "stir-c",
+                "op": "stir",
+                "input": "left",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 37,
+            "lanes": {
+              "hand": {
+                "group": "stir-c",
+                "op": "stir",
+                "input": "down",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 38,
+            "lanes": {
+              "hand": {
+                "group": "stir-c",
+                "op": "stir",
+                "input": "right",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 39,
+            "lanes": {
+              "hand": {
+                "group": "stir-c",
+                "op": "stir",
+                "input": "primary",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 40,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 41,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 42,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 43,
+            "lanes": {
+              "mouse": {
+                "group": "season",
+                "op": "season",
+                "input": "spice:salt",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 44,
+            "lanes": {
+              "mouse": {
+                "group": "season",
+                "op": "season",
+                "input": "spice:sugar",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 45,
+            "lanes": {
+              "mouse": {
+                "group": "season",
+                "op": "season",
+                "input": "spice:oil",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 46,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 47,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 48,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 49,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 50,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 51,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 52,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 53,
+            "lanes": {
+              "hand": {
+                "group": "starch",
+                "op": "starch",
+                "input": "left",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 54,
+            "lanes": {
+              "hand": {
+                "group": "starch",
+                "op": "starch",
+                "input": "right",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 55,
+            "lanes": {
+              "hand": {
+                "group": "starch",
+                "op": "starch",
+                "input": "primary",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 56,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 57,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 58,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 59,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 60,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 61,
+            "lanes": {
+              "hand": {
+                "group": "plate",
+                "op": "plate",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 62,
+            "lanes": {
+              "hand": {
+                "group": "plate",
+                "op": "plate",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 63,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 64,
+            "rest": true,
+            "lanes": {}
+          }
+        ]
+      },
+      "steam": {
+        "id": "steam",
+        "dish": "steam",
+        "bpm": 120,
+        "groups": {
+          "season": {
+            "operation": "season",
+            "label": "顺序调味",
+            "parameters": {
+              "ingredient_id": "salt",
+              "amount": 0.1,
+              "mode": "precise"
+            }
+          },
+          "steam": {
+            "operation": "steam",
+            "label": "上笼 · 持续八拍",
+            "parameters": {}
+          },
+          "plate": {
+            "operation": "plate",
+            "label": "开笼出锅",
+            "parameters": {}
+          }
+        },
+        "beats": [
+          {
+            "t": 1,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 2,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 3,
+            "lanes": {
+              "mouse": {
+                "group": "season",
+                "op": "season",
+                "input": "spice:salt",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 4,
+            "lanes": {
+              "mouse": {
+                "group": "season",
+                "op": "season",
+                "input": "spice:sugar",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 5,
+            "lanes": {
+              "mouse": {
+                "group": "season",
+                "op": "season",
+                "input": "spice:oil",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 6,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 7,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 8,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 9,
+            "lanes": {
+              "hand": {
+                "group": "steam",
+                "op": "steam",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 10,
+            "lanes": {
+              "hand": {
+                "group": "steam",
+                "op": "steam",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 11,
+            "lanes": {
+              "hand": {
+                "group": "steam",
+                "op": "steam",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 12,
+            "lanes": {
+              "hand": {
+                "group": "steam",
+                "op": "steam",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 13,
+            "lanes": {
+              "hand": {
+                "group": "steam",
+                "op": "steam",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 14,
+            "lanes": {
+              "hand": {
+                "group": "steam",
+                "op": "steam",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 15,
+            "lanes": {
+              "hand": {
+                "group": "steam",
+                "op": "steam",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 16,
+            "lanes": {
+              "hand": {
+                "group": "steam",
+                "op": "steam",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 17,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 18,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 19,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 20,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 21,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 22,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 23,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 24,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 25,
+            "lanes": {
+              "hand": {
+                "group": "plate",
+                "op": "plate",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 26,
+            "lanes": {
+              "hand": {
+                "group": "plate",
+                "op": "plate",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 27,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 28,
+            "rest": true,
+            "lanes": {}
+          }
+        ]
+      },
+      "simmer": {
+        "id": "simmer",
+        "dish": "simmer",
+        "bpm": 120,
+        "groups": {
+          "ignite": {
+            "operation": "preheat",
+            "label": "热锅点火",
+            "parameters": {}
+          },
+          "boil": {
+            "operation": "boil",
+            "label": "炖煮 · 可以暂时离开",
+            "parameters": {}
+          },
+          "plate": {
+            "operation": "plate",
+            "label": "把握出锅",
+            "parameters": {}
+          }
+        },
+        "beats": [
+          {
+            "t": 1,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 2,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 3,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 4,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 5,
+            "lanes": {
+              "hand": {
+                "group": "ignite",
+                "op": "preheat",
+                "input": "primary",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 6,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 7,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 8,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 9,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 10,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 11,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 12,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 13,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 14,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 15,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 16,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 17,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 18,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 19,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 20,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 21,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 22,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 23,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 24,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 25,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 26,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 27,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 28,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 29,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 30,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 31,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 32,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 33,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 34,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 35,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 36,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 37,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 38,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 39,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 40,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 41,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 42,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 43,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 44,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 45,
+            "lanes": {
+              "hand": {
+                "group": "plate",
+                "op": "plate",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 46,
+            "lanes": {
+              "hand": {
+                "group": "plate",
+                "op": "plate",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 47,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 48,
+            "rest": true,
+            "lanes": {}
+          }
+        ]
+      }
+    },
+    "document_weights": {
+      "M1": 0,
+      "M2": 0.1,
+      "M3": 0.25,
+      "M4": 0.3,
+      "M5": 0.3,
+      "M6": 0.2,
+      "M7": 0.15
+    },
+    "document_rules": {
+      "timing_status": "PROPOSED",
+      "cut_sheet": "prepare",
+      "stove_sheet": "tomato_egg",
+      "steam_sheet": "steam",
+      "simmer_sheet": "simmer"
+    }
+  }
+}

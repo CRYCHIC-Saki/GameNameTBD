@@ -1,0 +1,1075 @@
+{
+  "meta": {
+    "name": "小镇食堂 · 世界小镇与菜系数据表",
+    "version": "0.1.0",
+    "nicknameScheme": [
+      { "rule": "地貌/气候", "example": "伦敦 -> 雾港（多雾港口）、雷克雅未克 -> 冰火城" },
+      { "rule": "古称/历史名", "example": "广州 -> 粤府、首尔 -> 汉阳、西安 -> 长安" },
+      { "rule": "饮食特征", "example": "长沙 -> 辣都、慕尼黑 -> 啤酒城" },
+      { "rule": "招牌梗/符号", "example": "纽约 -> 大苹果、芝加哥 -> 风城、巴黎 -> 光城" },
+      { "rule": "地标/物产", "example": "那不勒斯 -> 维苏威、马拉喀什 -> 红城" }
+    ],
+    "sanTiers": {
+      "1": { "label": "普通", "san": 0 },
+      "2": { "label": "挑战", "san": 10 },
+      "3": { "label": "硬核", "san": 20 },
+      "4": { "label": "天坑", "san": 35 }
+    },
+    "fields": {
+      "tier": "SAN 分级 1-4，见 sanTiers",
+      "flavor": "主导味(+复合味)，对应 7 味：酸甜苦辣咸鲜麻",
+      "tempC": "[最佳温度下限, 上限]，单位 ℃",
+      "aroma": "香味标签集合；[] 表示无香",
+      "texture": "口感描述（对应硬-嫩 / 韧-脆 / 弹-粘 三轴）",
+      "steps": "必需工序链",
+      "qte": "对应 QTE 类型：蓄力型/节奏型/窗口型/维持型/顺序型",
+      "san": "交付/食用后扣除的 SAN 值",
+      "note": "梗 / 彩蛋说明"
+    }
+  },
+  "towns": [
+    {
+      "id": "yuefu",
+      "nickname": "粤府",
+      "real": "广州",
+      "region": "中国·华南",
+      "culture": ["粤式", "广府"],
+      "prefer": ["鲜", "清淡", "原味", "镬气"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "baiqieji", "name": "白切鸡", "en": "White Cut Chicken", "tier": 1, "flavor": "鲜", "tempC": [50, 60], "aroma": ["姜葱香"], "texture": "皮爽肉滑骨带血", "steps": ["浸煮", "冰镇", "斩件"], "qte": ["维持型", "窗口型"], "san": 0, "note": "骨头带血才算地道" },
+        { "id": "changfen", "name": "广式肠粉", "en": "Rice Noodle Roll", "tier": 1, "flavor": "鲜甜", "tempC": [70, 80], "aroma": ["米香", "豉油香"], "texture": "滑嫩", "steps": ["磨浆", "蒸制", "卷起", "淋豉油"], "qte": ["维持型", "窗口型"], "san": 0, "note": "用广东酱油才有'地道'加成" },
+        { "id": "ganchaoniuhe", "name": "干炒牛河", "en": "Beef Chow Fun", "tier": 1, "flavor": "咸鲜", "tempC": [75, 85], "aroma": ["镬气"], "texture": "河粉弹、牛肉嫩", "steps": ["切河粉", "猛火快炒"], "qte": ["节奏型"], "san": 0, "note": "全靠'镬气'，火不够就散" },
+        { "id": "xiajiao", "name": "虾饺", "en": "Shrimp Dumpling", "tier": 1, "flavor": "鲜甜", "tempC": [70, 75], "aroma": ["虾香"], "texture": "皮薄弹牙", "steps": ["擀皮", "包褶", "蒸制"], "qte": ["顺序型", "窗口型"], "san": 0, "note": "要捏出十三褶" },
+        { "id": "longshi", "name": "龙虱（水蟑螂）", "en": "Water Bug", "tier": 3, "flavor": "咸香", "tempC": [80, 90], "aroma": ["卤香"], "texture": "脆壳", "steps": ["卤煮"], "qte": ["维持型"], "san": 20, "note": "广东人：这只是零食" }
+      ]
+    },
+    {
+      "id": "yanjing",
+      "nickname": "燕京",
+      "real": "北京",
+      "region": "中国·华北",
+      "culture": ["京式", "宫廷菜"],
+      "prefer": ["咸", "酱香", "浓郁"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "kaoya", "name": "北京烤鸭", "en": "Peking Duck", "tier": 1, "flavor": "咸鲜", "tempC": [80, 90], "aroma": ["果木香"], "texture": "皮脆肉嫩", "steps": ["吹皮", "挂炉烤", "片鸭"], "qte": ["维持型", "窗口型"], "san": 0, "note": "鸭皮蘸白糖，灵魂吃法" },
+        { "id": "zhajiangmian", "name": "炸酱面", "en": "Zhajiangmian", "tier": 1, "flavor": "咸鲜", "tempC": [70, 75], "aroma": ["酱香"], "texture": "面条弹韧", "steps": ["切菜码", "炒酱", "拌面"], "qte": ["节奏型"], "san": 0 },
+        { "id": "douzhi", "name": "豆汁", "en": "Fermented Mung Bean Drink", "tier": 3, "flavor": "酸馊", "tempC": [60, 70], "aroma": ["发酵酸香"], "texture": "浓滑", "steps": ["发酵", "加热"], "qte": ["维持型"], "san": 20, "note": "外地人：这是馊水；北京人：这是我的童年" },
+        { "id": "luzhu", "name": "卤煮", "en": "Luzhu Stew", "tier": 2, "flavor": "咸鲜", "tempC": [85, 95], "aroma": ["内脏香", "蒜香"], "texture": "软烂", "steps": ["炖煮"], "qte": ["维持型"], "san": 10, "note": "猪肠猪肺一锅炖" },
+        { "id": "chaogan", "name": "炒肝", "en": "Chaogan", "tier": 2, "flavor": "咸鲜", "tempC": [80, 90], "aroma": ["蒜香"], "texture": "浓稠", "steps": ["煮肠", "勾芡"], "qte": ["维持型"], "san": 10 }
+      ]
+    },
+    {
+      "id": "modu",
+      "nickname": "魔都",
+      "real": "上海",
+      "region": "中国·华东",
+      "culture": ["本帮菜"],
+      "prefer": ["甜", "浓油赤酱"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "hongshaorou", "name": "红烧肉", "en": "Braised Pork Belly", "tier": 1, "flavor": "甜咸", "tempC": [75, 85], "aroma": ["焦糖香", "酱香"], "texture": "软糯", "steps": ["炒糖色", "焖烧"], "qte": ["维持型"], "san": 0, "note": "浓油赤酱的代表" },
+        { "id": "xiaolongbao", "name": "小笼包", "en": "Soup Dumpling", "tier": 1, "flavor": "鲜甜", "tempC": [70, 80], "aroma": ["肉香"], "texture": "皮薄汁多", "steps": ["拌馅", "包褶", "蒸制"], "qte": ["顺序型", "窗口型"], "san": 0, "note": "一口爆汁，烫嘴自负" },
+        { "id": "zuixie", "name": "醉蟹", "en": "Drunken Crab", "tier": 2, "flavor": "咸鲜", "tempC": [10, 18], "aroma": ["酒香"], "texture": "膏糯", "steps": ["生腌", "冷藏"], "qte": ["顺序型"], "san": 10, "note": "生的、凉的、醉的" }
+      ]
+    },
+    {
+      "id": "tianfu",
+      "nickname": "天府",
+      "real": "成都",
+      "region": "中国·西南",
+      "culture": ["川菜"],
+      "prefer": ["麻辣", "复合味"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "mapodoufu", "name": "麻婆豆腐", "en": "Mapo Tofu", "tier": 1, "flavor": "麻辣鲜", "tempC": [80, 90], "aroma": ["花椒香", "豆瓣香"], "texture": "豆腐嫩", "steps": ["炒豆瓣", "下豆腐", "勾芡"], "qte": ["节奏型"], "san": 0, "note": "麻要够，烫才香" },
+        { "id": "huiguorou", "name": "回锅肉", "en": "Twice-Cooked Pork", "tier": 1, "flavor": "咸辣", "tempC": [75, 85], "aroma": ["豆瓣香", "蒜苗香"], "texture": "肉片微卷", "steps": ["煮肉", "切片", "快炒"], "qte": ["节奏型"], "san": 0, "note": "肉要炒出'灯盏窝'" },
+        { "id": "gongbaojiding", "name": "宫保鸡丁", "en": "Kung Pao Chicken", "tier": 1, "flavor": "荔枝味", "tempC": [70, 80], "aroma": ["干辣椒香"], "texture": "鸡丁嫩、花生脆", "steps": ["切丁", "炒", "勾芡"], "qte": ["节奏型"], "san": 0 },
+        { "id": "fuqifeipian", "name": "夫妻肺片", "en": "Sliced Beef in Chili Oil", "tier": 2, "flavor": "麻辣", "tempC": [15, 25], "aroma": ["红油香"], "texture": "脆韧", "steps": ["卤制", "切片", "拌红油"], "qte": ["顺序型"], "san": 10 }
+      ]
+    },
+    {
+      "id": "shancheng",
+      "nickname": "山城",
+      "real": "重庆",
+      "region": "中国·西南",
+      "culture": ["渝菜", "火锅"],
+      "prefer": ["麻辣", "重油"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "chongqinghuoguo", "name": "重庆火锅", "en": "Chongqing Hotpot", "tier": 1, "flavor": "麻辣", "tempC": [95, 110], "aroma": ["牛油香", "花椒香"], "texture": "脆嫩兼备", "steps": ["炒底料", "涮煮"], "qte": ["维持型", "节奏型"], "san": 0, "note": "九宫格，红油翻滚" },
+        { "id": "maoxuewang", "name": "毛血旺", "en": "Maoxuewang", "tier": 2, "flavor": "麻辣", "tempC": [85, 95], "aroma": ["红油香"], "texture": "嫩滑", "steps": ["煮血", "淋红油"], "qte": ["维持型"], "san": 10, "note": "鸭血、毛肚、黄喉" },
+        { "id": "kaoyu", "name": "万州烤鱼", "en": "Grilled Fish", "tier": 1, "flavor": "麻辣", "tempC": [85, 95], "aroma": ["炭火香"], "texture": "外焦里嫩", "steps": ["腌鱼", "烤制", "浇汁"], "qte": ["窗口型", "维持型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "ladu",
+      "nickname": "辣都",
+      "real": "长沙",
+      "region": "中国·华中",
+      "culture": ["湘菜"],
+      "prefer": ["辣", "香辣", "重口"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "choudoufu", "name": "长沙臭豆腐", "en": "Stinky Tofu", "tier": 2, "flavor": "咸辣", "tempC": [80, 90], "aroma": ["发酵臭香"], "texture": "外酥内嫩", "steps": ["腌制发酵", "油炸"], "qte": ["窗口型"], "san": 10, "note": "闻着臭，吃着香" },
+        { "id": "duojiaoyutou", "name": "剁椒鱼头", "en": "Steamed Fish Head with Chili", "tier": 1, "flavor": "鲜辣", "tempC": [85, 95], "aroma": ["剁椒香"], "texture": "鱼肉嫩", "steps": ["腌鱼头", "铺剁椒", "蒸制"], "qte": ["维持型"], "san": 0 },
+        { "id": "kouweixia", "name": "口味虾", "en": "Spicy Crayfish", "tier": 1, "flavor": "香辣", "tempC": [80, 90], "aroma": ["香料香"], "texture": "弹牙", "steps": ["刷洗", "炒制"], "qte": ["节奏型"], "san": 0 },
+        { "id": "lajiaochaorou", "name": "辣椒炒肉", "en": "Chili Fried Pork", "tier": 1, "flavor": "香辣", "tempC": [80, 90], "aroma": ["锅气"], "texture": "肉嫩椒脆", "steps": ["切片", "快炒"], "qte": ["节奏型"], "san": 0, "note": "湖南人的'家常菜天花板'" }
+      ]
+    },
+    {
+      "id": "huaiyang",
+      "nickname": "淮扬",
+      "real": "扬州",
+      "region": "中国·华东",
+      "culture": ["淮扬菜"],
+      "prefer": ["鲜", "清淡", "精致"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "yangzhouchaofan", "name": "扬州炒饭", "en": "Yangzhou Fried Rice", "tier": 1, "flavor": "咸鲜", "tempC": [75, 85], "aroma": ["蛋香"], "texture": "粒粒分明", "steps": ["备料", "猛火炒"], "qte": ["节奏型"], "san": 0 },
+        { "id": "shizitou", "name": "狮子头", "en": "Lion's Head Meatball", "tier": 1, "flavor": "鲜", "tempC": [80, 90], "aroma": ["肉香"], "texture": "入口即化", "steps": ["剁肉", "团制", "慢炖"], "qte": ["维持型"], "san": 0, "note": "肉要手剁，不能机打" },
+        { "id": "wensidoufu", "name": "文思豆腐", "en": "Wensi Tofu Soup", "tier": 1, "flavor": "鲜", "tempC": [80, 90], "aroma": [], "texture": "细如发丝", "steps": ["切丝（细碎度极限）", "煮汤"], "qte": ["节奏型"], "san": 0, "note": "刀工考试：豆腐切千丝" }
+      ]
+    },
+    {
+      "id": "qiantang",
+      "nickname": "钱塘",
+      "real": "杭州",
+      "region": "中国·华东",
+      "culture": ["浙菜"],
+      "prefer": ["鲜", "酸甜", "清淡"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "xihucuyu", "name": "西湖醋鱼", "en": "West Lake Vinegar Fish", "tier": 2, "flavor": "酸甜", "tempC": [70, 80], "aroma": ["蟹味香"], "texture": "鱼肉嫩", "steps": ["汆鱼", "浇糖醋汁"], "qte": ["窗口型"], "san": 10, "note": "全网著名'最难吃名菜'梗——做砸会被全网笑" },
+        { "id": "longjingxiaren", "name": "龙井虾仁", "en": "Longjing Shrimp", "tier": 1, "flavor": "鲜", "tempC": [75, 85], "aroma": ["茶香"], "texture": "虾仁弹", "steps": ["上浆", "滑炒"], "qte": ["节奏型"], "san": 0 },
+        { "id": "dongporou", "name": "东坡肉", "en": "Dongpo Pork", "tier": 1, "flavor": "甜咸", "tempC": [80, 90], "aroma": ["酱香", "酒香"], "texture": "酥烂", "steps": ["焯水", "慢炖"], "qte": ["维持型"], "san": 0 },
+        { "id": "sanchou", "name": "绍兴三臭", "en": "Three Stinky Delicacies", "tier": 4, "flavor": "咸臭", "tempC": [75, 90], "aroma": ["发酵臭香（极强）"], "texture": "软糯", "steps": ["长期发酵", "蒸或炸"], "qte": ["维持型", "窗口型"], "san": 35, "note": "臭豆腐 + 霉苋菜梗 + 臭冬瓜，'霉'到拉丝" }
+      ]
+    },
+    {
+      "id": "minhai",
+      "nickname": "闽海",
+      "real": "厦门",
+      "region": "中国·东南",
+      "culture": ["闽菜"],
+      "prefer": ["鲜", "汤", "海味"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "fotiaoqiang", "name": "佛跳墙", "en": "Buddha Jumps Over the Wall", "tier": 1, "flavor": "鲜", "tempC": [85, 95], "aroma": ["陈香"], "texture": "软糯胶质", "steps": ["备料", "坛煨"], "qte": ["维持型"], "san": 0, "note": "贵到佛都翻墙" },
+        { "id": "shachamian", "name": "沙茶面", "en": "Satay Noodle Soup", "tier": 1, "flavor": "鲜辣", "tempC": [80, 90], "aroma": ["沙茶香"], "texture": "面弹", "steps": ["熬沙茶汤", "烫面"], "qte": ["维持型"], "san": 0 },
+        { "id": "tusundong", "name": "土笋冻", "en": "Sandworm Jelly", "tier": 2, "flavor": "鲜", "tempC": [8, 15], "aroma": ["海味"], "texture": "弹滑", "steps": ["熬煮沙虫", "冷却成冻"], "qte": ["维持型"], "san": 10, "note": "其实不是笋，是'沙虫'" }
+      ]
+    },
+    {
+      "id": "huizhou",
+      "nickname": "徽州",
+      "real": "徽州（黄山）",
+      "region": "中国·华东",
+      "culture": ["徽菜"],
+      "prefer": ["鲜", "重油重色", "发酵"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "chougueiyu", "name": "臭鳜鱼", "en": "Stinky Mandarin Fish", "tier": 3, "flavor": "鲜臭", "tempC": [85, 95], "aroma": ["发酵香"], "texture": "蒜瓣肉", "steps": ["腌制发酵", "红烧"], "qte": ["维持型"], "san": 20, "note": "闻着臭，吃着是'鲜'" },
+        { "id": "maodoufu", "name": "毛豆腐", "en": "Hairy Tofu", "tier": 3, "flavor": "鲜", "tempC": [80, 90], "aroma": ["菌香"], "texture": "外酥内绵", "steps": ["接种发酵（长毛）", "煎制"], "qte": ["窗口型"], "san": 20, "note": "长毛的豆腐" },
+        { "id": "yipinguo", "name": "一品锅", "en": "Yipin Pot", "tier": 1, "flavor": "咸鲜", "tempC": [85, 95], "aroma": ["炖香"], "texture": "层次丰富", "steps": ["码放", "慢炖"], "qte": ["维持型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "qilu",
+      "nickname": "齐鲁",
+      "real": "济南",
+      "region": "中国·华北",
+      "culture": ["鲁菜"],
+      "prefer": ["咸鲜", "葱香", "厚重"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "jiuzhuandachang", "name": "九转大肠", "en": "Braised Pork Intestine", "tier": 2, "flavor": "咸鲜甜", "tempC": [80, 90], "aroma": ["酱香"], "texture": "软糯", "steps": ["洗净", "套肠", "红烧"], "qte": ["维持型"], "san": 10, "note": "处理内脏的功夫菜" },
+        { "id": "jianbing", "name": "煎饼卷大葱", "en": "Pancake with Scallion", "tier": 1, "flavor": "咸冲", "tempC": [60, 70], "aroma": ["葱香"], "texture": "韧脆", "steps": ["摊煎饼", "卷葱"], "qte": ["窗口型"], "san": 0 },
+        { "id": "paji", "name": "德州扒鸡", "en": "Dezhou Braised Chicken", "tier": 1, "flavor": "咸鲜", "tempC": [70, 80], "aroma": ["卤香"], "texture": "脱骨", "steps": ["卤煮"], "qte": ["维持型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "guandong",
+      "nickname": "关东",
+      "real": "哈尔滨",
+      "region": "中国·东北",
+      "culture": ["东北菜"],
+      "prefer": ["咸", "量大", "炖"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "guobaorou", "name": "锅包肉", "en": "Guo Bao Rou", "tier": 1, "flavor": "酸甜", "tempC": [75, 85], "aroma": ["焦香"], "texture": "外脆内嫩", "steps": ["挂糊", "炸制", "溜汁"], "qte": ["窗口型"], "san": 0, "note": "酸甜口，东北人的乡愁" },
+        { "id": "shazhucai", "name": "杀猪菜", "en": "Pig Killing Stew", "tier": 2, "flavor": "咸鲜", "tempC": [85, 95], "aroma": ["酸菜香"], "texture": "软烂", "steps": ["炖煮"], "qte": ["维持型"], "san": 10, "note": "酸菜、白肉、血肠" },
+        { "id": "chanyong", "name": "烤蚕蛹", "en": "Roasted Silkworm Pupa", "tier": 2, "flavor": "咸香", "tempC": [80, 90], "aroma": ["坚果香"], "texture": "外脆内糯", "steps": ["腌制", "烤或炸"], "qte": ["窗口型"], "san": 10, "note": "东北烧烤摊标配" },
+        { "id": "maodan", "name": "烤毛蛋", "en": "Roasted Fertilized Egg", "tier": 3, "flavor": "咸鲜", "tempC": [80, 90], "aroma": ["焦香"], "texture": "韧", "steps": ["煮", "烤"], "qte": ["窗口型"], "san": 20 }
+      ]
+    },
+    {
+      "id": "dianguo",
+      "nickname": "滇国",
+      "real": "昆明",
+      "region": "中国·西南",
+      "culture": ["滇菜"],
+      "prefer": ["酸", "鲜", "野生"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "guoqiaomixian", "name": "过桥米线", "en": "Crossing the Bridge Rice Noodles", "tier": 1, "flavor": "鲜", "tempC": [90, 100], "aroma": ["鸡汤香"], "texture": "米线滑", "steps": ["熬高汤", "烫料", "顺序下锅"], "qte": ["顺序型"], "san": 0, "note": "顺序错就废" },
+        { "id": "qiguoji", "name": "汽锅鸡", "en": "Steam Pot Chicken", "tier": 1, "flavor": "鲜", "tempC": [90, 100], "aroma": ["菌香"], "texture": "肉嫩", "steps": ["汽蒸"], "qte": ["维持型"], "san": 0 },
+        { "id": "sapie", "name": "撒撇", "en": "Sapie", "tier": 4, "flavor": "苦", "tempC": [15, 25], "aroma": ["香料香"], "texture": "凉拌", "steps": ["取牛苦肠水", "拌制"], "qte": ["顺序型"], "san": 35, "note": "牛苦肠水做的蘸水，苦到上头" },
+        { "id": "chongyan", "name": "虫宴（竹虫/蜂蛹）", "en": "Insect Feast", "tier": 4, "flavor": "咸香", "tempC": [75, 85], "aroma": ["坚果香"], "texture": "外酥内浆", "steps": ["油炸"], "qte": ["窗口型"], "san": 35 }
+      ]
+    },
+    {
+      "id": "miaoling",
+      "nickname": "苗岭",
+      "real": "贵阳",
+      "region": "中国·西南",
+      "culture": ["黔菜"],
+      "prefer": ["酸", "辣", "发酵"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "suantangyu", "name": "酸汤鱼", "en": "Sour Soup Fish", "tier": 1, "flavor": "酸辣", "tempC": [85, 95], "aroma": ["发酵酸香"], "texture": "鱼肉嫩", "steps": ["熬酸汤", "煮鱼"], "qte": ["维持型"], "san": 0, "note": "红酸汤是苗族灵魂" },
+        { "id": "changwangmian", "name": "肠旺面", "en": "Changwang Noodles", "tier": 2, "flavor": "辣鲜", "tempC": [80, 90], "aroma": ["红油香"], "texture": "面脆血嫩", "steps": ["煮面", "加肠旺"], "qte": ["节奏型"], "san": 10 },
+        { "id": "zhe'ergen", "name": "折耳根", "en": "Fish Mint", "tier": 3, "flavor": "腥", "tempC": [15, 25], "aroma": ["鱼腥气"], "texture": "脆", "steps": ["凉拌"], "qte": ["顺序型"], "san": 20, "note": "一半人狂爱，一半人劝退" }
+      ]
+    },
+    {
+      "id": "qingcheng",
+      "nickname": "青城",
+      "real": "呼和浩特",
+      "region": "中国·塞北",
+      "culture": ["蒙古餐", "塞北"],
+      "prefer": ["鲜", "原味", "奶香"],
+      "darkTown": false,
+      "note": "主角家乡候选地",
+      "dishes": [
+        { "id": "shoubamrou", "name": "手把肉", "en": "Boiled Mutton", "tier": 1, "flavor": "鲜", "tempC": [70, 80], "aroma": ["羊肉香"], "texture": "脱骨嫩", "steps": ["清炖"], "qte": ["维持型"], "san": 0, "note": "只用盐，吃的就是原味" },
+        { "id": "kaoquanyang", "name": "烤全羊", "en": "Roast Whole Lamb", "tier": 1, "flavor": "咸香", "tempC": [80, 95], "aroma": ["炭火香"], "texture": "皮脆肉嫩", "steps": ["腌制", "慢烤"], "qte": ["维持型", "窗口型"], "san": 0 },
+        { "id": "naicha", "name": "蒙古奶茶 + 奶豆腐", "en": "Milk Tea & Dried Curd", "tier": 1, "flavor": "咸", "tempC": [80, 90], "aroma": ["奶香"], "texture": "奶豆腐韧", "steps": ["煮茶", "兑奶", "加盐"], "qte": ["顺序型"], "san": 0, "note": "咸奶茶，奶豆腐嚼着吃" },
+        { "id": "xuechang", "name": "血肠", "en": "Blood Sausage", "tier": 2, "flavor": "咸鲜", "tempC": [80, 90], "aroma": ["肉香"], "texture": "糯", "steps": ["灌肠", "煮"], "qte": ["维持型"], "san": 10 }
+      ]
+    },
+    {
+      "id": "tianshan",
+      "nickname": "天山",
+      "real": "乌鲁木齐",
+      "region": "中国·西北",
+      "culture": ["新疆菜", "中亚"],
+      "prefer": ["香料", "孜然", "烤肉"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "dapanji", "name": "大盘鸡", "en": "Big Plate Chicken", "tier": 1, "flavor": "香辣", "tempC": [85, 95], "aroma": ["孜然香", "花椒香"], "texture": "土豆软糯、鸡嫩", "steps": ["炒鸡", "炖", "加面片"], "qte": ["维持型"], "san": 0 },
+        { "id": "yangrouchuan", "name": "羊肉串", "en": "Lamb Skewer", "tier": 1, "flavor": "咸香", "tempC": [85, 95], "aroma": ["孜然香", "炭火香"], "texture": "外焦里嫩", "steps": ["腌制", "炭烤"], "qte": ["窗口型"], "san": 0 },
+        { "id": "zhuafan", "name": "手抓饭", "en": "Pilaf", "tier": 1, "flavor": "咸甜", "tempC": [75, 85], "aroma": ["羊油香", "胡萝卜香"], "texture": "米粒分明", "steps": ["炒羊肉", "焖饭"], "qte": ["维持型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "xueyu",
+      "nickname": "雪域",
+      "real": "拉萨",
+      "region": "中国·青藏",
+      "culture": ["藏餐"],
+      "prefer": ["原味", "奶", "青稞"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "suyoucha", "name": "酥油茶", "en": "Butter Tea", "tier": 1, "flavor": "咸", "tempC": [85, 95], "aroma": ["奶香", "茶香"], "texture": "醇厚", "steps": ["打茶"], "qte": ["维持型"], "san": 0 },
+        { "id": "zanba", "name": "糌粑", "en": "Tsampa", "tier": 1, "flavor": "淡", "tempC": [40, 60], "aroma": ["青稞香"], "texture": "粉糯", "steps": ["炒青稞", "磨粉", "捏团"], "qte": ["顺序型"], "san": 0 },
+        { "id": "fengganniurou", "name": "风干牦牛肉", "en": "Dried Yak Meat", "tier": 2, "flavor": "咸鲜", "tempC": [15, 25], "aroma": ["肉香"], "texture": "干韧", "steps": ["风干"], "qte": ["维持型"], "san": 10 }
+      ]
+    },
+    {
+      "id": "changan",
+      "nickname": "长安",
+      "real": "西安",
+      "region": "中国·西北",
+      "culture": ["陕菜"],
+      "prefer": ["咸", "面食", "香辣"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "roujiamo", "name": "肉夹馍", "en": "Roujiamo", "tier": 1, "flavor": "咸香", "tempC": [70, 80], "aroma": ["腊汁香"], "texture": "馍脆肉烂", "steps": ["卤肉", "烤馍", "剁肉夹入"], "qte": ["顺序型"], "san": 0 },
+        { "id": "yangroupaomo", "name": "羊肉泡馍", "en": "Mutton Soaked Bread", "tier": 1, "flavor": "咸鲜", "tempC": [85, 95], "aroma": ["羊肉香"], "texture": "馍筋汤浓", "steps": ["掰馍", "煮制"], "qte": ["顺序型", "维持型"], "san": 0, "note": "馍要自己掰成黄豆大" },
+        { "id": "liangpi", "name": "凉皮", "en": "Liangpi", "tier": 1, "flavor": "酸辣", "tempC": [10, 20], "aroma": ["醋香", "辣油香"], "texture": "筋道", "steps": ["蒸皮", "切条", "调汁"], "qte": ["节奏型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "hanjiang",
+      "nickname": "韩江",
+      "real": "潮汕",
+      "region": "中国·华南",
+      "culture": ["潮汕菜"],
+      "prefer": ["鲜", "原味", "生腌"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "niurouwan", "name": "潮汕牛肉丸", "en": "Beef Ball", "tier": 1, "flavor": "鲜", "tempC": [85, 95], "aroma": ["牛肉香"], "texture": "能跳起来", "steps": ["捶打", "挤丸", "煮"], "qte": ["节奏型"], "san": 0, "note": "能弹起来砸到天花板" },
+        { "id": "shengyanxuehan", "name": "生腌血蚶", "en": "Blood Clam", "tier": 3, "flavor": "咸鲜", "tempC": [8, 15], "aroma": ["海腥"], "texture": "滑嫩带血", "steps": ["生腌"], "qte": ["顺序型"], "san": 20, "note": "咬开带血，一口鲜" },
+        { "id": "lue", "name": "卤鹅", "en": "Braised Goose", "tier": 1, "flavor": "咸鲜", "tempC": [70, 80], "aroma": ["卤香"], "texture": "紧实", "steps": ["卤制"], "qte": ["维持型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "edo",
+      "nickname": "江户",
+      "real": "东京",
+      "region": "日本·关东",
+      "culture": ["日式"],
+      "prefer": ["鲜", "原味", "生食"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "sushi", "name": "寿司", "en": "Sushi", "tier": 1, "flavor": "鲜", "tempC": [35, 40], "aroma": ["海味", "醋饭香"], "texture": "入口即化", "steps": ["煮醋饭", "握制", "放料"], "qte": ["顺序型", "窗口型"], "san": 0, "note": "温度是灵魂，太凉就废" },
+        { "id": "ramen", "name": "拉面", "en": "Ramen", "tier": 1, "flavor": "鲜咸", "tempC": [85, 95], "aroma": ["猪骨香"], "texture": "面弹", "steps": ["熬汤", "煮面", "摆料"], "qte": ["维持型"], "san": 0 },
+        { "id": "natto", "name": "纳豆", "en": "Natto", "tier": 2, "flavor": "鲜氨", "tempC": [40, 50], "aroma": ["氨味"], "texture": "拉丝黏稠", "steps": ["发酵", "搅拌"], "qte": ["节奏型"], "san": 10, "note": "搅拌拉丝，拉得越长越香" },
+        { "id": "shirako", "name": "白子", "en": "Shirako", "tier": 3, "flavor": "鲜", "tempC": [60, 70], "aroma": ["海味"], "texture": "绵滑", "steps": ["处理", "汆烫"], "qte": ["窗口型"], "san": 20, "note": "其实是鱼的精囊" },
+        { "id": "fugu", "name": "河豚", "en": "Fugu", "tier": 3, "flavor": "鲜", "tempC": [60, 70], "aroma": ["海味"], "texture": "紧实弹牙", "steps": ["精细处理（去毒）", "薄切"], "qte": ["顺序型", "窗口型"], "san": 20, "note": "处理失误 = game over" }
+      ]
+    },
+    {
+      "id": "naniwa",
+      "nickname": "浪速",
+      "real": "大阪",
+      "region": "日本·关西",
+      "culture": ["日式", "关西"],
+      "prefer": ["酱汁", "面糊", "酥脆"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "okonomiyaki", "name": "大阪烧", "en": "Okonomiyaki", "tier": 1, "flavor": "咸甜", "tempC": [80, 90], "aroma": ["酱香"], "texture": "外酥内软", "steps": ["调面糊", "煎制", "刷酱"], "qte": ["进入顺序型（投料顺序）", "窗口型"], "san": 0 },
+        { "id": "takoyaki", "name": "章鱼烧", "en": "Takoyaki", "tier": 1, "flavor": "咸鲜", "tempC": [85, 95], "aroma": ["酱香", "海苔香"], "texture": "外脆内流心", "steps": ["调糊", "翻转（窗口型）"], "qte": ["节奏型", "窗口型"], "san": 0, "note": "翻转速度是技术活" }
+      ]
+    },
+    {
+      "id": "gudu",
+      "nickname": "古都",
+      "real": "京都",
+      "region": "日本·关西",
+      "culture": ["日式", "怀石"],
+      "prefer": ["淡", "精致", "季节性"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "kaiseki", "name": "怀石料理", "en": "Kaiseki", "tier": 1, "flavor": "鲜", "tempC": [60, 80], "aroma": ["时令香"], "texture": "细腻", "steps": ["多道工序（顺序型）", "摆盘"], "qte": ["顺序型", "维持型"], "san": 0, "note": "摆盘是唯一'评分'的摆盘" },
+        { "id": "yudoufu", "name": "汤豆腐", "en": "Yudofu", "tier": 1, "flavor": "淡", "tempC": [85, 95], "aroma": ["豆香"], "texture": "嫩滑", "steps": ["炖煮"], "qte": ["维持型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "hanyang",
+      "nickname": "汉阳",
+      "real": "首尔",
+      "region": "韩国",
+      "culture": ["韩式"],
+      "prefer": ["辣", "发酵", "生食"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "paocai", "name": "泡菜", "en": "Kimchi", "tier": 1, "flavor": "酸辣", "tempC": [8, 15], "aroma": ["发酵香"], "texture": "脆", "steps": ["腌制", "发酵"], "qte": ["顺序型"], "san": 0 , "note": "万物皆可泡菜"},
+        { "id": "budaejjigae", "name": "部队锅", "en": "Budae Jjigae", "tier": 1, "flavor": "辣鲜", "tempC": [90, 100], "aroma": ["辣汤香"], "texture": "丰富", "steps": ["码放", "煮"], "qte": ["维持型"], "san": 0, "note": "泡菜+午餐肉+芝士的混搭" },
+        { "id": "hongeo", "name": "洪鱼脍", "en": "Hongeo (Fermented Skate)", "tier": 4, "flavor": "氨鲜", "tempC": [15, 25], "aroma": ["氨味（极强）"], "texture": "弹韧", "steps": ["长期发酵", "切盘"], "qte": ["顺序型"], "san": 35, "note": "吃完身上氨味散不掉三天 → 游戏内 3 天 debuff" },
+        { "id": "sannakji", "name": "活章鱼", "en": "Sannakji", "tier": 3, "flavor": "鲜", "tempC": [10, 20], "aroma": ["海味"], "texture": "吸盘还在动", "steps": ["现切", "立即上桌"], "qte": ["窗口型（极快）"], "san": 20, "note": "有窒息风险，咀嚼要快" },
+        { "id": "beondegi", "name": "蚕蛹", "en": "Beondegi", "tier": 2, "flavor": "咸香", "tempC": [80, 90], "aroma": ["坚果香"], "texture": "外脆内浆", "steps": ["蒸煮", "调味"], "qte": ["维持型"], "san": 10 }
+      ]
+    },
+    {
+      "id": "hangdu",
+      "nickname": "港都",
+      "real": "釜山",
+      "region": "韩国",
+      "culture": ["韩式", "海港"],
+      "prefer": ["鲜", "海鲜", "汤饭"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "dwaejigukbap", "name": "猪肉汤饭", "en": "Dwaeji Gukbap", "tier": 1, "flavor": "鲜", "tempC": [90, 100], "aroma": ["猪骨香"], "texture": "肉软饭糯", "steps": ["熬汤", "煮肉"], "qte": ["维持型"], "san": 0 },
+        { "id": "hoe", "name": "生鱼片", "en": "Hoe", "tier": 2, "flavor": "鲜", "tempC": [5, 12], "aroma": ["海味"], "texture": "弹牙", "steps": ["现杀", "薄切", "摆盘"], "qte": ["窗口型"], "san": 10 }
+      ]
+    },
+    {
+      "id": "tiansh",
+      "nickname": "天使城",
+      "real": "曼谷",
+      "region": "泰国",
+      "culture": ["泰式"],
+      "prefer": ["酸辣", "香茅", "甜"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "dongyingong", "name": "冬阴功汤", "en": "Tom Yum Goong", "tier": 1, "flavor": "酸辣鲜", "tempC": [90, 100], "aroma": ["香茅香", "柠檬叶香"], "texture": "虾弹", "steps": ["炒香", "煮汤"], "qte": ["维持型"], "san": 0 },
+        { "id": "padthai", "name": "泰式炒河粉", "en": "Pad Thai", "tier": 1, "flavor": "酸甜", "tempC": [80, 90], "aroma": ["罗望子香", "花生香"], "texture": "河粉弹", "steps": ["炒", "拌花生碎"], "qte": ["节奏型"], "san": 0 },
+        { "id": "lvkali", "name": "绿咖喱", "en": "Green Curry", "tier": 1, "flavor": "辣甜", "tempC": [85, 95], "aroma": ["椰香", "青咖喱香"], "texture": "浓郁", "steps": ["炒咖喱膏", "加椰奶"], "qte": ["维持型"], "san": 0 },
+        { "id": "liulian", "name": "榴莲", "en": "Durian", "tier": 3, "flavor": "甜", "tempC": [25, 30], "aroma": ["浓郁果香（极具争议）"], "texture": "绵软", "steps": ["开壳"], "qte": ["窗口型"], "san": 20, "note": "禁入室内，酒店警告牌常客" },
+        { "id": "xiajiang", "name": "虾酱 + 臭豆", "en": "Belacan & Petai", "tier": 3, "flavor": "咸鲜", "tempC": [80, 90], "aroma": ["发酵虾香"], "texture": "脆", "steps": ["炒制"], "qte": ["节奏型"], "san": 20, "note": "气味武器组合" }
+      ]
+    },
+    {
+      "id": "lanna",
+      "nickname": "兰纳",
+      "real": "清迈",
+      "region": "泰国·北部",
+      "culture": ["泰北"],
+      "prefer": ["酸", "香草", "椰"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "khaosoi", "name": "咖喱面", "en": "Khao Soi", "tier": 1, "flavor": "辣椰", "tempC": [85, 95], "aroma": ["咖喱香", "椰香"], "texture": "面弹", "steps": ["熬咖喱", "煮面", "加脆面"], "qte": ["维持型"], "san": 0 },
+        { "id": "kaoji", "name": "泰北烤鸡", "en": "Gai Yang", "tier": 1, "flavor": "咸香", "tempC": [85, 95], "aroma": ["香茅香"], "texture": "皮脆肉嫩", "steps": ["腌", "炭烤"], "qte": ["窗口型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "shenglong",
+      "nickname": "升龙",
+      "real": "河内",
+      "region": "越南",
+      "culture": ["越南菜"],
+      "prefer": ["鲜", "清淡", "香草"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "pho", "name": "越南河粉", "en": "Pho", "tier": 1, "flavor": "鲜", "tempC": [90, 100], "aroma": ["牛骨香", "香草香"], "texture": "河粉滑", "steps": ["熬汤数小时", "烫粉", "摆香草"], "qte": ["维持型"], "san": 0 },
+        { "id": "chunjuan", "name": "越南春卷", "en": "Spring Roll", "tier": 1, "flavor": "鲜", "tempC": [15, 25], "aroma": ["薄荷香"], "texture": "米皮脆", "steps": ["卷制", "蘸酱"], "qte": ["顺序型"], "san": 0 },
+        { "id": "maodan_vn", "name": "鸭仔蛋", "en": "Hột Vịt Lộn", "tier": 3, "flavor": "咸鲜", "tempC": [70, 80], "aroma": ["蛋香"], "texture": "可见雏形", "steps": ["煮", "敲壳"], "qte": ["窗口型"], "san": 20 },
+        { "id": "mamtom", "name": "虾酱", "en": "Mắm Tôm", "tier": 3, "flavor": "咸鲜", "tempC": [80, 90], "aroma": ["发酵虾香（极强）"], "texture": "糊状", "steps": ["炒制"], "qte": ["节奏型"], "san": 20 }
+      ]
+    },
+    {
+      "id": "shicheng",
+      "nickname": "狮城",
+      "real": "新加坡",
+      "region": "东南亚",
+      "culture": ["南洋", "华人", "马来"],
+      "prefer": ["鲜", "复合", "香辣"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "hainanjifan", "name": "海南鸡饭", "en": "Hainanese Chicken Rice", "tier": 1, "flavor": "鲜", "tempC": [60, 75], "aroma": ["鸡油香", "姜香"], "texture": "肉滑饭香", "steps": ["浸鸡", "鸡油饭", "斩件"], "qte": ["维持型", "窗口型"], "san": 0 },
+        { "id": "lajiaoxie", "name": "辣椒螃蟹", "en": "Chili Crab", "tier": 1, "flavor": "甜辣", "tempC": [80, 90], "aroma": ["蟹香"], "texture": "蟹肉弹", "steps": ["炒蟹", "收汁"], "qte": ["节奏型"], "san": 0 },
+        { "id": "rougucha", "name": "肉骨茶", "en": "Bak Kut Teh", "tier": 1, "flavor": "咸鲜", "tempC": [90, 100], "aroma": ["胡椒香", "药材香"], "texture": "排骨软烂", "steps": ["炖煮"], "qte": ["维持型"], "san": 0 },
+        { "id": "laksa", "name": "叻沙", "en": "Laksa", "tier": 1, "flavor": "辣椰鲜", "tempC": [85, 95], "aroma": ["椰香", "虾香"], "texture": "浓郁", "steps": ["熬汤", "煮面"], "qte": ["维持型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "yecheng",
+      "nickname": "椰城",
+      "real": "雅加达",
+      "region": "印尼",
+      "culture": ["印尼菜"],
+      "prefer": ["甜", "香料", "椰"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "shadie", "name": "沙嗲", "en": "Satay", "tier": 1, "flavor": "甜咸", "tempC": [85, 95], "aroma": ["花生酱香", "炭火香"], "texture": "肉串嫩", "steps": ["腌", "炭烤", "蘸花生酱"], "qte": ["窗口型"], "san": 0 },
+        { "id": "nasi", "name": "印尼炒饭", "en": "Nasi Goreng", "tier": 1, "flavor": "咸鲜", "tempC": [80, 90], "aroma": ["甜酱油香"], "texture": "粒粒分明", "steps": ["炒", "配煎蛋"], "qte": ["节奏型"], "san": 0 },
+        { "id": "rendang", "name": "仁当牛肉", "en": "Rendang", "tier": 1, "flavor": "辣", "tempC": [80, 90], "aroma": ["椰香", "香料香"], "texture": "干香", "steps": ["慢炖收汁"], "qte": ["维持型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "lusong",
+      "nickname": "吕宋",
+      "real": "马尼拉",
+      "region": "菲律宾",
+      "culture": ["菲式"],
+      "prefer": ["酸", "咸", "烤"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "lechon", "name": "烤乳猪", "en": "Lechon", "tier": 1, "flavor": "咸香", "tempC": [80, 95], "aroma": ["炭火香"], "texture": "皮脆肉嫩", "steps": ["填塞香料", "炭烤慢转"], "qte": ["维持型"], "san": 0 },
+        { "id": "balut", "name": "毛蛋", "en": "Balut", "tier": 3, "flavor": "咸鲜", "tempC": [70, 80], "aroma": ["蛋香"], "texture": "可见雏形", "steps": ["孵化", "煮", "敲壳"], "qte": ["窗口型"], "san": 20, "note": "孵化中的鸭蛋，与南京'活珠子'可对赌" },
+        { "id": "sinigang", "name": "酸汤", "en": "Sinigang", "tier": 1, "flavor": "酸", "tempC": [85, 95], "aroma": ["罗望子香"], "texture": "汤鲜", "steps": ["煮汤", "加酸果"], "qte": ["维持型"], "san": 0 },
+        { "id": "adobo", "name": "阿斗波", "en": "Adobo", "tier": 1, "flavor": "酸咸", "tempC": [80, 90], "aroma": ["蒜香", "醋香"], "texture": "肉烂", "steps": ["腌", "焖"], "qte": ["维持型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "malaba",
+      "nickname": "马拉巴",
+      "real": "孟买",
+      "region": "印度·西海岸",
+      "culture": ["印度菜"],
+      "prefer": ["香料", "咖喱", "辣"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "huangyouji", "name": "黄油鸡", "en": "Butter Chicken", "tier": 1, "flavor": "辣甜", "tempC": [85, 95], "aroma": ["香料香", "奶油香"], "texture": "浓郁", "steps": ["腌", "烤", "炖咖喱"], "qte": ["维持型"], "san": 0 },
+        { "id": "masala", "name": "玛莎拉综合香料", "en": "Masala", "tier": 1, "flavor": "辛香", "tempC": [80, 90], "aroma": ["复合香料香"], "texture": "取决于做法", "steps": ["炒香料"], "qte": ["节奏型"], "san": 0 },
+        { "id": "ladai", "name": "印度拉茶", "en": "Masala Chai", "tier": 1, "flavor": "甜", "tempC": [85, 95], "aroma": ["茶香", "豆蔻香"], "texture": "顺滑", "steps": ["煮茶", "拉茶"], "qte": ["节奏型"], "san": 0, "note": "拉茶靠'拉'来混合" }
+      ]
+    },
+    {
+      "id": "hongbao",
+      "nickname": "红堡",
+      "real": "德里",
+      "region": "印度·北部",
+      "culture": ["印度菜", "莫卧儿"],
+      "prefer": ["香料", "米饭", "烤肉"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "biryani", "name": "印度香饭", "en": "Biryani", "tier": 1, "flavor": "辛香", "tempC": [85, 95], "aroma": ["藏红花香", "香料香"], "texture": "米粒分明", "steps": ["腌肉", "分层", "焖饭"], "qte": ["维持型", "顺序型"], "san": 0 },
+        { "id": "tandoori", "name": "坦都里烤鸡", "en": "Tandoori Chicken", "tier": 1, "flavor": "辣", "tempC": [85, 95], "aroma": ["香料香", "炭火香"], "texture": "外焦里嫩", "steps": ["腌", "泥炉烤"], "qte": ["窗口型", "维持型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "shuanglu",
+      "nickname": "双陆",
+      "real": "伊斯坦布尔",
+      "region": "土耳其",
+      "culture": ["土耳其菜", "跨欧亚"],
+      "prefer": ["烤肉", "香料", "甜"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "kebab", "name": "土耳其烤肉", "en": "Kebab", "tier": 1, "flavor": "咸香", "tempC": [85, 95], "aroma": ["炭火香", "香料香"], "texture": "外焦里嫩", "steps": ["腌", "串烤", "削片"], "qte": ["窗口型"], "san": 0 },
+        { "id": "bingqilin", "name": "土耳其冰淇淋", "en": "Dondurma", "tier": 1, "flavor": "甜", "tempC": [-10, 0], "aroma": ["奶香"], "texture": "极韧拉丝", "steps": ["捶打", "拉抻"], "qte": ["节奏型"], "san": 0, "note": "老板会耍你（QTE 恶作剧）" },
+        { "id": "baklava", "name": "果仁蜜饼", "en": "Baklava", "tier": 1, "flavor": "甜", "tempC": [20, 30], "aroma": ["坚果香", "蜂蜜香"], "texture": "层层酥", "steps": ["叠酥皮", "浇糖浆"], "qte": ["顺序型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "xuesong",
+      "nickname": "雪松",
+      "real": "贝鲁特",
+      "region": "黎巴嫩",
+      "culture": ["中东菜"],
+      "prefer": ["酸", "橄榄油", "香草"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "hummus", "name": "鹰嘴豆泥", "en": "Hummus", "tier": 1, "flavor": "酸", "tempC": [15, 25], "aroma": ["芝麻酱香", "柠檬香"], "texture": "绵密", "steps": ["煮豆", "打泥"], "qte": ["节奏型"], "san": 0 },
+        { "id": "shawarma", "name": "沙威玛", "en": "Shawarma", "tier": 1, "flavor": "咸香", "tempC": [85, 95], "aroma": ["香料香"], "texture": "外焦里嫩", "steps": ["腌", "旋转烤", "削片"], "qte": ["窗口型"], "san": 0 },
+        { "id": "tabbouleh", "name": "塔布勒沙拉", "en": "Tabbouleh", "tier": 1, "flavor": "酸", "tempC": [15, 25], "aroma": ["薄荷香", "香芹香"], "texture": "清爽", "steps": ["切碎（高细碎度）", "拌"], "qte": ["节奏型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "meiguicheng",
+      "nickname": "玫瑰城",
+      "real": "德黑兰",
+      "region": "伊朗·波斯",
+      "culture": ["波斯菜"],
+      "prefer": ["藏红花", "酸", "米饭"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "koobideh", "name": "波斯烤肉串", "en": "Koobideh", "tier": 1, "flavor": "咸香", "tempC": [85, 95], "aroma": ["炭火香"], "texture": "肉糜嫩", "steps": ["剁肉糜", "串烤"], "qte": ["窗口型"], "san": 0 },
+        { "id": "zanghonghua", "name": "藏红花饭", "en": "Saffron Rice", "tier": 1, "flavor": "淡香", "tempC": [75, 85], "aroma": ["藏红花香"], "texture": "米粒分明", "steps": ["煮饭", "撒藏红花", "焖"], "qte": ["维持型"], "san": 0 },
+        { "id": "ghormeh", "name": "香草炖肉", "en": "Ghormeh Sabzi", "tier": 1, "flavor": "酸", "tempC": [85, 95], "aroma": ["香草香"], "texture": "肉烂", "steps": ["炒香草", "慢炖"], "qte": ["维持型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "shahai",
+      "nickname": "沙海",
+      "real": "迪拜",
+      "region": "阿拉伯",
+      "culture": ["阿拉伯菜"],
+      "prefer": ["香料", "烤肉", "甜"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "yazao", "name": "椰枣", "en": "Dates", "tier": 1, "flavor": "甜", "tempC": [20, 30], "aroma": ["果香"], "texture": "绵软", "steps": ["晾晒"], "qte": ["窗口型"], "san": 0 },
+        { "id": "mandi", "name": "曼迪羊肉饭", "en": "Mandi", "tier": 1, "flavor": "咸香", "tempC": [85, 95], "aroma": ["香料香", "炭火香"], "texture": "肉烂饭香", "steps": ["坑烤", "焖饭"], "qte": ["维持型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "qianta",
+      "nickname": "千塔",
+      "real": "开罗",
+      "region": "埃及",
+      "culture": ["中东菜", "埃及菜"],
+      "prefer": ["豆", "面", "酸"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "koshari", "name": "库莎丽", "en": "Koshari", "tier": 1, "flavor": "酸辣", "tempC": [75, 85], "aroma": ["番茄香", "炸洋葱香"], "texture": "碳水大杂烩", "steps": ["煮面", "煮豆", "叠层", "浇汁"], "qte": ["顺序型"], "san": 0, "note": "面+米+扁豆+炸洋葱，碳水炸弹" },
+        { "id": "kaogezi", "name": "烤鸽子", "en": "Roast Pigeon", "tier": 2, "flavor": "咸香", "tempC": [85, 95], "aroma": ["炭火香"], "texture": "皮脆肉嫩", "steps": ["填塞", "烤制"], "qte": ["维持型"], "san": 10 }
+      ]
+    },
+    {
+      "id": "hongcheng",
+      "nickname": "红城",
+      "real": "马拉喀什",
+      "region": "摩洛哥",
+      "culture": ["北非菜"],
+      "prefer": ["香料", "甜咸", "慢炖"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "tagine", "name": "塔吉锅", "en": "Tagine", "tier": 1, "flavor": "甜咸", "tempC": [85, 95], "aroma": ["香料香", "果干香"], "texture": "酥烂", "steps": ["码放", "锥形锅慢炖"], "qte": ["维持型"], "san": 0 },
+        { "id": "couscous", "name": "蒸粗麦粉", "en": "Couscous", "tier": 1, "flavor": "淡香", "tempC": [75, 85], "aroma": ["麦香"], "texture": "松软", "steps": ["蒸制"], "qte": ["维持型"], "san": 0 },
+        { "id": "beifeidan", "name": "北非蛋", "en": "Shakshuka", "tier": 1, "flavor": "酸辣", "tempC": [80, 90], "aroma": ["番茄香", "孜然香"], "texture": "蛋半熟", "steps": ["炒番茄", "打入蛋"], "qte": ["窗口型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "gaoyuan",
+      "nickname": "高原城",
+      "real": "亚的斯亚贝巴",
+      "region": "埃塞俄比亚",
+      "culture": ["东非菜"],
+      "prefer": ["酸", "辣", "手抓"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "injera", "name": "英吉拉", "en": "Injera", "tier": 1, "flavor": "酸", "tempC": [30, 45], "aroma": ["发酵酸香"], "texture": "海绵状", "steps": ["发酵苔麸", "烙制"], "qte": ["维持型"], "san": 0, "note": "用饼当餐具，手抓着吃" },
+        { "id": "doro", "name": "多罗瓦特炖鸡", "en": "Doro Wat", "tier": 2, "flavor": "辣", "tempC": [85, 95], "aroma": ["香料香", "辣椒香"], "texture": "浓郁", "steps": ["炒洋葱", "炖鸡"], "qte": ["维持型"], "san": 10 },
+        { "id": "kitfo", "name": "生牛肉泥", "en": "Kitfo", "tier": 3, "flavor": "辣", "tempC": [30, 45], "aroma": ["香料香"], "texture": "生肉糜", "steps": ["剁生肉", "拌香料"], "qte": ["节奏型"], "san": 20 }
+      ]
+    },
+    {
+      "id": "hujiao",
+      "nickname": "胡椒港",
+      "real": "拉各斯",
+      "region": "尼日利亚",
+      "culture": ["西非菜"],
+      "prefer": ["辣", "胡椒", "炖"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "peppersoup", "name": "胡椒汤", "en": "Pepper Soup", "tier": 1, "flavor": "辣", "tempC": [90, 100], "aroma": ["胡椒香", "香草香"], "texture": "清汤", "steps": ["熬汤", "加香料"], "qte": ["维持型"], "san": 0 },
+        { "id": "jollof", "name": "乔洛夫饭", "en": "Jollof Rice", "tier": 1, "flavor": "辣", "tempC": [80, 90], "aroma": ["番茄香", "香料香"], "texture": "饭粒入味", "steps": ["炒番茄糊", "焖饭"], "qte": ["维持型"], "san": 0, "note": "西非各国为'谁家的 jollof 最好吃'常年吵" }
+      ]
+    },
+    {
+      "id": "haowang",
+      "nickname": "好望城",
+      "real": "开普敦",
+      "region": "南非",
+      "culture": ["南非菜"],
+      "prefer": ["烤", "咖喱", "腌"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "braai", "name": "南非烧烤", "en": "Braai", "tier": 1, "flavor": "咸香", "tempC": [85, 95], "aroma": ["炭火香"], "texture": "外焦里嫩", "steps": ["炭火烤"], "qte": ["窗口型"], "san": 0 },
+        { "id": "bobotie", "name": "波波蒂", "en": "Bobotie", "tier": 1, "flavor": "甜咸辣", "tempC": [80, 90], "aroma": ["咖喱香"], "texture": "肉末嫩", "steps": ["炒肉末", "覆盖蛋奶", "烤"], "qte": ["维持型"], "san": 0 },
+        { "id": "biltong", "name": "比尔通肉干", "en": "Biltong", "tier": 2, "flavor": "咸鲜", "tempC": [15, 25], "aroma": ["肉香"], "texture": "干韧", "steps": ["腌", "风干"], "qte": ["维持型"], "san": 10 }
+      ]
+    },
+    {
+      "id": "guangcheng",
+      "nickname": "光城",
+      "real": "巴黎",
+      "region": "法国",
+      "culture": ["法餐"],
+      "prefer": ["黄油", "酱汁", "精致"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "kegsong", "name": "可颂", "en": "Croissant", "tier": 1, "flavor": "甜", "tempC": [45, 55], "aroma": ["黄油香"], "texture": "层层酥", "steps": ["开酥", "烘烤"], "qte": ["维持型", "窗口型"], "san": 0 },
+        { "id": "egan", "name": "鹅肝", "en": "Foie Gras", "tier": 2, "flavor": "鲜", "tempC": [50, 60], "aroma": ["油脂香"], "texture": "绵密", "steps": ["煎或做酱"], "qte": ["窗口型"], "san": 10 },
+        { "id": "woniu", "name": "法式蜗牛", "en": "Escargot", "tier": 2, "flavor": "咸鲜", "tempC": [70, 80], "aroma": ["蒜香", "黄油香"], "texture": "弹韧", "steps": ["取出", "塞蒜蓉黄油", "烤"], "qte": ["窗口型"], "san": 10 },
+        { "id": "lanwen", "name": "蓝纹奶酪", "en": "Roquefort", "tier": 3, "flavor": "咸", "tempC": [15, 25], "aroma": ["霉香（强烈）"], "texture": "绵软带颗粒", "steps": ["发酵熟成"], "qte": ["维持型"], "san": 20 }
+      ]
+    },
+    {
+      "id": "shidu",
+      "nickname": "食都",
+      "real": "里昂",
+      "region": "法国",
+      "culture": ["法餐", "里昂"],
+      "prefer": ["厚重", "内脏", "酱汁"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "yangcongtang", "name": "法式洋葱汤", "en": "French Onion Soup", "tier": 1, "flavor": "咸鲜", "tempC": [85, 95], "aroma": ["焦糖洋葱香"], "texture": "浓稠", "steps": ["慢炒洋葱", "加汤", "焗芝士"], "qte": ["维持型"], "san": 0 },
+        { "id": "neizangchang", "name": "内脏肠", "en": "Andouillette", "tier": 3, "flavor": "咸鲜", "tempC": [80, 90], "aroma": ["内脏香（争议）"], "texture": "弹韧", "steps": ["灌制", "煎"], "qte": ["维持型"], "san": 20, "note": "气味'名不虚传'" },
+        { "id": "casule", "name": "卡苏莱", "en": "Cassoulet", "tier": 1, "flavor": "咸鲜", "tempC": [85, 95], "aroma": ["炖香"], "texture": "豆烂肉酥", "steps": ["慢炖"], "qte": ["维持型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "weisuwei",
+      "nickname": "维苏威",
+      "real": "那不勒斯",
+      "region": "意大利",
+      "culture": ["意餐"],
+      "prefer": ["番茄", "橄榄油", "简单"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "pizza", "name": "玛格丽特披萨", "en": "Pizza Margherita", "tier": 1, "flavor": "咸酸", "tempC": [70, 85], "aroma": ["罗勒香", "烤面香"], "texture": "饼底焦脆", "steps": ["揉面", "发酵", "铺料", "高温烤"], "qte": ["节奏型", "窗口型"], "san": 0, "note": "窑温要 400℃ 以上" },
+        { "id": "yidali", "name": "意面", "en": "Pasta", "tier": 1, "flavor": "咸鲜", "tempC": [75, 85], "aroma": ["番茄香"], "texture": "弹牙", "steps": ["煮面（al dente）", "拌酱"], "qte": ["窗口型"], "san": 0, "note": "煮到 al dente 才正宗" }
+      ]
+    },
+    {
+      "id": "yongheng",
+      "nickname": "永恒城",
+      "real": "罗马",
+      "region": "意大利",
+      "culture": ["意餐", "罗马"],
+      "prefer": ["芝士", "猪颊肉", "面"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "carbonara", "name": "卡邦尼意面", "en": "Carbonara", "tier": 1, "flavor": "咸鲜", "tempC": [75, 85], "aroma": ["芝士香", "黑胡椒香"], "texture": "浓滑", "steps": ["炒猪颊肉", "拌蛋液与芝士"], "qte": ["节奏型"], "san": 0, "note": "绝对不能加奶油（意大利人会生气）" },
+        { "id": "kaozhurou", "name": "罗马烤猪肉", "en": "Porchetta", "tier": 2, "flavor": "咸香", "tempC": [75, 85], "aroma": ["香草香", "炭火香"], "texture": "皮脆肉嫩", "steps": ["卷肉", "慢烤"], "qte": ["维持型"], "san": 10 }
+      ]
+    },
+    {
+      "id": "ganlan",
+      "nickname": "橄榄港",
+      "real": "巴塞罗那",
+      "region": "西班牙",
+      "culture": ["西餐"],
+      "prefer": ["海鲜", "橄榄油", "蒜"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "paella", "name": "海鲜饭", "en": "Paella", "tier": 1, "flavor": "鲜", "tempC": [80, 90], "aroma": ["藏红花香", "海味"], "texture": "饭粒带锅巴", "steps": ["炒料", "加米", "焖（不搅拌）"], "qte": ["维持型"], "san": 0, "note": "正宗吃法是'不搅拌'" },
+        { "id": "huotui", "name": "西班牙火腿", "en": "Jamón", "tier": 1, "flavor": "咸鲜", "tempC": [18, 25], "aroma": ["腌肉香"], "texture": "入口即化", "steps": ["风干熟成", "薄切"], "qte": ["顺序型"], "san": 0 },
+        { "id": "tapas", "name": "塔帕斯小食", "en": "Tapas", "tier": 1, "flavor": "多样", "tempC": [20, 80], "aroma": ["蒜香", "橄榄油香"], "texture": "多样", "steps": ["多小份组合"], "qte": ["顺序型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "pijiucheng",
+      "nickname": "啤酒城",
+      "real": "慕尼黑",
+      "region": "德国",
+      "culture": ["德餐", "巴伐利亚"],
+      "prefer": ["肉", "酸菜", "啤酒"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "zhuzhou", "name": "德国猪肘", "en": "Schweinshaxe", "tier": 1, "flavor": "咸香", "tempC": [85, 95], "aroma": ["烤香"], "texture": "皮脆肉烂", "steps": ["腌", "烤或炖"], "qte": ["维持型"], "san": 0 },
+        { "id": "xiangchang", "name": "德国香肠", "en": "Bratwurst", "tier": 1, "flavor": "咸香", "tempC": [75, 85], "aroma": ["烟熏香"], "texture": "弹脆", "steps": ["煎或煮"], "qte": ["窗口型"], "san": 0 },
+        { "id": "jiaoquan", "name": "椒盐卷饼", "en": "Pretzel", "tier": 1, "flavor": "咸", "tempC": [45, 55], "aroma": ["麦香"], "texture": "外韧内软", "steps": ["过碱水", "烘烤"], "qte": ["维持型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "tiebi",
+      "nickname": "铁壁城",
+      "real": "柏林",
+      "region": "德国",
+      "culture": ["德餐", "普鲁士"],
+      "prefer": ["肉", "血", "生食"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "xuechang_de", "name": "血肠", "en": "Blutwurst", "tier": 3, "flavor": "咸鲜", "tempC": [75, 85], "aroma": ["肉香"], "texture": "浓稠", "steps": ["灌制", "煮"], "qte": ["维持型"], "san": 20 },
+        { "id": "mett", "name": "生猪肉糜", "en": "Mett", "tier": 3, "flavor": "咸", "tempC": [5, 15], "aroma": ["生肉香"], "texture": "绵软", "steps": ["绞生肉", "调盐", "抹面包"], "qte": ["节奏型"], "san": 20, "note": "早餐生吃猪肉馅面包，德国人的日常" },
+        { "id": "currywurst", "name": "咖喱香肠", "en": "Currywurst", "tier": 1, "flavor": "酸甜辣", "tempC": [75, 85], "aroma": ["咖喱香"], "texture": "弹脆", "steps": ["煎", "切片", "浇咖喱酱"], "qte": ["窗口型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "yuecheng",
+      "nickname": "乐城",
+      "real": "维也纳",
+      "region": "奥地利",
+      "culture": ["奥地利菜"],
+      "prefer": ["炸", "甜", "咖啡"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "schnitzel", "name": "维也纳炸肉排", "en": "Wiener Schnitzel", "tier": 1, "flavor": "咸", "tempC": [75, 85], "aroma": ["油炸香"], "texture": "外酥内嫩", "steps": ["敲肉", "挂糊", "浅炸"], "qte": ["窗口型"], "san": 0, "note": "鼓起来像气球才合格" },
+        { "id": "sahe", "name": "萨赫蛋糕", "en": "Sachertorte", "tier": 1, "flavor": "甜", "tempC": [20, 30], "aroma": ["巧克力香", "杏子香"], "texture": "绵密", "steps": ["烤", "夹杏子酱", "淋巧克力"], "qte": ["维持型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "yunhecheng",
+      "nickname": "运河城",
+      "real": "阿姆斯特丹",
+      "region": "荷兰",
+      "culture": ["荷餐"],
+      "prefer": ["生食", "奶", "简单"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "shengfeiyu", "name": "生鲱鱼", "en": "Haring", "tier": 2, "flavor": "咸鲜", "tempC": [5, 12], "aroma": ["海腥"], "texture": "滑嫩", "steps": ["去内脏", "腌", "配洋葱"], "qte": ["窗口型"], "san": 10, "note": "仰头一口吞，新手地狱" },
+        { "id": "gaoda", "name": "荷兰高达奶酪", "en": "Gouda", "tier": 1, "flavor": "咸香", "tempC": [15, 25], "aroma": ["奶香"], "texture": "有弹性", "steps": ["发酵熟成"], "qte": ["维持型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "keke",
+      "nickname": "可可城",
+      "real": "布鲁塞尔",
+      "region": "比利时",
+      "culture": ["比餐"],
+      "prefer": ["甜", "炸", "啤酒"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "huafu", "name": "比利时华夫", "en": "Belgian Waffle", "tier": 1, "flavor": "甜", "tempC": [45, 55], "aroma": ["蛋奶香"], "texture": "外脆内软", "steps": ["调面糊", "烘烤"], "qte": ["窗口型"], "san": 0 },
+        { "id": "qiaokeli", "name": "比利时巧克力", "en": "Belgian Chocolate", "tier": 1, "flavor": "甜", "tempC": [18, 25], "aroma": ["可可香"], "texture": "入口即化", "steps": ["调温", "注模"], "qte": ["维持型"], "san": 0, "note": "调温失败就没有光泽" },
+        { "id": "shutiao", "name": "比利时薯条", "en": "Belgian Fries", "tier": 1, "flavor": "咸", "tempC": [75, 85], "aroma": ["油炸香"], "texture": "外脆内绵", "steps": ["双炸"], "qte": ["窗口型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "tonghuagang",
+      "nickname": "童话港",
+      "real": "哥本哈根",
+      "region": "丹麦",
+      "culture": ["北欧菜"],
+      "prefer": ["鲜", "开放三明治", "酥"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "sanmingzhi", "name": "开放式三明治", "en": "Smørrebrød", "tier": 1, "flavor": "鲜", "tempC": [15, 25], "aroma": ["黑麦香"], "texture": "层次丰富", "steps": ["抹黄油", "叠料"], "qte": ["顺序型"], "san": 0 },
+        { "id": "danshu", "name": "丹麦酥", "en": "Danish Pastry", "tier": 1, "flavor": "甜", "tempC": [45, 55], "aroma": ["黄油香"], "texture": "酥脆", "steps": ["开酥", "烘烤"], "qte": ["维持型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "beigang",
+      "nickname": "北港",
+      "real": "斯德哥尔摩",
+      "region": "瑞典",
+      "culture": ["北欧菜"],
+      "prefer": ["发酵", "鱼", "简单"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "feiyuguantou", "name": "鲱鱼罐头", "en": "Surströmming", "tier": 4, "flavor": "酸臭", "tempC": [15, 25], "aroma": ["发酵恶臭（极强）"], "texture": "软烂", "steps": ["罐内发酵" , "户外开罐"], "qte": ["维持型"], "san": 35, "note": "开罐触发全场捂鼻 AOE，必须户外开启" },
+        { "id": "rouwan", "name": "瑞典肉丸", "en": "Köttbullar", "tier": 1, "flavor": "咸鲜", "tempC": [75, 85], "aroma": ["肉香", "奶油香"], "texture": "弹嫩", "steps": ["团丸", "煎", "配越橘酱"], "qte": ["窗口型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "xiawan",
+      "nickname": "峡湾城",
+      "real": "奥斯陆",
+      "region": "挪威",
+      "culture": ["北欧菜"],
+      "prefer": ["鱼", "发酵", "简单"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "lutefisk", "name": "碱渍鱼", "en": "Lutefisk", "tier": 3, "flavor": "酸", "tempC": [70, 80], "aroma": ["碱味"], "texture": "胶冻状", "steps": ["碱泡数天", "蒸"], "qte": ["维持型"], "san": 20, "note": "泡过头直接报废" },
+        { "id": "smalahove", "name": "烤羊头", "en": "Smalahove", "tier": 4, "flavor": "咸香", "tempC": [80, 90], "aroma": ["炭火香"], "texture": "皮脆肉嫩", "steps": ["腌制", "熏烤"], "qte": ["维持型"], "san": 35, "note": "整只羊头带眼上桌，'它与你对视'事件" }
+      ]
+    },
+    {
+      "id": "binghuo",
+      "nickname": "冰火城",
+      "real": "雷克雅未克",
+      "region": "冰岛",
+      "culture": ["北欧菜"],
+      "prefer": ["发酵", "羊", "简单"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "hakarl", "name": "发酵鲨鱼", "en": "Hákarl", "tier": 4, "flavor": "氨", "tempC": [5, 15], "aroma": ["浓氨味（极强）"], "texture": "胶质弹", "steps": ["埋沙发酵数周", "风干", "切块"], "qte": ["顺序型"], "san": 35, "note": "需搭配 Brennivín 烈酒才能'解味'交付" },
+        { "id": "yangroutang", "name": "冰岛羊肉汤", "en": "Kjötsúpa", "tier": 1, "flavor": "咸鲜", "tempC": [90, 100], "aroma": ["羊肉香"], "texture": "暖身", "steps": ["炖煮"], "qte": ["维持型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "baicheng",
+      "nickname": "白城",
+      "real": "赫尔辛基",
+      "region": "芬兰",
+      "culture": ["北欧菜"],
+      "prefer": ["黑麦", "麦芽", "简朴"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "mammi", "name": "麦芽糊", "en": "Mämmi", "tier": 2, "flavor": "甜", "tempC": [15, 25], "aroma": ["麦芽香"], "texture": "黏稠棕糊", "steps": ["熬制", "久置"], "qte": ["维持型"], "san": 10, "note": "卖相劝退，复活节限定" },
+        { "id": "kaleiya", "name": "卡累利阿派", "en": "Karelian Pasty", "tier": 1, "flavor": "咸", "tempC": [50, 60], "aroma": ["黑麦香"], "texture": "外韧内糊", "steps": ["包馅", "烘烤"], "qte": ["顺序型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "xueyuan",
+      "nickname": "雪原城",
+      "real": "莫斯科",
+      "region": "俄罗斯",
+      "culture": ["俄餐"],
+      "prefer": ["酸", "油", "暖"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "luosongtang", "name": "罗宋汤", "en": "Borscht", "tier": 1, "flavor": "酸甜", "tempC": [85, 95], "aroma": ["甜菜香"], "texture": "浓稠", "steps": ["炒", "炖"], "qte": ["维持型"], "san": 0 },
+        { "id": "salo", "name": "萨洛腌猪油", "en": "Salo", "tier": 2, "flavor": "咸", "tempC": [5, 15], "aroma": ["腌肉香"], "texture": "肥而不腻", "steps": ["盐腌", "切片"], "qte": ["顺序型"], "san": 10, "note": "配黑面包和伏特加" },
+        { "id": "roudong", "name": "肉冻", "en": "Holodets", "tier": 2, "flavor": "咸鲜", "tempC": [5, 12], "aroma": ["肉香"], "texture": "Q弹胶冻", "steps": ["久炖", "冷却凝结"], "qte": ["维持型"], "san": 10 },
+        { "id": "bulinbing", "name": "布林饼", "en": "Blini", "tier": 1, "flavor": "咸甜", "tempC": [50, 60], "aroma": ["奶香"], "texture": "松软", "steps": ["摊制", "叠馅"], "qte": ["窗口型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "shenhua",
+      "nickname": "神话城",
+      "real": "雅典",
+      "region": "希腊",
+      "culture": ["希腊菜"],
+      "prefer": ["橄榄油", "羊乳酪", "烤"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "xilashala", "name": "希腊沙拉", "en": "Greek Salad", "tier": 1, "flavor": "酸", "tempC": [15, 25], "aroma": ["橄榄油香", "香草香", "羊乳酪香"], "texture": "清爽", "steps": ["切块", "拌", "放羊乳酪"], "qte": ["节奏型"], "san": 0 },
+        { "id": "mousaka", "name": "慕萨卡", "en": "Moussaka", "tier": 1, "flavor": "咸香", "tempC": [80, 90], "aroma": ["肉桂香"], "texture": "层次丰富", "steps": ["茄片炸", "铺肉酱", "覆盖奶白酱", "烤"], "qte": ["顺序型", "维持型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "duonacheng",
+      "nickname": "多瑙城",
+      "real": "布达佩斯",
+      "region": "匈牙利",
+      "culture": ["匈牙利菜"],
+      "prefer": ["红辣椒粉", "炖", "浓"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "gulyash", "name": "古拉什炖牛肉", "en": "Goulash", "tier": 1, "flavor": "辣", "tempC": [85, 95], "aroma": ["红椒粉香"], "texture": "肉烂", "steps": ["炒洋葱", "慢炖"], "qte": ["维持型"], "san": 0 },
+        { "id": "yanrongjuan", "name": "烟囱卷", "en": "Kürtőskalács", "tier": 1, "flavor": "甜", "tempC": [45, 55], "aroma": ["焦糖香"], "texture": "外脆内软", "steps": ["卷面团", "炭火烤", "滚糖"], "qte": ["维持型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "gaodi",
+      "nickname": "高地城",
+      "real": "爱丁堡",
+      "region": "苏格兰",
+      "culture": ["苏格兰菜"],
+      "prefer": ["内脏", "油炸", "燕麦"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "haggis", "name": "哈吉斯", "en": "Haggis", "tier": 3, "flavor": "咸香", "tempC": [80, 90], "aroma": ["内脏香", "燕麦香"], "texture": "粗糙绵密", "steps": ["填羊肚", "煮"], "qte": ["维持型"], "san": 20, "note": "羊胃装羊杂碎" },
+        { "id": "zhayiqie", "name": "炸巧克力棒", "en": "Deep-Fried Mars Bar", "tier": 2, "flavor": "甜", "tempC": [80, 90], "aroma": ["油炸香", "巧克力香"], "texture": "外脆内流", "steps": ["裹面糊", "深炸"], "qte": ["窗口型"], "san": 10, "note": "苏格兰'黑暗料理'代表" }
+      ]
+    },
+    {
+      "id": "feicui",
+      "nickname": "翡翠港",
+      "real": "都柏林",
+      "region": "爱尔兰",
+      "culture": ["爱尔兰菜"],
+      "prefer": ["炖", "土豆", "黑啤"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "dunrou", "name": "爱尔兰炖肉", "en": "Irish Stew", "tier": 1, "flavor": "咸鲜", "tempC": [85, 95], "aroma": ["羊肉香"], "texture": "肉烂", "steps": ["炖煮"], "qte": ["维持型"], "san": 0 },
+        { "id": "heibuding", "name": "黑布丁", "en": "Black Pudding", "tier": 2, "flavor": "咸鲜", "tempC": [75, 85], "aroma": ["肉香"], "texture": "绵密", "steps": ["灌制", "煎"], "qte": ["窗口型"], "san": 10 }
+      ]
+    },
+    {
+      "id": "dapingguo",
+      "nickname": "大苹果",
+      "real": "纽约",
+      "region": "美国·东北",
+      "culture": ["美式"],
+      "prefer": ["快餐", "多元", "大份"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "niuyuepisa", "name": "纽约披萨", "en": "New York Pizza", "tier": 1, "flavor": "咸酸", "tempC": [70, 85], "aroma": ["芝士香"], "texture": "薄底可折叠", "steps": ["揉面", "铺料", "高温烤"], "qte": ["窗口型"], "san": 0, "note": "对折吃才正宗" },
+        { "id": "beiguo", "name": "纽约贝果", "en": "Bagel", "tier": 1, "flavor": "咸", "tempC": [45, 55], "aroma": ["麦香"], "texture": "外韧内软", "steps": ["水煮", "烘烤"], "qte": ["维持型"], "san": 0 },
+        { "id": "zhishidangao", "name": "纽约芝士蛋糕", "en": "Cheesecake", "tier": 1, "flavor": "甜", "tempC": [10, 18], "aroma": ["奶香"], "texture": "绵密厚重", "steps": ["拌糊", "水浴烤"], "qte": ["维持型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "jueshigang",
+      "nickname": "爵士港",
+      "real": "新奥尔良",
+      "region": "美国·南方",
+      "culture": ["美式南方", "克里奥尔"],
+      "prefer": ["香辣", "海鲜", "炖"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "gumbo", "name": "秋葵浓汤", "en": "Gumbo", "tier": 1, "flavor": "辣鲜", "tempC": [85, 95], "aroma": ["香料香"], "texture": "浓稠", "steps": ["炒面糊", "加料炖"], "qte": ["维持型"], "san": 0, "note": "灵魂是'炒面糊 roux'" },
+        { "id": "jambalaya", "name": "什锦饭", "en": "Jambalaya", "tier": 1, "flavor": "辣", "tempC": [80, 90], "aroma": ["香料香"], "texture": "饭粒入味", "steps": ["炒料", "焖饭"], "qte": ["维持型"], "san": 0 },
+        { "id": "xiaolongxia", "name": "小龙虾", "en": "Crawfish", "tier": 1, "flavor": "辣", "tempC": [80, 90], "aroma": ["香料香"], "texture": "弹牙", "steps": ["煮", "调味"], "qte": ["节奏型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "guxing",
+      "nickname": "孤星城",
+      "real": "德州",
+      "region": "美国·南部",
+      "culture": ["美式烧烤"],
+      "prefer": ["烟熏", "牛肉", "大份"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "dekzhoushaokao", "name": "德州烤肉", "en": "Texas BBQ", "tier": 1, "flavor": "咸香", "tempC": [85, 95], "aroma": ["烟熏香"], "texture": "外焦里嫩", "steps": ["抹料", "低温慢熏"], "qte": ["维持型"], "san": 0, "note": "低温慢熏十几小时" },
+        { "id": "lajiaodunrou", "name": "德州辣椒炖肉", "en": "Chili con Carne", "tier": 1, "flavor": "辣", "tempC": [85, 95], "aroma": ["辣椒香", "孜然香"], "texture": "浓稠", "steps": ["炒", "慢炖"], "qte": ["维持型"], "san": 0, "note": "德州人：放豆子是异端" }
+      ]
+    },
+    {
+      "id": "yangguang",
+      "nickname": "阳光港",
+      "real": "加州",
+      "region": "美国·西部",
+      "culture": ["美式", "融合"],
+      "prefer": ["新鲜", "健康", "融合"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "jialijuan", "name": "加州卷", "en": "California Roll", "tier": 1, "flavor": "鲜甜", "tempC": [10, 18], "aroma": ["海味", "牛油果香"], "texture": "清爽", "steps": ["卷制", "切段"], "qte": ["顺序型"], "san": 0, "note": "把寿司改良成'西方人能接受'的样子" },
+        { "id": "hanbao", "name": "美式汉堡", "en": "Hamburger", "tier": 1, "flavor": "咸香", "tempC": [70, 80], "aroma": ["烤肉香"], "texture": "多汁", "steps": ["煎肉饼", "组装"], "qte": ["窗口型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "fengcheng",
+      "nickname": "风城",
+      "real": "芝加哥",
+      "region": "美国·中西部",
+      "culture": ["美式"],
+      "prefer": ["大份", "芝士", "快"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "shenpanpisa", "name": "深盘披萨", "en": "Deep Dish Pizza", "tier": 1, "flavor": "咸酸", "tempC": [75, 90], "aroma": ["芝士香", "番茄香"], "texture": "厚实", "steps": ["铺深盘", "加大量芝士", "盖番茄酱", "烤"], "qte": ["维持型"], "san": 0 },
+        { "id": "zhijiagerou", "name": "芝加哥热狗", "en": "Chicago Dog", "tier": 1, "flavor": "咸酸", "tempC": [70, 80], "aroma": ["腌制蔬菜香"], "texture": "层次多", "steps": ["煮", "组装（严禁番茄酱）"], "qte": ["顺序型"], "san": 0, "note": "放番茄酱会被全城人鄙视" }
+      ]
+    },
+    {
+      "id": "yumicheng",
+      "nickname": "玉米城",
+      "real": "墨西哥城",
+      "region": "墨西哥",
+      "culture": ["墨式"],
+      "prefer": ["辣", "玉米", "酸"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "taco", "name": "墨西哥玉米卷", "en": "Taco", "tier": 1, "flavor": "辣酸", "tempC": [70, 80], "aroma": ["玉米香", "辣椒香"], "texture": "饼软肉嫩", "steps": ["烙饼", "填馅"], "qte": ["顺序型"], "san": 0 },
+        { "id": "mole", "name": "鼹鼠酱炖鸡", "en": "Mole Poblano", "tier": 2, "flavor": "复杂", "tempC": [85, 95], "aroma": ["可可香", "香料香"], "texture": "浓稠", "steps": ["磨多味酱料", "慢炖"], "qte": ["维持型"], "san": 10, "note": "酱料含 20+ 种原料，含巧克力" },
+        { "id": "zhazuo", "name": "炸蚱蜢", "en": "Chapulín", "tier": 3, "flavor": "咸酸", "tempC": [75, 85], "aroma": ["柠檬香", "辣椒香"], "texture": "酥脆", "steps": ["油炸", "拌柠檬辣椒"], "qte": ["窗口型"], "san": 20 }
+      ]
+    },
+    {
+      "id": "yinjiacheng",
+      "nickname": "印加城",
+      "real": "利马",
+      "region": "秘鲁",
+      "culture": ["秘鲁菜"],
+      "prefer": ["酸", "海鲜", "薯"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "ceviche", "name": "酸橘汁腌鱼", "en": "Ceviche", "tier": 2, "flavor": "酸", "tempC": [5, 12], "aroma": ["青柠香", "海味"], "texture": "鱼肉'熟'于酸", "steps": ["腌于青柠汁", "拌洋葱辣椒"], "qte": ["窗口型"], "san": 10, "note": "靠酸'煮'熟，时间就是一切" },
+        { "id": "kaotunshu", "name": "烤豚鼠", "en": "Cuy", "tier": 3, "flavor": "咸香", "tempC": [85, 95], "aroma": ["炭火香"], "texture": "皮脆肉嫩", "steps": ["整只烤制"], "qte": ["维持型"], "san": 20, "note": "安第斯传统大菜" },
+        { "id": "chaoniurou", "name": "秘鲁炒牛肉", "en": "Lomo Saltado", "tier": 1, "flavor": "咸酸", "tempC": [80, 90], "aroma": ["锅气", "酱油香"], "texture": "牛肉嫩", "steps": ["猛火炒", "配薯条"], "qte": ["节奏型"], "san": 0, "note": "中餐+秘鲁的混血菜" }
+      ]
+    },
+    {
+      "id": "tangecheng",
+      "nickname": "探戈城",
+      "real": "布宜诺斯艾利斯",
+      "region": "阿根廷",
+      "culture": ["阿根廷菜"],
+      "prefer": ["牛肉", "烤肉", "马黛茶"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "asado", "name": "阿根廷烤肉", "en": "Asado", "tier": 1, "flavor": "咸香", "tempC": [85, 95], "aroma": ["炭火香"], "texture": "外焦里嫩", "steps": ["炭火慢烤"], "qte": ["维持型"], "san": 0, "note": "烤肉是一种家庭仪式" },
+        { "id": "empanada", "name": "阿根廷馅饼", "en": "Empanada", "tier": 1, "flavor": "咸香", "tempC": [75, 85], "aroma": ["孜然香"], "texture": "外皮酥", "steps": ["包馅", "烤或炸"], "qte": ["顺序型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "sambacheng",
+      "nickname": "桑巴城",
+      "real": "圣保罗",
+      "region": "巴西",
+      "culture": ["巴西菜"],
+      "prefer": ["烤肉", "豆", "水果"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "churrasco", "name": "巴西烤肉", "en": "Churrasco", "tier": 1, "flavor": "咸香", "tempC": [85, 95], "aroma": ["炭火香"], "texture": "外焦里嫩", "steps": ["串烤", "削肉"], "qte": ["维持型"], "san": 0 },
+        { "id": "feijoada", "name": "黑豆炖肉", "en": "Feijoada", "tier": 2, "flavor": "咸鲜", "tempC": [85, 95], "aroma": ["豆香", "烟熏香"], "texture": "浓稠", "steps": ["炖黑豆与猪肉"], "qte": ["维持型"], "san": 10, "note": "巴西国菜，配米饭和橙子" }
+      ]
+    },
+    {
+      "id": "leiguidao",
+      "nickname": "雷鬼岛",
+      "real": "牙买加",
+      "region": "加勒比",
+      "culture": ["加勒比菜"],
+      "prefer": ["辣", "香料", "烤"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "jerk", "name": "烟熏辣鸡", "en": "Jerk Chicken", "tier": 1, "flavor": "辣", "tempC": [85, 95], "aroma": ["多香果香", "烟熏香"], "texture": "外焦里嫩", "steps": ["抹 jerk 酱", "炭火熏烤"], "qte": ["维持型"], "san": 0, "note": "jerk 香料是灵魂" },
+        { "id": "xianyu", "name": "咸鱼配阿奇果", "en": "Ackee & Saltfish", "tier": 1, "flavor": "咸鲜", "tempC": [75, 85], "aroma": ["咸鱼香"], "texture": "绵软", "steps": ["泡咸鱼", "炒"], "qte": ["节奏型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "fengtang",
+      "nickname": "枫糖城",
+      "real": "魁北克",
+      "region": "加拿大",
+      "culture": ["法裔加餐"],
+      "prefer": ["枫糖", "厚重", "奶酪"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "poutine", "name": "肉汁奶酪薯条", "en": "Poutine", "tier": 1, "flavor": "咸鲜", "tempC": [80, 90], "aroma": ["肉汁香"], "texture": "薯条脆、奶酪拉丝", "steps": ["炸薯条", "加奶酪块", "浇肉汁"], "qte": ["窗口型"], "san": 0, "note": "奶酪块要'吱吱'响才新鲜" },
+        { "id": "fengtang_jia", "name": "枫糖塔", "en": "Tarte au Sucre", "tier": 1, "flavor": "甜", "tempC": [45, 55], "aroma": ["枫糖香"], "texture": "浓甜", "steps": ["烤塔"], "qte": ["维持型"], "san": 0 }
+      ]
+    },
+    {
+      "id": "nanchuan",
+      "nickname": "南十字港",
+      "real": "悉尼",
+      "region": "澳大利亚",
+      "culture": ["澳式"],
+      "prefer": ["烤", "海鲜", "多元"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "aozhouroupei", "name": "澳洲肉派", "en": "Meat Pie", "tier": 1, "flavor": "咸", "tempC": [75, 85], "aroma": ["肉汁香"], "texture": "外酥内浓", "steps": ["制派皮", "填肉馅", "烘烤"], "qte": ["维持型"], "san": 0, "note": "配番茄酱才是澳洲吃法" },
+        { "id": "daishurou", "name": "袋鼠肉排", "en": "Kangaroo Steak", "tier": 2, "flavor": "咸鲜", "tempC": [70, 80], "aroma": ["炭火香"], "texture": "瘦而嫩", "steps": ["煎烤"], "qte": ["窗口型"], "san": 10, "note": "低脂高蛋白，别煎过头" },
+        { "id": "weijimai", "name": "维吉麦", "en": "Vegemite", "tier": 2, "flavor": "咸苦", "tempC": [45, 55], "aroma": ["酵母酱香（争议）"], "texture": "糊状", "steps": ["薄涂面包"], "qte": ["节奏型"], "san": 10, "note": "澳洲人：薄薄一层；游客：厚涂 → 灾难" }
+      ]
+    },
+    {
+      "id": "baiyun",
+      "nickname": "白云乡",
+      "real": "新西兰",
+      "region": "大洋洲",
+      "culture": ["毛利", "英式"],
+      "prefer": ["烤", "羊", "奶"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "hangi", "name": "毛利窑烤", "en": "Hāngī", "tier": 1, "flavor": "咸香", "tempC": [85, 95], "aroma": ["泥土香", "炭火香"], "texture": "肉烂", "steps": ["挖坑", "烧石", "埋烤"], "qte": ["维持型"], "san": 0, "note": "用地热石焖熟的仪式菜" },
+        { "id": "pafuluowa", "name": "帕芙洛娃", "en": "Pavlova", "tier": 1, "flavor": "甜", "tempC": [20, 30], "aroma": ["奶香", "果香"], "texture": "外脆内软", "steps": ["打发蛋白", "慢烤"], "qte": ["维持型"], "san": 0, "note": "新西兰和澳洲为'谁是发明者'吵了一百年" }
+      ]
+    },
+    {
+      "id": "huoshandao",
+      "nickname": "火山岛",
+      "real": "夏威夷",
+      "region": "太平洋",
+      "culture": ["夏威夷菜", "融合"],
+      "prefer": ["鲜", "水果", "融合"],
+      "darkTown": false,
+      "dishes": [
+        { "id": "poke", "name": "波奇饭", "en": "Poke Bowl", "tier": 1, "flavor": "鲜", "tempC": [10, 18], "aroma": ["芝麻香", "海味"], "texture": "鱼肉弹", "steps": ["切生鱼", "拌酱", "配饭"], "qte": ["顺序型"], "san": 0 },
+        { "id": "yuni", "name": "芋泥", "en": "Poi", "tier": 2, "flavor": "淡酸", "tempC": [20, 30], "aroma": ["发酵芋香"], "texture": "黏稠拉丝", "steps": ["蒸芋", "捣成糊", "发酵"], "qte": ["维持型"], "san": 10, "note": "夏威夷传统主食，手指蘸着吃" },
+        { "id": "huoshanpisa", "name": "夏威夷披萨", "en": "Hawaiian Pizza", "tier": 2, "flavor": "酸甜", "tempC": [70, 85], "aroma": ["芝士香", "菠萝香"], "texture": "饼底焦脆", "steps": ["铺菠萝火腿", "烤"], "qte": ["窗口型"], "san": 10, "note": "全世界最有争议的披萨，意大利人血压飙升" }
+      ]
+    }
+  ]
+}

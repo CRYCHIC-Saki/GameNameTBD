@@ -1,0 +1,9 @@
+* text=auto eol=lf
+*.png binary
+*.ttf binary
+*.exe binary
+*.pck binary
+# Preserve read-only design sources byte-for-byte, including line endings.
+doc/source/** -text -whitespace
+# Keep the vendored dependency's original formatting.
+addons/gut/** -whitespace

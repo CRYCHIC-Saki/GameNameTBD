@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "godot": {
+    "release": "4.7.2.stable",
+    "local_version": "4.7.2.stable.steam.ed1daf0bf",
+    "local_path": "E:/steam/steamapps/common/Godot Engine/godot.windows.opt.tools.64.exe",
+    "local_sha256": "12310c74bdda7dcd43f28e971f33047dcecadd436b68169d61ce41009006df38",
+    "renderer": "gl_compatibility",
+    "templates": "E:/steam/steamapps/common/Godot Engine/editor_data/export_templates/4.7.2.stable"
+  },
+  "gut": {
+    "version": "9.7.1",
+    "source": "https://github.com/bitwes/Gut/archive/refs/tags/v9.7.1.zip",
+    "archive_sha256": "14969aa46adc84aa08cdd21b9f6d1a64addd92ae60b36f02d0521ed305aa4086",
+    "path": "addons/gut"
+  },
+  "powershell_minimum": "7.2"
+}
