@@ -1,5 +1,13 @@
 # 分工与集成基线
 
+## Phase 2当前协作边界
+
+本轮仅集成负责人写文件，grilling事实审查Agent只读，无外部任务分派。经营规则负责人可修改 `src/business/shop_session.gd` 和对应规则测试；内容负责人可修改 `service_catalog.gd` / `content/service_content.json`；存储负责人拥有 `src/platform/shop_store.gd` 和中断恢复测试；应用集成负责人拥有 `shop_view.gd`、main、FullKitchen接入、世界显示名、工具、共享契约和导出白名单。角色不是编造的团队成员。
+
+公开接口见CONTRACTS的Phase2部分。独立规则/存储：`tools/check.ps1 -Suite business`；营业真实场景：`-Suite service`；原做菜/QTE/评分套件继续独立运行。生产入口为 `tools/run.ps1`，Phase1独立厨房为 `-FullKitchen`。改变钱料语义或场景连接先改契约与AC，由集成负责人统一合入，再运行全量和真实场景；不让业务UI绕过Session直接改钱料。
+
+Phase2允许最简方案命名保存并上架，覆盖下方Phase1移除配方库菜单的旧范围。旧dev入口与TEST_ONLY内容仍不是营业菜单。下方分工及证据路径是历史索引。
+
 ## D016增量分工
 
 本轮集成负责人统一写入；grilling事实审查Agent只读。内容线拥有菜谱preparation_sheets与逐拍行/预告，QTE线拥有cut_actions、last_judgement及长按生命周期；厨房线拥有反馈缓存、菜谱传递和双锅鼠标预约；视图只读取。新增 `test_recipe_performance.gd` 进入qte套件，真实入口仍在test_guided_kitchen。验证使用check.ps1；新版图形证据前缀为artifacts/d016-*，不要混用旧六刀截图。本轮不自动提交或推送。

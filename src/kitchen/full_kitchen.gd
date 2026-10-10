@@ -3,6 +3,11 @@ extends Control
 signal back_requested
 signal pause_requested
 signal dish_delivered(dish: Dictionary)
+signal time_advanced(seconds: float)
+# Optional business composition. Legacy kitchens retain their established routes.
+var station_handler: Callable
+var time_boundary: Callable
+var station_names: Dictionary={}
 const WORLD := preload("res://src/world/kitchen_world.tscn")
 var catalog: TDCookingCatalog
 var _content: Dictionary = {}
@@ -45,6 +50,7 @@ func _ready() -> void:
 		theme.set_stylebox(state, "Button", style)
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	world = WORLD.instantiate() as TDKitchenWorld
+	world.station_names=station_names
 	add_child(world)
 	handling = TDKitchenHandling.new(catalog)
 	world.cooking_requested.connect(_station_interaction)
@@ -149,6 +155,12 @@ func close_bench() -> void:
 	world.set_controls_enabled(true)
 	_update_world()
 
+func open_station_view(station_id: String) -> void:
+	if not _closed: _open_guided(station_id)
+
+func refresh_world() -> void:
+	_update_world()
+
 func set_dual(value: bool) -> void:
 	if lanes.size() < 2: return
 	if not value and lanes[1].qte != null:
@@ -173,6 +185,16 @@ func _sync_time() -> void:
 
 func advance(seconds: float) -> void:
 	if _closed: return
+	if time_boundary.is_valid() and is_finite(seconds) and seconds > 0 and not shared_clock.paused:
+		var remaining: float=seconds
+		while remaining > .0000001:
+			var span: float=clampf(float(time_boundary.call(remaining)),.0000001,remaining)
+			_advance_span(span)
+			remaining-=span
+	else: _advance_span(seconds)
+
+func _advance_span(seconds: float) -> void:
+	var business_delta: float = seconds if is_finite(seconds) and seconds >= 0 and not shared_clock.paused else 0.0
 	if guided_controls: _advance_guided(seconds)
 	else:
 		for lane: TDCookingLane in lanes: lane.advance(seconds)
@@ -183,6 +205,7 @@ func advance(seconds: float) -> void:
 	_update_world()
 	if guided_controls and stage != null:
 		_refresh_guided()
+	if business_delta > 0.0: time_advanced.emit(business_delta)
 
 func _sync_mouse_ownership() -> bool:
 	var reserved: bool = lanes.any(func(lane:TDCookingLane)->bool:return lane.qte != null and lane.progress.get("pc_module") == "M6")
@@ -386,6 +409,9 @@ func _close_pantry() -> void:
 	world.set_controls_enabled(true); _update_world()
 
 func _guided_station(id: String) -> void:
+	if station_handler.is_valid():
+		station_handler.call(id)
+		return
 	var result := TDOutcome.new(false,"NO_ACTION")
 	if id.begins_with("kitchen.supply."):
 		var ingredient: String = id.trim_prefix("kitchen.supply.")

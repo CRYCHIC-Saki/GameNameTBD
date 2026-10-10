@@ -1,12 +1,37 @@
 # 项目状态
 
+## GitHub同步：Phase 2（2026-10-10）
+
+- 用户明确要求将新增内容上传到既有仓库 `CRYCHIC-Saki/GameNameTBD`。目标沿用 `main`，使用本地 `codex/phase1-upload` 分支和既有本地作者信息，正常快进推送，不改写远程历史。
+- 上传前已获取远程main，确认与本地基线 `14e64e2` 一致。429个工程输入文件与最终247项通过的无缓存副本逐字节一致，六份原始设计资料指纹不变；本次同步仅更新交付记录，不改动已验证玩法。
+- 提交包括代码、内容、测试、Godot UID、工程配置及阶段文档。缓存、测试产物和Windows导出包按现有.gitignore排除；不创建正式发行版。
+- 远程CI由推送触发，实际结果以本提交的[GitHub Actions](https://github.com/CRYCHIC-Saki/GameNameTBD/actions)为准；以下NOT_RUN/未推送描述为本地验收时状态，不代替远程执行结果。人工设备与玩法验收仍PENDING。
+
+
+## 当前检查点：Phase 2单店连续营业（D017，2026-10-10）
+
+- ENGINEERING_READY；PLAYTEST=PENDING。用户已授权Phase2并确认营业节奏、应急继续策略、筹备/日结边界存档。复用Phase1 D015/D016，不重建做菜、不进入Phase3。
+- 实际可玩：五道审核菜采购/菜单/定价→自动到客与耐心→指定左右锅→食材架E取料→菜板按谱→搬入锅自动QTE→实体端盘出餐→真实顾客评价/收支库存日结→下一天。可售罄/取消/提前打烊；次日资金不足可条件式主动领补助。
+- 真实规则：整数分/毫份、整笔采购与预留、实际累计消耗、未用释放/已用损耗、订单/成品身份和幂等结算。人气、每菜名气、店名气分别启用；声望独立DEFERRED。业务事件边界注入厨房推进，超时后不晚扣料。
+- 自建做法：保存真实完整食材与工序方案、稳定ID/版本、改名、加入菜单并按实际调味顺序重做；不保存高分。未知/不支持的顺序、缺项方案明确拒绝，不改回基础谱冒充成功。自建番茄菜仍保留原客人切型要求。
+- 存档：仅筹备/日结；user://shop-v1.json。临时写/读回语义与摘要校验/备份/替换；真实半写及中断恢复测试，未知版本与坏档不静默覆盖。开门前和进入下一天前保存边界，营业中返回或关窗口提示回退；不恢复QTE现场。
+- 最终全量：artifacts/check/pre-export-20261010-122915，247发现/执行/通过，26套件、2218断言，0失败/跳过；版本、导入、49资源加载、测试均exit0。新增28项，原219项保留回归。
+- 最终干净副本：artifacts/phase2-final-clean-20261010-123109/干净 副本/artifacts/check/final，同一检查入口，无.godot缓存、中文空格路径，247/247通过。最终输入文件与工作区逐字节一致，见artifacts/phase2-delivery.json。
+- 门槛证明：artifacts/gate-20261010-122441/gate-proof.json；clean/restored exit0，故意失败/必测跳过/解析错误/零测试 exit1。门槛复制后补自建顾客继承修正，再以最终全量/导出与新干净副本验证，不混用旧副本宣称最终代码。
+- 图形：artifacts/phase2-visual.json及22张phase2-*.png，真实NVIDIA RTX3050/Compatibility，Viewport输入完成交付、自建保存、存档继续到下一天，exit0。已查看并修复厨房背景层级、采购排版、弹窗和反馈文字。物理键鼠/音画同步NOT_RUN；人工连续营业疲劳及好玩程度PENDING。
+- 导出：build/TownDiner.exe＋同目录PCK已更新，artifacts/export/summary.json，export/pack-manifest/smoke exit0，103项允许运行资源。运行内容排除GUT/测试/工具/原设计/独立dev入口。当前为开发演示，保留明确允许的旧兼容代码。
+- 来源/边界：docs/systems/business.md与phases/phase-2.md；五菜名字有原文，精确矩阵、价格、份量、节奏和平衡均PROPOSED。六份原始资料SHA256全部一致，artifacts/phase2-source-verification.json。测试只写隔离artifacts，不改真实玩家存档、引擎依赖或全局环境。
+- 本地验收完成时未提交/推送，远程CI为NOT_RUN；后续用户授权GitHub同步见上节。Git基线14e64e2，保留本地codex/phase1-upload。历史远程记录见下方。
+- 下一工作单元：按README五步和PLAYTEST连续手工经营3天，记录压力、重复感、价格反馈与存档理解；在Phase2内修具体问题。无新的阻塞产品问题，不自动开始下一阶段。
+
+
 ## GitHub 同步：D016（2026-10-10）
 
 - 用户在本轮明确要求将D016修复推送到既有仓库`CRYCHIC-Saki/GameNameTBD`的`main`；沿用本地`codex/phase1-upload`分支、既有作者信息与正常快进推送，保留远程历史。
 - 推送前远程main与本地基线7d448c7一致；16项有改动的代码/配置/测试/工具文件与最终219项通过的干净副本逐一校验相同。缓存、检查产物和Windows导出包继续排除在提交之外。
 - 远程CI实际结果以本提交的[GitHub Actions](https://github.com/CRYCHIC-Saki/GameNameTBD/actions)为准；下面的NOT_RUN和未推送描述为D016本地验收时的历史状态，不能替代远程结果。实体设备与人工试玩仍PENDING。
 
-## 当前检查点：Phase 1 菜谱打谱与反馈修复（D016，2026-10-10）
+## 历史检查点：Phase 1 菜谱打谱与反馈修复（D016，2026-10-10）
 
 - ENGINEERING_READY；PLAYTEST=PENDING；仍为Phase1。用户最新决定已覆盖D015自由转向/六刀示例以及调味同时控温的安排；没有推进经营或Phase2。
 - 实际实现：切菜从菜谱读取“落刀/转向”谱，番茄当前为Space→D→Space，全中得到块。错键、离拍转向不改变方向；缺失转向会使后续不符方向的刀判Miss。切型和成功落刀数保留为食材处理状态，转向不算一刀。其他切型通过配方谱配置，不添加选择菜单。

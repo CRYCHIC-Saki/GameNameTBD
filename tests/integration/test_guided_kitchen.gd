@@ -130,7 +130,7 @@ func test_guided_restart_cleans_schedules_and_main_menu_has_only_play_and_exit()
 	assert_false(is_instance_valid(old))
 	var labels: Array=[]
 	for button: Button in app._menu.find_children("*","Button",true,false): labels.append(button.text)
-	assert_eq(labels,["走进厨房   →","退出"])
+	assert_eq(labels,["新开一间店   →","继续经营","退出"])
 	app.enter_full_kitchen(); kitchen=app.full_kitchen; kitchen.auto_advance=false
 	assert_false(kitchen.stage.visible)
 	assert_eq(kitchen.get_signal_connection_list("dish_delivered").size(),0)

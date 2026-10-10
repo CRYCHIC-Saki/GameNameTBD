@@ -12,6 +12,10 @@ func _initialize() -> void:
 		printerr(outcome.message)
 		failures += 1
 	var recipes := TDRecipeCatalog.new()
+	var service:=TDServiceCatalog.new()
+	var service_result:=service.load_file()
+	if not service_result.ok:
+		printerr(service_result.message); failures+=1
 	var full := TDCookingCatalog.new()
 	var full_result := full.load_file("res://content/cooking_system.json")
 	if not full_result.ok:

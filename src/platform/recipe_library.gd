@@ -74,14 +74,15 @@ func validate_plan(value: Variant) -> TDOutcome:
 		var allowed: Array = ["batch_id"]
 		match str(step.operation):
 			"add", "season": allowed = ["ingredient_id", "amount", "batch_id", "local_id"] + (["mode","sequence","local_ids"] if plan.schema_version == 2 and step.operation == "season" else [])
+			"starch": allowed = ["ingredient_id","amount","batch_id","local_id"]
 			"cut": allowed = ["ingredient_id", "shape", "batch_id", "target_local_id"] + (["beats"] if plan.schema_version == 2 else [])
 			"merge": allowed = ["source_batch", "target_batch"]
 			"plate": allowed = []
 		for key: String in args:
 			if key not in allowed: return TDOutcome.new(false, "UNEXPECTED_PLAN_FIELD", key)
-		if step.operation in ["cut", "add", "season"] and not definitions.has(args.get("ingredient_id")):
+		if step.operation in ["cut", "add", "season", "starch"] and not definitions.has(args.get("ingredient_id")):
 			return TDOutcome.new(false, "MISSING_REFERENCE")
-		if step.operation in ["add", "season"] and not _number(args.get("amount", 1), .001, float(definitions[args.ingredient_id].max_amount)):
+		if step.operation in ["add", "season", "starch"] and not _number(args.get("amount", 1), .001, float(definitions[args.ingredient_id].max_amount)):
 			return TDOutcome.new(false, "INVALID_AMOUNT")
 		if step.operation == "cut" and not _config.cut_shapes.has(args.get("shape")) and not (plan.schema_version == 2 and args.get("shape") == "whole"):
 			return TDOutcome.new(false, "INVALID_SHAPE")
@@ -95,7 +96,7 @@ func validate_plan(value: Variant) -> TDOutcome:
 				if item.ingredient_id != args.sequence[index] or definitions[item.ingredient_id].category != "seasoning" or not is_equal_approx(float(item.amount),float(args.get("amount",1))) or item.batch_id != args.get("batch_id","main"): return TDOutcome.new(false,"PLAN_MISMATCH")
 				introduced[local_id] = item.ingredient_id
 			continue
-		if step.operation in ["add", "season"]:
+		if step.operation in ["add", "season", "starch"]:
 			if not args.get("local_id") is String or not declared.has(args.local_id) or introduced.has(args.local_id): return TDOutcome.new(false, "INVALID_LOCAL_ID")
 			var item: Dictionary = declared[args.local_id]
 			if item.ingredient_id != args.ingredient_id or not is_equal_approx(float(item.amount), float(args.get("amount", 1))) or item.batch_id != args.get("batch_id", "main"):

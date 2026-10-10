@@ -1,0 +1,6367 @@
+{
+  "schema_version": 1,
+  "scope": "SINGLE_STORE",
+  "parameter_status": "PROPOSED",
+  "base": "res://content/cooking_system.json",
+  "ingredient_overrides": [
+    {
+      "id": "beef",
+      "name": "牛肉",
+      "scope": "PROTOTYPE",
+      "category": "meat",
+      "subcategory": "beef",
+      "quality": 0.8,
+      "base_tastes": [
+        0,
+        5,
+        0,
+        0,
+        2,
+        40,
+        0
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": -0.3,
+        "B": -0.6,
+        "C": 0
+      },
+      "aroma": {
+        "meat": 2
+      },
+      "region": [
+        "service.market"
+      ],
+      "special": [
+        "meat",
+        "protein",
+        "fat",
+        "cuttable"
+      ],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    },
+    {
+      "id": "oil",
+      "name": "食用油",
+      "scope": "PROTOTYPE",
+      "category": "seasoning",
+      "subcategory": "oil",
+      "quality": 0.8,
+      "base_tastes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": 0,
+        "B": 0,
+        "C": 0.2
+      },
+      "aroma": {},
+      "region": [
+        "service.market"
+      ],
+      "special": [
+        "fat"
+      ],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    },
+    {
+      "id": "starch",
+      "name": "淀粉",
+      "scope": "PROTOTYPE",
+      "category": "seasoning",
+      "subcategory": "starch",
+      "quality": 0.8,
+      "base_tastes": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": 0,
+        "B": 0,
+        "C": 0.6
+      },
+      "aroma": {},
+      "region": [
+        "service.market"
+      ],
+      "special": [
+        "starch"
+      ],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    },
+    {
+      "id": "vinegar",
+      "name": "醋",
+      "scope": "PROTOTYPE",
+      "category": "seasoning",
+      "subcategory": "vinegar",
+      "quality": 0.8,
+      "base_tastes": [
+        65,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
+      "aroma": {},
+      "region": [
+        "service.market"
+      ],
+      "special": [],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    },
+    {
+      "id": "soy_sauce",
+      "name": "酱油",
+      "scope": "PROTOTYPE",
+      "category": "seasoning",
+      "subcategory": "soy_sauce",
+      "quality": 0.8,
+      "base_tastes": [
+        0,
+        4,
+        0,
+        0,
+        55,
+        35,
+        0
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
+      "aroma": {},
+      "region": [
+        "service.market"
+      ],
+      "special": [],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    },
+    {
+      "id": "wine",
+      "name": "料酒",
+      "scope": "PROTOTYPE",
+      "category": "seasoning",
+      "subcategory": "wine",
+      "quality": 0.8,
+      "base_tastes": [
+        5,
+        5,
+        5,
+        0,
+        0,
+        8,
+        0
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
+      "aroma": {},
+      "region": [
+        "service.market"
+      ],
+      "special": [],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    },
+    {
+      "id": "ginger",
+      "name": "姜",
+      "scope": "PROTOTYPE",
+      "category": "seasoning",
+      "subcategory": "ginger",
+      "quality": 0.8,
+      "base_tastes": [
+        0,
+        0,
+        0,
+        18,
+        0,
+        0,
+        0
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
+      "aroma": {},
+      "region": [
+        "service.market"
+      ],
+      "special": [],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    },
+    {
+      "id": "garlic",
+      "name": "蒜",
+      "scope": "PROTOTYPE",
+      "category": "seasoning",
+      "subcategory": "garlic",
+      "quality": 0.8,
+      "base_tastes": [
+        0,
+        0,
+        0,
+        12,
+        0,
+        12,
+        0
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
+      "aroma": {},
+      "region": [
+        "service.market"
+      ],
+      "special": [],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    },
+    {
+      "id": "pepper",
+      "name": "花椒",
+      "scope": "PROTOTYPE",
+      "category": "seasoning",
+      "subcategory": "pepper",
+      "quality": 0.8,
+      "base_tastes": [
+        0,
+        0,
+        3,
+        5,
+        0,
+        0,
+        50
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
+      "aroma": {},
+      "region": [
+        "service.market"
+      ],
+      "special": [],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    },
+    {
+      "id": "scallion",
+      "name": "葱",
+      "scope": "PROTOTYPE",
+      "category": "seasoning",
+      "subcategory": "scallion",
+      "quality": 0.8,
+      "base_tastes": [
+        0,
+        2,
+        0,
+        5,
+        0,
+        8,
+        0
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
+      "aroma": {},
+      "region": [
+        "service.market"
+      ],
+      "special": [],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    }
+  ],
+  "ingredients": [
+    {
+      "id": "noodles",
+      "name": "河粉",
+      "scope": "PROTOTYPE",
+      "category": "starch",
+      "subcategory": "noodles",
+      "quality": 0.8,
+      "base_tastes": [
+        0,
+        5,
+        0,
+        0,
+        2,
+        12,
+        0
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": 0.2,
+        "B": 0.1,
+        "C": 0
+      },
+      "aroma": {
+        "noodles": 3
+      },
+      "region": [
+        "service.market"
+      ],
+      "special": [
+        "cuttable",
+        "starch"
+      ],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    },
+    {
+      "id": "tofu",
+      "name": "豆腐",
+      "scope": "PROTOTYPE",
+      "category": "protein",
+      "subcategory": "tofu",
+      "quality": 0.8,
+      "base_tastes": [
+        0,
+        4,
+        0,
+        0,
+        1,
+        22,
+        0
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": 0.2,
+        "B": 0.1,
+        "C": 0
+      },
+      "aroma": {
+        "tofu": 3
+      },
+      "region": [
+        "service.market"
+      ],
+      "special": [
+        "protein"
+      ],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    },
+    {
+      "id": "bean_paste",
+      "name": "豆瓣酱",
+      "scope": "PROTOTYPE",
+      "category": "seasoning",
+      "subcategory": "bean_paste",
+      "quality": 0.8,
+      "base_tastes": [
+        8,
+        4,
+        2,
+        40,
+        50,
+        30,
+        2
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": 0.2,
+        "B": 0.1,
+        "C": 0
+      },
+      "aroma": {
+        "bean_paste": 3
+      },
+      "region": [
+        "service.market"
+      ],
+      "special": [],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    },
+    {
+      "id": "chicken",
+      "name": "鸡肉",
+      "scope": "PROTOTYPE",
+      "category": "protein",
+      "subcategory": "chicken",
+      "quality": 0.8,
+      "base_tastes": [
+        0,
+        4,
+        0,
+        0,
+        2,
+        32,
+        0
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": 0.2,
+        "B": 0.1,
+        "C": 0
+      },
+      "aroma": {
+        "chicken": 3
+      },
+      "region": [
+        "service.market"
+      ],
+      "special": [
+        "cuttable",
+        "meat",
+        "protein"
+      ],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    },
+    {
+      "id": "peanut",
+      "name": "花生",
+      "scope": "PROTOTYPE",
+      "category": "protein",
+      "subcategory": "peanut",
+      "quality": 0.8,
+      "base_tastes": [
+        0,
+        8,
+        0,
+        0,
+        2,
+        18,
+        0
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": 0.2,
+        "B": 0.1,
+        "C": 0
+      },
+      "aroma": {
+        "peanut": 3
+      },
+      "region": [
+        "service.market"
+      ],
+      "special": [
+        "nuts"
+      ],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    },
+    {
+      "id": "pork",
+      "name": "猪肉",
+      "scope": "PROTOTYPE",
+      "category": "protein",
+      "subcategory": "pork",
+      "quality": 0.8,
+      "base_tastes": [
+        0,
+        4,
+        0,
+        0,
+        2,
+        30,
+        0
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": 0.2,
+        "B": 0.1,
+        "C": 0
+      },
+      "aroma": {
+        "pork": 3
+      },
+      "region": [
+        "service.market"
+      ],
+      "special": [
+        "cuttable",
+        "meat",
+        "protein"
+      ],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    },
+    {
+      "id": "chili",
+      "name": "辣椒",
+      "scope": "PROTOTYPE",
+      "category": "vegetable",
+      "subcategory": "chili",
+      "quality": 0.8,
+      "base_tastes": [
+        5,
+        6,
+        2,
+        48,
+        0,
+        7,
+        1
+      ],
+      "slot_profile": [
+        0.65,
+        1,
+        0.5,
+        0.3
+      ],
+      "texture": {
+        "A": 0.2,
+        "B": 0.1,
+        "C": 0
+      },
+      "aroma": {
+        "chili": 3
+      },
+      "region": [
+        "service.market"
+      ],
+      "special": [
+        "cuttable"
+      ],
+      "temperature_c": 22,
+      "max_amount": 10,
+      "available": true
+    }
+  ],
+  "recipes": [
+    {
+      "version": 1,
+      "is_custom": false,
+      "expects_aroma": false,
+      "expected_aroma": [],
+      "allowed_ingredients": [
+        "tomato",
+        "egg",
+        "oil",
+        "starch",
+        "salt",
+        "sugar",
+        "vinegar",
+        "soy_sauce",
+        "wine",
+        "ginger",
+        "garlic",
+        "pepper",
+        "scallion"
+      ],
+      "required_steps": [
+        "cut",
+        "heat"
+      ],
+      "recommended_steps": [
+        "preheat",
+        "stir",
+        "heat",
+        "season",
+        "starch",
+        "plate"
+      ],
+      "ideal_flavor": [],
+      "ideal_temperature": [
+        55,
+        70
+      ],
+      "ideal_texture": {},
+      "san_cost": {
+        "event": "deliver",
+        "amount": 0
+      },
+      "variant_ids": [],
+      "id": "service.tomato_egg",
+      "name": "番茄炒蛋",
+      "scope": "PROTOTYPE",
+      "required_ingredients": [
+        {
+          "id": "tomato",
+          "min_amount": 1,
+          "min_fine": 0.1,
+          "max_fine": 1,
+          "min_heat_dose": 0.2
+        },
+        {
+          "id": "egg",
+          "min_amount": 1,
+          "min_fine": 0,
+          "max_fine": 1,
+          "min_heat_dose": 0.2
+        }
+      ],
+      "preparation_sheets": {
+        "tomato": "prepare"
+      },
+      "guided_profile": "service.tomato_egg"
+    },
+    {
+      "version": 1,
+      "is_custom": false,
+      "expects_aroma": false,
+      "expected_aroma": [],
+      "allowed_ingredients": [
+        "noodles",
+        "beef",
+        "oil",
+        "starch",
+        "salt",
+        "sugar",
+        "vinegar",
+        "soy_sauce",
+        "wine",
+        "ginger",
+        "garlic",
+        "pepper",
+        "scallion"
+      ],
+      "required_steps": [
+        "cut",
+        "heat"
+      ],
+      "recommended_steps": [
+        "preheat",
+        "stir",
+        "heat",
+        "season",
+        "plate"
+      ],
+      "ideal_flavor": [],
+      "ideal_temperature": [
+        55,
+        70
+      ],
+      "ideal_texture": {},
+      "san_cost": {
+        "event": "deliver",
+        "amount": 0
+      },
+      "variant_ids": [],
+      "id": "service.beef_noodles",
+      "name": "干炒牛河",
+      "scope": "PROTOTYPE",
+      "required_ingredients": [
+        {
+          "id": "noodles",
+          "min_amount": 1,
+          "min_fine": 0.1,
+          "max_fine": 1,
+          "min_heat_dose": 0.2
+        },
+        {
+          "id": "beef",
+          "min_amount": 1,
+          "min_fine": 0,
+          "max_fine": 1,
+          "min_heat_dose": 0.2
+        }
+      ],
+      "preparation_sheets": {
+        "noodles": "service.strips"
+      },
+      "guided_profile": "service.beef_noodles"
+    },
+    {
+      "version": 1,
+      "is_custom": false,
+      "expects_aroma": false,
+      "expected_aroma": [],
+      "allowed_ingredients": [
+        "tofu",
+        "bean_paste",
+        "oil",
+        "starch",
+        "salt",
+        "sugar",
+        "vinegar",
+        "soy_sauce",
+        "wine",
+        "ginger",
+        "garlic",
+        "pepper",
+        "scallion"
+      ],
+      "required_steps": [
+        "heat"
+      ],
+      "recommended_steps": [
+        "preheat",
+        "stir",
+        "heat",
+        "season",
+        "starch",
+        "plate"
+      ],
+      "ideal_flavor": [],
+      "ideal_temperature": [
+        55,
+        70
+      ],
+      "ideal_texture": {},
+      "san_cost": {
+        "event": "deliver",
+        "amount": 0
+      },
+      "variant_ids": [],
+      "id": "service.mapo_tofu",
+      "name": "麻婆豆腐",
+      "scope": "PROTOTYPE",
+      "required_ingredients": [
+        {
+          "id": "tofu",
+          "min_amount": 1,
+          "min_fine": 0,
+          "max_fine": 1,
+          "min_heat_dose": 0.2
+        },
+        {
+          "id": "bean_paste",
+          "min_amount": 1,
+          "min_fine": 0,
+          "max_fine": 1,
+          "min_heat_dose": 0.2
+        }
+      ],
+      "preparation_sheets": {},
+      "guided_profile": "service.mapo_tofu"
+    },
+    {
+      "version": 1,
+      "is_custom": false,
+      "expects_aroma": false,
+      "expected_aroma": [],
+      "allowed_ingredients": [
+        "chicken",
+        "peanut",
+        "oil",
+        "starch",
+        "salt",
+        "sugar",
+        "vinegar",
+        "soy_sauce",
+        "wine",
+        "ginger",
+        "garlic",
+        "pepper",
+        "scallion"
+      ],
+      "required_steps": [
+        "cut",
+        "heat"
+      ],
+      "recommended_steps": [
+        "preheat",
+        "stir",
+        "heat",
+        "season",
+        "starch",
+        "plate"
+      ],
+      "ideal_flavor": [],
+      "ideal_temperature": [
+        55,
+        70
+      ],
+      "ideal_texture": {},
+      "san_cost": {
+        "event": "deliver",
+        "amount": 0
+      },
+      "variant_ids": [],
+      "id": "service.kungpao",
+      "name": "宫保鸡丁",
+      "scope": "PROTOTYPE",
+      "required_ingredients": [
+        {
+          "id": "chicken",
+          "min_amount": 1,
+          "min_fine": 0.1,
+          "max_fine": 1,
+          "min_heat_dose": 0.2
+        },
+        {
+          "id": "peanut",
+          "min_amount": 1,
+          "min_fine": 0,
+          "max_fine": 1,
+          "min_heat_dose": 0.2
+        }
+      ],
+      "preparation_sheets": {
+        "chicken": "service.dice"
+      },
+      "guided_profile": "service.kungpao"
+    },
+    {
+      "version": 1,
+      "is_custom": false,
+      "expects_aroma": false,
+      "expected_aroma": [],
+      "allowed_ingredients": [
+        "pork",
+        "chili",
+        "oil",
+        "starch",
+        "salt",
+        "sugar",
+        "vinegar",
+        "soy_sauce",
+        "wine",
+        "ginger",
+        "garlic",
+        "pepper",
+        "scallion"
+      ],
+      "required_steps": [
+        "cut",
+        "heat"
+      ],
+      "recommended_steps": [
+        "preheat",
+        "stir",
+        "heat",
+        "season",
+        "plate"
+      ],
+      "ideal_flavor": [],
+      "ideal_temperature": [
+        55,
+        70
+      ],
+      "ideal_texture": {},
+      "san_cost": {
+        "event": "deliver",
+        "amount": 0
+      },
+      "variant_ids": [],
+      "id": "service.pepper_pork",
+      "name": "辣椒炒肉",
+      "scope": "PROTOTYPE",
+      "required_ingredients": [
+        {
+          "id": "pork",
+          "min_amount": 1,
+          "min_fine": 0.1,
+          "max_fine": 1,
+          "min_heat_dose": 0.2
+        },
+        {
+          "id": "chili",
+          "min_amount": 1,
+          "min_fine": 0.1,
+          "max_fine": 1,
+          "min_heat_dose": 0.2
+        }
+      ],
+      "preparation_sheets": {
+        "pork": "service.slice",
+        "chili": "service.strips"
+      },
+      "guided_profile": "service.pepper_pork"
+    }
+  ],
+  "sheets": {
+    "service.slice": {
+      "id": "service.slice",
+      "dish": "切片",
+      "bpm": 120,
+      "groups": {
+        "cut": {
+          "operation": "cut",
+          "label": "切片 · 按谱操作",
+          "parameters": {}
+        }
+      },
+      "beats": [
+        {
+          "t": 1,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 2,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 3,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 4,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 5,
+          "lanes": {
+            "hand": {
+              "group": "cut",
+              "op": "cut",
+              "input": "primary",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 6,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 7,
+          "rest": true,
+          "lanes": {}
+        }
+      ],
+      "preview_beats": 4,
+      "charge_start_grace_beats": 4
+    },
+    "service.strips": {
+      "id": "service.strips",
+      "dish": "切条",
+      "bpm": 120,
+      "groups": {
+        "cut": {
+          "operation": "cut",
+          "label": "切条 · 按谱操作",
+          "parameters": {}
+        }
+      },
+      "beats": [
+        {
+          "t": 1,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 2,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 3,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 4,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 5,
+          "lanes": {
+            "hand": {
+              "group": "cut",
+              "op": "cut",
+              "input": "primary",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 6,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 7,
+          "lanes": {
+            "hand": {
+              "group": "cut",
+              "op": "cut",
+              "input": "primary",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 8,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 9,
+          "rest": true,
+          "lanes": {}
+        }
+      ],
+      "preview_beats": 4,
+      "charge_start_grace_beats": 4
+    },
+    "service.dice": {
+      "id": "service.dice",
+      "dish": "切丁",
+      "bpm": 120,
+      "groups": {
+        "cut": {
+          "operation": "cut",
+          "label": "切丁 · 按谱操作",
+          "parameters": {}
+        }
+      },
+      "beats": [
+        {
+          "t": 1,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 2,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 3,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 4,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 5,
+          "lanes": {
+            "hand": {
+              "group": "cut",
+              "op": "cut",
+              "input": "primary",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 6,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 7,
+          "lanes": {
+            "hand": {
+              "group": "cut",
+              "op": "cut",
+              "input": "rotate_right",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 8,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 9,
+          "lanes": {
+            "hand": {
+              "group": "cut",
+              "op": "cut",
+              "input": "primary",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 10,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 11,
+          "lanes": {
+            "hand": {
+              "group": "cut",
+              "op": "cut",
+              "input": "rotate_left",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 12,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 13,
+          "lanes": {
+            "hand": {
+              "group": "cut",
+              "op": "cut",
+              "input": "primary",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 14,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 15,
+          "rest": true,
+          "lanes": {}
+        }
+      ],
+      "preview_beats": 4,
+      "charge_start_grace_beats": 4
+    },
+    "service.tomato_egg": {
+      "id": "service.tomato_egg",
+      "dish": "番茄炒蛋",
+      "bpm": 120,
+      "groups": {
+        "ignite": {
+          "operation": "preheat",
+          "label": "热锅点火",
+          "parameters": {}
+        },
+        "oil": {
+          "operation": "season",
+          "label": "下油",
+          "parameters": {
+            "ingredient_id": "oil",
+            "amount": 0.1,
+            "mode": "common"
+          }
+        },
+        "load": {
+          "operation": "stir",
+          "label": "下料",
+          "parameters": {}
+        },
+        "stir-a": {
+          "operation": "stir",
+          "label": "翻炒 · 稳住火候",
+          "parameters": {}
+        },
+        "stir-b": {
+          "operation": "stir",
+          "label": "翻炒 · 均匀受热",
+          "parameters": {}
+        },
+        "stir-c": {
+          "operation": "stir",
+          "label": "翻炒 · 收拢食材",
+          "parameters": {}
+        },
+        "heat": {
+          "operation": "heat",
+          "label": "炒制控温",
+          "parameters": {}
+        },
+        "season": {
+          "operation": "season",
+          "label": "顺序调味",
+          "parameters": {
+            "ingredient_id": "salt",
+            "amount": 0.1,
+            "mode": "precise"
+          }
+        },
+        "starch": {
+          "operation": "starch",
+          "label": "勾芡",
+          "parameters": {
+            "ingredient_id": "starch",
+            "amount": 0.1
+          }
+        },
+        "plate": {
+          "operation": "plate",
+          "label": "把握出锅",
+          "parameters": {}
+        }
+      },
+      "beats": [
+        {
+          "t": 1,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 2,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 3,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 4,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 5,
+          "lanes": {
+            "hand": {
+              "group": "ignite",
+              "op": "preheat",
+              "input": "primary",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 6,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 7,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 8,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 9,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 10,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 11,
+          "lanes": {
+            "hand": {
+              "group": "oil",
+              "op": "season",
+              "input": "left",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 12,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 13,
+          "lanes": {
+            "hand": {
+              "group": "oil",
+              "op": "season",
+              "input": "right",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 14,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 15,
+          "lanes": {
+            "hand": {
+              "group": "oil",
+              "op": "season",
+              "input": "primary",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 16,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 17,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 18,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 19,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 20,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 21,
+          "lanes": {
+            "hand": {
+              "group": "load",
+              "op": "stir",
+              "input": "up",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 22,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 23,
+          "lanes": {
+            "hand": {
+              "group": "load",
+              "op": "stir",
+              "input": "down",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 24,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 25,
+          "lanes": {
+            "hand": {
+              "group": "load",
+              "op": "stir",
+              "input": "primary",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 26,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 27,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 28,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 29,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 30,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 31,
+          "lanes": {
+            "hand": {
+              "group": "stir-a",
+              "op": "stir",
+              "input": "up",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 32,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 33,
+          "lanes": {
+            "hand": {
+              "group": "stir-a",
+              "op": "stir",
+              "input": "left",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 34,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 35,
+          "lanes": {
+            "hand": {
+              "group": "stir-a",
+              "op": "stir",
+              "input": "down",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 36,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 37,
+          "lanes": {
+            "hand": {
+              "group": "stir-a",
+              "op": "stir",
+              "input": "right",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 38,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 39,
+          "lanes": {
+            "hand": {
+              "group": "stir-a",
+              "op": "stir",
+              "input": "primary",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 40,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 41,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 42,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 43,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 44,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 45,
+          "lanes": {
+            "hand": {
+              "group": "stir-b",
+              "op": "stir",
+              "input": "left",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 46,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 47,
+          "lanes": {
+            "hand": {
+              "group": "stir-b",
+              "op": "stir",
+              "input": "up",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 48,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 49,
+          "lanes": {
+            "hand": {
+              "group": "stir-b",
+              "op": "stir",
+              "input": "right",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 50,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 51,
+          "lanes": {
+            "hand": {
+              "group": "stir-b",
+              "op": "stir",
+              "input": "down",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 52,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 53,
+          "lanes": {
+            "hand": {
+              "group": "stir-b",
+              "op": "stir",
+              "input": "primary",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 54,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 55,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 56,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 57,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 58,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 59,
+          "lanes": {
+            "hand": {
+              "group": "stir-c",
+              "op": "stir",
+              "input": "down",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 60,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 61,
+          "lanes": {
+            "hand": {
+              "group": "stir-c",
+              "op": "stir",
+              "input": "right",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 62,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 63,
+          "lanes": {
+            "hand": {
+              "group": "stir-c",
+              "op": "stir",
+              "input": "up",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 64,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 65,
+          "lanes": {
+            "hand": {
+              "group": "stir-c",
+              "op": "stir",
+              "input": "left",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 66,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 67,
+          "lanes": {
+            "hand": {
+              "group": "stir-c",
+              "op": "stir",
+              "input": "primary",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 68,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 69,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 70,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 71,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 72,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 73,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 74,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 75,
+          "lanes": {
+            "mouse": {
+              "group": "season",
+              "op": "season",
+              "input": "spice:salt",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 76,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 77,
+          "lanes": {
+            "mouse": {
+              "group": "season",
+              "op": "season",
+              "input": "spice:sugar",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 78,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 79,
+          "lanes": {
+            "mouse": {
+              "group": "season",
+              "op": "season",
+              "input": "spice:oil",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 80,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 81,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 82,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 83,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 84,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 85,
+          "lanes": {
+            "hand": {
+              "group": "starch",
+              "op": "starch",
+              "input": "left",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 86,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 87,
+          "lanes": {
+            "hand": {
+              "group": "starch",
+              "op": "starch",
+              "input": "right",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 88,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 89,
+          "lanes": {
+            "hand": {
+              "group": "starch",
+              "op": "starch",
+              "input": "primary",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 90,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 91,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 92,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 93,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 94,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 95,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 96,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 97,
+          "lanes": {
+            "hand": {
+              "group": "plate",
+              "op": "plate",
+              "input": "primary",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 98,
+          "lanes": {
+            "hand": {
+              "group": "plate",
+              "op": "plate",
+              "input": "primary",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 99,
+          "lanes": {
+            "hand": {
+              "group": "plate",
+              "op": "plate",
+              "input": "primary",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 100,
+          "lanes": {
+            "hand": {
+              "group": "plate",
+              "op": "plate",
+              "input": "primary",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 101,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 102,
+          "rest": true,
+          "lanes": {}
+        }
+      ],
+      "preview_beats": 4,
+      "charge_start_grace_beats": 4
+    },
+    "service.beef_noodles": {
+      "id": "service.beef_noodles",
+      "dish": "干炒牛河",
+      "bpm": 120,
+      "groups": {
+        "ignite": {
+          "operation": "preheat",
+          "label": "热锅点火",
+          "parameters": {}
+        },
+        "oil": {
+          "operation": "season",
+          "label": "下油",
+          "parameters": {
+            "ingredient_id": "oil",
+            "amount": 0.1,
+            "mode": "common"
+          }
+        },
+        "load": {
+          "operation": "stir",
+          "label": "下料",
+          "parameters": {}
+        },
+        "stir-a": {
+          "operation": "stir",
+          "label": "翻炒 · 稳住火候",
+          "parameters": {}
+        },
+        "stir-b": {
+          "operation": "stir",
+          "label": "翻炒 · 均匀受热",
+          "parameters": {}
+        },
+        "stir-c": {
+          "operation": "stir",
+          "label": "翻炒 · 收拢食材",
+          "parameters": {}
+        },
+        "heat": {
+          "operation": "heat",
+          "label": "炒制控温",
+          "parameters": {}
+        },
+        "season": {
+          "operation": "season",
+          "label": "顺序调味",
+          "parameters": {
+            "ingredient_id": "soy_sauce",
+            "amount": 0.1,
+            "mode": "precise"
+          }
+        },
+        "plate": {
+          "operation": "plate",
+          "label": "把握出锅",
+          "parameters": {}
+        }
+      },
+      "beats": [
+        {
+          "t": 1,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 2,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 3,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 4,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 5,
+          "lanes": {
+            "hand": {
+              "group": "ignite",
+              "op": "preheat",
+              "input": "primary",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 6,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 7,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 8,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 9,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 10,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 11,
+          "lanes": {
+            "hand": {
+              "group": "oil",
+              "op": "season",
+              "input": "left",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 12,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 13,
+          "lanes": {
+            "hand": {
+              "group": "oil",
+              "op": "season",
+              "input": "right",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 14,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 15,
+          "lanes": {
+            "hand": {
+              "group": "oil",
+              "op": "season",
+              "input": "primary",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 16,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 17,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 18,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 19,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 20,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 21,
+          "lanes": {
+            "hand": {
+              "group": "load",
+              "op": "stir",
+              "input": "up",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 22,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 23,
+          "lanes": {
+            "hand": {
+              "group": "load",
+              "op": "stir",
+              "input": "down",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 24,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 25,
+          "lanes": {
+            "hand": {
+              "group": "load",
+              "op": "stir",
+              "input": "primary",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 26,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 27,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 28,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 29,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 30,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 31,
+          "lanes": {
+            "hand": {
+              "group": "stir-a",
+              "op": "stir",
+              "input": "up",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 32,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 33,
+          "lanes": {
+            "hand": {
+              "group": "stir-a",
+              "op": "stir",
+              "input": "left",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 34,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 35,
+          "lanes": {
+            "hand": {
+              "group": "stir-a",
+              "op": "stir",
+              "input": "down",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 36,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 37,
+          "lanes": {
+            "hand": {
+              "group": "stir-a",
+              "op": "stir",
+              "input": "right",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 38,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 39,
+          "lanes": {
+            "hand": {
+              "group": "stir-a",
+              "op": "stir",
+              "input": "primary",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 40,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 41,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 42,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 43,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 44,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 45,
+          "lanes": {
+            "hand": {
+              "group": "stir-b",
+              "op": "stir",
+              "input": "left",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 46,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 47,
+          "lanes": {
+            "hand": {
+              "group": "stir-b",
+              "op": "stir",
+              "input": "up",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 48,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 49,
+          "lanes": {
+            "hand": {
+              "group": "stir-b",
+              "op": "stir",
+              "input": "right",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 50,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 51,
+          "lanes": {
+            "hand": {
+              "group": "stir-b",
+              "op": "stir",
+              "input": "down",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 52,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 53,
+          "lanes": {
+            "hand": {
+              "group": "stir-b",
+              "op": "stir",
+              "input": "primary",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 54,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 55,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 56,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 57,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 58,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 59,
+          "lanes": {
+            "hand": {
+              "group": "stir-c",
+              "op": "stir",
+              "input": "down",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 60,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 61,
+          "lanes": {
+            "hand": {
+              "group": "stir-c",
+              "op": "stir",
+              "input": "right",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 62,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 63,
+          "lanes": {
+            "hand": {
+              "group": "stir-c",
+              "op": "stir",
+              "input": "up",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 64,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 65,
+          "lanes": {
+            "hand": {
+              "group": "stir-c",
+              "op": "stir",
+              "input": "left",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 66,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 67,
+          "lanes": {
+            "hand": {
+              "group": "stir-c",
+              "op": "stir",
+              "input": "primary",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 68,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 69,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 70,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 71,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 72,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 73,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 74,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 75,
+          "lanes": {
+            "mouse": {
+              "group": "season",
+              "op": "season",
+              "input": "spice:soy_sauce",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 76,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 77,
+          "lanes": {
+            "mouse": {
+              "group": "season",
+              "op": "season",
+              "input": "spice:salt",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 78,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 79,
+          "lanes": {
+            "mouse": {
+              "group": "season",
+              "op": "season",
+              "input": "spice:wine",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 80,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 81,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 82,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 83,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 84,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 85,
+          "lanes": {},
+          "rest": true
+        },
+        {
+          "t": 86,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 87,
+          "lanes": {},
+          "rest": true
+        },
+        {
+          "t": 88,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 89,
+          "lanes": {},
+          "rest": true
+        },
+        {
+          "t": 90,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 91,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 92,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 93,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 94,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 95,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 96,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 97,
+          "lanes": {
+            "hand": {
+              "group": "plate",
+              "op": "plate",
+              "input": "primary",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 98,
+          "lanes": {
+            "hand": {
+              "group": "plate",
+              "op": "plate",
+              "input": "primary",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 99,
+          "lanes": {
+            "hand": {
+              "group": "plate",
+              "op": "plate",
+              "input": "primary",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 100,
+          "lanes": {
+            "hand": {
+              "group": "plate",
+              "op": "plate",
+              "input": "primary",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 101,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 102,
+          "rest": true,
+          "lanes": {}
+        }
+      ],
+      "preview_beats": 4,
+      "charge_start_grace_beats": 4
+    },
+    "service.mapo_tofu": {
+      "id": "service.mapo_tofu",
+      "dish": "麻婆豆腐",
+      "bpm": 120,
+      "groups": {
+        "ignite": {
+          "operation": "preheat",
+          "label": "热锅点火",
+          "parameters": {}
+        },
+        "oil": {
+          "operation": "season",
+          "label": "下油",
+          "parameters": {
+            "ingredient_id": "oil",
+            "amount": 0.1,
+            "mode": "common"
+          }
+        },
+        "load": {
+          "operation": "stir",
+          "label": "下料",
+          "parameters": {}
+        },
+        "stir-a": {
+          "operation": "stir",
+          "label": "翻炒 · 稳住火候",
+          "parameters": {}
+        },
+        "stir-b": {
+          "operation": "stir",
+          "label": "翻炒 · 均匀受热",
+          "parameters": {}
+        },
+        "stir-c": {
+          "operation": "stir",
+          "label": "翻炒 · 收拢食材",
+          "parameters": {}
+        },
+        "heat": {
+          "operation": "heat",
+          "label": "炒制控温",
+          "parameters": {}
+        },
+        "season": {
+          "operation": "season",
+          "label": "顺序调味",
+          "parameters": {
+            "ingredient_id": "pepper",
+            "amount": 0.1,
+            "mode": "precise"
+          }
+        },
+        "starch": {
+          "operation": "starch",
+          "label": "勾芡",
+          "parameters": {
+            "ingredient_id": "starch",
+            "amount": 0.1
+          }
+        },
+        "plate": {
+          "operation": "plate",
+          "label": "把握出锅",
+          "parameters": {}
+        }
+      },
+      "beats": [
+        {
+          "t": 1,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 2,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 3,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 4,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 5,
+          "lanes": {
+            "hand": {
+              "group": "ignite",
+              "op": "preheat",
+              "input": "primary",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 6,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 7,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 8,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 9,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 10,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 11,
+          "lanes": {
+            "hand": {
+              "group": "oil",
+              "op": "season",
+              "input": "left",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 12,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 13,
+          "lanes": {
+            "hand": {
+              "group": "oil",
+              "op": "season",
+              "input": "right",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 14,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 15,
+          "lanes": {
+            "hand": {
+              "group": "oil",
+              "op": "season",
+              "input": "primary",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 16,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 17,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 18,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 19,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 20,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 21,
+          "lanes": {
+            "hand": {
+              "group": "load",
+              "op": "stir",
+              "input": "up",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 22,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 23,
+          "lanes": {
+            "hand": {
+              "group": "load",
+              "op": "stir",
+              "input": "down",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 24,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 25,
+          "lanes": {
+            "hand": {
+              "group": "load",
+              "op": "stir",
+              "input": "primary",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 26,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 27,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 28,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 29,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 30,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 31,
+          "lanes": {
+            "hand": {
+              "group": "stir-a",
+              "op": "stir",
+              "input": "up",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 32,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 33,
+          "lanes": {
+            "hand": {
+              "group": "stir-a",
+              "op": "stir",
+              "input": "left",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 34,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 35,
+          "lanes": {
+            "hand": {
+              "group": "stir-a",
+              "op": "stir",
+              "input": "down",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 36,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 37,
+          "lanes": {
+            "hand": {
+              "group": "stir-a",
+              "op": "stir",
+              "input": "right",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 38,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 39,
+          "lanes": {
+            "hand": {
+              "group": "stir-a",
+              "op": "stir",
+              "input": "primary",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 40,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 41,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 42,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 43,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 44,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 45,
+          "lanes": {
+            "hand": {
+              "group": "stir-b",
+              "op": "stir",
+              "input": "left",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 46,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 47,
+          "lanes": {
+            "hand": {
+              "group": "stir-b",
+              "op": "stir",
+              "input": "up",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 48,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 49,
+          "lanes": {
+            "hand": {
+              "group": "stir-b",
+              "op": "stir",
+              "input": "right",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 50,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 51,
+          "lanes": {
+            "hand": {
+              "group": "stir-b",
+              "op": "stir",
+              "input": "down",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 52,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 53,
+          "lanes": {
+            "hand": {
+              "group": "stir-b",
+              "op": "stir",
+              "input": "primary",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 54,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 55,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 56,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 57,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 58,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 59,
+          "lanes": {
+            "hand": {
+              "group": "stir-c",
+              "op": "stir",
+              "input": "down",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 60,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 61,
+          "lanes": {
+            "hand": {
+              "group": "stir-c",
+              "op": "stir",
+              "input": "right",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 62,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 63,
+          "lanes": {
+            "hand": {
+              "group": "stir-c",
+              "op": "stir",
+              "input": "up",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 64,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 65,
+          "lanes": {
+            "hand": {
+              "group": "stir-c",
+              "op": "stir",
+              "input": "left",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 66,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 67,
+          "lanes": {
+            "hand": {
+              "group": "stir-c",
+              "op": "stir",
+              "input": "primary",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 68,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 69,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 70,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 71,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 72,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 73,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 74,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 75,
+          "lanes": {
+            "mouse": {
+              "group": "season",
+              "op": "season",
+              "input": "spice:pepper",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 76,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 77,
+          "lanes": {
+            "mouse": {
+              "group": "season",
+              "op": "season",
+              "input": "spice:salt",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 78,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 79,
+          "lanes": {
+            "mouse": {
+              "group": "season",
+              "op": "season",
+              "input": "spice:garlic",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 80,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 81,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 82,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 83,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 84,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 85,
+          "lanes": {
+            "hand": {
+              "group": "starch",
+              "op": "starch",
+              "input": "left",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 86,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 87,
+          "lanes": {
+            "hand": {
+              "group": "starch",
+              "op": "starch",
+              "input": "right",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 88,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 89,
+          "lanes": {
+            "hand": {
+              "group": "starch",
+              "op": "starch",
+              "input": "primary",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 90,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 91,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 92,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 93,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 94,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 95,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 96,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 97,
+          "lanes": {
+            "hand": {
+              "group": "plate",
+              "op": "plate",
+              "input": "primary",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 98,
+          "lanes": {
+            "hand": {
+              "group": "plate",
+              "op": "plate",
+              "input": "primary",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 99,
+          "lanes": {
+            "hand": {
+              "group": "plate",
+              "op": "plate",
+              "input": "primary",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 100,
+          "lanes": {
+            "hand": {
+              "group": "plate",
+              "op": "plate",
+              "input": "primary",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 101,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 102,
+          "rest": true,
+          "lanes": {}
+        }
+      ],
+      "preview_beats": 4,
+      "charge_start_grace_beats": 4
+    },
+    "service.kungpao": {
+      "id": "service.kungpao",
+      "dish": "宫保鸡丁",
+      "bpm": 120,
+      "groups": {
+        "ignite": {
+          "operation": "preheat",
+          "label": "热锅点火",
+          "parameters": {}
+        },
+        "oil": {
+          "operation": "season",
+          "label": "下油",
+          "parameters": {
+            "ingredient_id": "oil",
+            "amount": 0.1,
+            "mode": "common"
+          }
+        },
+        "load": {
+          "operation": "stir",
+          "label": "下料",
+          "parameters": {}
+        },
+        "stir-a": {
+          "operation": "stir",
+          "label": "翻炒 · 稳住火候",
+          "parameters": {}
+        },
+        "stir-b": {
+          "operation": "stir",
+          "label": "翻炒 · 均匀受热",
+          "parameters": {}
+        },
+        "stir-c": {
+          "operation": "stir",
+          "label": "翻炒 · 收拢食材",
+          "parameters": {}
+        },
+        "heat": {
+          "operation": "heat",
+          "label": "炒制控温",
+          "parameters": {}
+        },
+        "season": {
+          "operation": "season",
+          "label": "顺序调味",
+          "parameters": {
+            "ingredient_id": "sugar",
+            "amount": 0.1,
+            "mode": "precise"
+          }
+        },
+        "starch": {
+          "operation": "starch",
+          "label": "勾芡",
+          "parameters": {
+            "ingredient_id": "starch",
+            "amount": 0.1
+          }
+        },
+        "plate": {
+          "operation": "plate",
+          "label": "把握出锅",
+          "parameters": {}
+        }
+      },
+      "beats": [
+        {
+          "t": 1,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 2,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 3,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 4,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 5,
+          "lanes": {
+            "hand": {
+              "group": "ignite",
+              "op": "preheat",
+              "input": "primary",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 6,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 7,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 8,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 9,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 10,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 11,
+          "lanes": {
+            "hand": {
+              "group": "oil",
+              "op": "season",
+              "input": "left",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 12,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 13,
+          "lanes": {
+            "hand": {
+              "group": "oil",
+              "op": "season",
+              "input": "right",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 14,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 15,
+          "lanes": {
+            "hand": {
+              "group": "oil",
+              "op": "season",
+              "input": "primary",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 16,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 17,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 18,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 19,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 20,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 21,
+          "lanes": {
+            "hand": {
+              "group": "load",
+              "op": "stir",
+              "input": "up",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 22,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 23,
+          "lanes": {
+            "hand": {
+              "group": "load",
+              "op": "stir",
+              "input": "down",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 24,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 25,
+          "lanes": {
+            "hand": {
+              "group": "load",
+              "op": "stir",
+              "input": "primary",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 26,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 27,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 28,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 29,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 30,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 31,
+          "lanes": {
+            "hand": {
+              "group": "stir-a",
+              "op": "stir",
+              "input": "up",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 32,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 33,
+          "lanes": {
+            "hand": {
+              "group": "stir-a",
+              "op": "stir",
+              "input": "left",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 34,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 35,
+          "lanes": {
+            "hand": {
+              "group": "stir-a",
+              "op": "stir",
+              "input": "down",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 36,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 37,
+          "lanes": {
+            "hand": {
+              "group": "stir-a",
+              "op": "stir",
+              "input": "right",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 38,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 39,
+          "lanes": {
+            "hand": {
+              "group": "stir-a",
+              "op": "stir",
+              "input": "primary",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 40,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 41,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 42,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 43,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 44,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 45,
+          "lanes": {
+            "hand": {
+              "group": "stir-b",
+              "op": "stir",
+              "input": "left",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 46,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 47,
+          "lanes": {
+            "hand": {
+              "group": "stir-b",
+              "op": "stir",
+              "input": "up",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 48,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 49,
+          "lanes": {
+            "hand": {
+              "group": "stir-b",
+              "op": "stir",
+              "input": "right",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 50,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 51,
+          "lanes": {
+            "hand": {
+              "group": "stir-b",
+              "op": "stir",
+              "input": "down",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 52,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 53,
+          "lanes": {
+            "hand": {
+              "group": "stir-b",
+              "op": "stir",
+              "input": "primary",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 54,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 55,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 56,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 57,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 58,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 59,
+          "lanes": {
+            "hand": {
+              "group": "stir-c",
+              "op": "stir",
+              "input": "down",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 60,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 61,
+          "lanes": {
+            "hand": {
+              "group": "stir-c",
+              "op": "stir",
+              "input": "right",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 62,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 63,
+          "lanes": {
+            "hand": {
+              "group": "stir-c",
+              "op": "stir",
+              "input": "up",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 64,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 65,
+          "lanes": {
+            "hand": {
+              "group": "stir-c",
+              "op": "stir",
+              "input": "left",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 66,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 67,
+          "lanes": {
+            "hand": {
+              "group": "stir-c",
+              "op": "stir",
+              "input": "primary",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 68,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 69,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 70,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 71,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 72,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 73,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 74,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 75,
+          "lanes": {
+            "mouse": {
+              "group": "season",
+              "op": "season",
+              "input": "spice:sugar",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 76,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 77,
+          "lanes": {
+            "mouse": {
+              "group": "season",
+              "op": "season",
+              "input": "spice:vinegar",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 78,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 79,
+          "lanes": {
+            "mouse": {
+              "group": "season",
+              "op": "season",
+              "input": "spice:soy_sauce",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 80,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 81,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 82,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 83,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 84,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 85,
+          "lanes": {
+            "hand": {
+              "group": "starch",
+              "op": "starch",
+              "input": "left",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 86,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 87,
+          "lanes": {
+            "hand": {
+              "group": "starch",
+              "op": "starch",
+              "input": "right",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 88,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 89,
+          "lanes": {
+            "hand": {
+              "group": "starch",
+              "op": "starch",
+              "input": "primary",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 90,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 91,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 92,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 93,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 94,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 95,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 96,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 97,
+          "lanes": {
+            "hand": {
+              "group": "plate",
+              "op": "plate",
+              "input": "primary",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 98,
+          "lanes": {
+            "hand": {
+              "group": "plate",
+              "op": "plate",
+              "input": "primary",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 99,
+          "lanes": {
+            "hand": {
+              "group": "plate",
+              "op": "plate",
+              "input": "primary",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 100,
+          "lanes": {
+            "hand": {
+              "group": "plate",
+              "op": "plate",
+              "input": "primary",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 101,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 102,
+          "rest": true,
+          "lanes": {}
+        }
+      ],
+      "preview_beats": 4,
+      "charge_start_grace_beats": 4
+    },
+    "service.pepper_pork": {
+      "id": "service.pepper_pork",
+      "dish": "辣椒炒肉",
+      "bpm": 120,
+      "groups": {
+        "ignite": {
+          "operation": "preheat",
+          "label": "热锅点火",
+          "parameters": {}
+        },
+        "oil": {
+          "operation": "season",
+          "label": "下油",
+          "parameters": {
+            "ingredient_id": "oil",
+            "amount": 0.1,
+            "mode": "common"
+          }
+        },
+        "load": {
+          "operation": "stir",
+          "label": "下料",
+          "parameters": {}
+        },
+        "stir-a": {
+          "operation": "stir",
+          "label": "翻炒 · 稳住火候",
+          "parameters": {}
+        },
+        "stir-b": {
+          "operation": "stir",
+          "label": "翻炒 · 均匀受热",
+          "parameters": {}
+        },
+        "stir-c": {
+          "operation": "stir",
+          "label": "翻炒 · 收拢食材",
+          "parameters": {}
+        },
+        "heat": {
+          "operation": "heat",
+          "label": "炒制控温",
+          "parameters": {}
+        },
+        "season": {
+          "operation": "season",
+          "label": "顺序调味",
+          "parameters": {
+            "ingredient_id": "soy_sauce",
+            "amount": 0.1,
+            "mode": "precise"
+          }
+        },
+        "plate": {
+          "operation": "plate",
+          "label": "把握出锅",
+          "parameters": {}
+        }
+      },
+      "beats": [
+        {
+          "t": 1,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 2,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 3,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 4,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 5,
+          "lanes": {
+            "hand": {
+              "group": "ignite",
+              "op": "preheat",
+              "input": "primary",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 6,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 7,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 8,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 9,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 10,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 11,
+          "lanes": {
+            "hand": {
+              "group": "oil",
+              "op": "season",
+              "input": "left",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 12,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 13,
+          "lanes": {
+            "hand": {
+              "group": "oil",
+              "op": "season",
+              "input": "right",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 14,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 15,
+          "lanes": {
+            "hand": {
+              "group": "oil",
+              "op": "season",
+              "input": "primary",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 16,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 17,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 18,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 19,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 20,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 21,
+          "lanes": {
+            "hand": {
+              "group": "load",
+              "op": "stir",
+              "input": "up",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 22,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 23,
+          "lanes": {
+            "hand": {
+              "group": "load",
+              "op": "stir",
+              "input": "down",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 24,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 25,
+          "lanes": {
+            "hand": {
+              "group": "load",
+              "op": "stir",
+              "input": "primary",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 26,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 27,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 28,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 29,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 30,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 31,
+          "lanes": {
+            "hand": {
+              "group": "stir-a",
+              "op": "stir",
+              "input": "up",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 32,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 33,
+          "lanes": {
+            "hand": {
+              "group": "stir-a",
+              "op": "stir",
+              "input": "left",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 34,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 35,
+          "lanes": {
+            "hand": {
+              "group": "stir-a",
+              "op": "stir",
+              "input": "down",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 36,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 37,
+          "lanes": {
+            "hand": {
+              "group": "stir-a",
+              "op": "stir",
+              "input": "right",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 38,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 39,
+          "lanes": {
+            "hand": {
+              "group": "stir-a",
+              "op": "stir",
+              "input": "primary",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 40,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 41,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 42,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 43,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 44,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 45,
+          "lanes": {
+            "hand": {
+              "group": "stir-b",
+              "op": "stir",
+              "input": "left",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 46,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 47,
+          "lanes": {
+            "hand": {
+              "group": "stir-b",
+              "op": "stir",
+              "input": "up",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 48,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 49,
+          "lanes": {
+            "hand": {
+              "group": "stir-b",
+              "op": "stir",
+              "input": "right",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 50,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 51,
+          "lanes": {
+            "hand": {
+              "group": "stir-b",
+              "op": "stir",
+              "input": "down",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 52,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 53,
+          "lanes": {
+            "hand": {
+              "group": "stir-b",
+              "op": "stir",
+              "input": "primary",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 54,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 55,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 56,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 57,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 58,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 59,
+          "lanes": {
+            "hand": {
+              "group": "stir-c",
+              "op": "stir",
+              "input": "down",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 60,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 61,
+          "lanes": {
+            "hand": {
+              "group": "stir-c",
+              "op": "stir",
+              "input": "right",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 62,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 63,
+          "lanes": {
+            "hand": {
+              "group": "stir-c",
+              "op": "stir",
+              "input": "up",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 64,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 65,
+          "lanes": {
+            "hand": {
+              "group": "stir-c",
+              "op": "stir",
+              "input": "left",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 66,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 67,
+          "lanes": {
+            "hand": {
+              "group": "stir-c",
+              "op": "stir",
+              "input": "primary",
+              "form": "tap"
+            },
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 68,
+          "lanes": {
+            "mouse": {
+              "group": "heat",
+              "op": "heat",
+              "input": "Mouse",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 69,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 70,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 71,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 72,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 73,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 74,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 75,
+          "lanes": {
+            "mouse": {
+              "group": "season",
+              "op": "season",
+              "input": "spice:soy_sauce",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 76,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 77,
+          "lanes": {
+            "mouse": {
+              "group": "season",
+              "op": "season",
+              "input": "spice:salt",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 78,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 79,
+          "lanes": {
+            "mouse": {
+              "group": "season",
+              "op": "season",
+              "input": "spice:wine",
+              "form": "tap"
+            }
+          }
+        },
+        {
+          "t": 80,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 81,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 82,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 83,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 84,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 85,
+          "lanes": {},
+          "rest": true
+        },
+        {
+          "t": 86,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 87,
+          "lanes": {},
+          "rest": true
+        },
+        {
+          "t": 88,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 89,
+          "lanes": {},
+          "rest": true
+        },
+        {
+          "t": 90,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 91,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 92,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 93,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 94,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 95,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 96,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 97,
+          "lanes": {
+            "hand": {
+              "group": "plate",
+              "op": "plate",
+              "input": "primary",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 98,
+          "lanes": {
+            "hand": {
+              "group": "plate",
+              "op": "plate",
+              "input": "primary",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 99,
+          "lanes": {
+            "hand": {
+              "group": "plate",
+              "op": "plate",
+              "input": "primary",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 100,
+          "lanes": {
+            "hand": {
+              "group": "plate",
+              "op": "plate",
+              "input": "primary",
+              "form": "hold"
+            }
+          }
+        },
+        {
+          "t": 101,
+          "rest": true,
+          "lanes": {}
+        },
+        {
+          "t": 102,
+          "rest": true,
+          "lanes": {}
+        }
+      ],
+      "preview_beats": 4,
+      "charge_start_grace_beats": 4
+    }
+  },
+  "offers": [
+    {
+      "id": "service.tomato_egg",
+      "reference_cents": 1800,
+      "source": "Onboarding 剧本（具体案例）.md §B.2 第1天",
+      "primary": [
+        "tomato",
+        "egg"
+      ],
+      "parameter_status": "PROPOSED",
+      "stock": {
+        "tomato": 1000,
+        "egg": 1000,
+        "oil": 400,
+        "salt": 400,
+        "sugar": 400,
+        "vinegar": 400,
+        "soy_sauce": 400,
+        "wine": 400,
+        "ginger": 400,
+        "garlic": 400,
+        "pepper": 400,
+        "scallion": 400,
+        "starch": 100
+      }
+    },
+    {
+      "id": "service.beef_noodles",
+      "reference_cents": 2800,
+      "source": "towns.json 干炒牛河；做菜操作.md §4.2",
+      "primary": [
+        "noodles",
+        "beef"
+      ],
+      "parameter_status": "PROPOSED",
+      "stock": {
+        "noodles": 1000,
+        "beef": 1000,
+        "oil": 400,
+        "salt": 400,
+        "sugar": 400,
+        "vinegar": 400,
+        "soy_sauce": 400,
+        "wine": 400,
+        "ginger": 400,
+        "garlic": 400,
+        "pepper": 400,
+        "scallion": 400
+      }
+    },
+    {
+      "id": "service.mapo_tofu",
+      "reference_cents": 2200,
+      "source": "towns.json 麻婆豆腐",
+      "primary": [
+        "tofu",
+        "bean_paste"
+      ],
+      "parameter_status": "PROPOSED",
+      "stock": {
+        "tofu": 1000,
+        "bean_paste": 1000,
+        "oil": 400,
+        "salt": 400,
+        "sugar": 400,
+        "vinegar": 400,
+        "soy_sauce": 400,
+        "wine": 400,
+        "ginger": 400,
+        "garlic": 400,
+        "pepper": 400,
+        "scallion": 400,
+        "starch": 100
+      }
+    },
+    {
+      "id": "service.kungpao",
+      "reference_cents": 2600,
+      "source": "towns.json 宫保鸡丁",
+      "primary": [
+        "chicken",
+        "peanut"
+      ],
+      "parameter_status": "PROPOSED",
+      "stock": {
+        "chicken": 1000,
+        "peanut": 1000,
+        "oil": 400,
+        "salt": 400,
+        "sugar": 400,
+        "vinegar": 400,
+        "soy_sauce": 400,
+        "wine": 400,
+        "ginger": 400,
+        "garlic": 400,
+        "pepper": 400,
+        "scallion": 400,
+        "starch": 100
+      }
+    },
+    {
+      "id": "service.pepper_pork",
+      "reference_cents": 2400,
+      "source": "towns.json 辣椒炒肉",
+      "primary": [
+        "pork",
+        "chili"
+      ],
+      "parameter_status": "PROPOSED",
+      "stock": {
+        "pork": 1000,
+        "chili": 1000,
+        "oil": 400,
+        "salt": 400,
+        "sugar": 400,
+        "vinegar": 400,
+        "soy_sauce": 400,
+        "wine": 400,
+        "ginger": 400,
+        "garlic": 400,
+        "pepper": 400,
+        "scallion": 400
+      }
+    }
+  ],
+  "costs": {
+    "tomato": 200,
+    "egg": 150,
+    "beef": 700,
+    "oil": 150,
+    "starch": 80,
+    "salt": 50,
+    "sugar": 80,
+    "vinegar": 80,
+    "soy_sauce": 100,
+    "wine": 120,
+    "ginger": 150,
+    "garlic": 100,
+    "pepper": 150,
+    "scallion": 100,
+    "noodles": 200,
+    "tofu": 200,
+    "bean_paste": 200,
+    "chicken": 500,
+    "peanut": 200,
+    "pork": 500,
+    "chili": 200
+  },
+  "settings": {
+    "initial_cents": 30000,
+    "day_sec": 360,
+    "arrival_sec": 75,
+    "patience_sec": 240,
+    "max_orders": 3,
+    "grant_cents": 10000,
+    "initial_popularity": 50,
+    "refund_below": 35
+  },
+  "review": "菜名与流程有原文来源；所有新增数量、口味、价格、节奏为建议值。存量TEST_ONLY调料仅在此显式审核增量中转为营业原型；基础测试库不改。"
+}

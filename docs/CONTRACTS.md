@@ -1,5 +1,17 @@
 # 公共契约：v3完整烹饪，兼容v1/v2历史入口
 
+## Phase2营业契约 v1（D017）
+
+- TDServiceCatalog显式组合只读cooking_system基础与service_content增量，产出相同TDCookingCatalog；营业active菜单独立，禁止TEST_ONLY入菜单。来源/金额/整数库存量/谱引用必须校验。
+- TDShopSession拥有日期、PREPARE→OPEN→DRAINING→SETTLED、订单、库存、预留、账本、方案及经营指标；只通过方法变更，snapshot深复制。UI/厨房只发意图。订单WAITING→COOKING→SERVED或CANCELLED/TIMED_OUT；售后退款有独立幂等记录。
+- 金钱整数分，库存整数毫份（1000=1标准份），计时秒。采购/预留全量先检查再提交，库存总量不含重复副本；可用量=总量−有效预留。消费记录按食材和订单累计去重；取消仅释放未用预留。
+- 订单、菜品、交易、日结、配方使用稳定ID。重复请求返回DUPLICATE/ALREADY_FINISHED，不重复扣料收退或推进日期。错单保留盘子；评分读取真实成品且不回写属性。
+- 自建条目保存name/id/version与经过TDRecipeLibrary验证的食材工序plan及可复现谱，不保存成绩/随机结果。改名不变ID，制作仍执行真实QTE。
+- TDShopStore仅接受PREPARE/SETTLED合法快照，版本1信封含payload文本与SHA256；临时文件→读回校验→保留备份→替换。主档损坏/未知版本不自动新建或覆盖；恢复备份须明确操作，未知版本拒绝回退。注入中断点用于真实磁盘恢复测试，测试目录隔离。
+- FullKitchen增加可选station_handler与推进信号，让营业入口绑定订单并接管供料/出餐，未注入时Phase1行为不变。所有锅/菜板仍用原Session/Lane/QTE，不建立演示专用做菜路径。
+- `time_boundary(maximum_sec)→正秒数≤maximum` 由营业规则注入；FullKitchen逐段推进后发 `time_advanced(seconds)`，订阅方立即处理到期清理，防止长帧晚扣料。`open_station_view/refresh_world` 是厨房公开入口；`station_names` 注入显示名，稳定功能位ID不变。Lane的 `session_namespace` 用订单ID隔离回调，`customer_override` 使用当前顾客声明需求。
+- 方案只支持当前自动链：编译真实保存的切型与鼠标轨调味顺序；不能忽略不支持的工序顺序后按基础谱播放。保存字段、建议值、失败策略见 `systems/business.md`。
+
 ## D016增量契约（优先于D015冲突条目）
 
 - 菜谱可声明 `preparation_sheets: {ingredient_id: sheet_id}`；引用须存在且为切菜谱。逐拍cut允许 `primary/rotate_left/rotate_right`，编译为 `cut_actions` 与目标刀向。旋转也是判定音符；错键、离拍旋转不改变刀向，只有成功的落刀增加 `cut_directions` 与食材细碎度。旧无cut_actions控制器只服务历史回归。

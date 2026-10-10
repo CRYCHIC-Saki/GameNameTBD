@@ -27,6 +27,7 @@ var _held_label: Label
 var _simmer_label: Label
 var _near_prompt: Label
 var simmer_meters: Array=[]
+var station_names: Dictionary={}
 
 func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
@@ -37,7 +38,7 @@ func _ready() -> void:
 	_hud.z_index=2
 	_near_prompt=TDUI.label("[ E ]",20,TDUI.ORANGE); _near_prompt.size=Vector2(72,30); _near_prompt.autowrap_mode=TextServer.AUTOWRAP_OFF; _near_prompt.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER; _hud.add_child(_near_prompt)
 	for station: Dictionary in STATIONS:
-		var label := TDUI.label(station.name, 16, TDUI.ORANGE)
+		var label := TDUI.label(str(station_names.get(station.id,station.name)), 16, TDUI.ORANGE)
 		label.position = (station.get("visual",station.position+Vector2(0,-120)) as Vector2) + Vector2(-60,15)
 		label.size = Vector2(120,28); label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		_hud.add_child(label)
@@ -71,6 +72,9 @@ func interaction_available() -> bool:
 
 func player_position() -> Vector2:
 	return _player.position if is_instance_valid(_player) else Vector2.ZERO
+
+func set_return_visible(value: bool) -> void:
+	if is_instance_valid(_back_button): _back_button.visible=value
 
 func request_interaction() -> bool:
 	if not interaction_available():
@@ -174,7 +178,7 @@ func _station_hint(id: String) -> String:
 	var hand: Dictionary = _context.get("hand",{})
 	if id.begins_with("kitchen.supply."): return "拿一份食材" if hand.is_empty() else "先放下手上的东西"
 	if id == "kitchen.board": return "取走备好的食材" if _context.get("board_occupied",false) else "放下食材并备菜"
-	if id == "kitchen.serve": return "交付试吃" if hand.get("kind") == "dish" else "把出锅的菜端到这里"
+	if id == "kitchen.serve": return "交付客人" if hand.get("kind") == "dish" else "把出锅的菜端到这里"
 	return "放入食材" if hand.get("kind") == "ingredient" else "操作 / 端起成品"
 
 func _draw() -> void:

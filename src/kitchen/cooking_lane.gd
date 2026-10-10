@@ -16,6 +16,8 @@ var input_offset_sec: float = 0.0
 var dual: bool = false
 var generation: int = 0
 var base_recipe_id: String = "tomato_egg"
+var session_namespace: String = ""
+var customer_override: Array = []
 var custom_entry: Dictionary = {}
 var _operation_counter: int = 0
 var _sequence: int = 0
@@ -121,7 +123,9 @@ func new_session(recipe_id: String, entry: Dictionary = {}) -> void:
 		for step: Dictionary in entry.plan.operations:
 			if _content.operations.has(step.operation) and step.operation != "plate" and step.operation not in steps: steps.append(step.operation)
 		options.custom_recipe = {"id": entry.id, "name": entry.name, "version": entry.version, "required_ingredients": required, "required_steps": steps, "allowed_ingredients": amounts.keys(), "variant_ids": []}
-	session = TDCookingSession.new("lane-%d-%d" % [lane_index, generation], generation, catalog.for_recipe(recipe_id), options)
+	var identity: String = "lane-%d-%d" % [lane_index,generation]
+	if not session_namespace.is_empty(): identity=session_namespace+":"+identity
+	session = TDCookingSession.new(identity, generation, catalog.for_recipe(recipe_id), options)
 	session.result_ready.connect(_on_session_result)
 	_operation_counter = 0
 	_sequence = 0
@@ -294,7 +298,7 @@ func _on_session_result(result: TDOutcome) -> void:
 		dish_delivered.emit(result.data.duplicate(true))
 		_customer_feedback.clear()
 		var lines: Array[String] = []
-		for customer: Dictionary in _content.customers:
+		for customer: Dictionary in customer_profiles():
 			var rating := scorer.evaluate(result.data, customer)
 			if not rating.ok:
 				lines.append("评分失败：" + rating.code + " " + rating.message)
@@ -742,4 +746,4 @@ func _refresh_pc(dish: Dictionary) -> void:
 	tabs.set_tab_hidden(2,station_role == "board")
 
 func customer_profiles() -> Array:
-	return _content.customers.duplicate(true)
+	return customer_override.duplicate(true) if not customer_override.is_empty() else _content.customers.duplicate(true)

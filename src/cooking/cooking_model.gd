@@ -915,7 +915,7 @@ func _record(kind: String, args: Dictionary, before: Dictionary, result: Diction
 			plan_args.ingredient_id = target.ingredient_id
 			plan_args.batch_id = target.batch_id
 			if _pc_controls: plan_args.shape = target.shape
-		if kind in ["add", "season"] and not _consumed.is_empty():
+		if kind in ["add", "season", "starch"] and not _consumed.is_empty():
 			plan_args.local_id = _consumed.back().local_id
 		_plan.append({"operation": kind, "parameters": plan_args})
 

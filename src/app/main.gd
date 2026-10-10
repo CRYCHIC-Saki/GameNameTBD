@@ -9,6 +9,8 @@ const FULL_SCENE := preload("res://src/kitchen/full_kitchen.tscn")
 @export var initial_cooking: bool = false
 @export var initial_full: bool = false
 var full_kitchen: TDFullKitchen
+var shop_view: TDShopView
+var shop_save_path: String = "user://shop-v1.json"
 var full_catalog := TDCookingCatalog.new()
 var settings_path: String = "user://settings.json"
 var kitchen: TDDevelopmentKitchen
@@ -24,6 +26,7 @@ var _show_debug: bool = false
 var _paused: bool = false
 
 func _ready() -> void:
+	get_tree().auto_accept_quit=false
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	theme = TDUI.theme()
 	_store = TDSettingsStore.new(settings_path)
@@ -68,6 +71,12 @@ func return_to_menu() -> void:
 	_dispose_kitchen()
 	_menu.show()
 
+func enter_shop(resume_saved: bool = false) -> void:
+	_dispose_kitchen()
+	shop_view=TDShopView.new(); shop_view.save_path=shop_save_path; shop_view.resume_saved=resume_saved
+	shop_view.back_requested.connect(return_to_menu); shop_view.pause_requested.connect(toggle_pause)
+	_menu.hide(); add_child(shop_view)
+
 func enter_full_kitchen() -> void:
 	_dispose_kitchen()
 	if full_catalog.data().is_empty(): return
@@ -105,7 +114,7 @@ func enter_cooking() -> void:
 	add_child(cooking_kitchen)
 
 func toggle_pause() -> void:
-	if kitchen == null and cooking_kitchen == null and full_kitchen == null:
+	if kitchen == null and cooking_kitchen == null and full_kitchen == null and shop_view == null:
 		return
 	_paused = not _paused
 	get_tree().paused = _paused
@@ -115,14 +124,21 @@ func toggle_pause() -> void:
 		cooking_kitchen.set_paused(_paused)
 	if full_kitchen != null:
 		full_kitchen.set_paused(_paused)
+	if shop_view != null: shop_view.set_paused(_paused)
 
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and is_inside_tree() and (kitchen != null or cooking_kitchen != null or full_kitchen != null) and not _paused:
+	if what==NOTIFICATION_WM_CLOSE_REQUEST and is_inside_tree():
+		if shop_view!=null: shop_view.request_leave(func()->void:get_tree().quit())
+		else: get_tree().quit()
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and is_inside_tree() and (kitchen != null or cooking_kitchen != null or full_kitchen != null or shop_view != null) and not _paused:
 		toggle_pause()
 
 func _dispose_kitchen() -> void:
 	_paused = false
 	get_tree().paused = false
+	if is_instance_valid(shop_view):
+		shop_view.close(); remove_child(shop_view); shop_view.queue_free()
+	shop_view=null
 	if is_instance_valid(full_kitchen):
 		full_kitchen.close()
 		remove_child(full_kitchen)
@@ -140,6 +156,7 @@ func _dispose_kitchen() -> void:
 	cooking_kitchen = null
 
 func _exit_tree() -> void:
+	if is_instance_valid(shop_view): shop_view.close()
 	if is_instance_valid(full_kitchen):
 		full_kitchen.close()
 	if is_instance_valid(kitchen):
@@ -161,18 +178,19 @@ func _build_menu(config: TDOutcome) -> void:
 		_menu.add_theme_constant_override("margin_" + side, 64)
 	add_child(_menu)
 	var column := TDUI.column(_menu, 22)
-	column.add_child(TDUI.label("TOWN DINER   /   PROTOTYPE 01", 17, TDUI.ORANGE))
+	column.add_child(TDUI.label("TOWN DINER   /   SINGLE STORE", 17, TDUI.ORANGE))
 	column.add_child(TDUI.label("小镇食堂", 62))
 	column.add_child(TDUI.label("从一间小店，开始我们的故事。", 26))
-	column.add_child(TDUI.label("今天，从一份番茄炒蛋开始。\n听拍切菜、调味控火，看看你的做法是否合客人的口味。", 20, TDUI.MUTED))
+	column.add_child(TDUI.label("备好食材，写下今日菜单，迎接第一位客人。\n按菜谱打谱做菜，用每天的反馈经营这间小店。", 20, TDUI.MUTED))
 	var spacer := Control.new()
 	spacer.custom_minimum_size.y = 20
 	column.add_child(spacer)
-	var start := TDUI.button("走进厨房   →", enter_full_kitchen)
+	var start := TDUI.button("新开一间店   →", func()->void:enter_shop(false))
 	start.custom_minimum_size = Vector2(360, 60)
 	start.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	start.disabled = full_catalog.data().is_empty()
 	column.add_child(start)
+	column.add_child(TDUI.button("继续经营",func()->void:enter_shop(true)))
 	column.add_child(TDUI.label("WASD 走动 · E 拿取 / 交互 · 跟随节拍做菜 · Esc 暂停", 17, TDUI.MUTED))
 	_settings_message = TDUI.label("占位界面 · 原型建议数值 · 人工玩法验收待完成。", 16, TDUI.MUTED)
 	column.add_child(_settings_message)

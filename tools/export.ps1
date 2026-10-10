@@ -40,7 +40,7 @@ try {
   try {
     $names = @($archive.Entries | ForEach-Object { $_.FullName })
     foreach ($name in $names) {
-      if ($name -notmatch '^(src/|\.godot/|assets/kitchen/[^/]+\.png(\.import)?$|content/(dev_samples|cooking_prototype|cooking_system)\.json$|project\.binary$)') { throw "Non-runtime resource exported: $name" }
+      if ($name -notmatch '^(src/|\.godot/|assets/kitchen/[^/]+\.png(\.import)?$|content/(dev_samples|cooking_prototype|cooking_system|service_content)\.json$|project\.binary$)') { throw "Non-runtime resource exported: $name" }
     }
     $names | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'runtime-manifest.json') -Encoding utf8
   } finally { $archive.Dispose() }
