@@ -19,6 +19,7 @@ func load_data(raw: Variant, source: String = "<memory>") -> TDOutcome:
 	_source = source
 	if not raw is Dictionary or not _json_value(raw):
 		return _bad("$", "finite JSON object required")
+	if raw.has("pc_operations") and not raw.pc_operations is Dictionary: return _bad("pc_operations","object required")
 	if raw.get("schema_version") != 3 or raw.get("scope") != "COOKING_SYSTEM" or raw.get("parameter_status") != "PROPOSED":
 		return _bad("schema_version", "expected schema 3 COOKING_SYSTEM")
 	for field: String in ["active", "operations", "qtes", "rules", "scoring_rules", "cut_shapes"]:
@@ -99,6 +100,16 @@ func load_data(raw: Variant, source: String = "<memory>") -> TDOutcome:
 			for op: String in recipe[key]:
 				if not raw.operations.has(op):
 					return _bad(path + "." + key, "unknown operation", "MISSING_REFERENCE")
+		if recipe.has("preparation_sheets"):
+			if not recipe.preparation_sheets is Dictionary: return _bad(path,"preparation sheet map required")
+			for ingredient_id: String in recipe.preparation_sheets:
+				var sheet_id: Variant = recipe.preparation_sheets[ingredient_id]
+				var charts: Variant = raw.get("pc_operations",{}).get("document_sheets",{})
+				if not charts is Dictionary: return _bad(path,"preparation sheet collection required")
+				if ingredient_id not in raw.active.ingredients or not sheet_id is String or not charts.has(sheet_id): return _bad(path,"unknown preparation ingredient/sheet","MISSING_REFERENCE")
+				if not charts[sheet_id].get("groups") is Dictionary: return _bad(path,"invalid preparation sheet")
+				for group: Dictionary in charts[sheet_id].groups.values():
+					if group.get("operation") != "cut": return _bad(path,"preparation must contain cut operations")
 		for key: String in ["allowed_ingredients", "variant_ids", "expected_aroma"]:
 			if not _strings(recipe.get(key)):
 				return _bad(path + "." + key, "string list required")
@@ -174,7 +185,7 @@ func load_data(raw: Variant, source: String = "<memory>") -> TDOutcome:
 	if not rules_check.ok:
 		return rules_check
 	if raw.has("pc_operations"):
-		var pc_check: TDOutcome = _check_pc(raw.pc_operations, raw.operations, indexed.ingredients)
+		var pc_check: TDOutcome = _check_pc(raw.pc_operations, raw.operations, indexed.ingredients,indexed.recipes)
 		if not pc_check.ok: return pc_check
 	_data = raw.duplicate(true)
 	# Candidate entries outside the explicit active set are not runtime definitions.
@@ -286,7 +297,7 @@ func _check_rules(rules: Dictionary) -> TDOutcome:
 func _cost(value: Variant) -> bool:
 	return value is Dictionary and value.get("event") == "deliver" and _range(value.get("amount"), 0, 100)
 
-func _check_pc(pc: Variant, operations: Dictionary, ingredients: Dictionary) -> TDOutcome:
+func _check_pc(pc: Variant, operations: Dictionary, ingredients: Dictionary, recipes: Dictionary) -> TDOutcome:
 	if not pc is Dictionary or not _range(pc.get("bpm"), 30, 240) or not _range(pc.get("max_fine_steps"), 1, 16) or not pc.get("modules") is Dictionary or not pc.get("sheets") is Dictionary or not pc.get("weights") is Dictionary: return _bad("pc_operations", "invalid PC configuration")
 	for field: String in ["diagonal_release_bonus", "stir_texture_gain", "stir_harmony_gain"]:
 		if not _range(pc.get(field), 0, 10): return _bad("pc_operations." + field, "bounded coefficient required")
@@ -309,6 +320,10 @@ func _check_pc(pc: Variant, operations: Dictionary, ingredients: Dictionary) -> 
 		if not sheet.configure(pc.sheets[id], operations).ok: return _bad("pc_operations.sheets." + id, "invalid or conflicting beat sheet")
 	if pc.has("document_sheets"):
 		if not pc.document_sheets is Dictionary or not pc.get("document_weights") is Dictionary: return _bad("pc_operations.document_sheets","typed sheets and weights required")
+		if not pc.get("document_rules") is Dictionary or not pc.document_rules.get("preparation_recipes") is Dictionary or not _range(pc.document_rules.get("feedback_sec"),.5,3): return _bad("document_rules","preparation map and bounded feedback lifetime required")
+		for ingredient: String in pc.document_rules.preparation_recipes:
+			var target: Variant=pc.document_rules.preparation_recipes[ingredient]
+			if not ingredients.has(ingredient) or not target is String or not recipes.has(target): return _bad("document_rules.preparation_recipes","unknown ingredient/recipe","MISSING_REFERENCE")
 		for module: String in ["M1","M2","M3","M4","M5","M6","M7"]:
 			if not _range(pc.document_weights.get(module),0,100): return _bad("document_weights","invalid module weight")
 		for id: String in pc.document_sheets:

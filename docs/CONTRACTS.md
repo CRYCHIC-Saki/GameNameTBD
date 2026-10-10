@@ -1,5 +1,12 @@
 # 公共契约：v3完整烹饪，兼容v1/v2历史入口
 
+## D016增量契约（优先于D015冲突条目）
+
+- 菜谱可声明 `preparation_sheets: {ingredient_id: sheet_id}`；引用须存在且为切菜谱。逐拍cut允许 `primary/rotate_left/rotate_right`，编译为 `cut_actions` 与目标刀向。旋转也是判定音符；错键、离拍旋转不改变刀向，只有成功的落刀增加 `cut_directions` 与食材细碎度。旧无cut_actions控制器只服务历史回归。
+- 谱面的 `preview_beats` 为有限拍数；长按编译输出 `charge_preview_sec/start_grace_sec`。起手等待与蓄力分离：首次合法按下后提供完整目标持续时间及松手容错，始终有有限超时；暂停/失焦释放不等于出锅。
+- QTE进度新增只读 `last_judgement`：递增serial、grade、reason、action、beat_index、error_sec、at_sec；重复读取不产生判定。Lane保存带显示时刻的分离反馈；UI只读取，音效只在新事件时播放。完成反馈不因qte对象释放而丢失。
+- 当前本锅时表不允许M4覆盖M6；编译时检查整个鼠标占用区间。双锅M6鼠标预约通过上层入口装配，连续控制 `set_control_suspended` 保持游标、累计实际热量、排除本段稳定率分母，暂停游戏时仍全部冻结。零有效评估时长得0，不以托管冒充玩家成功。
+
 ## 当前D015自动流程（覆盖下方D014的玩家入口部分）
 
 - 生产入口 `guided_controls=true`，会话 `pc_controls=true, document_rules=true`。普通玩家只能通过世界功能位E发送取放/开始/端盘意图，不能通过菜单指定工序、份量、回锅或拖盘。旧入口仅供独立回归。

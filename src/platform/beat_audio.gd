@@ -4,6 +4,20 @@ extends AudioStreamPlayer
 ## Procedural placeholder click track. One stream avoids frame-scheduled beat drift.
 var scheduled_beats: Array[float] = []
 var estimated_delay_sec: float = 0.0
+var _feedback_tracks: Dictionary = {}
+
+func play_feedback(grade: String) -> void:
+	if not _feedback_tracks.has(grade):
+		var rate: int = 22050
+		var pcm := PackedByteArray(); pcm.resize(int(.065*rate)*2)
+		var frequency: float = 1320.0 if grade == "perfect" else (880.0 if grade == "good" else 220.0)
+		for sample: int in pcm.size()/2:
+			var t: float = float(sample)/rate
+			pcm.encode_s16(sample*2,int(sin(TAU*frequency*t)*exp(-t*65)*.25*32767))
+		var track := AudioStreamWAV.new(); track.format=AudioStreamWAV.FORMAT_16_BITS
+		track.mix_rate=rate; track.data=pcm
+		_feedback_tracks[grade]=track
+	stream=_feedback_tracks[grade]; volume_db=-8; play()
 
 func prepare(config: Dictionary) -> void:
 	stop()

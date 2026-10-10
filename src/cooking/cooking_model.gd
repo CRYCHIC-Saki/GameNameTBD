@@ -54,7 +54,10 @@ func _init(sid: String, generation: int, config: Dictionary, options: Dictionary
 		var validation_data: Dictionary = _config.duplicate(true)
 		validation_data.erase("selected_recipe_id")
 		validation_data.erase("recipe")
-		validation_data.recipes = [candidate]
+		# Validate the candidate in the real catalog context; preparation defaults
+		# may legitimately reference the other existing recipes.
+		validation_data.recipes = validation_data.recipes.filter(func(entry:Dictionary)->bool:return entry.id != candidate.id)
+		validation_data.recipes.append(candidate)
 		validation_data.active.recipes = [candidate.get("id", "")]
 		var checked: TDOutcome = CatalogValidator.new().load_data(validation_data, "custom_recipe")
 		if checked.ok: _recipe = candidate

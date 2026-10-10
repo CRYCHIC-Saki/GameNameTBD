@@ -38,15 +38,15 @@ func play(seconds: float, input_enabled: bool=true) -> void:
 					var marker: String=token+":"+str(index)
 					if sent.has(marker) or float(p.elapsed_sec)+.000001<float(p.beat_times_sec[index]): continue
 					sent[marker]=true
-					var action: String="primary" if kind=="rhythm" else str(p.sequence[index])
+					var action: String=str(p.cut_actions[index]) if kind=="rhythm" and not p.get("cut_actions",[]).is_empty() else ("primary" if kind=="rhythm" else str(p.sequence[index]))
 					if action.begins_with("spice:"):
 						var r: Rect2=kitchen.stage.spice_rect(lane.lane_index,action.trim_prefix("spice:")); click(r.get_center())
 					else:
-						var codes: Dictionary={"primary":KEY_SPACE,"up":KEY_W,"left":KEY_A,"down":KEY_S,"right":KEY_D} if lane.lane_index!=1 else {"primary":KEY_SPACE,"up":KEY_UP,"left":KEY_LEFT,"down":KEY_DOWN,"right":KEY_RIGHT}
+						var codes: Dictionary={"primary":KEY_SPACE,"rotate_left":KEY_A,"rotate_right":KEY_D,"up":KEY_W,"left":KEY_A,"down":KEY_S,"right":KEY_D} if lane.lane_index!=1 else {"primary":KEY_SPACE,"up":KEY_UP,"left":KEY_LEFT,"down":KEY_DOWN,"right":KEY_RIGHT}
 						tap(codes[action])
 			elif kind=="window" and not sent.has(token) and float(p.elapsed_sec)+.000001>=float(p.target_sec): sent[token]=true; tap(KEY_SPACE)
 			elif kind=="charge":
-				if not sent.has(token): sent[token]=true; key(KEY_SPACE)
+				if not sent.has(token) and float(p.get("preview_remaining_sec",0))<=.000001: sent[token]=true; key(KEY_SPACE)
 				elif float(p.held_sec)+.000001>=(float(p.target_min_sec)+float(p.target_max_sec))*.5: key(KEY_SPACE,false)
 
 func prepared_to(stove: String) -> void:
@@ -63,12 +63,12 @@ func test_actual_counters_and_complete_automatic_tomato_egg_no_operation_menu() 
 	station("kitchen.stove.left")
 	assert_true(kitchen.stage.visible); assert_false(kitchen.panel.visible)
 	assert_eq(kitchen.stage.find_children("*","Button",true,false).size(),0)
-	play(37)
+	play(58)
 	var dish: Dictionary=kitchen.lanes[0].snapshot()
 	assert_eq(dish.state,"plated")
 	var operations: Array=[]
 	for step: Dictionary in dish.steps: operations.append(step.operation)
-	assert_eq(operations,["cut","preheat","season","stir","stir","stir","stir","season","heat","starch","plate"])
+	assert_eq(operations,["cut","preheat","season","stir","stir","stir","stir","heat","season","starch","plate"])
 	assert_true(dish.ingredients.values().any(func(item: Dictionary)->bool:return item.ingredient_id=="starch"))
 	station("kitchen.stove.left"); station("kitchen.serve")
 	assert_signal_emit_count(kitchen,"dish_delivered",1)
@@ -79,7 +79,7 @@ func test_no_input_still_advances_every_stage_and_pause_freezes_schedule() -> vo
 	prepared_to("kitchen.stove.left"); station("kitchen.stove.left")
 	var before: float=kitchen.shared_clock.qte_sec
 	app.toggle_pause(); kitchen.advance(100); assert_eq(kitchen.shared_clock.qte_sec,before); app.toggle_pause()
-	play(38,false)
+	play(58,false)
 	assert_eq(kitchen.lanes[0].snapshot().state,"plated")
 	assert_lt(float(kitchen.lanes[0].snapshot().dish_attributes.completion),40.0)
 
@@ -87,7 +87,7 @@ func test_dual_pots_run_independent_profiles_and_share_mouse_without_menu_toggle
 	prepared_to("kitchen.stove.left"); prepared_to("kitchen.stove.right")
 	station("kitchen.stove.left"); tap(KEY_E); station("kitchen.stove.right")
 	assert_eq(kitchen.stage.lanes.size(),2)
-	play(12)
+	play(20)
 	assert_not_null(kitchen.lanes[0].thermal_qte); assert_not_null(kitchen.lanes[1].thermal_qte)
 	var r: Rect2=kitchen.stage.thermal_rect(0)
 	assert_eq(r.position.x,kitchen.stage.thermal_rect(1).position.x)
@@ -97,12 +97,12 @@ func test_dual_pots_run_independent_profiles_and_share_mouse_without_menu_toggle
 		assert_gt(float(lane.thermal_progress.attraction),0.0)
 		assert_almost_eq(float(lane.thermal_progress.control),.5,.000001)
 	assert_lt(float(kitchen.lanes[0].thermal_progress.target_max),float(kitchen.lanes[1].thermal_progress.target_min))
-	play(30)
+	play(45)
 	for lane: TDCookingLane in kitchen.lanes: assert_eq(lane.snapshot().state,"plated")
 
 func test_steam_flow_and_simmer_persistent_edge_meter() -> void:
 	prepared_to("kitchen.steamer"); station("kitchen.steamer")
-	play(19)
+	play(29)
 	assert_eq(kitchen.lanes[1].snapshot().state,"plated")
 	assert_eq(kitchen.lanes[1].snapshot().recipe_id,"steamed_egg")
 	assert_eq(kitchen.lanes[1].snapshot().steps.map(func(x:Dictionary)->String:return x.operation),["cut","season","steam","plate"])
@@ -138,3 +138,64 @@ func test_guided_restart_cleans_schedules_and_main_menu_has_only_play_and_exit()
 		assert_null(lane.sheet); assert_null(lane.qte); assert_null(lane.thermal_qte)
 		assert_true(lane.snapshot().ingredients.is_empty())
 	assert_eq(kitchen.beat_audio.playing,true)
+
+func wait_for_module(lane: TDCookingLane,module: String,limit: float=60) -> bool:
+	for frame: int in int(limit/.025):
+		kitchen.advance(.025)
+		if lane.qte!=null and lane.progress.get("pc_module")==module: return true
+	return false
+
+func test_real_recipe_notes_make_chunks_and_feedback_survives_release_pause_and_finish() -> void:
+	station("kitchen.supply.tomato"); station("kitchen.board")
+	var lane: TDCookingLane=kitchen.prep
+	assert_true(wait_for_module(lane,"M1",5))
+	assert_eq(lane.progress.cut_actions,["primary","rotate_right","primary"])
+	kitchen.advance(2-float(lane.progress.elapsed_sec)); tap(KEY_SPACE)
+	assert_eq(lane.judgement_feedback.grade,"perfect")
+	assert_gt(lane.feedback_remaining(),.8)
+	assert_true(lane._audio.stream is AudioStreamWAV)
+	var event: Dictionary=lane.judgement_feedback.duplicate(true)
+	var life: float=lane.feedback_remaining()
+	app.toggle_pause(); kitchen.advance(15); assert_eq(lane.feedback_remaining(),life); app.toggle_pause()
+	kitchen.advance(.1); assert_eq(lane.judgement_feedback,event)
+	kitchen.advance(.9); tap(KEY_D); assert_eq(int(lane.progress.cut_hits),1)
+	kitchen.advance(1); tap(KEY_SPACE); kitchen.advance(.15)
+	assert_null(lane.qte); assert_gt(lane.feedback_remaining(),.6)
+	var ingredient: Dictionary=lane.snapshot().ingredients.values()[0]
+	assert_eq(ingredient.shape,"chunk"); assert_eq(float(ingredient.fine),.25)
+	assert_eq(float(lane.snapshot().steps[0].quality),1.0)
+	lane.cancel_operation(); assert_true(lane.judgement_feedback.is_empty())
+
+func test_dual_seasoning_reserves_mouse_and_keeps_other_heat_unscored() -> void:
+	prepared_to("kitchen.stove.left"); prepared_to("kitchen.stove.right")
+	station("kitchen.stove.left"); play(17); tap(KEY_E); station("kitchen.stove.right")
+	var left: TDCookingLane=kitchen.lanes[0]; var right: TDCookingLane=kitchen.lanes[1]
+	assert_true(wait_for_module(left,"M6"))
+	assert_null(left.thermal_qte); assert_not_null(right.thermal_qte)
+	kitchen.advance(.01)
+	var before: Dictionary=right.thermal_progress.duplicate(true)
+	assert_true(bool(before.control_suspended))
+	click(kitchen.stage.spice_rect(0,"salt").get_center())
+	kitchen.advance(.4)
+	assert_eq(float(right.thermal_progress.power),float(before.power))
+	assert_eq(float(right.thermal_progress.inside_sec),float(before.inside_sec))
+	assert_almost_eq(float(right.thermal_progress.suspended_sec)-float(before.suspended_sec),.4,.000001)
+	assert_gt(float(right.thermal_progress.elapsed_sec),float(before.elapsed_sec))
+	play(7,false)
+	if right.thermal_qte!=null:
+		assert_false(bool(right.thermal_progress.control_suspended))
+		assert_eq(float(right.thermal_progress.attraction),0.0)
+
+func test_real_late_plating_waits_for_complete_cursor_travel() -> void:
+	prepared_to("kitchen.stove.left"); station("kitchen.stove.left")
+	var lane: TDCookingLane=kitchen.lanes[0]
+	assert_true(wait_for_module(lane,"M7"))
+	tap(KEY_SPACE); assert_false(bool(lane.progress.charge_started))
+	kitchen.advance(3.7-float(lane.progress.elapsed_sec)); key(KEY_SPACE)
+	kitchen.advance(1.5); assert_not_null(lane.qte)
+	assert_almost_eq(float(lane.progress.held_sec),1.5,.000001)
+	kitchen.advance(.5); key(KEY_SPACE,false)
+	assert_eq(lane.snapshot().state,"plated")
+	assert_eq(float(lane.snapshot().steps.back().quality),1.0)
+	assert_eq(lane.judgement_feedback.grade,"perfect")
+	assert_true(kitchen.stage.visible)

@@ -46,6 +46,12 @@ var _actual_actions: Array = []
 var _cursor: float = 0.5
 var _attraction: float = 0.0
 var _drifts: Array[float] = []
+var _cut_actions: Array[String] = []
+var _cut_targets: Array[int] = []
+var _last_judgement: Dictionary = {}
+var _judgement_serial: int = 0
+var _control_suspended: bool = false
+var _suspended_sec: float = 0.0
 
 func _init(request: TDRequest, config: Dictionary, clock: TDClock, random_source: RefCounted) -> void:
 	reset(request, config, clock, random_source)
@@ -91,6 +97,8 @@ func reset(request: TDRequest, config: Dictionary, clock: TDClock, random_source
 	_cursor = float(_config.get("initial_value", .5))
 	_attraction = 0.0
 	_drifts.clear()
+	_cut_actions.clear(); _cut_targets.clear(); _last_judgement.clear()
+	_judgement_serial = 0; _control_suspended = false; _suspended_sec = 0.0
 	_valid = _valid_config()
 	if not _valid:
 		return _outcome(false, "INVALID_CONFIG")
@@ -122,6 +130,19 @@ func reset(request: TDRequest, config: Dictionary, clock: TDClock, random_source
 			previous = float(value)
 		_beats.assign(times)
 		_duration_sec = _beats.back() + float(_config.good_sec) + maxf(0,_offset())
+	if _config.has("cut_actions"):
+		var actions: Variant = _config.cut_actions
+		if _kind != "rhythm" or not actions is Array or actions.size() != _beats.size() or "primary" not in actions:
+			_valid = false; return _outcome(false,"INVALID_CONFIG")
+		var direction: int = 0
+		for action: Variant in actions:
+			if action not in ["primary","rotate_left","rotate_right"]:
+				_valid = false; return _outcome(false,"INVALID_CONFIG")
+			_cut_actions.append(action)
+			if action != "primary": direction = posmod(direction + (-1 if action == "rotate_left" else 1),3)
+			_cut_targets.append(direction)
+	if _kind == "charge" and _config.has("charge_preview_sec"):
+		_duration_sec = float(_config.charge_preview_sec) + float(_config.start_grace_sec)
 	return _outcome(true, "RESET")
 
 func start() -> TDOutcome:
@@ -168,16 +189,19 @@ func input(sequence: int, timestamp_sec: float, action: String, pressed: bool, v
 	_advance_to(timestamp_sec)
 	_last_sec = timestamp_sec
 	if action == "wrong":
-		if pressed: _errors += 1; _combo = 0
+		if pressed:
+			_errors += 1; _combo = 0
+			_judge("miss","WRONG_KEY",action)
 		return _outcome(false, "WRONG_LANE")
 	if _kind == "maintain":
+		if _control_suspended: return _outcome(false,"CONTROL_SUSPENDED")
 		if _config.get("attraction", false):
 			_control = value
 			_attraction = (float(_config.drag_strength) if action == "drag" else float(_config.hover_strength)) if pressed else 0.0
 		elif pressed:
 			_control = value
 		return _outcome(true, "INPUT_APPLIED" if pressed else "RELEASED")
-	if _kind == "rhythm" and _config.get("directional_cut", false) and action in ["rotate_left", "rotate_right"]:
+	if _kind == "rhythm" and _cut_actions.is_empty() and _config.get("directional_cut", false) and action in ["rotate_left", "rotate_right"]:
 		if pressed and not bool(_pressed.get(action, false)):
 			_cut_direction = posmod(_cut_direction + (-1 if action == "rotate_left" else 1), 3)
 		_pressed[action] = pressed
@@ -191,13 +215,18 @@ func input(sequence: int, timestamp_sec: float, action: String, pressed: bool, v
 		return _outcome(true, "RELEASED")
 	if bool(_pressed.get(action, false)):
 		return _outcome(false, "HELD_INPUT")
+	if _kind == "charge" and _config.has("charge_preview_sec") and not _charge_started and _elapsed_sec < float(_config.charge_preview_sec) - EPSILON:
+		return _outcome(false,"PREVIEW")
 	_pressed[action] = true
 	match _kind:
 		"charge":
+			if _config.has("charge_preview_sec"):
+				# Waiting, actual held time and release tolerance have separate budgets.
+				_duration_sec = _elapsed_sec + maxf(0,float(_config.target_max_sec)-_held_sec) + float(_config.good_margin_sec) + .001
 			_charge_started = true
 			return _outcome(true, "HOLD_STARTED")
 		"rhythm":
-			return _rhythm_press(timestamp_sec)
+			return _rhythm_press(timestamp_sec,action)
 		"window":
 			_resolve_window(timestamp_sec)
 			return _outcome(true, "JUDGED")
@@ -229,6 +258,7 @@ func finish() -> TDOutcome:
 			"charge", "window":
 				_quality = 0.0
 				_reason = "TIMEOUT"
+				_judge("miss","TIMEOUT","primary")
 			"rhythm":
 				for index in _judgements.size():
 					if _judgements[index] == "pending":
@@ -238,6 +268,7 @@ func finish() -> TDOutcome:
 				_reason = "ALL_HIT" if _miss == 0 and _errors == 0 else "MISSED_OR_EXTRA_BEATS"
 			"maintain":
 				_reason = "STABLE" if _inside_sec >= _duration_sec - EPSILON else "OUTSIDE_TARGET"
+				_judge(_grade(_current_quality()),"THERMAL_RESULT","adjust")
 			"sequence":
 				_reason = "MISSING_STEPS"
 		_resolved = true
@@ -245,6 +276,13 @@ func finish() -> TDOutcome:
 	_pressed.clear()
 	_attraction = 0.0
 	return _outcome(true, "COMPLETED")
+
+func set_control_suspended(value: bool) -> void:
+	if _kind != "maintain" or _state != "running" or _control_suspended == value: return
+	update()
+	_control_suspended = value
+	_attraction = 0.0
+	_pressed.clear()
 
 func cancel() -> TDOutcome:
 	if _state == "cancelled":
@@ -273,16 +311,21 @@ func _advance_to(timestamp_sec: float) -> void:
 	if _kind == "charge" and bool(_pressed.get("primary", false)):
 		_held_sec += delta_sec
 	if _kind == "maintain":
-		_integrate_maintain(_elapsed_sec, next_sec)
+		if _control_suspended:
+			_suspended_sec += delta_sec
+			_heat_dose += _cursor * delta_sec
+		else: _integrate_maintain(_elapsed_sec, next_sec)
 	_elapsed_sec = maxf(_elapsed_sec, next_sec)
 	if _kind == "rhythm" or (_kind == "sequence" and _config.get("on_beat", false)):
 		var adjusted_sec := _elapsed_sec - _offset()
 		for index in _beats.size():
-			var expiry: float = float(_config.interval_sec) * .5 if _kind == "sequence" else float(_config.good_sec)
+			var expiry: float = float(_config.interval_sec) * .5 if _kind == "sequence" and not _config.get("document_rules",false) else float(_config.good_sec)
 			if _judgements[index] == "pending" and adjusted_sec > _beats[index] + expiry + EPSILON:
 				_judgements[index] = "miss"
 				_miss += 1
 				_combo = 0
+				var action: String = _steps[index] if _kind == "sequence" else (_cut_actions[index] if not _cut_actions.is_empty() else "primary")
+				_judge("miss","MISSED_NOTE",action,index,0.0,_start_sec+_beats[index]+expiry+_offset())
 
 func _integrate_maintain(from_sec: float, to_sec: float) -> void:
 	# The fixed absolute grid is the simulation model (piecewise constant power),
@@ -321,6 +364,7 @@ func _resolve_charge() -> void:
 		_quality = 1.0 if absf(_held_sec-center) <= float(_config.get("perfect_sec",.05))+EPSILON else (float(_config.good_quality) if _held_sec >= low-EPSILON and _held_sec <= high+EPSILON else 0.0)
 		_reason = "TARGET_HOLD" if _quality == 1 else ("NEAR_HOLD" if _quality > 0 else ("EARLY_RELEASE" if _held_sec < low else "OVERCHARGED"))
 		_resolved = true
+		_judge(_grade(_quality),_reason,"primary",-1,_held_sec-center)
 		return
 	if _held_sec >= low - EPSILON and _held_sec <= high + EPSILON:
 		_quality = 1.0
@@ -345,8 +389,9 @@ func _resolve_window(timestamp_sec: float) -> void:
 		_quality = 0.0
 		_reason = "EARLY_PRESS" if error < 0.0 else "LATE_PRESS"
 	_resolved = true
+	_judge(_grade(_quality),_reason,"primary",-1,error)
 
-func _rhythm_press(timestamp_sec: float) -> TDOutcome:
+func _rhythm_press(timestamp_sec: float, action: String = "primary") -> TDOutcome:
 	var adjusted := timestamp_sec - _start_sec - _offset()
 	var nearest := -1
 	var distance := INF
@@ -360,17 +405,25 @@ func _rhythm_press(timestamp_sec: float) -> TDOutcome:
 	if nearest < 0:
 		_errors += 1
 		_combo = 0
+		_judge("miss","OUTSIDE_WINDOW",action)
 		return _outcome(false, "OUTSIDE_WINDOW")
 	var judgement := "good"
-	if distance <= float(_config.perfect_sec) + EPSILON:
+	var correct: bool = _cut_actions.is_empty() or action == _cut_actions[nearest]
+	var direction_ok: bool = _cut_actions.is_empty() or action != "primary" or _cut_direction == _cut_targets[nearest]
+	if not correct or not direction_ok:
+		judgement = "miss"; _miss += 1
+	elif distance <= float(_config.perfect_sec) + EPSILON:
 		judgement = "perfect"
 		_perfect += 1
 	else:
 		_good += 1
 	_judgements[nearest] = judgement
-	if _config.get("directional_cut", false): _cut_directions.append(_cut_direction)
-	_combo += 1
+	if judgement != "miss" and _config.get("directional_cut", false):
+		if action == "primary": _cut_directions.append(_cut_direction)
+		else: _cut_direction = posmod(_cut_direction + (-1 if action == "rotate_left" else 1),3)
+	_combo = _combo + 1 if judgement != "miss" else 0
 	_max_combo = maxi(_max_combo, _combo)
+	_judge(judgement,"WRONG_KEY" if not correct else ("WRONG_DIRECTION" if not direction_ok else "TIMING"),action,nearest,adjusted-_beats[nearest])
 	var result := _outcome(true, "HIT")
 	result.data["judgement"] = judgement
 	result.data["beat_index"] = nearest
@@ -401,7 +454,8 @@ func _current_quality() -> float:
 		"rhythm":
 			return (float(_perfect) + float(_good) * float(_config.get("good_quality", 0.6))) / maxf(1.0, float(_beats.size()) + float(_errors) * error_weight)
 		"maintain":
-			var ratio: float = clampf(_inside_sec / _duration_sec, 0.0, 1.0)
+			var assessed: float = _duration_sec - _suspended_sec
+			var ratio: float = clampf(_inside_sec / assessed, 0.0, 1.0) if assessed > EPSILON else 0.0
 			if _config.get("document_rules",false): return 1.0 if ratio > .8+EPSILON else (.6 if ratio >= .5-EPSILON else 0.0)
 			return ratio
 		"sequence":
@@ -435,12 +489,16 @@ func _progress() -> Dictionary:
 	if not _valid:
 		return data
 	data.pc_module = _config.get("pc_module", "")
+	data.input_offset_sec = _offset()
+	data.last_judgement = _last_judgement.duplicate(true)
 	match _kind:
 		"charge":
 			data.merge({"held_sec": _held_sec, "target_min_sec": _config.target_min_sec,
 				"target_max_sec": _config.target_max_sec, "holding": bool(_pressed.get("primary", false))})
 			data.perfect_center_sec = float(_config.get("perfect_center_sec",(float(_config.target_min_sec)+float(_config.target_max_sec))*.5))
 			data.perfect_sec = float(_config.get("perfect_sec",.05))
+			data.preview_remaining_sec = maxf(0,float(_config.get("charge_preview_sec",0))-_elapsed_sec) if not _charge_started else 0.0
+			data.charge_started = _charge_started
 		"rhythm":
 			var next_beat := -1.0
 			for index in _beats.size():
@@ -452,6 +510,8 @@ func _progress() -> Dictionary:
 				"hits": _perfect + _good, "extra_inputs": _errors, "combo": _combo, "max_combo": _max_combo})
 			data.cut_direction = _cut_direction
 			data.cut_directions = _cut_directions.duplicate()
+			data.cut_actions = _cut_actions.duplicate()
+			data.cut_hits = _cut_directions.size()
 		"window":
 			data.merge({"target_sec": _config.target_sec, "perfect_sec": _config.perfect_sec,
 				"good_sec": _config.good_sec, "judgement": _grade(quality) if _resolved else "pending"})
@@ -464,6 +524,9 @@ func _progress() -> Dictionary:
 				"end_power": _power_at(_elapsed_sec), "target_min": _config.target_min, "target_max": _config.target_max,
 				"disturbance": _disturbance_at(_elapsed_sec), "inside_sec": _inside_sec, "heat_dose": _heat_dose})
 			data.attraction = _attraction
+			data.control_suspended = _control_suspended
+			data.suspended_sec = _suspended_sec
+			data.assessed_sec = maxf(0,_elapsed_sec-_suspended_sec)
 		"sequence":
 			data.merge({"sequence": _steps.duplicate(), "sequence_index": _step_index,
 				"next_action": _steps[_step_index] if _step_index < _steps.size() else "",
@@ -480,6 +543,11 @@ func _progress() -> Dictionary:
 
 func _outcome(ok: bool, code: String) -> TDOutcome:
 	return TDOutcome.new(ok, code, "", _progress())
+
+func _judge(grade: String, reason: String, action: String, index: int = -1, error: float = 0.0, at: float = -1.0) -> void:
+	_judgement_serial += 1
+	_last_judgement = {"serial":_judgement_serial,"grade":grade,"reason":reason,"action":action,
+		"beat_index":index,"error_sec":error,"at_sec":_clock.qte_sec if at < 0 else at}
 
 func _running_gate() -> String:
 	if not _valid:
@@ -518,6 +586,8 @@ func _valid_config() -> bool:
 			return false
 	if absf(_offset()) > 1.0:
 		return false
+	if _config.has("charge_preview_sec"):
+		if not _number(_config.charge_preview_sec) or not _in_range(float(_config.charge_preview_sec),0,10) or not _number(_config.get("start_grace_sec")) or not _in_range(float(_config.start_grace_sec),.1,10): return false
 	if _config.get("on_beat", false):
 		for field: String in ["lead_in_sec", "interval_sec", "perfect_sec", "good_sec"]:
 			if not _number(_config.get(field)) or float(_config[field]) < 0: return false
@@ -605,6 +675,7 @@ func _timed_sequence_press(action: String, timestamp_sec: float) -> TDOutcome:
 			nearest = index; distance = offset
 	if nearest < 0:
 		_errors += 1; _combo = 0
+		_judge("miss","OUTSIDE_WINDOW",action)
 		return _outcome(false, "OUTSIDE_WINDOW")
 	_actual_actions.append({"action": action, "beat_index": nearest, "error_sec": adjusted - _beats[nearest]})
 	var correct: bool = action == _steps[nearest]
@@ -619,6 +690,7 @@ func _timed_sequence_press(action: String, timestamp_sec: float) -> TDOutcome:
 	_combo = _combo + 1 if grade != "miss" else 0
 	_max_combo = maxi(_combo, _max_combo)
 	_step_index += 1
+	_judge(grade,"TIMING" if correct else "WRONG_KEY",action,nearest,adjusted-_beats[nearest])
 	if not _judgements.has("pending"):
 		_resolved = true; _reason = "BEAT_SEQUENCE_COMPLETE"
 	return _outcome(true, "JUDGED")

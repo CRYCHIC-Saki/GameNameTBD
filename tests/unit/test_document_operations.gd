@@ -8,22 +8,22 @@ func test_beat_cells_compile_to_exact_timestamps_including_rest_and_parallel() -
 	assert_true(sheet.configure(data.pc_operations.document_sheets.tomato_egg,data.operations).ok)
 	var events: Array=sheet.snapshot().events
 	var cut:=TDBeatSheet.new(); cut.configure(data.pc_operations.document_sheets.prepare,data.operations)
-	assert_eq(cut.snapshot().events[0].settings.beat_times_sec,[.5,1.0,1.5,2.0,3.0,3.5])
+	assert_eq(cut.snapshot().events[0].settings.beat_times_sec,[2.0,3.0,4.0])
 	var stages: Array=[]
 	for event: Dictionary in events:
 		stages.append(event.group)
 		if event.group=="stir-a":
-			assert_eq(float(event.beat),17.0)
+			assert_eq(float(event.beat),26.0)
 			assert_eq(event.settings.sequence,["up","left","down","right","primary"])
-			assert_eq(event.settings.beat_times_sec,[.5,1.0,1.5,2.0,2.5])
-		if event.group=="heat": assert_eq(float(event.settings.duration_sec),16.0)
+			assert_eq(event.settings.beat_times_sec,[2.0,3.0,4.0,5.0,6.0])
+		if event.group=="heat": assert_eq(float(event.settings.duration_sec),19.0)
 	assert_eq(stages,["ignite","oil","load","stir-a","heat","stir-b","stir-c","season","starch","plate"])
 
 func test_invalid_tracks_unknown_groups_and_overlaps_rejected_before_play() -> void:
 	for error: String in ["track","missing","overlap"]:
 		var d: Dictionary=data.pc_operations.document_sheets.prepare.duplicate(true)
-		if error=="track": d.beats[1].lanes.mouse=d.beats[1].lanes.hand; d.beats[1].lanes.erase("hand")
-		elif error=="missing": d.beats[1].lanes.hand.group="absent"
+		if error=="track": d.beats[4].lanes.mouse=d.beats[4].lanes.hand; d.beats[4].lanes.erase("hand")
+		elif error=="missing": d.beats[4].lanes.hand.group="absent"
 		else: d.beats[2].t=d.beats[1].t
 		assert_false(TDBeatSheet.new().configure(d,data.operations).ok,error)
 
@@ -90,11 +90,11 @@ func test_adjacent_command_groups_preserve_input_beats_without_forcing_rest() ->
 func test_material_reference_and_hold_gaps_rejected_before_runtime() -> void:
 	var d: Dictionary=data.duplicate(true)
 	for row: Dictionary in d.pc_operations.document_sheets.tomato_egg.beats:
-		if row.t==43: row.lanes.mouse.input="spice:missing"
+		if row.t==75: row.lanes.mouse.input="spice:missing"
 	assert_false(TDCookingCatalog.new().load_data(d,"missing cabinet material").ok)
 	d=data.pc_operations.document_sheets.steam.duplicate(true)
 	for row: Dictionary in d.beats:
-		if row.t==12: row.lanes={}; row.rest=true
+		if row.t==21: row.lanes={}; row.rest=true
 	assert_eq(TDBeatSheet.new().configure(d,data.operations).code,"INVALID_HOLD")
 
 func test_thermal_ratio_boundary_uses_document_grade_weights_once() -> void:

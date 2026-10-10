@@ -58,6 +58,10 @@ func _configure_beats(sheet: Dictionary, operations: Dictionary) -> TDOutcome:
 	if not _number(sheet.get("bpm")) or float(sheet.bpm) < 30 or float(sheet.bpm) > 240 or not sheet.get("beats") is Array or not sheet.get("groups") is Dictionary or sheet.beats.is_empty(): return TDOutcome.new(false,"INVALID_BEAT_SHEET")
 	_interval = 60.0 / float(sheet.bpm)
 	var groups: Dictionary = {}
+	if not _number(sheet.get("preview_beats",1.0)) or not _number(sheet.get("charge_start_grace_beats",4.0)): return TDOutcome.new(false,"INVALID_BEAT_SHEET")
+	var preview: float = float(sheet.get("preview_beats",1.0))
+	var start_grace: float = float(sheet.get("charge_start_grace_beats",4.0)) * _interval
+	if preview < 1 or preview > 16 or start_grace <= 0 or start_grace > 10: return TDOutcome.new(false,"INVALID_BEAT_SHEET")
 	var previous: float = 0
 	for row: Variant in sheet.beats:
 		if not row is Dictionary or not _number(row.get("t")) or row.t <= previous or row.t > 1024 or not row.get("lanes") is Dictionary: return TDOutcome.new(false,"INVALID_BEAT_SHEET")
@@ -69,13 +73,18 @@ func _configure_beats(sheet: Dictionary, operations: Dictionary) -> TDOutcome:
 			var id: String = cell.group
 			var group: Variant = sheet.groups[id]
 			if not group is Dictionary or not operations.has(group.get("operation","")) or not group.get("parameters") is Dictionary or cell.get("op") != group.operation: return TDOutcome.new(false,"INVALID_BEAT_SHEET")
-			if not cell.get("input") is String or (cell.input not in ["primary","up","left","down","right","Mouse"] and not cell.input.begins_with("spice:")): return TDOutcome.new(false,"INVALID_BEAT_SHEET")
+			if not cell.get("input") is String or (cell.input not in ["primary","up","left","down","right","rotate_left","rotate_right","Mouse"] and not cell.input.begins_with("spice:")): return TDOutcome.new(false,"INVALID_BEAT_SHEET")
 			if (cell.input == "Mouse" or cell.input.begins_with("spice:")) != (track == "mouse"): return TDOutcome.new(false,"INVALID_TRACK")
 			if not groups.has(id): groups[id] = {"first":row.t,"last":row.t,"track":track,"form":cell.form,"times":[],"inputs":[]}
 			var compiled: Dictionary = groups[id]
 			if compiled.track != track or compiled.form != cell.form: return TDOutcome.new(false,"CONFLICTING_BEAT")
 			compiled.last = row.t; compiled.times.append(float(row.t)); compiled.inputs.append(cell.input)
 	if groups.size() != sheet.groups.size(): return TDOutcome.new(false,"UNUSED_GROUP")
+	for id: String in groups:
+		if sheet.groups[id].operation not in ["heat","boil"]: continue
+		for other: String in groups:
+			if other == id or groups[other].track != "mouse": continue
+			if float(groups[other].first) <= float(groups[id].last) and float(groups[other].last) >= float(groups[id].first): return TDOutcome.new(false,"CONTENDED_MOUSE_TRACK")
 	var busy_until: Dictionary = {"hand":0.0,"mouse":0.0}
 	for id: String in groups:
 		var g: Dictionary = groups[id]
@@ -86,30 +95,31 @@ func _configure_beats(sheet: Dictionary, operations: Dictionary) -> TDOutcome:
 		elif operation in ["plate","steam"]:
 			if g.form!="hold" or g.track!="hand" or g.last-g.first+1!=g.times.size() or g.inputs.any(func(x:String)->bool:return x!="primary"): return TDOutcome.new(false,"INVALID_HOLD")
 		elif operation in ["cut","preheat"]:
-			if g.form!="tap" or g.track!="hand" or g.inputs.any(func(x:String)->bool:return x!="primary"): return TDOutcome.new(false,"INVALID_TAP")
+			var allowed: Array = ["primary","rotate_left","rotate_right"] if operation == "cut" else ["primary"]
+			if g.form!="tap" or g.track!="hand" or g.inputs.any(func(x:String)->bool:return x not in allowed) or "primary" not in g.inputs: return TDOutcome.new(false,"INVALID_TAP")
 			if operation=="preheat" and g.times.size()!=1: return TDOutcome.new(false,"INVALID_TAP")
 		elif operation in ["stir","starch"] or (operation=="season" and definition.parameters.get("mode")=="common"):
 			if g.form!="tap" or g.track!="hand" or g.inputs.size()<3 or g.inputs.size()>7 or g.inputs.back()!="primary": return TDOutcome.new(false,"INVALID_SEQUENCE")
 		elif operation=="season":
 			if g.form!="tap" or g.track!="mouse" or g.inputs.size()<3 or g.inputs.size()>5: return TDOutcome.new(false,"INVALID_SEQUENCE")
-		# A thermal hold may yield mouse cells to the cabinet. Other sequences
-		# cannot interleave on the same physical input track.
+		# A single mouse cannot control temperature and select spices at once.
 		if definition.operation not in ["heat","boil"]:
 			if g.first <= busy_until[g.track]: return TDOutcome.new(false,"OVERLAPPING_GROUP")
 			busy_until[g.track] = g.last
 		var settings: Dictionary = {"document_rules":true}
-		var origin_beat: float = float(g.first)-2
+		var origin_beat: float = float(g.first)-1-preview
 		var relative: Array = []
 		for at: float in g.times: relative.append((at-1-origin_beat)*_interval)
 		if definition.operation in ["heat","boil"]:
 			origin_beat = float(g.first)-1
 			settings.duration_sec = (float(g.last)-float(g.first)+1)*_interval
 		elif definition.operation in ["plate","steam"]:
-			origin_beat = float(g.first)-1
 			var hold: float = g.times.size()*_interval
 			settings.target_min_sec = hold-.1; settings.target_max_sec = hold+.1
 			settings.perfect_center_sec = hold; settings.perfect_sec = .05
-			settings.timeout_sec = hold+_interval
+			settings.charge_preview_sec = preview * _interval
+			settings.start_grace_sec = start_grace
+			settings.timeout_sec = settings.charge_preview_sec + start_grace + hold + .3
 		elif definition.operation == "preheat":
 			origin_beat = float(g.first)-5
 			settings.target_sec = (float(g.first)-1-origin_beat)*_interval
@@ -117,7 +127,9 @@ func _configure_beats(sheet: Dictionary, operations: Dictionary) -> TDOutcome:
 		else:
 			settings.beat_times_sec = relative
 			if definition.operation != "cut": settings.sequence = g.inputs.duplicate()
-			else: settings.beats = g.inputs.size()
+			else:
+				settings.beats = g.inputs.size()
+				settings.cut_actions = g.inputs.duplicate()
 		_events.append({"beat":origin_beat,"operation":definition.operation,"parameters":definition.parameters.duplicate(true),"settings":settings,"group":id,"label":definition.get("label",id)})
 	_events.sort_custom(func(a: Dictionary,b: Dictionary) -> bool: return a.beat < b.beat)
 	# Beat 1 may need an approach/ignition cue. Add whole-bar count-in only
@@ -143,6 +155,7 @@ func _configure_beats(sheet: Dictionary, operations: Dictionary) -> TDOutcome:
 			else: return TDOutcome.new(false,"OVERLAPPING_GROUP")
 			event.beat=float(ends[track])/_interval
 		ends[track] = (float(g.last)-1+pre_roll_beats)*_interval + (.101 if g.form == "tap" else _interval)
+		if event.operation in ["plate","steam"]: ends[track] += start_grace + .201
 	_events.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return a.beat<b.beat)
 	cells = sheet.beats.duplicate(true)
 	duration_sec = (previous+pre_roll_beats)*_interval + .5

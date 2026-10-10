@@ -12,10 +12,12 @@
 | doc/source/做菜操作.md | 最新PC操作M1–M7、节拍表、键鼠并行及HUD；用户明确要求据此实现 | 67E6E1D1E15090B0BB736FEABEDAE87F67DCF930E41631598EE0437AB3D1643D |
 
 开发规范原入口：doc/agent_prompts/00_PROJECT_PROTOCOL.md；工程持久入口：docs/DEVELOPMENT_PROTOCOL.md。
-近期范围：D015是最新依据，按做菜操作.md §3–7及用户纠正实现台面、自动工序、逐拍排布、双锅和简化HUD；文档外操作已从玩家入口移除。D013/D014为历史基础，doc/agent_prompts/Phase_1.md为机制参考；Phase_2.md重叠内容复用已有机制。未进入Phase2。
+近期范围：D016是最新用户修订，菜谱规定落刀/转向谱、明确命中反馈、调味不同时控温并增加预告与操作时间；D015中台面、自动工序、逐拍排布、双锅和简化HUD继续按做菜操作.md §3–7复用。文档外操作已从玩家入口移除。D013/D014为历史基础，doc/agent_prompts/Phase_1.md为机制参考；Phase_2.md重叠内容复用已有机制。未进入Phase2。
 
 来源优先级：用户最新明确决定与已确认决策可修订旧设计；大纲机制、附录内容和Onboarding案例分别溯源；建议值与实现假设不是用户产品决定。未决冲突见DECISIONS.md。
 
 Phase0/旧原型未制作电子表格或正式素材。后续完整Phase1按用户要求实际调用imagegen生成厨房背景与透明厨师，来源与提示词见assets/kitchen/README.md；grilling、godot-gdscript-patterns实际使用记录见阶段报告。本轮未涉及Spreadsheets/visualize/skill-creator任务。原文指纹复核见artifacts/source-verification.json。
 
 D014复用既有像素资产，新增原生Godot占位功能位/动作，未重新调用imagegen。六份资料最终复核全部匹配：artifacts/pc-source-verification.json。
+
+D016继续复用像素资产，改Godot谱面/判定/反馈与时间，不新增正式美术。六份资料复核全部匹配：artifacts/d016-source-verification.json。

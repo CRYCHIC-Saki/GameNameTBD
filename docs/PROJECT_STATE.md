@@ -1,5 +1,26 @@
 # 项目状态
 
+## GitHub 同步：D016（2026-10-10）
+
+- 用户在本轮明确要求将D016修复推送到既有仓库`CRYCHIC-Saki/GameNameTBD`的`main`；沿用本地`codex/phase1-upload`分支、既有作者信息与正常快进推送，保留远程历史。
+- 推送前远程main与本地基线7d448c7一致；16项有改动的代码/配置/测试/工具文件与最终219项通过的干净副本逐一校验相同。缓存、检查产物和Windows导出包继续排除在提交之外。
+- 远程CI实际结果以本提交的[GitHub Actions](https://github.com/CRYCHIC-Saki/GameNameTBD/actions)为准；下面的NOT_RUN和未推送描述为D016本地验收时的历史状态，不能替代远程结果。实体设备与人工试玩仍PENDING。
+
+## 当前检查点：Phase 1 菜谱打谱与反馈修复（D016，2026-10-10）
+
+- ENGINEERING_READY；PLAYTEST=PENDING；仍为Phase1。用户最新决定已覆盖D015自由转向/六刀示例以及调味同时控温的安排；没有推进经营或Phase2。
+- 实际实现：切菜从菜谱读取“落刀/转向”谱，番茄当前为Space→D→Space，全中得到块。错键、离拍转向不改变方向；缺失转向会使后续不符方向的刀判Miss。切型和成功落刀数保留为食材处理状态，转向不算一刀。其他切型通过配方谱配置，不添加选择菜单。
+- 实际反馈：每拍显示Perfect/Good/Miss、早晚毫秒或错键/漏拍原因、音符状态，并播放不同短提示音；最后一拍后仍显示约0.9秒。暂停冻结反馈寿命，取消/重开清理。提示音生成/调用自动验证通过，不等于真人听觉验收。
+- 鼠标安排：本锅控温在M6前结束；双锅任一M6进行时，另一锅显示托管并保持当前控温位置，暂时排除该段稳定度判分，不赠送成功，游戏时间继续。M6结束后恢复，等待新的鼠标控制输入。
+- 时间：键盘/调味目标间隔约1秒、主要工序预告2秒。出锅先预告2秒，再给最多2秒起手等待；有效按住后独立计满2秒蓄力及松手窗口。保留50/100ms判定窗。时长属于PROPOSED，物理手感待调。
+- 最终本地：`artifacts/check/pre-export-20261010-112301/summary.json`，219发现/执行/通过、23套件、1913断言，0失败/跳过，版本/导入/加载/测试均exit0。新增11项规则＋3项真实场景用例，旧205项继续回归。
+- 最终干净副本：`artifacts/d016-clean-20261010-112650/干净 副本/artifacts/check/final/summary.json`，未复制.godot缓存，同一check入口导入/加载/219项测试均exit0，0失败/跳过。
+- 图形：`artifacts/d016-visual.json`和22张`d016-*.png`，真实Compatibility/NVIDIA RTX3050渲染，Viewport注入键鼠、调料柜和端盘交付成功，进程exit0。已查看Perfect/Miss、调味和实际出锅长按画面。实体键鼠、耳机/扬声器音画同步NOT_RUN；可读性/手感PENDING。
+- Windows包：`build/TownDiner.exe`＋同目录`TownDiner.pck`已更新；`artifacts/export/summary.json`，export/pack-manifest/smoke均exit0，94项运行资源。开发演示范围不变；没有远程推送或发布，当前修改的远程CI为NOT_RUN。
+- 验收：AC037–041工程PASS，设备/人工部分PENDING。红灯测试最初6项失败；最终复检又发现3项旧自建配方测试失败，已修复其完整目录引用校验上下文，未删测试/放宽门槛。详细中间证据见phase-1。
+- 六份原始资料SHA256全部一致，`artifacts/d016-source-verification.json`。保留已有工程；测试写入隔离artifacts；未改真实存档、依赖锁或全局环境。本地验收完成时尚未提交/推送，GitHub基线为7d448c7；后续同步见上节。
+- 下一工作单元：依README/PLAYTEST用更新后的包实际试玩切菜反馈、调味切换、出锅晚起手与双锅托管；按反馈继续Phase1。物理设备未验不自动视为通过，不自动进入Phase2。
+
 ## GitHub 工程同步基线（2026-10-09）
 
 - 用户已明确授权将当前工程上传到 `CRYCHIC-Saki/GameNameTBD`，目标为 `main`，保留远程初始README提交。此次仅同步工程，不创建正式发行版、不推进Phase2。
@@ -7,7 +28,7 @@
 - Git保留源码、素材、测试依赖、版本锁及设计资料；缓存、工具下载、检查产物和导出包不入库。六份 `doc/source/` 原文在Git暂存区与工作文件逐字节相同，已单独禁用换行转换。
 - 远程CI由推送触发，实际结果以 [GitHub Actions](https://github.com/CRYCHIC-Saki/GameNameTBD/actions) 对应提交为准；下面各阶段的NOT_RUN/未推送为当时历史状态。人工试玩仍为PENDING。
 
-## 当前检查点：Phase 1 自动工序与界面纠正（D015，2026-10-09）
+## 历史检查点：Phase 1 自动工序与界面纠正（D015，2026-10-09）
 
 - ENGINEERING_READY；PLAYTEST=PENDING；仍停在Phase1。最新用户否定D014自由菜单与地面功能位，本轮按做菜操作.md §3–7重做玩家交互，历史190项通过不代表旧体验已被用户接受。
 - 实际可玩：台面番茄/鸡蛋→砧板自动M1→拿取搬入锅→E自动M2→M3下油/下料→M3∥M4→M6十格柜→M3勾芡→M7→端盘出餐。番茄蒸蛋按砧板→M6→上笼8拍→留白→出锅；炖牛肉M5可离开，常驻条跨厨房/其他工序。蒸/炖样例明确TEST_ONLY。

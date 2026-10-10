@@ -787,7 +787,10 @@
           "max_fine": 1,
           "min_heat_dose": 0.5
         }
-      ]
+      ],
+      "preparation_sheets": {
+        "tomato": "prepare"
+      }
     },
     {
       "version": 1,
@@ -831,7 +834,10 @@
           "min_fine": 0,
           "max_fine": 1
         }
-      ]
+      ],
+      "preparation_sheets": {
+        "cucumber": "prepare_strips"
+      }
     },
     {
       "version": 1,
@@ -950,7 +956,10 @@
           "min_heat_dose": 0.5
         }
       ],
-      "guided_profile": "steam"
+      "guided_profile": "steam",
+      "preparation_sheets": {
+        "tomato": "prepare"
+      }
     },
     {
       "version": 1,
@@ -1844,12 +1853,12 @@
     "document_sheets": {
       "prepare": {
         "id": "prepare",
-        "dish": "prepare",
+        "dish": "番茄切块",
         "bpm": 120,
         "groups": {
           "cut": {
             "operation": "cut",
-            "label": "切配番茄",
+            "label": "番茄切块 · 按谱落刀与转向",
             "parameters": {}
           }
         },
@@ -1861,36 +1870,18 @@
           },
           {
             "t": 2,
-            "lanes": {
-              "hand": {
-                "group": "cut",
-                "op": "cut",
-                "input": "primary",
-                "form": "tap"
-              }
-            }
+            "rest": true,
+            "lanes": {}
           },
           {
             "t": 3,
-            "lanes": {
-              "hand": {
-                "group": "cut",
-                "op": "cut",
-                "input": "primary",
-                "form": "tap"
-              }
-            }
+            "rest": true,
+            "lanes": {}
           },
           {
             "t": 4,
-            "lanes": {
-              "hand": {
-                "group": "cut",
-                "op": "cut",
-                "input": "primary",
-                "form": "tap"
-              }
-            }
+            "rest": true,
+            "lanes": {}
           },
           {
             "t": 5,
@@ -1914,13 +1905,18 @@
               "hand": {
                 "group": "cut",
                 "op": "cut",
-                "input": "primary",
+                "input": "rotate_right",
                 "form": "tap"
               }
             }
           },
           {
             "t": 8,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 9,
             "lanes": {
               "hand": {
                 "group": "cut",
@@ -1931,11 +1927,18 @@
             }
           },
           {
-            "t": 9,
+            "t": 10,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 11,
             "rest": true,
             "lanes": {}
           }
-        ]
+        ],
+        "preview_beats": 4,
+        "charge_start_grace_beats": 4
       },
       "tomato_egg": {
         "id": "tomato_egg",
@@ -2053,25 +2056,13 @@
           },
           {
             "t": 9,
-            "lanes": {
-              "hand": {
-                "group": "oil",
-                "op": "season",
-                "input": "up",
-                "form": "tap"
-              }
-            }
+            "rest": true,
+            "lanes": {}
           },
           {
             "t": 10,
-            "lanes": {
-              "hand": {
-                "group": "oil",
-                "op": "season",
-                "input": "left",
-                "form": "tap"
-              }
-            }
+            "rest": true,
+            "lanes": {}
           },
           {
             "t": 11,
@@ -2079,7 +2070,7 @@
               "hand": {
                 "group": "oil",
                 "op": "season",
-                "input": "primary",
+                "input": "left",
                 "form": "tap"
               }
             }
@@ -2091,41 +2082,35 @@
           },
           {
             "t": 13,
-            "rest": true,
-            "lanes": {}
-          },
-          {
-            "t": 14,
             "lanes": {
               "hand": {
-                "group": "load",
-                "op": "stir",
-                "input": "up",
-                "form": "tap"
-              }
-            }
-          },
-          {
-            "t": 15,
-            "lanes": {
-              "hand": {
-                "group": "load",
-                "op": "stir",
+                "group": "oil",
+                "op": "season",
                 "input": "right",
                 "form": "tap"
               }
             }
           },
           {
-            "t": 16,
+            "t": 14,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 15,
             "lanes": {
               "hand": {
-                "group": "load",
-                "op": "stir",
+                "group": "oil",
+                "op": "season",
                 "input": "primary",
                 "form": "tap"
               }
             }
+          },
+          {
+            "t": 16,
+            "rest": true,
+            "lanes": {}
           },
           {
             "t": 17,
@@ -2139,197 +2124,89 @@
           },
           {
             "t": 19,
-            "lanes": {
-              "hand": {
-                "group": "stir-a",
-                "op": "stir",
-                "input": "up",
-                "form": "tap"
-              },
-              "mouse": {
-                "group": "heat",
-                "op": "heat",
-                "input": "Mouse",
-                "form": "hold"
-              }
-            }
+            "rest": true,
+            "lanes": {}
           },
           {
             "t": 20,
-            "lanes": {
-              "hand": {
-                "group": "stir-a",
-                "op": "stir",
-                "input": "left",
-                "form": "tap"
-              },
-              "mouse": {
-                "group": "heat",
-                "op": "heat",
-                "input": "Mouse",
-                "form": "hold"
-              }
-            }
+            "rest": true,
+            "lanes": {}
           },
           {
             "t": 21,
             "lanes": {
               "hand": {
-                "group": "stir-a",
+                "group": "load",
                 "op": "stir",
-                "input": "down",
+                "input": "up",
                 "form": "tap"
-              },
-              "mouse": {
-                "group": "heat",
-                "op": "heat",
-                "input": "Mouse",
-                "form": "hold"
               }
             }
           },
           {
             "t": 22,
-            "lanes": {
-              "hand": {
-                "group": "stir-a",
-                "op": "stir",
-                "input": "right",
-                "form": "tap"
-              },
-              "mouse": {
-                "group": "heat",
-                "op": "heat",
-                "input": "Mouse",
-                "form": "hold"
-              }
-            }
+            "rest": true,
+            "lanes": {}
           },
           {
             "t": 23,
             "lanes": {
               "hand": {
-                "group": "stir-a",
+                "group": "load",
                 "op": "stir",
-                "input": "primary",
+                "input": "down",
                 "form": "tap"
-              },
-              "mouse": {
-                "group": "heat",
-                "op": "heat",
-                "input": "Mouse",
-                "form": "hold"
               }
             }
           },
           {
             "t": 24,
-            "lanes": {
-              "mouse": {
-                "group": "heat",
-                "op": "heat",
-                "input": "Mouse",
-                "form": "hold"
-              }
-            }
+            "rest": true,
+            "lanes": {}
           },
           {
             "t": 25,
             "lanes": {
-              "mouse": {
-                "group": "heat",
-                "op": "heat",
-                "input": "Mouse",
-                "form": "hold"
+              "hand": {
+                "group": "load",
+                "op": "stir",
+                "input": "primary",
+                "form": "tap"
               }
             }
           },
           {
             "t": 26,
-            "lanes": {
-              "mouse": {
-                "group": "heat",
-                "op": "heat",
-                "input": "Mouse",
-                "form": "hold"
-              }
-            }
+            "rest": true,
+            "lanes": {}
           },
           {
             "t": 27,
-            "lanes": {
-              "hand": {
-                "group": "stir-b",
-                "op": "stir",
-                "input": "up",
-                "form": "tap"
-              },
-              "mouse": {
-                "group": "heat",
-                "op": "heat",
-                "input": "Mouse",
-                "form": "hold"
-              }
-            }
+            "rest": true,
+            "lanes": {}
           },
           {
             "t": 28,
-            "lanes": {
-              "hand": {
-                "group": "stir-b",
-                "op": "stir",
-                "input": "left",
-                "form": "tap"
-              },
-              "mouse": {
-                "group": "heat",
-                "op": "heat",
-                "input": "Mouse",
-                "form": "hold"
-              }
-            }
+            "rest": true,
+            "lanes": {}
           },
           {
             "t": 29,
-            "lanes": {
-              "hand": {
-                "group": "stir-b",
-                "op": "stir",
-                "input": "down",
-                "form": "tap"
-              },
-              "mouse": {
-                "group": "heat",
-                "op": "heat",
-                "input": "Mouse",
-                "form": "hold"
-              }
-            }
+            "rest": true,
+            "lanes": {}
           },
           {
             "t": 30,
-            "lanes": {
-              "hand": {
-                "group": "stir-b",
-                "op": "stir",
-                "input": "right",
-                "form": "tap"
-              },
-              "mouse": {
-                "group": "heat",
-                "op": "heat",
-                "input": "Mouse",
-                "form": "hold"
-              }
-            }
+            "rest": true,
+            "lanes": {}
           },
           {
             "t": 31,
             "lanes": {
               "hand": {
-                "group": "stir-b",
+                "group": "stir-a",
                 "op": "stir",
-                "input": "primary",
+                "input": "up",
                 "form": "tap"
               },
               "mouse": {
@@ -2354,6 +2231,12 @@
           {
             "t": 33,
             "lanes": {
+              "hand": {
+                "group": "stir-a",
+                "op": "stir",
+                "input": "left",
+                "form": "tap"
+              },
               "mouse": {
                 "group": "heat",
                 "op": "heat",
@@ -2377,41 +2260,7 @@
             "t": 35,
             "lanes": {
               "hand": {
-                "group": "stir-c",
-                "op": "stir",
-                "input": "up",
-                "form": "tap"
-              },
-              "mouse": {
-                "group": "heat",
-                "op": "heat",
-                "input": "Mouse",
-                "form": "hold"
-              }
-            }
-          },
-          {
-            "t": 36,
-            "lanes": {
-              "hand": {
-                "group": "stir-c",
-                "op": "stir",
-                "input": "left",
-                "form": "tap"
-              },
-              "mouse": {
-                "group": "heat",
-                "op": "heat",
-                "input": "Mouse",
-                "form": "hold"
-              }
-            }
-          },
-          {
-            "t": 37,
-            "lanes": {
-              "hand": {
-                "group": "stir-c",
+                "group": "stir-a",
                 "op": "stir",
                 "input": "down",
                 "form": "tap"
@@ -2425,10 +2274,21 @@
             }
           },
           {
-            "t": 38,
+            "t": 36,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 37,
             "lanes": {
               "hand": {
-                "group": "stir-c",
+                "group": "stir-a",
                 "op": "stir",
                 "input": "right",
                 "form": "tap"
@@ -2442,10 +2302,21 @@
             }
           },
           {
+            "t": 38,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
             "t": 39,
             "lanes": {
               "hand": {
-                "group": "stir-c",
+                "group": "stir-a",
                 "op": "stir",
                 "input": "primary",
                 "form": "tap"
@@ -2495,10 +2366,10 @@
             "t": 43,
             "lanes": {
               "mouse": {
-                "group": "season",
-                "op": "season",
-                "input": "spice:salt",
-                "form": "tap"
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
               }
             }
           },
@@ -2506,21 +2377,27 @@
             "t": 44,
             "lanes": {
               "mouse": {
-                "group": "season",
-                "op": "season",
-                "input": "spice:sugar",
-                "form": "tap"
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
               }
             }
           },
           {
             "t": 45,
             "lanes": {
-              "mouse": {
-                "group": "season",
-                "op": "season",
-                "input": "spice:oil",
+              "hand": {
+                "group": "stir-b",
+                "op": "stir",
+                "input": "left",
                 "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
               }
             }
           },
@@ -2538,6 +2415,12 @@
           {
             "t": 47,
             "lanes": {
+              "hand": {
+                "group": "stir-b",
+                "op": "stir",
+                "input": "up",
+                "form": "tap"
+              },
               "mouse": {
                 "group": "heat",
                 "op": "heat",
@@ -2560,6 +2443,12 @@
           {
             "t": 49,
             "lanes": {
+              "hand": {
+                "group": "stir-b",
+                "op": "stir",
+                "input": "right",
+                "form": "tap"
+              },
               "mouse": {
                 "group": "heat",
                 "op": "heat",
@@ -2581,16 +2470,344 @@
           },
           {
             "t": 51,
-            "rest": true,
-            "lanes": {}
+            "lanes": {
+              "hand": {
+                "group": "stir-b",
+                "op": "stir",
+                "input": "down",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
           },
           {
             "t": 52,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 53,
+            "lanes": {
+              "hand": {
+                "group": "stir-b",
+                "op": "stir",
+                "input": "primary",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 54,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 55,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 56,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 57,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 58,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 59,
+            "lanes": {
+              "hand": {
+                "group": "stir-c",
+                "op": "stir",
+                "input": "down",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 60,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 61,
+            "lanes": {
+              "hand": {
+                "group": "stir-c",
+                "op": "stir",
+                "input": "right",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 62,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 63,
+            "lanes": {
+              "hand": {
+                "group": "stir-c",
+                "op": "stir",
+                "input": "up",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 64,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 65,
+            "lanes": {
+              "hand": {
+                "group": "stir-c",
+                "op": "stir",
+                "input": "left",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 66,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 67,
+            "lanes": {
+              "hand": {
+                "group": "stir-c",
+                "op": "stir",
+                "input": "primary",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 68,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 69,
             "rest": true,
             "lanes": {}
           },
           {
-            "t": 53,
+            "t": 70,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 71,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 72,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 73,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 74,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 75,
+            "lanes": {
+              "mouse": {
+                "group": "season",
+                "op": "season",
+                "input": "spice:salt",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 76,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 77,
+            "lanes": {
+              "mouse": {
+                "group": "season",
+                "op": "season",
+                "input": "spice:sugar",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 78,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 79,
+            "lanes": {
+              "mouse": {
+                "group": "season",
+                "op": "season",
+                "input": "spice:oil",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 80,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 81,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 82,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 83,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 84,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 85,
             "lanes": {
               "hand": {
                 "group": "starch",
@@ -2601,7 +2818,12 @@
             }
           },
           {
-            "t": 54,
+            "t": 86,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 87,
             "lanes": {
               "hand": {
                 "group": "starch",
@@ -2612,7 +2834,12 @@
             }
           },
           {
-            "t": 55,
+            "t": 88,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 89,
             "lanes": {
               "hand": {
                 "group": "starch",
@@ -2623,32 +2850,42 @@
             }
           },
           {
-            "t": 56,
+            "t": 90,
             "rest": true,
             "lanes": {}
           },
           {
-            "t": 57,
+            "t": 91,
             "rest": true,
             "lanes": {}
           },
           {
-            "t": 58,
+            "t": 92,
             "rest": true,
             "lanes": {}
           },
           {
-            "t": 59,
+            "t": 93,
             "rest": true,
             "lanes": {}
           },
           {
-            "t": 60,
+            "t": 94,
             "rest": true,
             "lanes": {}
           },
           {
-            "t": 61,
+            "t": 95,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 96,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 97,
             "lanes": {
               "hand": {
                 "group": "plate",
@@ -2659,7 +2896,7 @@
             }
           },
           {
-            "t": 62,
+            "t": 98,
             "lanes": {
               "hand": {
                 "group": "plate",
@@ -2670,16 +2907,40 @@
             }
           },
           {
-            "t": 63,
+            "t": 99,
+            "lanes": {
+              "hand": {
+                "group": "plate",
+                "op": "plate",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 100,
+            "lanes": {
+              "hand": {
+                "group": "plate",
+                "op": "plate",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 101,
             "rest": true,
             "lanes": {}
           },
           {
-            "t": 64,
+            "t": 102,
             "rest": true,
             "lanes": {}
           }
-        ]
+        ],
+        "preview_beats": 4,
+        "charge_start_grace_beats": 4
       },
       "steam": {
         "id": "steam",
@@ -2719,25 +2980,13 @@
           },
           {
             "t": 3,
-            "lanes": {
-              "mouse": {
-                "group": "season",
-                "op": "season",
-                "input": "spice:salt",
-                "form": "tap"
-              }
-            }
+            "rest": true,
+            "lanes": {}
           },
           {
             "t": 4,
-            "lanes": {
-              "mouse": {
-                "group": "season",
-                "op": "season",
-                "input": "spice:sugar",
-                "form": "tap"
-              }
-            }
+            "rest": true,
+            "lanes": {}
           },
           {
             "t": 5,
@@ -2745,7 +2994,7 @@
               "mouse": {
                 "group": "season",
                 "op": "season",
-                "input": "spice:oil",
+                "input": "spice:salt",
                 "form": "tap"
               }
             }
@@ -2757,8 +3006,14 @@
           },
           {
             "t": 7,
-            "rest": true,
-            "lanes": {}
+            "lanes": {
+              "mouse": {
+                "group": "season",
+                "op": "season",
+                "input": "spice:sugar",
+                "form": "tap"
+              }
+            }
           },
           {
             "t": 8,
@@ -2768,82 +3023,51 @@
           {
             "t": 9,
             "lanes": {
-              "hand": {
-                "group": "steam",
-                "op": "steam",
-                "input": "primary",
-                "form": "hold"
+              "mouse": {
+                "group": "season",
+                "op": "season",
+                "input": "spice:oil",
+                "form": "tap"
               }
             }
           },
           {
             "t": 10,
-            "lanes": {
-              "hand": {
-                "group": "steam",
-                "op": "steam",
-                "input": "primary",
-                "form": "hold"
-              }
-            }
+            "rest": true,
+            "lanes": {}
           },
           {
             "t": 11,
-            "lanes": {
-              "hand": {
-                "group": "steam",
-                "op": "steam",
-                "input": "primary",
-                "form": "hold"
-              }
-            }
+            "rest": true,
+            "lanes": {}
           },
           {
             "t": 12,
-            "lanes": {
-              "hand": {
-                "group": "steam",
-                "op": "steam",
-                "input": "primary",
-                "form": "hold"
-              }
-            }
+            "rest": true,
+            "lanes": {}
           },
           {
             "t": 13,
-            "lanes": {
-              "hand": {
-                "group": "steam",
-                "op": "steam",
-                "input": "primary",
-                "form": "hold"
-              }
-            }
+            "rest": true,
+            "lanes": {}
           },
           {
             "t": 14,
-            "lanes": {
-              "hand": {
-                "group": "steam",
-                "op": "steam",
-                "input": "primary",
-                "form": "hold"
-              }
-            }
+            "rest": true,
+            "lanes": {}
           },
           {
             "t": 15,
-            "lanes": {
-              "hand": {
-                "group": "steam",
-                "op": "steam",
-                "input": "primary",
-                "form": "hold"
-              }
-            }
+            "rest": true,
+            "lanes": {}
           },
           {
             "t": 16,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 17,
             "lanes": {
               "hand": {
                 "group": "steam",
@@ -2854,66 +3078,91 @@
             }
           },
           {
-            "t": 17,
-            "rest": true,
-            "lanes": {}
-          },
-          {
             "t": 18,
-            "rest": true,
-            "lanes": {}
+            "lanes": {
+              "hand": {
+                "group": "steam",
+                "op": "steam",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
           },
           {
             "t": 19,
-            "rest": true,
-            "lanes": {}
+            "lanes": {
+              "hand": {
+                "group": "steam",
+                "op": "steam",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
           },
           {
             "t": 20,
-            "rest": true,
-            "lanes": {}
+            "lanes": {
+              "hand": {
+                "group": "steam",
+                "op": "steam",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
           },
           {
             "t": 21,
-            "rest": true,
-            "lanes": {}
+            "lanes": {
+              "hand": {
+                "group": "steam",
+                "op": "steam",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
           },
           {
             "t": 22,
-            "rest": true,
-            "lanes": {}
+            "lanes": {
+              "hand": {
+                "group": "steam",
+                "op": "steam",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
           },
           {
             "t": 23,
-            "rest": true,
-            "lanes": {}
+            "lanes": {
+              "hand": {
+                "group": "steam",
+                "op": "steam",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
           },
           {
             "t": 24,
+            "lanes": {
+              "hand": {
+                "group": "steam",
+                "op": "steam",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 25,
             "rest": true,
             "lanes": {}
           },
           {
-            "t": 25,
-            "lanes": {
-              "hand": {
-                "group": "plate",
-                "op": "plate",
-                "input": "primary",
-                "form": "hold"
-              }
-            }
-          },
-          {
             "t": 26,
-            "lanes": {
-              "hand": {
-                "group": "plate",
-                "op": "plate",
-                "input": "primary",
-                "form": "hold"
-              }
-            }
+            "rest": true,
+            "lanes": {}
           },
           {
             "t": 27,
@@ -2924,8 +3173,104 @@
             "t": 28,
             "rest": true,
             "lanes": {}
+          },
+          {
+            "t": 29,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 30,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 31,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 32,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 33,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 34,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 35,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 36,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 37,
+            "lanes": {
+              "hand": {
+                "group": "plate",
+                "op": "plate",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 38,
+            "lanes": {
+              "hand": {
+                "group": "plate",
+                "op": "plate",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 39,
+            "lanes": {
+              "hand": {
+                "group": "plate",
+                "op": "plate",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 40,
+            "lanes": {
+              "hand": {
+                "group": "plate",
+                "op": "plate",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 41,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 42,
+            "rest": true,
+            "lanes": {}
           }
-        ]
+        ],
+        "preview_beats": 4,
+        "charge_start_grace_beats": 4
       },
       "simmer": {
         "id": "simmer",
@@ -2997,25 +3342,13 @@
           },
           {
             "t": 9,
-            "lanes": {
-              "mouse": {
-                "group": "boil",
-                "op": "boil",
-                "input": "Mouse",
-                "form": "hold"
-              }
-            }
+            "rest": true,
+            "lanes": {}
           },
           {
             "t": 10,
-            "lanes": {
-              "mouse": {
-                "group": "boil",
-                "op": "boil",
-                "input": "Mouse",
-                "form": "hold"
-              }
-            }
+            "rest": true,
+            "lanes": {}
           },
           {
             "t": 11,
@@ -3349,31 +3682,55 @@
           },
           {
             "t": 41,
-            "rest": true,
-            "lanes": {}
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
           },
           {
             "t": 42,
-            "rest": true,
-            "lanes": {}
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
           },
           {
             "t": 43,
-            "rest": true,
-            "lanes": {}
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
           },
           {
             "t": 44,
-            "rest": true,
-            "lanes": {}
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
           },
           {
             "t": 45,
             "lanes": {
-              "hand": {
-                "group": "plate",
-                "op": "plate",
-                "input": "primary",
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
                 "form": "hold"
               }
             }
@@ -3381,6 +3738,101 @@
           {
             "t": 46,
             "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 47,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 48,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 49,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 50,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 51,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 52,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 53,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 54,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 55,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 56,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 57,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 58,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 59,
+            "lanes": {
               "hand": {
                 "group": "plate",
                 "op": "plate",
@@ -3390,16 +3842,124 @@
             }
           },
           {
-            "t": 47,
+            "t": 60,
+            "lanes": {
+              "hand": {
+                "group": "plate",
+                "op": "plate",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 61,
+            "lanes": {
+              "hand": {
+                "group": "plate",
+                "op": "plate",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 62,
+            "lanes": {
+              "hand": {
+                "group": "plate",
+                "op": "plate",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 63,
             "rest": true,
             "lanes": {}
           },
           {
-            "t": 48,
+            "t": 64,
             "rest": true,
             "lanes": {}
           }
-        ]
+        ],
+        "preview_beats": 4,
+        "charge_start_grace_beats": 4
+      },
+      "prepare_strips": {
+        "id": "prepare_strips",
+        "dish": "黄瓜切条",
+        "bpm": 120,
+        "groups": {
+          "cut": {
+            "operation": "cut",
+            "label": "黄瓜切条 · 两次同向落刀",
+            "parameters": {}
+          }
+        },
+        "beats": [
+          {
+            "t": 1,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 2,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 3,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 4,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 5,
+            "lanes": {
+              "hand": {
+                "group": "cut",
+                "op": "cut",
+                "input": "primary",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 6,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 7,
+            "lanes": {
+              "hand": {
+                "group": "cut",
+                "op": "cut",
+                "input": "primary",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 8,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 9,
+            "rest": true,
+            "lanes": {}
+          }
+        ],
+        "preview_beats": 4,
+        "charge_start_grace_beats": 4
       }
     },
     "document_weights": {
@@ -3413,10 +3973,15 @@
     },
     "document_rules": {
       "timing_status": "PROPOSED",
-      "cut_sheet": "prepare",
       "stove_sheet": "tomato_egg",
       "steam_sheet": "steam",
-      "simmer_sheet": "simmer"
+      "simmer_sheet": "simmer",
+      "preparation_recipes": {
+        "tomato": "tomato_egg",
+        "cucumber": "test.cold_salad",
+        "beef": "beef_stew"
+      },
+      "feedback_sec": 0.9
     }
   }
 }

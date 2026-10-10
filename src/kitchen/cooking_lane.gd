@@ -70,6 +70,8 @@ var stage_label: String = ""
 var _scheduled_settings: Dictionary = {}
 var active_sheet_id: String = ""
 var _customer_feedback: Array=[]
+var judgement_feedback: Dictionary = {}
+var _feedback_token: String = ""
 
 func _ready() -> void:
 	_content = catalog.data()
@@ -92,6 +94,7 @@ func new_session(recipe_id: String, entry: Dictionary = {}) -> void:
 	if thermal_qte != null: thermal_qte.cancel()
 	thermal_qte = null; thermal_progress = {}
 	if sheet != null: sheet.cancel()
+	sheet = null; judgement_feedback.clear(); _feedback_token = ""; stage_label = ""
 	qte = null
 	_audio.stop()
 	_plate.cancel_drag()
@@ -217,6 +220,7 @@ func input_action(action: String, pressed: bool, value: float = 1.0, operation_t
 	_sequence += 1
 	var result := qte.input(_sequence, clock.qte_sec, action, pressed, value)
 	progress = result.data
+	_capture_feedback(progress)
 	_view.call("pulse_input", action, pressed)
 	if result.ok and bool(progress.ready_to_finish): _finish()
 	refresh()
@@ -227,6 +231,7 @@ func _finish() -> void:
 	var result := qte.finish()
 	if not result.ok: return
 	progress = result.data
+	_capture_feedback(progress)
 	last_result = session.complete_operation(result)
 	if last_result.ok and not _pending_plan_local_ids.is_empty():
 		var used: Array = snapshot().consumed_ingredients
@@ -241,7 +246,7 @@ func _finish() -> void:
 		session.cancel_operation(str(result.data.operation_id))
 		_status.text = "本次工序未应用：" + _explain_error(last_result)
 	qte = null
-	_audio.stop()
+	if not pc_controls: _audio.stop()
 	_refresh_targets()
 
 func cancel_operation() -> void:
@@ -254,6 +259,7 @@ func cancel_operation() -> void:
 	_pending_plan_local_id = ""
 	_audio.stop()
 	progress = {}
+	judgement_feedback.clear(); _feedback_token = ""
 	_status.text = "已取消本次操作，已完成的历史不会撤销。"
 	refresh()
 
@@ -533,16 +539,49 @@ func _row(parent: Node) -> HBoxContainer:
 
 func bind_preparation(value: TDCookingSession) -> void:
 	if qte != null: qte.cancel()
+	if sheet != null: sheet.cancel()
+	sheet = null; judgement_feedback.clear(); _feedback_token = ""
 	qte = null
 	if session != null and session != value:
 		if session.result_ready.is_connected(_on_session_result): session.result_ready.disconnect(_on_session_result)
 	session = value
 	generation = int(snapshot().generation)
+	base_recipe_id = str(snapshot().recipe_id)
 	if not session.result_ready.is_connected(_on_session_result): session.result_ready.connect(_on_session_result)
 	progress = {}; _operation_counter = 0; _sequence = 0
 	if shared_clock != null:
 		clock.qte_sec = shared_clock.qte_sec; clock.game_sec = shared_clock.game_sec
 	_refresh_targets(); refresh()
+
+func start_preparation() -> TDOutcome:
+	var dish: Dictionary = snapshot()
+	if dish.ingredients.is_empty(): return TDOutcome.new(false,"NO_INGREDIENT")
+	var recipe: Dictionary = catalog.for_recipe(str(dish.recipe_id)).get("recipe",{})
+	var ingredient: String = str(dish.ingredients.values()[0].ingredient_id)
+	var id: String = str(recipe.get("preparation_sheets",{}).get(ingredient,""))
+	if id.is_empty(): return TDOutcome.new(false,"NO_PREPARATION_CHART","这份菜谱未配置该食材的备菜谱。")
+	return start_sheet(id)
+
+func feedback_remaining() -> float:
+	return maxf(0,float(judgement_feedback.get("shown_at_sec",-10)) + float(_content.pc_operations.document_rules.get("feedback_sec",.9)) - clock.qte_sec)
+
+func _capture_feedback(data: Dictionary) -> void:
+	if not document_rules: return
+	var event: Dictionary = data.get("last_judgement",{})
+	if event.is_empty(): return
+	var token: String = str(data.get("operation_id",""))+":"+str(event.serial)
+	if token == _feedback_token: return
+	_feedback_token = token
+	judgement_feedback = event.duplicate(true)
+	judgement_feedback.operation_id = data.operation_id
+	judgement_feedback.shown_at_sec = float(event.at_sec)
+	if feedback_remaining() > 0: _audio.play_feedback(str(event.grade))
+
+func next_boundary_sec() -> float:
+	var boundary: float = sheet.next_in(clock.qte_sec) if sheet != null else INF
+	for controller: TDCookingQTE in [qte,thermal_qte]:
+		if controller != null: boundary = minf(boundary,float(controller.update().data.remaining_sec))
+	return boundary
 
 func _align_pc(settings: Dictionary) -> Dictionary:
 	var interval: float = 60.0 / float(_content.pc_operations.bpm)
@@ -607,12 +646,14 @@ func _advance_pc(delta: float) -> void:
 		clock.advance(span); session.advance_time(span); remaining -= span
 		if qte != null:
 			progress = qte.update().data
+			_capture_feedback(progress)
 			if bool(progress.ready_to_finish) and (remaining > .000000001 or span == 0): _finish()
 		if thermal_qte != null:
 			thermal_progress = thermal_qte.update().data
 			if bool(thermal_progress.ready_to_finish) and (remaining > .000000001 or span == 0):
 				var result := thermal_qte.finish()
 				thermal_progress = result.data
+				_capture_feedback(thermal_progress)
 				last_result = session.complete_operation(result)
 				_status.text = "控温完成 · 稳定 %.0f%% · %s" % [float(result.data.quality) * 100, result.data.grade]
 				thermal_qte = null

@@ -173,14 +173,43 @@ func _sync_time() -> void:
 
 func advance(seconds: float) -> void:
 	if _closed: return
-	for lane: TDCookingLane in lanes: lane.advance(seconds)
-	if handling.board != null: prep.advance(seconds)
-	if handling.hand != null and handling.hand_kind == "ingredient" and not shared_clock.paused: handling.hand.advance_time(seconds)
-	shared_clock.advance(seconds)
+	if guided_controls: _advance_guided(seconds)
+	else:
+		for lane: TDCookingLane in lanes: lane.advance(seconds)
+		if handling.board != null: prep.advance(seconds)
+		if handling.hand != null and handling.hand_kind == "ingredient" and not shared_clock.paused: handling.hand.advance_time(seconds)
+		shared_clock.advance(seconds)
 	beat_bar.beat_sec = shared_clock.qte_sec - lanes[0].beat_offset_sec; beat_bar.queue_redraw()
 	_update_world()
 	if guided_controls and stage != null:
 		_refresh_guided()
+
+func _sync_mouse_ownership() -> bool:
+	var reserved: bool = lanes.any(func(lane:TDCookingLane)->bool:return lane.qte != null and lane.progress.get("pc_module") == "M6")
+	for lane: TDCookingLane in lanes:
+		if lane.thermal_qte != null:
+			lane.thermal_qte.set_control_suspended(reserved)
+			lane.thermal_progress = lane.thermal_qte.update().data
+	return reserved
+
+func _advance_guided(seconds: float) -> void:
+	if not is_finite(seconds) or seconds < 0 or shared_clock.paused: return
+	var remaining: float = seconds
+	var active: Array = lanes.duplicate()
+	if handling.board != null: active.append(prep)
+	for iteration: int in 1024:
+		for lane: TDCookingLane in active: lane.advance(0)
+		_sync_mouse_ownership()
+		if remaining <= .000000001: return
+		var span: float = remaining
+		for lane: TDCookingLane in active: span = minf(span,lane.next_boundary_sec())
+		if span <= .000000001:
+			push_error("Guided scheduler failed to advance"); return
+		for lane: TDCookingLane in active: lane.advance(span)
+		if handling.hand != null and handling.hand_kind == "ingredient": handling.hand.advance_time(span)
+		shared_clock.advance(span); remaining -= span
+		if remaining <= .000000001: return
+	push_error("Guided scheduler exceeded bounded event count")
 
 func _input(event: InputEvent) -> void:
 	if _closed: return
@@ -359,7 +388,9 @@ func _close_pantry() -> void:
 func _guided_station(id: String) -> void:
 	var result := TDOutcome.new(false,"NO_ACTION")
 	if id.begins_with("kitchen.supply."):
-		result=handling.pick(id.trim_prefix("kitchen.supply."))
+		var ingredient: String = id.trim_prefix("kitchen.supply.")
+		var recipe: String = str(_content.pc_operations.document_rules.preparation_recipes.get(ingredient,lanes[active_lane].base_recipe_id))
+		result=handling.pick(ingredient,recipe)
 	elif id=="kitchen.board":
 		if handling.hand==null and handling.board!=null:
 			if prep.qte!=null or (prep.sheet!=null and prep.sheet.running): _open_guided(id); return
@@ -368,8 +399,8 @@ func _guided_station(id: String) -> void:
 			result=handling.put_board()
 			if result.ok:
 				prep.bind_preparation(handling.board); prep.document_rules=true
-				result=prep.start_sheet("prepare")
-				_open_guided(id); return
+				result=prep.start_preparation()
+				if result.ok: _open_guided(id); return
 	elif id=="kitchen.serve":
 		if handling.hand_kind=="dish":
 			for i: int in lanes.size():
@@ -442,7 +473,7 @@ func _refresh_guided() -> void:
 			for lane: TDCookingLane in lanes:
 				if lane.qte!=null or lane.thermal_qte!=null or (lane.sheet!=null and lane.sheet.running): _finished_at=-1; return
 		if _finished_at<0: _finished_at=shared_clock.game_sec
-		if shared_clock.game_sec-_finished_at>=.7:
+		if shared_clock.game_sec-_finished_at>=1.1:
 			_message="备菜完成 · 在砧板按 E 取走" if _on_board else "烹饪完成 · 在灶台按 E 端起"
 			close_bench()
 
@@ -452,6 +483,7 @@ func _input_guided(event: InputEvent) -> void:
 	if not stage.feedback.is_empty(): return
 	var active: Array=_guided_lanes()
 	if event is InputEventMouseMotion or event is InputEventMouseButton:
+		if _sync_mouse_ownership(): return
 		var pointer: Vector2=event.position
 		var hovered: bool=false
 		for lane: TDCookingLane in active:

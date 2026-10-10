@@ -10,10 +10,12 @@ var _serial: int = 0
 func _init(catalog: TDCookingCatalog) -> void:
 	_catalog = catalog
 
-func pick(ingredient_id: String) -> TDOutcome:
+func pick(ingredient_id: String, recipe_id: String = "tomato_egg") -> TDOutcome:
 	if hand != null: return TDOutcome.new(false, "HANDS_FULL", "手上已有东西，先放到菜板或锅里。")
+	var config: Dictionary = _catalog.for_recipe(recipe_id)
+	if config.is_empty(): return TDOutcome.new(false,"UNKNOWN_RECIPE")
 	_serial += 1
-	var candidate := TDCookingSession.new("portable-%d" % _serial, _serial, _catalog.for_recipe("tomato_egg"), {"pc_controls":true})
+	var candidate := TDCookingSession.new("portable-%d" % _serial, _serial, config, {"pc_controls":true})
 	var request := TDRequest.new("portable-%d" % _serial, _serial, "pickup-%d" % _serial, "add", 0, {"ingredient_id":ingredient_id,"amount":1})
 	request.schema_version = 3
 	var result := candidate.begin(request)

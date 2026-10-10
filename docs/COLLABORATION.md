@@ -1,5 +1,9 @@
 # 分工与集成基线
 
+## D016增量分工
+
+本轮集成负责人统一写入；grilling事实审查Agent只读。内容线拥有菜谱preparation_sheets与逐拍行/预告，QTE线拥有cut_actions、last_judgement及长按生命周期；厨房线拥有反馈缓存、菜谱传递和双锅鼠标预约；视图只读取。新增 `test_recipe_performance.gd` 进入qte套件，真实入口仍在test_guided_kitchen。验证使用check.ps1；新版图形证据前缀为artifacts/d016-*，不要混用旧六刀截图。本轮不自动提交或推送。
+
 ## 当前D015协作入口
 
 文件归属继续沿用下表角色；本轮只有集成负责人写文件，事实审查Agent只读。规则线追加 `module_scores/steps.module`、真实勾芡材料；内容线管理 `pc_operations.document_sheets/document_weights` 和材料柜；QTE线管理编译后拍点与窗口；厨房/UI线拥有 `guided_cooking_view.gd`、自动功能位路由与M5跨界面HUD。共享场景、主菜单、导出与检查脚本由集成负责人统一修改。

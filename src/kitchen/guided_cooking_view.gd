@@ -114,7 +114,7 @@ func _draw_lane(lane: TDCookingLane, area: Rect2, slot: int) -> void:
 	var dish: Dictionary = lane.snapshot()
 	if dish.is_empty(): return
 	var attrs: Dictionary = dish.dish_attributes
-	var p: Dictionary = lane.progress if lane.qte != null else (lane.thermal_progress if lane.thermal_qte != null else {})
+	var p: Dictionary = lane.progress if lane.qte != null else (lane.thermal_progress if lane.thermal_qte != null else (lane.progress if lane.feedback_remaining()>0 else {}))
 	var module: String = str(p.get("pc_module",""))
 	var top_x: float = 32+slot*620 if lanes.size()>1 else 32
 	_text(("左锅 · " if lane.lane_index==0 else ("右锅 · " if lane.lane_index==1 else "砧板 · "))+str(dish.recipe_name),Vector2(top_x,71),24,INK)
@@ -129,7 +129,7 @@ func _draw_lane(lane: TDCookingLane, area: Rect2, slot: int) -> void:
 	_text(label,area.position+Vector2(24,34),21,GOLD)
 	var fine: float = 0
 	for item: Dictionary in dish.ingredients.values(): fine=maxf(fine,float(item.fine))
-	if module=="M1": fine=minf(1,fine+float(p.get("hits",0))/8)
+	if module=="M1" and lane.qte != null: fine=minf(1,fine+float(p.get("cut_hits",0))/8)
 	var stats: Vector2 = area.position+Vector2(area.size.x-150,64)
 	_text("%.0f ℃"%float(attrs.temperature_c),stats,20,INK)
 	draw_rect(Rect2(stats+Vector2(100,-18),Vector2(7,66)),Color("455b4c"))
@@ -150,20 +150,19 @@ func _draw_lane(lane: TDCookingLane, area: Rect2, slot: int) -> void:
 	if module=="M6": _cabinet(lane,area,p)
 	else: _symbols(lane,area,p)
 	if module=="M1":
-		_text(["横切","竖切","斜切"][int(p.get("cut_direction",0))],area.position+Vector2(25,68),16,GREEN)
+		_text("切面："+["横切","竖切","斜切"][int(p.get("cut_direction",0))]+"  ·  连击 ×%d"%int(p.get("combo",0)),area.position+Vector2(25,61),15,GREEN)
 	elif module=="M3" and p.get("qte_kind")=="sequence":
 		_text("连击 ×%d"%int(p.get("combo",0)),area.position+Vector2(25,68),16,GREEN)
 	if lane.thermal_qte != null:
 		if lanes.size()==1: _thermal(area,lane.thermal_progress)
 	elif not p.is_empty():
-		var instruction: String={"M1":"空格落刀  ·  A / D 转向","M2":"游标到绿区中心时按空格","M3":"一拍一键  ·  最后一拍空格收势","M7":"长按空格  →  绿区中心松开"}.get(module,"跟随拍点")
+		var instruction: String={"M1":"按菜谱打谱  ·  空格落刀 / A、D 转向","M2":"游标到绿区中心时按空格","M3":"按谱按键  ·  最后一拍空格收势","M6":"按谱点击调料  ·  无需控温","M7":"看提示按住空格  →  绿区中心松开"}.get(module,"跟随拍点")
 		if p.get("qte_kind")=="charge" and module=="M3": instruction="长按空格 · 上笼八拍后松开"
 		_text(instruction,area.position+Vector2(26,area.size.y-23),17,Color("c7cfb5"))
-	if lane.qte == null and lane.thermal_qte == null and not lane.progress.is_empty():
-		_text(str(lane.progress.get("grade","")).to_upper(),area.position+Vector2(28,67),15,GREEN)
+	_draw_judgement(lane,area)
 
 func _requirements(lane: TDCookingLane) -> String:
-	if lane.station_role=="board": return "先切好食材，再端到锅中"
+	if lane.station_role=="board": return lane.stage_label if lane.sheet != null else "依照目标菜谱备菜，再端到锅中"
 	var customers: Array=lane.customer_profiles()
 	if customers.is_empty(): return "依照菜谱制作"
 	var labels: Array[String]=[]
@@ -183,7 +182,7 @@ func _draw_food_action(c: Vector2,s: float,lane: TDCookingLane,p: Dictionary,mod
 		_rect(c+Vector2(-155,-80)*s,Vector2(310,174)*s,Color("674630"))
 		_rect(c+Vector2(-150,-85)*s,Vector2(300,161)*s,Color("bf985e"))
 		for y: int in range(0,150,12): draw_line(c+Vector2(-140,-77+y)*s,c+Vector2(137,-77+y)*s,Color("ae8451"),2)
-		var hits: int=int(p.get("hits",0))
+		var hits: int=int(p.get("cut_hits",0))
 		var count: int=maxi(1,hits+1)
 		if hits==0:
 			_ellipse(c+Vector2(-32,5)*s,Vector2(43,37)*s,Color("a64031")); _ellipse(c+Vector2(-34,-1)*s,Vector2(39,33)*s,RED)
@@ -194,7 +193,10 @@ func _draw_food_action(c: Vector2,s: float,lane: TDCookingLane,p: Dictionary,mod
 			_rect(v,Vector2(29,26)*s,Color("ad4232")); _rect(v+Vector2(2,-3)*s,Vector2(25,20)*s,RED)
 		var angle: float=[0.0,PI*.5,PI*.25][int(p.get("cut_direction",0))]
 		var dir:=Vector2.RIGHT.rotated(angle)
-		var knife: Vector2=c+Vector2(10,-38-absf(sin(beat*PI))*22)*s
+		var hit: Dictionary=lane.judgement_feedback
+		var age: float=lane.clock.qte_sec-float(hit.get("shown_at_sec",-10))
+		var strike: float=sin(clampf(age/.24,0,1)*PI) if hit.get("action")=="primary" and hit.get("grade") in ["perfect","good"] and age<.24 else 0.0
+		var knife: Vector2=c+Vector2(10,-64+strike*30)*s
 		draw_line(knife-dir*38*s,knife+dir*40*s,Color("8b9c95"),22*s)
 		draw_line(knife-dir*36*s-Vector2(0,3),knife+dir*36*s-Vector2(0,3),Color("d8ded1"),17*s)
 		draw_line(knife+dir*42*s,knife+dir*84*s,Color("664133"),15*s)
@@ -248,27 +250,9 @@ func _symbols(lane: TDCookingLane,area: Rect2,p: Dictionary) -> void:
 	var kind: String=p.get("qte_kind","")
 	var elapsed: float=float(p.get("elapsed_sec",0))
 	if kind=="rhythm":
-		var upcoming: float=INF
-		for time: float in p.get("beat_times_sec",[]):
-			if time>=elapsed-.1: upcoming=time-elapsed; break
-		var radius: float=24+clampf(upcoming,0,1)*42
-		draw_circle(c,24,Color("455742")); draw_arc(c,24,0,TAU,48,GOLD,3)
-		if upcoming<1.2: draw_arc(c,radius,0,TAU,64,INK,3)
-		_text("空格",c+Vector2(-18,6),16,INK)
-		_text("连击 ×%d"%int(p.get("combo",0)),c+Vector2(91,7),18,GREEN)
+		_draw_notes(area,p,p.get("cut_actions",[]),lane.lane_index)
 	elif kind=="sequence":
-		var sequence: Array=p.get("sequence",[])
-		var times: Array=p.get("beat_times_sec",[])
-		var spacing: float=minf(63,(area.size.x-60)/maxi(1,sequence.size()))
-		var start: float=c.x-spacing*(sequence.size()-1)*.5
-		for i: int in sequence.size():
-			var point:=Vector2(start+i*spacing,c.y)
-			var active: bool=i==int(p.get("sequence_index",0))
-			draw_circle(point,24,Color("647451") if active else Color("34483b"))
-			var key: String={"up":"W","left":"A","down":"S","right":"D","primary":"␣"}.get(sequence[i],sequence[i])
-			if lane.lane_index==1: key={"up":"↑","left":"←","down":"↓","right":"→","primary":"␣"}.get(sequence[i],sequence[i])
-			_text(key,point+Vector2(-8,8),25,INK if active else Color("8d9e87"))
-			if i<times.size() and float(times[i])-elapsed>=-.1 and float(times[i])-elapsed<.75: draw_arc(point,24+maxf(0,float(times[i])-elapsed)*30,0,TAU,40,GOLD,2)
+		_draw_notes(area,p,p.get("sequence",[]),lane.lane_index)
 	elif kind in ["window","charge"]:
 		var bar:=Rect2(c-Vector2(minf(240,area.size.x*.39),14),Vector2(minf(480,area.size.x*.78),28))
 		draw_rect(bar,Color("455345"))
@@ -279,15 +263,19 @@ func _symbols(lane: TDCookingLane,area: Rect2,p: Dictionary) -> void:
 			low=float(p.get("target_min_sec",.9))/max_time; high=float(p.get("target_max_sec",1.1))/max_time
 			position=clampf(float(p.get("held_sec",0))/max_time,0,1)
 			draw_rect(Rect2(bar.position,Vector2(bar.size.x*position,bar.size.y)),Color("8b8b5e"))
+			var preview: float=float(p.get("preview_remaining_sec",0))
+			var hint: String="准备  %.1f 秒后按住空格"%preview if preview>0 else ("现在按住空格" if not p.get("charge_started",false) else "保持按住  ·  到中心松开")
+			if p.get("ready_to_finish",false): hint="本步完成"
+			_text(hint,c+Vector2(-155,-43),20,GOLD)
 		draw_rect(Rect2(bar.position+Vector2(bar.size.x*low,0),Vector2(bar.size.x*(high-low),bar.size.y)),GREEN)
 		draw_line(bar.position+Vector2(bar.size.x*(low+high)*.5,-6),bar.position+Vector2(bar.size.x*(low+high)*.5,34),GOLD,2)
 		draw_rect(Rect2(bar.position+Vector2(bar.size.x*position-3,-5),Vector2(6,38)),INK)
 
 func _cabinet(lane: TDCookingLane,area: Rect2,p: Dictionary) -> void:
 	var index: int=int(p.get("sequence_index",0)); var commands: Array=p.get("sequence",[])
-	var next: String=str(commands[index]).trim_prefix("spice:") if index<commands.size() else ""
+	var next: String=str(commands[index]).trim_prefix("spice:") if index>=0 and index<commands.size() else ""
 	var times: Array=p.get("beat_times_sec",[])
-	var remaining: float=float(times[index])-float(p.get("elapsed_sec",0)) if index<times.size() else 0
+	var remaining: float=float(times[index])-float(p.get("elapsed_sec",0)) if index>=0 and index<times.size() else 0
 	for i: int in SPICES.size():
 		var r: Rect2=_spice_box(area,i)
 		_panel(r,Color("687347") if SPICES[i]==next else Color("404e37"))
@@ -301,13 +289,15 @@ func _cabinet(lane: TDCookingLane,area: Rect2,p: Dictionary) -> void:
 	for command: String in commands:
 		var slot: int=SPICES.find(command.trim_prefix("spice:")); labels.append(SPICE_NAMES[slot] if slot>=0 else "?")
 	_text("按拍点击："+" → ".join(labels),area.position+Vector2(30,area.size.y-202),18,GOLD)
+	if remaining>.1: _text("下一拍 %.1f 秒"%remaining,area.position+Vector2(30,area.size.y-223),15,INK)
 
 func _thermal(area: Rect2,p: Dictionary) -> void:
 	var bar:=Rect2(area.position+Vector2(35,area.size.y-65),Vector2(area.size.x-70,25))
 	draw_rect(bar,Color("405346"))
 	draw_rect(Rect2(bar.position+Vector2(bar.size.x*float(p.target_min),0),Vector2(bar.size.x*(float(p.target_max)-float(p.target_min)),25)),Color("5f916a"))
 	draw_circle(bar.position+Vector2(bar.size.x*float(p.get("power",.5)),12),8,GOLD)
-	_text("鼠标吸引  ·  稳定 %d%%"%roundi(float(p.get("inside_sec",0))/maxf(.001,float(p.elapsed_sec))*100),bar.position+Vector2(0,48),15,INK)
+	var hint: String="调味中 · 火候托管，不计控温分" if p.get("control_suspended",false) else "鼠标吸引  ·  稳定 %d%%"%roundi(float(p.get("inside_sec",0))/maxf(.001,float(p.get("assessed_sec",p.elapsed_sec)))*100)
+	_text(hint,bar.position+Vector2(0,48),15,INK)
 	_text("%.1fs"%float(p.remaining_sec),bar.position+Vector2(bar.size.x-60,48),15,GOLD)
 
 func _dual_thermal() -> void:
@@ -317,14 +307,51 @@ func _dual_thermal() -> void:
 		if lane.thermal_qte==null: continue
 		var p: Dictionary=lane.thermal_progress
 		var bar:=Rect2(165,605+i*32,900,20)
-		_text("左锅 · 鼠标" if lane.lane_index==0 else "右锅 · 鼠标",Vector2(63,bar.position.y+15),14,INK)
+		_text(("左锅" if lane.lane_index==0 else "右锅")+(" · 托管" if p.get("control_suspended",false) else " · 鼠标"),Vector2(63,bar.position.y+15),14,INK)
 		draw_rect(bar,Color("405346"))
 		draw_rect(Rect2(bar.position+Vector2(bar.size.x*float(p.target_min),0),Vector2(bar.size.x*(float(p.target_max)-float(p.target_min)),20)),Color("5f916a"))
 		draw_circle(bar.position+Vector2(bar.size.x*float(p.get("power",.5)),10),7,GOLD)
 		if float(p.get("attraction",0))>0:
 			var x: float=bar.position.x+bar.size.x*float(p.control)
 			draw_line(Vector2(x,bar.position.y-3),Vector2(x,bar.end.y+3),INK,1)
-		_text("稳定 %d%% · %.1fs"%[roundi(float(p.inside_sec)/maxf(.001,float(p.elapsed_sec))*100),float(p.remaining_sec)],Vector2(1082,bar.position.y+15),13,INK)
+		_text("暂停判分" if p.get("control_suspended",false) else "稳定 %d%% · %.1fs"%[roundi(float(p.inside_sec)/maxf(.001,float(p.get("assessed_sec",p.elapsed_sec)))*100),float(p.remaining_sec)],Vector2(1082,bar.position.y+15),13,INK)
+
+func _draw_notes(area: Rect2,p: Dictionary,actions: Array,lane_index: int) -> void:
+	var times: Array=p.get("beat_times_sec",[])
+	var judged: Array=p.get("judgements",[])
+	var elapsed: float=float(p.get("elapsed_sec",0))-float(p.get("input_offset_sec",0))
+	var spacing: float=minf(100,(area.size.x-90)/maxi(1,actions.size()))
+	var center: Vector2=area.position+Vector2(area.size.x*.5,area.size.y-125)
+	var next: int=judged.find("pending")
+	for i: int in actions.size():
+		var point: Vector2=center+Vector2((i-(actions.size()-1)*.5)*spacing,0)
+		var grade: String=str(judged[i]) if i<judged.size() else "pending"
+		var color: Color=GREEN if grade=="perfect" else (GOLD if grade=="good" else (RED if grade=="miss" else Color("4d6249")))
+		draw_circle(point,26,color)
+		var label: String={"primary":"空格","rotate_left":"A","rotate_right":"D","up":"W","left":"A","down":"S","right":"D"}.get(actions[i],"?")
+		if lane_index==1: label={"up":"↑","left":"←","down":"↓","right":"→","primary":"空格"}.get(actions[i],label)
+		_text(label,point-Vector2(font.get_string_size(label,HORIZONTAL_ALIGNMENT_LEFT,-1,20).x*.5,-7),20,BG if grade!="pending" else INK)
+		var caption: String={"primary":"落刀","rotate_left":"左转","rotate_right":"右转"}.get(actions[i],"") if p.get("pc_module")=="M1" else ""
+		if grade!="pending": caption={"perfect":"完美","good":"良好","miss":"失误"}[grade]
+		_text(caption,point+Vector2(-16,47),15,color if grade!="pending" else INK)
+		if i==next and i<times.size():
+			var until: float=float(times[i])-elapsed
+			draw_arc(point,26+clampf(until,0,1)*28,0,TAU,48,GOLD,3)
+			if until>.1: _text("%.1f 秒"%until,point+Vector2(-25,-65),17,GOLD)
+
+func _draw_judgement(lane: TDCookingLane,area: Rect2) -> void:
+	if lane.feedback_remaining()<=0: return
+	var event: Dictionary=lane.judgement_feedback
+	var grade: String=str(event.get("grade","miss"))
+	var color: Color=GREEN if grade=="perfect" else (GOLD if grade=="good" else RED)
+	var reason: String=str(event.get("reason",""))
+	var detail: String={"WRONG_KEY":"按键不对","WRONG_DIRECTION":"漏了转向，切面不对","MISSED_NOTE":"漏拍","OUTSIDE_WINDOW":"没有到落点","TIMEOUT":"未完成操作","EARLY_RELEASE":"松手早了","OVERCHARGED":"松手晚了"}.get(reason,"")
+	if reason=="THERMAL_RESULT": detail="控温阶段完成"
+	if detail.is_empty():
+		var error: float=float(event.get("error_sec",0))*1000
+		detail="正中拍点" if absf(error)<1 else ("早了 %.0f 毫秒"%absf(error) if error<0 else "晚了 %.0f 毫秒"%error)
+	_text({"perfect":"PERFECT  完美","good":"GOOD  良好","miss":"MISS  失误"}.get(grade,grade),area.position+Vector2(25,100),27,color)
+	_text(detail,area.position+Vector2(27,125),16,color)
 
 func _draw_beat() -> void:
 	draw_rect(Rect2(0,702,1280,98),Color("17231f"))
