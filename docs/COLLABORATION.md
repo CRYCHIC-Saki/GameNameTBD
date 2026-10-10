@@ -1,6 +1,14 @@
 # 分工与集成基线
 
+## D020 本轮文件归属与验证入口
+
+主开发/集成角色负责project.godot、ShopView、FullKitchen与共享契约；本轮仅委派grilling要求的只读事实审查，无外部任务/推送。后续烹饪线修改Model/Handling，QTE线修改controller/beat_sheet/GuidedView，经营线修改ShopSession/Store/Catalog；跨线先更新CONTRACTS与AC，再由集成角色验证。
+
+独立检查：tools/check.ps1 -Suite business（含test_kitchen_freedom）、-Suite qte、-Suite service；完整入口不变。新静态方法season_prompt可独立验证UI状态；真实F/Q/E、切型按钮和鼠标长按必须在service场景测试中验证。
+
 ## Phase 2当前协作边界
+
+D019延续同一文件归属：本轮只有集成负责人写入。共享新增接口为CookingSession.set_material_sink/select_recipe、Lane.use_recipe_profile、ServiceCatalog.request_profile/material_needs、ShopSession.consume_materials/sync_kitchen/context_for_ingredients/first_order_for。移除旧begin_order/consume_total；业务独测和真实营业入口仍分别使用business/service套件，无新增全局管理器。
 
 本轮仅集成负责人写文件，grilling事实审查Agent只读，无外部任务分派。经营规则负责人可修改 `src/business/shop_session.gd` 和对应规则测试；内容负责人可修改 `service_catalog.gd` / `content/service_content.json`；存储负责人拥有 `src/platform/shop_store.gd` 和中断恢复测试；应用集成负责人拥有 `shop_view.gd`、main、FullKitchen接入、世界显示名、工具、共享契约和导出白名单。角色不是编造的团队成员。
 

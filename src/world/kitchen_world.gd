@@ -3,6 +3,7 @@ extends Node2D
 
 ## Composition owns cooking UI: this world only publishes a station identity.
 signal cooking_requested(station_id: String)
+signal station_action(station_id: String, action: String)
 signal back_requested
 
 const STATIONS: Array[Dictionary] = [
@@ -28,6 +29,18 @@ var _simmer_label: Label
 var _near_prompt: Label
 var simmer_meters: Array=[]
 var station_names: Dictionary={}
+var single_fridge: bool = false
+var pot_contents: Array=[]
+
+func stations() -> Array[Dictionary]:
+	if not single_fridge: return STATIONS.duplicate(true)
+	var result: Array[Dictionary]=[]
+	result.append({"id":"kitchen.fridge","position":Vector2(245,290),"visual":Vector2(245,173),"name":"大冰箱","kind":"fridge"})
+	result.append({"id":"kitchen.trash","position":Vector2(310,590),"visual":Vector2(245,585),"name":"垃圾桶","kind":"trash"})
+	for station: Dictionary in STATIONS:
+		if station.get("kind")!="supply": result.append(station.duplicate(true))
+	return result
+
 
 func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
@@ -37,7 +50,7 @@ func _ready() -> void:
 	_make_hud()
 	_hud.z_index=2
 	_near_prompt=TDUI.label("[ E ]",20,TDUI.ORANGE); _near_prompt.size=Vector2(72,30); _near_prompt.autowrap_mode=TextServer.AUTOWRAP_OFF; _near_prompt.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER; _hud.add_child(_near_prompt)
-	for station: Dictionary in STATIONS:
+	for station: Dictionary in stations():
 		var label := TDUI.label(str(station_names.get(station.id,station.name)), 16, TDUI.ORANGE)
 		label.position = (station.get("visual",station.position+Vector2(0,-120)) as Vector2) + Vector2(-60,15)
 		label.size = Vector2(120,28); label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -55,6 +68,12 @@ func _process(_delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not _controls_enabled or not is_visible_in_tree() or get_tree().paused:
 		return
+	if single_fridge and not event.is_echo():
+		for action: String in ["open","retrieve"]:
+			if event.is_action_pressed("world_"+action) and interaction_available():
+				var id: String=str(_station_at_player().id)
+				set_controls_enabled(false); station_action.emit(id,action)
+				get_viewport().set_input_as_handled(); return
 	if event.is_action_pressed("world_interact") and not event.is_echo():
 		if request_interaction():
 			get_viewport().set_input_as_handled()
@@ -98,7 +117,7 @@ func _station_at_player() -> Dictionary:
 		return {}
 	var best: Dictionary = {}
 	var shortest: float = INTERACTION_RADIUS
-	for station: Dictionary in STATIONS:
+	for station: Dictionary in stations():
 		var distance: float = _player.position.distance_to(station["position"] as Vector2)
 		if distance <= shortest:
 			shortest = distance
@@ -118,7 +137,7 @@ func _update_prompt() -> void:
 	elif not station_id.is_empty():
 		_prompt.text = "[ E ]  %s · %s" % [String(station["name"]), _station_hint(station_id)]
 	else:
-		_prompt.text = "WASD / 方向键走动 · E 拿取 / 放下 / 操作 · 先去左上方拿食材"
+		_prompt.text = "WASD 移动 · E 取放 · F 开灶台 · Q 取锅内材料" if single_fridge else "WASD / 方向键走动 · E 拿取 / 放下 / 操作 · 先去左上方拿食材"
 
 func _make_hud() -> void:
 	_hud = Control.new()
@@ -176,12 +195,21 @@ func set_context(value: Dictionary, message: String = "", simmer: String = "") -
 
 func _station_hint(id: String) -> String:
 	var hand: Dictionary = _context.get("hand",{})
-	if id.begins_with("kitchen.supply."): return "拿一份食材" if hand.is_empty() else "先放下手上的东西"
+	if id=="kitchen.fridge" or id.begins_with("kitchen.supply."): return "选一份食材" if hand.is_empty() else "放回食材（保留切型）"
+	if id=="kitchen.trash": return "丢弃手上物品" if not hand.is_empty() else "清理锅 / 砧板"
 	if id == "kitchen.board": return "取走备好的食材" if _context.get("board_occupied",false) else "放下食材并备菜"
 	if id == "kitchen.serve": return "交付客人" if hand.get("kind") == "dish" else "把出锅的菜端到这里"
+	if single_fridge: return "取放食材 / 端盘 · F 开灶台 · Q 取回"
 	return "放入食材" if hand.get("kind") == "ingredient" else "操作 / 端起成品"
 
 func _draw() -> void:
+	if single_fridge and _hud!=null:
+		for i: int in pot_contents.size():
+			var box:=Rect2(435+i*270,215,252,76)
+			draw_rect(box,Color("172b24")); draw_rect(box,Color("c5a46c"),false,2)
+			draw_colored_polygon(PackedVector2Array([box.position+Vector2(124,0),box.position+Vector2(144,-18),box.position+Vector2(153,0)]),Color("172b24"))
+			draw_string(_hud.get_theme_default_font(),box.position+Vector2(10,23),str(pot_contents[i].title),HORIZONTAL_ALIGNMENT_LEFT,232,17,TDUI.ORANGE)
+			draw_string(_hud.get_theme_default_font(),box.position+Vector2(10,50),str(pot_contents[i].materials),HORIZONTAL_ALIGNMENT_LEFT,232,16,TDUI.INK)
 	if _simmer_label!=null: _simmer_label.visible=simmer_meters.is_empty()
 	for i: int in simmer_meters.size():
 		var r:=Rect2(24,654-i*78,342,22)
@@ -197,10 +225,22 @@ func _draw() -> void:
 	for x: int in [936,1045]:
 		draw_rect(Rect2(x,566,100,39),Color("527265")); draw_rect(Rect2(x+36,574,26,4),Color("c8ab70"))
 	for x: int in [938,1126]: draw_rect(Rect2(x,607,14,13),Color("3a3029"))
-	for station: Dictionary in STATIONS:
+	for station: Dictionary in stations():
 		var point: Vector2 = station.get("visual",station.position-Vector2(0,120))
 		point.y += 26
 		match str(station.get("kind","")):
+			"trash":
+				draw_rect(Rect2(point-Vector2(31,64),Vector2(62,62)),Color("526d61"))
+				draw_rect(Rect2(point-Vector2(36,70),Vector2(72,11)),Color("9aaca0"))
+				for x: int in [-16,0,16]: draw_line(point+Vector2(x,-53),point+Vector2(x,-12),Color("263f35"),4)
+			"fridge":
+				draw_rect(Rect2(point-Vector2(93,133),Vector2(186,137)),Color("253b3e"))
+				draw_rect(Rect2(point-Vector2(85,128),Vector2(170,127)),Color("81aaa0"))
+				for x: int in [-78,4]:
+					draw_rect(Rect2(point+Vector2(x,-121),Vector2(74,111)),Color("c1d5bc"))
+					draw_rect(Rect2(point+Vector2(x+8,-105),Vector2(57,35)),Color("98b4a2"))
+					draw_rect(Rect2(point+Vector2(x+8,-58),Vector2(7,32)),Color("4d7974"))
+				draw_rect(Rect2(point+Vector2(-81,0),Vector2(162,7)),Color("456864"))
 			"supply":
 				draw_rect(Rect2(point - Vector2(40,62),Vector2(80,52)),Color("98633f"))
 				draw_rect(Rect2(point - Vector2(34,56),Vector2(68,34)),Color("563d2c"))

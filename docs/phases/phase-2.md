@@ -1,5 +1,32 @@
 # Phase 2：单店连续营业
 
+## D020 验收增量（工程PASS，人工PENDING）
+
+来源：用户本轮四项纠正及三题答复；所有新增数值标PROPOSED。
+- AC-PHASE-2-020：库存足够时至少三单能同时等待，右卡显示各菜材料；缺料过滤与先后顺序保持。规则与真实场景测试。
+- AC-PHASE-2-021：调味准备/按下窗口/真实按住/松开窗口明显区分，早按/暂停/重复输入不显示虚假命中。控制器测试与GPU截图；物理设备待试玩。
+- AC-PHASE-2-022：原料及切配品冰箱返还取出保持唯一身份、数量和状态；锅中可逐件取回，开火后拒绝拆回；多次请求不复制料。规则/场景/边界存档测试。
+- AC-PHASE-2-023：无对应订单仍可牛肉切配，玩家选择切型；任何非空锅可炒/蒸，显示锅内料，E/F/Q分开且不干扰QTE。真实输入场景测试。
+- AC-PHASE-2-024：五菜默认解锁，汽锅鸡默认锁定但能尝试；真实谱完成且所有计分工序Perfect才解锁，读档保持。锁定与非Perfect/缺项/重复结果测试。
+- AC-PHASE-2-025：未知组合完整炒链含自由长按调味，结束失败菜；垃圾桶丢弃、误出餐匹配首客、负评降人气且一次结算。真实场景和规则测试。
+- AC020–025自动验收PASS。AC021的实体设备响应、提示可理解性及连续营业疲劳仍PENDING，不用机器输入代替人工结论。
+
+### D020 实际实现、测试与交付（2026-10-10）
+
+- 实现：三单材料卡、明确的调味按下/保持/松开提示、无订单切型备菜、E取放/F开锅/Q逐件取回、锅内料气泡、冷藏返还、已知/锁定/未知配方识别、汽锅鸡Perfect解锁、自由调味失败菜及垃圾桶。保留双锅、评分独立、营业库存和边界存档；没有重建平行厨房。
+- 冷藏包保存稳定身份、实际加工记录与反应/暴露/风味状态，恢复不重抽切伤、不重复氧化；JSON再次归一化后仍可校验。开火后禁止拆回生料。新进度扩展progress_version=1；旧档缺省初始五菜，新未知版本与损坏字段明确拒绝。
+- 全量命令：`pwsh -NoProfile -File tools/check.ps1`；本轮由`tools/export.ps1`调用。最终证据`artifacts/check/pre-export-20261010-173454/summary.json`：281发现/执行/通过、28套件、2679断言，0失败/跳过；version/import/load/tests均exit0。D019的266项保留，增加9项规则与6项真实营业场景用例。
+- 无缓存中文空格副本：`artifacts/d020-clean-20261010-173551/干净 副本/artifacts/check/final/summary.json`同样281/281、2679断言、0失败/跳过、各阶段exit0；439个输入文件最终逐字节一致，见同副本父目录input-verification.json。最终汇总`artifacts/d020-delivery.json`。
+- 真实场景覆盖：三卡材料、牛肉无订单切配、冷藏跨日/重启、锅内逐件取回、未知炒/蒸完整链、自由调味实际量、失败菜首客负评去重、真实Perfect蒸菜解锁和自建蒸菜复做。注入的是时间和输入，生产烹饪/评分/存储均真实执行；规则层的独立边界夹具不代替场景联调。
+- Windows导出：`artifacts/export/summary.json`为PASS，export/pack-manifest/smoke均exit0，103项允许运行资源；本地`build/TownDiner.exe`与同目录PCK已更新。仍为开发演示，不是正式发布。
+- GPU：`artifacts/d020-visual.json`、`artifacts/d020-gpu-final.log`和`artifacts/d020-gpu-exit.json`，RTX3050 Compatibility真实渲染、Viewport输入，exit0，37张截图。交付、自建保存、继续第2天、汽锅鸡解锁、失败菜及清理垃圾均通过。已查看并修正三卡必须滚动、调味文字挡锅的问题。物理键鼠/声音同步NOT_RUN，手感PENDING。
+- 回归中如实失败过：180秒场景超时、冷藏历史JSON整数/浮点方向二次校验、存读矩阵精确相等。最终检查预算300秒；修复归一化并保留严格验证；矩阵往返允许1e-8浮点误差，身份/数量/状态仍严格比较。`pre-export-20261010-172411`的280/281为失败历史，不作交付结果。
+- 门槛继承本阶段已执行的`artifacts/gate-20261010-122441/gate-proof.json`：正常/恢复exit0，故意失败/必测跳过/解析错误/零测试exit1。本轮未重跑全部故障注入，未修改检查的成功判据。
+- 原始六资料指纹不变：`artifacts/d020-source-verification.json`。测试存档均在隔离artifacts；未修改真实玩家档、引擎依赖或全局设置。新增价格、份量、节拍及人气损失仍为PROPOSED；冷藏冻结暴露为ASSUMPTION。
+- 试玩方法见README与PLAYTEST的D020五步。下一步仍是Phase2实体设备及连续营业试玩；本轮不自动提交/推送，不进入Phase3，远程CI为NOT_RUN。
+
+以下保留D017–D019历史验收，遇到取料、切型、匹配或存档字段冲突时以上面的D020为准。
+
 状态：ENGINEERING_READY；PLAYTEST=PENDING。用户三项Grill决定见D017；基线219/219通过。原资料只读；不重建Phase1，实体设备/人工疲劳验收仍待试玩。
 
 | AC | 来源与输入条件 | 可观察结果及验证 |
@@ -65,3 +92,58 @@ Phase1既有玩法继续复用：M1–M7、五类QTE、自动工序/并行控温
 下一工作单元仍是Phase2人工验收和针对反馈的修正；工程交付不等于好玩。本阶段后停止，不自动推进Phase3、不自动GitHub推送。
 
 最终汇总：`artifacts/phase2-delivery.json`；最终无缓存副本与工作区的工程、运行内容、工具、测试、素材、依赖共429个输入文件逐字节一致。文档更新不改变已验证运行代码。
+
+## D018 用户交互修订（2026-10-10，进行中）
+来源：用户本轮四项明确请求。保持 Phase 2，原始资料不修改。
+- AC-PHASE-2-012：M6 调料围锅排列；真实鼠标按下/持续/松开改变毫份用量，等质量不同持续时间产生不同风味；覆盖暂停、取消、越界释放、重复输入、长帧。单元及真实场景输入测试。
+- AC-PHASE-2-013：同一冰箱展示全部运行食材与库存，每次携带一个，库存不足/手满拒绝且不扣料；无订单也能拿料。规则与物理交互集成测试。
+- AC-PHASE-2-014：顾客到店自动生成右侧只读订单，不需要接单/分锅；材料不足的菜不再被新客点单。排队占量方式等待 Q2。
+- AC-PHASE-2-015：实际取料、备菜、入锅、打谱、端盘出餐可先完成第二张订单，重复交付不重复结算；同主料菜谱识别方式等待 Q1。
+- AC-PHASE-2-016：保留边界存档、跨日、自建菜谱与双锅隔离；自建方案保留各次调味实际用量及长按目标，不冒充复现一次成绩。
+验证：NOT_RUN；Grill Me Q1/Q2 已提出，仅继续不依赖答案的 M6 实现。
+
+### D018 当前证据与准确断点
+- 完整检查：tools/check.ps1 -Suite all -ReportName d018-hold-final，254/254，0失败、0跳过，导入/加载/测试 exit=0。证据 artifacts/check/d018-hold-final/summary.json。
+- 后续将流量0.2显式外置，针对最终数据与编译器的真实营业检查：-Suite service -ReportName d018-hold-final-data，12/12，exit=0；包含五道菜、三日存读、自建谱、界面外松开与实际用量40/40/140毫份断言。
+- 图形：artifacts/d018-visual-verified-out.log、artifacts/phase2-visual.json，RTX3050 Compatibility，24张截图，交付/方案保存/继续到第2天PREPARE均真实通过；长按画面 artifacts/phase2-M6-holding.png 已查看。此前一次图形继续日号未满足期望，不能计作通过；脚本已将日号/状态纳入失败条件，最终复跑通过。
+- 新增6个规则测试+1个场景测试；含起止边界、重复按下、错料、长帧、取消、暂停恢复、风味差异、schema3 JSON往返、大用量谱间隔。未使用假高分或替身完成烹饪。
+- AC012：长按控制/展示/风味子项PASS，库存限量提交需与Q2相关改造一起补齐；AC013～015未实施；AC016长按方案和旧存档兼容子项PASS，最终解绑流程未验收。四项用户请求整体IN_PROGRESS。
+- Q1/Q2仍待用户答复；按协议不得编造答案。后续先落实决定，再改ShopSession/ShopView/World的库存和实体材料所有权，保留已完成M6代码及测试。实体设备/人工手感PENDING；本轮导出、干净副本和远程CI尚未运行；未提交或推送。
+
+### 补充 AC-PHASE-2-017：每日访客预估
+来源：用户本轮要求。筹备界面在采购操作前显示当日预计访客人数范围；默认配置中心值5人、范围4～6人（建议，不是平衡事实）。营业时长/人气变化产生对应变化；重复读取不改变订单随机序列，边界保存/恢复后相同。规则测试覆盖手算默认值、上下边界、失效配置、存读与随机隔离；使用真实场景检查显示。状态IMPLEMENTING。
+
+AC-PHASE-2-017 已通过自动与图形显示检查：tools/check.ps1 -Suite business -ReportName d018-forecast-rules 为19/19，-Suite service -ReportName d018-forecast-scene 为12/12，均导入/加载/测试exit=0。新加2项访客预估规则测试并在实际采购按钮测试中验证显示，旧场景功能复测通过。artifacts/d018-forecast.png 在RTX3050 Compatibility真实渲染并查看，forecast-screen-out.log exit0；预估范围建议±20%，未宣称经人工经营平衡验证。自动拒单及实体库存绑定仍未实现，后续依Q1/Q2继续。
+
+## D019 执行验收（用户已答，继续同一Phase2）
+- AC-PHASE-2-018：同原料同工序以同菜品匹配；甜口先到则首份自动采用甜口谱，交付后下一份切换至小丁/咸鲜谱；原料实际状态保留，模板不污染。单元+真实两单流程。
+- AC-PHASE-2-019：同一实体冰箱，任意运行食材一件携带，无订单也可拿；库存扣除一次，转移不扣第二次，缺料/手满原子失败。
+- AC-PHASE-2-020：来客自动排队，只读卡片无接单/选锅/取消按钮；第二种菜可先送达，成品只结算一次。
+- AC-PHASE-2-021：真实库存+散料+锅中料分配给待单，售罄不吸引新订单，已有确实缺料订单自动拒绝、人气仅扣一次；正在制作的最后一份不误拒。
+- AC-PHASE-2-022：过量调味耗料、重复回调、顾客超时保留菜、跨日旧回调、旧边界档及自建做法重做均有明确检查。
+
+### D019 最终交付（2026-10-10）
+
+工程READY；AC-PHASE-2-012～022工程项PASS，实体输入/音画同步NOT_RUN，人工体验PENDING。D018上述“待Q1/Q2”“冰箱未实现”的内容是历史断点，已由用户答复和本节关闭。
+
+实际实现：环形长按调味与真实用量/风味；单一实体冰箱及全部营业材料自由拿取；自动只读订单；同菜按先到客人要求生成切菜/调味谱；不同菜可乱序提交；缺料自动谢客一次、人气建议−1；开店前客流预估；旧边界存档、自建方案及跨日继续。旧手动接单、订单绑锅、预付款和累计订单耗料接口已删除，没有平行烹饪模型。
+
+| 验证层 | 实际证据与结果 |
+|---|---|
+| 最终导入/加载/全量 | tools/export.ps1调用同一check入口；artifacts/check/pre-export-20261010-144418/summary.json；266发现/执行/通过，27套件，0失败/跳过，所有阶段exit0。新增用例总数相对上次247为19 |
+| 独立经营 | tools/check.ps1 -Suite business -ReportName d019-business-final，24/24，exit0；随后增加的先到缺料保留用例已纳入最终全量（business当前25项） |
+| 真实营业场景 | 最终16项，五菜真实取料/QTE/端盘、3天存读自建重做、同菜两单不同谱、第二种菜先送、无客先拿最后一份、唯一冰箱/手满/无订单按钮、超时保留实体、真实鼠标移出松开等，均包含在266项中 |
+| 干净副本 | artifacts/d019-clean-20261010-144803/干净 副本/artifacts/check/final/summary.json；没有复制.godot，同一入口266/266、exit0；437个工程输入与工作区一致，见artifacts/d019-input-verification.json |
+| 真实图形 | artifacts/d019-visual.json、d019-visual.stdout.log及24张d019-*.png；RTX3050/Compatibility，Viewport键鼠输入；交付、方案保存、边界保存、继续至第2天PREPARE全部true，exit0。已查看冰箱、只读订单和环形长按画面 |
+| Windows导出 | build/TownDiner.exe＋同目录TownDiner.pck；artifacts/export/summary.json；export/pack-manifest/smoke exit0，103项允许的运行资源，不含测试/工具/原设计 |
+| 检查链故障门槛 | 沿用Phase2既有隔离故障证据artifacts/gate-20261010-122441/gate-proof.json，本次未重复全部故障注入；本轮解析/用例失败与一次180秒超时均实际返回失败，未记成通过 |
+| 原始资料 | artifacts/d019-source-verification.json；六份doc/source文件与HEAD blob一致 |
+| 远程/人工 | 本次未提交/推送；当前改动远程CI NOT_RUN。物理键鼠/音频延迟NOT_RUN，平衡、疲劳、好玩程度PENDING |
+
+修复记录：首轮库存可完成量每帧深拷贝导致场景套件超时，已改为材料/工序变更同步及只读需求缓存；豆瓣酱按调料拿0.1导致麻婆豆腐无法齐料，已按主料身份取1份；后续回归发现短按测试状态泄漏和一处旧接口测试残留，均修复后全量与干净副本通过。没有删除失败用例或放宽成功门槛。
+
+关键文件：src/business/{shop_session,service_catalog,shop_view}.gd；src/cooking/{cooking_session,cooking_model}.gd；src/qte/{cooking_qte,beat_sheet}.gd；src/kitchen/{cooking_lane,kitchen_handling,guided_cooking_view,full_kitchen}.gd；src/world/kitchen_world.gd；content/service_content.json。公共接口和角色归属已同步CONTRACTS/ARCHITECTURE/COLLABORATION。
+
+替身范围：经营纯规则中的rated_dish只是小费/价格/退款手算夹具，单元注入QTE结果只验材料接口；真实营业场景和图形流程使用实际模型、QTE、评分与存储，没有固定高分或假成功。上述自动场景输入不能代替物理设备试玩。
+
+五步复现：筹备看预估并备料→冰箱拿番茄/菜板打谱/搬锅并加蛋→空手E自动烹饪及调料长按→端盘出餐观察先到匹配和反馈→日结保存、次日调整备货再继续。详细操作见README，待测观察见PLAYTEST。当前继续Phase2真人验收，不自动进入Phase3。

@@ -52,6 +52,10 @@ var _last_judgement: Dictionary = {}
 var _judgement_serial: int = 0
 var _control_suspended: bool = false
 var _suspended_sec: float = 0.0
+var _hold_index: int = -1
+var _hold_action: String = ""
+var _hold_error: float = 0.0
+var _note_held: float = 0.0
 
 func _init(request: TDRequest, config: Dictionary, clock: TDClock, random_source: RefCounted) -> void:
 	reset(request, config, clock, random_source)
@@ -99,6 +103,7 @@ func reset(request: TDRequest, config: Dictionary, clock: TDClock, random_source
 	_drifts.clear()
 	_cut_actions.clear(); _cut_targets.clear(); _last_judgement.clear()
 	_judgement_serial = 0; _control_suspended = false; _suspended_sec = 0.0
+	_hold_index = -1; _hold_action = ""; _hold_error = 0.0; _note_held = 0.0
 	_valid = _valid_config()
 	if not _valid:
 		return _outcome(false, "INVALID_CONFIG")
@@ -141,8 +146,22 @@ func reset(request: TDRequest, config: Dictionary, clock: TDClock, random_source
 			_cut_actions.append(action)
 			if action != "primary": direction = posmod(direction + (-1 if action == "rotate_left" else 1),3)
 			_cut_targets.append(direction)
+	if _config.has("hold_durations_sec"):
+		var durations: Variant = _config.hold_durations_sec
+		if _kind != "sequence" or not _config.get("cabinet",false) or not durations is Array or durations.size() != _beats.size() or not _number(_config.get("pour_rate_per_sec")) or not _in_range(float(_config.pour_rate_per_sec),.01,1):
+			_valid = false; return _outcome(false,"INVALID_CONFIG")
+		for index: int in durations.size():
+			if not _number(durations[index]) or not _in_range(float(durations[index]),.005,4):
+				_valid = false; return _outcome(false,"INVALID_CONFIG")
+			if index+1 < _beats.size() and _beats[index] + float(durations[index])*1.5 + float(_config.good_sec)*2 >= _beats[index+1]:
+				_valid = false; return _outcome(false,"OVERLAPPING_HOLDS")
+		_duration_sec = _beats.back()+float(durations.back())*1.5+float(_config.good_sec)+maxf(0,_offset())
 	if _kind == "charge" and _config.has("charge_preview_sec"):
 		_duration_sec = float(_config.charge_preview_sec) + float(_config.start_grace_sec)
+	if _config.get("free_seasoning",false):
+		if _kind!="sequence" or not _config.get("cabinet",false) or not _number(_config.get("free_duration_sec")) or not _in_range(float(_config.free_duration_sec),1,20):
+			_valid=false; return _outcome(false,"INVALID_CONFIG")
+		_duration_sec=float(_config.free_duration_sec)
 	return _outcome(true, "RESET")
 
 func start() -> TDOutcome:
@@ -188,6 +207,17 @@ func input(sequence: int, timestamp_sec: float, action: String, pressed: bool, v
 	_sequence = sequence
 	_advance_to(timestamp_sec)
 	_last_sec = timestamp_sec
+	if _config.get("free_seasoning",false):
+		if not pressed:
+			if _hold_index>=0 and action==_hold_action: _finish_free_hold()
+			_pressed[action]=false; return _outcome(true,"RELEASED")
+		if _hold_index>=0:
+			if action!=_hold_action: return _outcome(false,"HOLD_BUSY")
+			if _pressed.get(action,false): return _outcome(false,"HELD_INPUT")
+			_pressed[action]=true; return _outcome(true,"HOLD_RESUMED")
+		if _actual_actions.size()>=32: return _outcome(false,"INSTANCE_LIMIT")
+		_hold_index=_actual_actions.size(); _hold_action=action; _note_held=0; _pressed[action]=true
+		_judge("good","HOLD_STARTED",action); return _outcome(true,"HOLD_STARTED")
 	if action == "wrong":
 		if pressed:
 			_errors += 1; _combo = 0
@@ -209,6 +239,9 @@ func input(sequence: int, timestamp_sec: float, action: String, pressed: bool, v
 	if not pressed:
 		var was_pressed := bool(_pressed.get(action, false))
 		_pressed[action] = false
+		if _hold_index >= 0 and action == _hold_action and was_pressed:
+			_finish_season_hold()
+			return _outcome(true,"JUDGED")
 		if _kind == "charge" and was_pressed and _charge_started:
 			_resolve_charge()
 			return _outcome(true, "JUDGED")
@@ -231,6 +264,7 @@ func input(sequence: int, timestamp_sec: float, action: String, pressed: bool, v
 			_resolve_window(timestamp_sec)
 			return _outcome(true, "JUDGED")
 		"sequence":
+			if _config.has("hold_durations_sec"): return _start_season_hold(action,timestamp_sec)
 			if _config.get("on_beat", false): return _timed_sequence_press(action, timestamp_sec)
 			return _sequence_press(action)
 	return _outcome(false, "INVALID_ACTION")
@@ -308,6 +342,17 @@ func _advance_to(timestamp_sec: float) -> void:
 		return
 	var next_sec := clampf(timestamp_sec - _start_sec, 0.0, _duration_sec)
 	var delta_sec := maxf(0.0, next_sec - _elapsed_sec)
+	if _config.get("free_seasoning",false):
+		if _hold_index>=0 and _pressed.get(_hold_action,false): _note_held+=delta_sec
+		_elapsed_sec=maxf(_elapsed_sec,next_sec)
+		if next_sec>=_duration_sec-EPSILON:
+			if _hold_index>=0: _finish_free_hold()
+			_resolved=true; _quality=0; _reason="FREE_SEASONING_COMPLETE"
+		return
+	if _hold_index >= 0:
+		var limit: float = _beats[_hold_index]+float(_config.hold_durations_sec[_hold_index])*1.5+float(_config.good_sec)+_offset()
+		if bool(_pressed.get(_hold_action,false)): _note_held += maxf(0,minf(next_sec,limit)-_elapsed_sec)
+		if next_sec >= limit-EPSILON: _finish_season_hold()
 	if _kind == "charge" and bool(_pressed.get("primary", false)):
 		_held_sec += delta_sec
 	if _kind == "maintain":
@@ -361,7 +406,7 @@ func _resolve_charge() -> void:
 	var margin := float(_config.good_margin_sec)
 	if _config.get("document_rules",false):
 		var center: float = float(_config.get("perfect_center_sec", (low+high)*.5))
-		_quality = 1.0 if absf(_held_sec-center) <= float(_config.get("perfect_sec",.05))+EPSILON else (float(_config.good_quality) if _held_sec >= low-EPSILON and _held_sec <= high+EPSILON else 0.0)
+		_quality = 1.0 if absf(_held_sec-center) <= float(_config.get("perfect_sec",.05))+EPSILON else (float(_config.get("good_quality",.6)) if _held_sec >= low-EPSILON and _held_sec <= high+EPSILON else 0.0)
 		_reason = "TARGET_HOLD" if _quality == 1 else ("NEAR_HOLD" if _quality > 0 else ("EARLY_RELEASE" if _held_sec < low else "OVERCHARGED"))
 		_resolved = true
 		_judge(_grade(_quality),_reason,"primary",-1,_held_sec-center)
@@ -461,9 +506,9 @@ func _current_quality() -> float:
 		"sequence":
 			if _config.get("on_beat", false):
 				var bad: int = _miss + _errors + _judgements.count("pending")
-				if _config.get("cabinet", false): return 0.0 if bad > 0 else (1.0 if _good == 0 else float(_config.good_quality))
+				if _config.get("cabinet", false): return 0.0 if bad > 0 else (1.0 if _good == 0 else float(_config.get("good_quality",.6)))
 				bad += _good
-				return 1.0 if bad == 0 else (float(_config.good_quality) if bad == 1 else 0.0)
+				return 1.0 if bad == 0 else (float(_config.get("good_quality",.6)) if bad == 1 else 0.0)
 			return float(_step_index) / maxf(1.0, float(_steps.size()) + float(_errors) * error_weight)
 	return _quality
 
@@ -539,7 +584,61 @@ func _progress() -> Dictionary:
 				data.sequence_index = _judgements.find("pending")
 				data.next_action = _steps[data.sequence_index] if data.sequence_index >= 0 else ""
 				data.perfect = _perfect; data.good = _good; data.miss = _miss
+				if _config.has("hold_durations_sec"):
+					data.hold_durations_sec = _config.hold_durations_sec.duplicate()
+					data.pour_rate_per_sec = _config.pour_rate_per_sec
+					data.hold_index = _hold_index; data.hold_action = _hold_action
+					data.note_held_sec = _note_held
+					data.poured_amount = roundi(_note_held*float(_config.pour_rate_per_sec)*1000)/1000.0
+					if _hold_index >= 0 and not _config.get("free_seasoning",false):
+						data.sequence_index = _hold_index; data.next_action = _steps[_hold_index]
+	if _config.get("free_seasoning",false):
+		data.free_seasoning=true; data.actual_actions=_actual_actions.duplicate(true)
+		data.hold_index=_hold_index; data.hold_action=_hold_action; data.note_held_sec=_note_held
+		data.pour_rate_per_sec=_config.pour_rate_per_sec; data.poured_amount=roundi(_note_held*float(_config.pour_rate_per_sec)*1000)/1000.0
+	data.hold_pressed=_hold_index>=0 and bool(_pressed.get(_hold_action,false))
+	if _config.has("good_sec"): data.good_sec=_config.good_sec
+	if _config.has("perfect_sec"): data.perfect_sec=_config.perfect_sec
 	return data
+
+func _finish_free_hold() -> void:
+	var amount: float=roundi(_note_held*float(_config.pour_rate_per_sec)*1000)/1000.0
+	if amount>0: _actual_actions.append({"action":_hold_action,"beat_index":_actual_actions.size(),"error_sec":0.0,"held_sec":_note_held,"amount":amount})
+	_pressed[_hold_action]=false; _hold_index=-1
+	_judge("good","FREE_POUR",_hold_action)
+
+func _start_season_hold(action: String, timestamp: float) -> TDOutcome:
+	if _hold_index >= 0:
+		if action == _hold_action: return _outcome(true,"HOLD_RESUMED")
+		_pressed[action] = false
+		return _outcome(false,"HOLD_BUSY")
+	var adjusted: float = timestamp-_start_sec-_offset()
+	for index: int in _beats.size():
+		if _judgements[index] != "pending" or absf(adjusted-_beats[index]) > float(_config.good_sec)+EPSILON: continue
+		_hold_index = index; _hold_action = action; _hold_error = adjusted-_beats[index]; _note_held = 0
+		_judgements[index] = "holding"
+		_judge("good","HOLD_STARTED",action,index,_hold_error)
+		return _outcome(true,"HOLD_STARTED")
+	_pressed[action] = false; _errors += 1; _combo = 0
+	_judge("miss","OUTSIDE_WINDOW",action)
+	return _outcome(false,"OUTSIDE_WINDOW")
+
+func _finish_season_hold() -> void:
+	var index: int = _hold_index
+	var duration_error: float = _note_held-float(_config.hold_durations_sec[index])
+	var error: float = maxf(absf(_hold_error),absf(duration_error))
+	var grade: String = "miss"
+	if _hold_action == _steps[index] and error <= float(_config.perfect_sec)+EPSILON: grade = "perfect"; _perfect += 1
+	elif _hold_action == _steps[index] and error <= float(_config.good_sec)+EPSILON: grade = "good"; _good += 1
+	else: _miss += 1
+	var amount: float = roundi(_note_held*float(_config.pour_rate_per_sec)*1000)/1000.0
+	if amount > 0: _actual_actions.append({"action":_hold_action,"beat_index":index,"error_sec":_hold_error,"held_sec":_note_held,"amount":amount})
+	_judgements[index] = grade; _step_index += 1
+	_combo = _combo+1 if grade != "miss" else 0; _max_combo = maxi(_max_combo,_combo)
+	_judge(grade,"HOLD_DURATION" if _hold_action == _steps[index] else "WRONG_KEY",_hold_action,index,duration_error)
+	_pressed[_hold_action] = false; _hold_index = -1
+	if not _judgements.has("pending"):
+		_resolved = true; _reason = "BEAT_SEQUENCE_COMPLETE"
 
 func _outcome(ok: bool, code: String) -> TDOutcome:
 	return TDOutcome.new(ok, code, "", _progress())

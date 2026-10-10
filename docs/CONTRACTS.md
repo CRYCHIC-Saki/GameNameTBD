@@ -1,6 +1,32 @@
 # 公共契约：v3完整烹饪，兼容v1/v2历史入口
 
-## Phase2营业契约 v1（D017）
+## D020 实现接口与存档补充
+
+- World.station_action(station_id, action)的action是interact/open/retrieve；旧cooking_requested与独立Phase1入口保持兼容。ShopView组合入口拥有路由，F开始后自动工序，E端成品，Q只从尚未开始加工的锅取指定实例。
+- Handling.take_ingredient/put_pot/take_stored移动所有权，完整保留instance ID、切型与风味；Model.portable_data/restore_portable只接受schema1冷食包。包包含稳定ID、食材ID、份量、实际切向/质量/用时及processing_state（温度、暴露、反应、风味、口感、香气、食材历史）；非有限值、未知材料/反应和非法切向拒绝，失败前不变更。恢复不修改输入包。
+- Shop状态新增progress_version=1、unlocked稳定菜谱ID列表、cold_foods实体包数组；原schema1边界档缺这三项时显式补初始五菜/空冷藏/锁定汽锅鸡，不覆盖旧档。未知progress_version返回UNSUPPORTED_VERSION。冷藏存量不重复计入整数原料库存，账本原取料消耗保持。
+- context_for_ingredients(ids, complete, method)匹配主料与方法，按最早同菜订单取得要求；自由备菜由preparation_choices选谱，不依赖订单。锁定菜不参与菜单来客，初始五菜不被锁回。
+- observe_finished只接受本日已出锅成品，数据库菜必需项齐全、每个实际计分工序达到外置Perfect阈值才解锁，一次写账。失败菜can_deliver/deliver匹配全队首位，0分、无收款/小费/方案，建议人气-4；重复交付不重复影响。
+- QTE sequence扩展free_seasoning，复用真实按压时钟、暂停和实际加料事件；8秒自由窗口/流量0.2份每秒为PROPOSED，任意调料与用量不设对错，不发伪Perfect。已知谱仍严格定拍长按。hold_pressed/season_prompt只读真实控制器状态，早按未接受时不亮已按住。
+- 自建方案仍保存工序与用量，不保存分数；新增汽锅鸡蒸制方案复用同一编译器，蒸菜备切可选，未完成关键工序不能保存。
+
+## D020 状态所有权与操作边界
+
+- 实体食材原身份随手/板/锅/冰箱移动；退回不还原属性、不凭空返库存。冷藏的处理食材独立于原料整数库存，料理开始后禁止逐件拆回。所有转移预检后原子提交，重复请求无效。
+- 备菜按玩家切型生成谱，牛肉等所有主料可独立备菜；客人需求仍在订单和独立评分显示。锅按主料集合与炒/蒸方法识别，锁定不阻止尝试，未知组合走同一模型及QTE自动链，最终标记failed_dish。
+- 配方解锁由ShopSession验证真实成品必需项及每个计分工序，幂等写入unlocked；已解锁/处理食材随日边界存档校验与恢复。旧schema1兼容缺省值不得让损坏新字段静默通过。
+- 失败菜不生成可保存方案，交付只匹配全队第一位；负面反馈/人气扣除幂等，重复输入不重复结算。
+- M6展示状态来自实际控制器按压/时钟；自由调味也记录真实长按量并走原库存提交，不用假成功。世界E取放、F开界面、Q取出，输入只发意图。
+
+## D019 自动服务增量（优先于旧订单绑定契约）
+- TDShopSession统一拥有实际库存、订单和经济。material_sink(token, integer_units) 在模型修改前执行整笔预检/扣料；读取、搬运、重复回调不扣料。业务向模型注入Callable，烹饪不依赖Shop类。非法、缺料、已关店和旧日请求拒绝。
+- Session.select_recipe(config)仅允许无进行中工序且未加热的preparing状态；保留实际材料/切型/历史/身份，不重建成品，不修改模板。用于从自由取料识别同一菜品及装配顾客谱。
+- 服务匹配按family_id（原版稳定菜谱ID），自建ID为做法与菜单项。context_for_ingredients由订单先后确定要求；没有订单时使用基础做法。交付first_order_for找最早同菜未完成订单，不靠订单会话前缀强制绑定。
+- 自动路径WAITING→SERVED/TIMED_OUT/REJECTED_STOCK；不预收、不绑定锅。旧begin_order/consume_total接口已移除，旧终态订单字段仍可读取。request_profile按结构化kind/taste/fine生成独立谱；future_materials按锅实际装配的谱计算，不因顾客离开偷偷换谱。
+- sync_kitchen接收真实容器快照，只缓存该营业日的独立副本；散料可用一次，锅/成品逐订单占用一次。按顺序扣除尚未完成的原料/工序需求，缺料者REJECTED_STOCK；随后新客候选过滤售罄菜。已完成调味不要求库存中再有同一份料。
+- 所有玩家持有资源仍由原Handling/Session拥有；顾客超时不删除这些对象。读档仅在日边界，不保存现场；旧schema1终态订单兼容，新REJECTED_STOCK与负面反馈字段显式校验。
+
+## Phase2营业契约 v1（D017历史；钱料与匹配已被D019覆盖）
 
 - TDServiceCatalog显式组合只读cooking_system基础与service_content增量，产出相同TDCookingCatalog；营业active菜单独立，禁止TEST_ONLY入菜单。来源/金额/整数库存量/谱引用必须校验。
 - TDShopSession拥有日期、PREPARE→OPEN→DRAINING→SETTLED、订单、库存、预留、账本、方案及经营指标；只通过方法变更，snapshot深复制。UI/厨房只发意图。订单WAITING→COOKING→SERVED或CANCELLED/TIMED_OUT；售后退款有独立幂等记录。
@@ -80,3 +106,14 @@
 ## 复用纪律
 
 同一会话中的operation_id不会被重用；重开创建新session_id/generation。UI不存可写会话字典；只能使用快照副本。请求对象的身份被会话/QTE复制，不持有请求的共享可变字段。公开接口跨模块不能读下划线私有字段；集成测试可检查少量视图状态，但不能绕开操作规则。
+
+## D018 在建增量：M6 长按（2026-10-10）
+用户确认目标：围锅调料、按住才添加、实际持续时间影响风味。与 D015/D016 的 M6 单点输入冲突时以此为准；仍独占鼠标，不增加控温任务。
+- 复用 sequence 控制器，以 hold_durations_sec（秒数组）与 pour_rate_per_sec（标准调料份/秒）定义每个长按音符；拍点是按下目标，时长决定松开目标。配置只读。
+- actual_actions 增加 held_sec、amount（0.001 标准份精度）；判定独立评价起点和时长，实际材料/用量不能用目标材料或固定量代替。
+- 暂停/失焦清除按键并冻结时钟，不自动按住；恢复后允许继续尚未结束的同一音符，已倒量保留；取消的旧操作不能再次写入菜品。
+- 调味容器按下后捕获对应食材，移动鼠标不换料；窗口外松开仍释放。有限上限避免无限倒料。具体窗口/流量均为 PROPOSED。
+库存和订单解绑契约待 Q1/Q2，当前不改相关依赖代码。
+
+### D018 访客预估
+TDShopSession.visitor_forecast() 返回只读值 {day,min_visitors,max_visitors,expected_visitors}，单位为人。由同一 arrival_interval_sec() 和开门1秒后的首次到店规则派生；仅供筹备展示，零随机抽取、零库存/金钱变更。旧边界存档不增加必填字段，按其日期和人气即可稳定重建。settings.forecast_uncertainty_percent 为0～50整数建议参数，默认20供旧配置兼容。

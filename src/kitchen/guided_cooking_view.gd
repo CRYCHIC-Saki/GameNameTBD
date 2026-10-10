@@ -2,6 +2,7 @@ class_name TDGuidedCookingView
 extends Control
 ## Player presentation only. Every symbol reads the real lane/controller.
 signal spice_clicked(lane: int, ingredient: String)
+signal spice_input(lane: int, ingredient: String, pressed: bool)
 const INK := Color("f6e8c6")
 const GOLD := Color("eabe79")
 const GREEN := Color("9fc48f")
@@ -17,6 +18,14 @@ var customer_feedback: Array=[]
 var simmer_meters: Array=[]
 var font: SystemFont
 var _boxes: Array = []
+var _held_spice: String = ""
+var _held_lane: int = -1
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed and _held_lane >= 0:
+		spice_input.emit(_held_lane,_held_spice,false)
+		_held_lane = -1; _held_spice = ""
+		get_viewport().set_input_as_handled()
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -28,7 +37,11 @@ func _gui_input(event: InputEvent) -> void:
 	for lane: TDCookingLane in lanes:
 		if lane.qte==null or lane.progress.get("pc_module")!="M6": continue
 		for id: String in SPICES:
-			if spice_rect(lane.lane_index,id).has_point(event.position+global_position): spice_clicked.emit(lane.lane_index,id); accept_event(); return
+			if spice_rect(lane.lane_index,id).has_point(event.position+global_position):
+				if lane.progress.has("hold_durations_sec") or lane.progress.get("free_seasoning",false):
+					_held_lane=lane.lane_index; _held_spice=id; spice_input.emit(_held_lane,id,true)
+				else: spice_clicked.emit(lane.lane_index,id)
+				accept_event(); return
 
 func spice_rect(index: int, ingredient: String) -> Rect2:
 	for i: int in lanes.size():
@@ -41,8 +54,10 @@ func spice_rect(index: int, ingredient: String) -> Rect2:
 	return Rect2()
 
 func _spice_box(area: Rect2,slot: int) -> Rect2:
-	var width: float=(area.size.x-80)/5
-	return Rect2(area.position+Vector2(30+(slot%5)*(width+5),area.size.y-189+floori(float(slot)/5)*56),Vector2(width,50))
+	var center: Vector2=area.position+Vector2(area.size.x*.5,232)
+	var angle: float=-PI*.5+slot*TAU/SPICES.size()
+	var dimensions:=Vector2(76 if lanes.size()>1 else 88,48)
+	return Rect2(center+Vector2(cos(angle)*area.size.x*.36,sin(angle)*156)-dimensions*.5,dimensions)
 
 func thermal_rect(index: int) -> Rect2:
 	var slot: int = 0
@@ -127,6 +142,7 @@ func _draw_lane(lane: TDCookingLane, area: Rect2, slot: int) -> void:
 	if p.is_empty(): label = "准备 · " + _next_label(lane)
 	if dish.state=="plated": label="已出锅 · 返回灶台端起"
 	_text(label,area.position+Vector2(24,34),21,GOLD)
+	if not lane.last_result.ok and lane.last_result.code=="INSUFFICIENT_STOCK": _text("调料不足 · 本次加料未生效",area.position+Vector2(24,62),18,Color("ef9371"))
 	var fine: float = 0
 	for item: Dictionary in dish.ingredients.values(): fine=maxf(fine,float(item.fine))
 	if module=="M1" and lane.qte != null: fine=minf(1,fine+float(p.get("cut_hits",0))/8)
@@ -144,8 +160,9 @@ func _draw_lane(lane: TDCookingLane, area: Rect2, slot: int) -> void:
 	draw_arc(stats+Vector2(36,55),14,-PI*.5,TAU-PI*.5,32,Color("465949"),4)
 	draw_arc(stats+Vector2(36,55),14,-PI*.5,TAU*clampf(taste,0.01,1)-PI*.5,32,GOLD,4)
 	_text(["酸","甜","苦","辣","咸","鲜","麻"][dominant],stats+Vector2(58,60),14,INK)
-	var center: Vector2=area.position+Vector2(area.size.x*.46,200)
+	var center: Vector2=area.position+Vector2(area.size.x*(.5 if module=="M6" else .46),232 if module=="M6" else 200)
 	var s: float=.78 if lanes.size()>1 else 1.0
+	if module=="M6": s *= .68
 	_draw_food_action(center,s,lane,p,module)
 	if module=="M6": _cabinet(lane,area,p)
 	else: _symbols(lane,area,p)
@@ -155,8 +172,8 @@ func _draw_lane(lane: TDCookingLane, area: Rect2, slot: int) -> void:
 		_text("连击 ×%d"%int(p.get("combo",0)),area.position+Vector2(25,68),16,GREEN)
 	if lane.thermal_qte != null:
 		if lanes.size()==1: _thermal(area,lane.thermal_progress)
-	elif not p.is_empty():
-		var instruction: String={"M1":"按菜谱打谱  ·  空格落刀 / A、D 转向","M2":"游标到绿区中心时按空格","M3":"按谱按键  ·  最后一拍空格收势","M6":"按谱点击调料  ·  无需控温","M7":"看提示按住空格  →  绿区中心松开"}.get(module,"跟随拍点")
+	elif not p.is_empty() and module!="M6":
+		var instruction: String={"M1":"按菜谱打谱  ·  空格落刀 / A、D 转向","M2":"游标到绿区中心时按空格","M3":"按谱按键  ·  最后一拍空格收势","M6":"左键按住调料 → 到量松开 · 无需控温","M7":"看提示按住空格  →  绿区中心松开"}.get(module,"跟随拍点")
 		if p.get("qte_kind")=="charge" and module=="M3": instruction="长按空格 · 上笼八拍后松开"
 		_text(instruction,area.position+Vector2(26,area.size.y-23),17,Color("c7cfb5"))
 	_draw_judgement(lane,area)
@@ -272,24 +289,77 @@ func _symbols(lane: TDCookingLane,area: Rect2,p: Dictionary) -> void:
 		draw_rect(Rect2(bar.position+Vector2(bar.size.x*position-3,-5),Vector2(6,38)),INK)
 
 func _cabinet(lane: TDCookingLane,area: Rect2,p: Dictionary) -> void:
-	var index: int=int(p.get("sequence_index",0)); var commands: Array=p.get("sequence",[])
-	var next: String=str(commands[index]).trim_prefix("spice:") if index>=0 and index<commands.size() else ""
-	var times: Array=p.get("beat_times_sec",[])
-	var remaining: float=float(times[index])-float(p.get("elapsed_sec",0)) if index>=0 and index<times.size() else 0
+	var status: Dictionary=season_prompt(p)
+	var next: String=str(status.spice)
+	var color: Color=GREEN if status.phase in ["press","release","holding"] else GOLD
+	if status.phase=="late": color=RED
 	for i: int in SPICES.size():
 		var r: Rect2=_spice_box(area,i)
-		_panel(r,Color("687347") if SPICES[i]==next else Color("404e37"))
+		var active: bool=SPICES[i]==next
+		_panel(r,Color("54834b") if active else Color("344536"))
+		if active: draw_rect(r.grow(4),color,false,4)
 		_rect(r.position+Vector2(12,16),Vector2(15,22),[INK,GOLD,Color("a77550"),Color("79553b"),Color("c5b36b"),Color("b6c59f"),GOLD,INK,RED,GREEN][i])
 		_rect(r.position+Vector2(11,12),Vector2(17,5),Color("917350"))
-		_text(SPICE_NAMES[i],r.position+Vector2(36,32),17,INK)
-		if SPICES[i]==next and remaining<.8:
-			draw_arc(r.get_center(),14+maxf(0,remaining)*24,0,TAU,40,GOLD,2)
+		_text(SPICE_NAMES[i],r.position+Vector2(32,31),16,INK)
+		if active and bool(p.get("hold_pressed",false)):
+			draw_circle(r.end-Vector2(9,9),6,GREEN)
 		_boxes.append({"rect":r,"lane":lane.lane_index,"id":SPICES[i]})
-	var labels: Array[String]=[]
-	for command: String in commands:
-		var slot: int=SPICES.find(command.trim_prefix("spice:")); labels.append(SPICE_NAMES[slot] if slot>=0 else "?")
-	_text("按拍点击："+" → ".join(labels),area.position+Vector2(30,area.size.y-202),18,GOLD)
-	if remaining>.1: _text("下一拍 %.1f 秒"%remaining,area.position+Vector2(30,area.size.y-223),15,INK)
+	var width: float=minf(460,area.size.x*.8)
+	var center: Vector2=area.position+Vector2(area.size.x*.5,435)
+	_panel(Rect2(center-Vector2(width*.5,22),Vector2(width,91)),Color("142a25"))
+	var headline: String=str(status.title)
+	_text(headline,center+Vector2(-font.get_string_size(headline,HORIZONTAL_ALIGNMENT_LEFT,-1,26).x*.5,-5),26,color)
+	var sub: String=str(status.detail)
+	_text(sub,center+Vector2(-font.get_string_size(sub,HORIZONTAL_ALIGNMENT_LEFT,-1,16).x*.5,24),16,INK)
+	var bar:=Rect2(center+Vector2(-width*.5+18,44),Vector2(width-36,22))
+	draw_rect(bar,Color("3c4d45"))
+	if int(p.get("hold_index",-1))>=0 and not p.get("free_seasoning",false):
+		var target: float=float(p.hold_durations_sec[int(p.hold_index)])
+		var tolerance: float=float(p.get("good_sec",.1))
+		var span: float=target*1.5
+		draw_rect(Rect2(bar.position+Vector2(bar.size.x*(target-tolerance)/span,0),Vector2(bar.size.x*tolerance*2/span,22)),GREEN)
+		draw_rect(Rect2(bar.position,Vector2(bar.size.x*clampf(float(p.note_held_sec)/span,0,1),22)),Color(1,.8,.4,.6))
+		draw_line(bar.position+Vector2(bar.size.x*target/span,-5),bar.position+Vector2(bar.size.x*target/span,27),INK,3)
+	else:
+		draw_rect(Rect2(bar.position,Vector2(bar.size.x*float(status.ratio),22)),color)
+	if p.get("free_seasoning",false):
+		_text("任意调料 · 剩余 %.1f秒"%float(p.remaining_sec),area.position+Vector2(24,61),17,GOLD)
+	else:
+		var names: Array[String]=[]
+		for command: String in p.get("sequence",[]):
+			var slot: int=SPICES.find(command.trim_prefix("spice:")); names.append(SPICE_NAMES[slot] if slot>=0 else "?")
+		_text("左键按住 · 绿灯松开   "+" → ".join(names),area.position+Vector2(24,61),17,GOLD)
+
+static func season_prompt(p: Dictionary) -> Dictionary:
+	var index: int=int(p.get("sequence_index",-1))
+	var commands: Array=p.get("sequence",[])
+	var spice: String=str(commands[index]).trim_prefix("spice:") if index>=0 and index<commands.size() else ""
+	var held: bool=int(p.get("hold_index",-1))>=0
+	if held: spice=str(p.get("hold_action","")).trim_prefix("spice:")
+	var name_index: int=SPICES.find(spice)
+	var label: String=SPICE_NAMES[name_index] if name_index>=0 else "调料"
+	var out: Dictionary={"phase":"waiting","title":"准备 · "+label,"detail":"等待下一份调料","spice":spice,"ratio":0.0}
+	if p.get("free_seasoning",false):
+		out.title="自由调味"; out.detail="按住任意调料添加"
+		if held: out.title="正在添加 · "+label; out.detail="已加 %.3f份"%float(p.get("poured_amount",0)); out.phase="holding"
+		return out
+	var times: Array=p.get("beat_times_sec",[])
+	if index<0 or index>=times.size(): out.title="调味完成"; return out
+	var remaining: float=float(times[index])-float(p.get("elapsed_sec",0))+float(p.get("input_offset_sec",0))
+	var tolerance: float=float(p.get("good_sec",.1))
+	if held:
+		var target: float=float(p.hold_durations_sec[int(p.hold_index)])
+		var elapsed: float=float(p.get("note_held_sec",0))
+		out.phase="holding"; out.title="按住已接收 · "+label; out.detail="再保持 %.2f秒"%maxf(0,target-elapsed)
+		if not p.get("hold_pressed",false): out.title="重新按住 · "+label; out.detail="暂停后需重新按下"
+		elif elapsed>=target-tolerance:
+			out.phase="release" if elapsed<=target+tolerance else "late"; out.title="现在松开！" if out.phase=="release" else "已过量 · 松开"
+			out.detail="已添加 %.3f份"%float(p.get("poured_amount",0))
+	elif remaining<=tolerance and remaining>=-tolerance:
+		out.phase="press"; out.title="现在按住 · "+label; out.detail="鼠标左键 · 保持按住"; out.ratio=1.0
+	else:
+		out.detail="%.1f秒后按下"%maxf(0,remaining); out.ratio=clampf(1.0-remaining/2.0,0,1)
+	return out
 
 func _thermal(area: Rect2,p: Dictionary) -> void:
 	var bar:=Rect2(area.position+Vector2(35,area.size.y-65),Vector2(area.size.x-70,25))
@@ -345,8 +415,15 @@ func _draw_judgement(lane: TDCookingLane,area: Rect2) -> void:
 	var grade: String=str(event.get("grade","miss"))
 	var color: Color=GREEN if grade=="perfect" else (GOLD if grade=="good" else RED)
 	var reason: String=str(event.get("reason",""))
+	if reason=="HOLD_STARTED":
+		_text("保持按住",area.position+Vector2(25,100),25,GOLD)
+		_text("到目标用量再松开",area.position+Vector2(27,125),16,GOLD)
+		return
 	var detail: String={"WRONG_KEY":"按键不对","WRONG_DIRECTION":"漏了转向，切面不对","MISSED_NOTE":"漏拍","OUTSIDE_WINDOW":"没有到落点","TIMEOUT":"未完成操作","EARLY_RELEASE":"松手早了","OVERCHARGED":"松手晚了"}.get(reason,"")
 	if reason=="THERMAL_RESULT": detail="控温阶段完成"
+	if reason=="HOLD_DURATION":
+		var deviation: float=float(event.get("error_sec",0))
+		detail="用量正好" if absf(deviation)<.001 else (("少倒 %.2f 秒" if deviation<0 else "多倒 %.2f 秒")%absf(deviation))
 	if detail.is_empty():
 		var error: float=float(event.get("error_sec",0))*1000
 		detail="正中拍点" if absf(error)<1 else ("早了 %.0f 毫秒"%absf(error) if error<0 else "晚了 %.0f 毫秒"%error)

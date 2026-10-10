@@ -29,6 +29,21 @@ var _base_reasons: Array = []
 var _temperature_c: float = 22.0
 var _full: RefCounted
 
+func set_material_sink(sink: Callable) -> void:
+	if _version == 3: _full.material_sink = sink
+
+func select_recipe(config: Dictionary) -> TDOutcome:
+	return _full.select_recipe(config) if _version == 3 else TDOutcome.new(false,"UNSUPPORTED_VERSION")
+
+func portable_data() -> TDOutcome:
+	return _full.portable_data() if _version==3 else TDOutcome.new(false,"UNSUPPORTED_VERSION")
+
+func restore_portable(data: Variant) -> TDOutcome:
+	return _full.restore_portable(data) if _version==3 else TDOutcome.new(false,"UNSUPPORTED_VERSION")
+
+func is_cold() -> bool:
+	return _version==3 and _full.is_cold()
+
 func _init(sid: String, generation: int, template: Variant, options: Dictionary = {}) -> void:
 	_id = sid
 	_generation = generation

@@ -75,10 +75,13 @@ func _configure_beats(sheet: Dictionary, operations: Dictionary) -> TDOutcome:
 			if not group is Dictionary or not operations.has(group.get("operation","")) or not group.get("parameters") is Dictionary or cell.get("op") != group.operation: return TDOutcome.new(false,"INVALID_BEAT_SHEET")
 			if not cell.get("input") is String or (cell.input not in ["primary","up","left","down","right","rotate_left","rotate_right","Mouse"] and not cell.input.begins_with("spice:")): return TDOutcome.new(false,"INVALID_BEAT_SHEET")
 			if (cell.input == "Mouse" or cell.input.begins_with("spice:")) != (track == "mouse"): return TDOutcome.new(false,"INVALID_TRACK")
-			if not groups.has(id): groups[id] = {"first":row.t,"last":row.t,"track":track,"form":cell.form,"times":[],"inputs":[]}
+			if not groups.has(id): groups[id] = {"first":row.t,"last":row.t,"track":track,"form":cell.form,"times":[],"inputs":[],"durations":[]}
 			var compiled: Dictionary = groups[id]
 			if compiled.track != track or compiled.form != cell.form: return TDOutcome.new(false,"CONFLICTING_BEAT")
 			compiled.last = row.t; compiled.times.append(float(row.t)); compiled.inputs.append(cell.input)
+			if group.operation == "season" and cell.form == "hold":
+				if not _number(cell.get("hold_beats")) or float(cell.hold_beats) <= 0 or float(cell.hold_beats)*_interval > 4: return TDOutcome.new(false,"INVALID_HOLD")
+				compiled.durations.append(float(cell.hold_beats)*_interval)
 	if groups.size() != sheet.groups.size(): return TDOutcome.new(false,"UNUSED_GROUP")
 	for id: String in groups:
 		if sheet.groups[id].operation not in ["heat","boil"]: continue
@@ -101,7 +104,7 @@ func _configure_beats(sheet: Dictionary, operations: Dictionary) -> TDOutcome:
 		elif operation in ["stir","starch"] or (operation=="season" and definition.parameters.get("mode")=="common"):
 			if g.form!="tap" or g.track!="hand" or g.inputs.size()<3 or g.inputs.size()>7 or g.inputs.back()!="primary": return TDOutcome.new(false,"INVALID_SEQUENCE")
 		elif operation=="season":
-			if g.form!="tap" or g.track!="mouse" or g.inputs.size()<3 or g.inputs.size()>5: return TDOutcome.new(false,"INVALID_SEQUENCE")
+			if g.track!="mouse" or g.inputs.is_empty() or g.inputs.size()>5: return TDOutcome.new(false,"INVALID_SEQUENCE")
 		# A single mouse cannot control temperature and select spices at once.
 		if definition.operation not in ["heat","boil"]:
 			if g.first <= busy_until[g.track]: return TDOutcome.new(false,"OVERLAPPING_GROUP")
@@ -130,6 +133,14 @@ func _configure_beats(sheet: Dictionary, operations: Dictionary) -> TDOutcome:
 			else:
 				settings.beats = g.inputs.size()
 				settings.cut_actions = g.inputs.duplicate()
+			if definition.operation == "season" and g.form == "hold":
+				settings.hold_durations_sec = g.durations.duplicate()
+				settings.pour_rate_per_sec = definition.get("pour_rate_per_sec",.2)
+			if definition.operation == "season" and definition.get("free_seasoning",false):
+				if not _number(definition.get("free_duration_sec")) or float(definition.free_duration_sec)<1 or float(definition.free_duration_sec)>20: return TDOutcome.new(false,"INVALID_FREE_DURATION")
+				settings.free_seasoning=true
+				settings.free_duration_sec=definition.free_duration_sec
+				settings.pour_rate_per_sec=definition.get("pour_rate_per_sec",.2)
 		_events.append({"beat":origin_beat,"operation":definition.operation,"parameters":definition.parameters.duplicate(true),"settings":settings,"group":id,"label":definition.get("label",id)})
 	_events.sort_custom(func(a: Dictionary,b: Dictionary) -> bool: return a.beat < b.beat)
 	# Beat 1 may need an approach/ignition cue. Add whole-bar count-in only
@@ -155,6 +166,8 @@ func _configure_beats(sheet: Dictionary, operations: Dictionary) -> TDOutcome:
 			else: return TDOutcome.new(false,"OVERLAPPING_GROUP")
 			event.beat=float(ends[track])/_interval
 		ends[track] = (float(g.last)-1+pre_roll_beats)*_interval + (.101 if g.form == "tap" else _interval)
+		if event.operation == "season" and g.form == "hold": ends[track] = (float(g.last)-1+pre_roll_beats)*_interval+float(g.durations.back())*1.5+.101
+		if event.settings.get("free_seasoning",false): ends[track]=float(event.beat)*_interval+float(event.settings.free_duration_sec)
 		if event.operation in ["plate","steam"]: ends[track] += start_grace + .201
 	_events.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return a.beat<b.beat)
 	cells = sheet.beats.duplicate(true)

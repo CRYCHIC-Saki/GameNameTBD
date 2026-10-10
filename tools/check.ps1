@@ -4,7 +4,7 @@ param(
   [string]$GodotPath = $env:GODOT_BIN,
   [ValidateSet('all','content','cooking','qte','platform','scoring','integration','business','service')]
   [string]$Suite = 'all',
-  [int]$TimeoutSeconds = 180,
+  [int]$TimeoutSeconds = 300,
   [string]$ReportName = ''
 )
 $ErrorActionPreference = 'Stop'
@@ -66,11 +66,11 @@ try {
   if ($plugin -notmatch ('version="' + [regex]::Escape($lock.gut.version) + '"')) { throw 'GUT version mismatch' }
 
   $testMap = @{
-    business = @('tests/unit/test_shop_session.gd','tests/unit/test_shop_store.gd')
+    business = @('tests/unit/test_shop_session.gd','tests/unit/test_shop_store.gd','tests/unit/test_kitchen_freedom.gd')
     service = @('tests/integration/test_shop_application.gd')
     content = @('tests/unit/test_content.gd','tests/unit/test_recipe_content.gd','tests/unit/test_full_catalog.gd')
     cooking = @('tests/unit/test_session.gd','tests/unit/test_cooking_prototype.gd','tests/unit/test_full_cooking.gd','tests/unit/test_pc_cooking.gd')
-    qte = @('tests/unit/test_time_qte.gd','tests/unit/test_cooking_qte.gd','tests/unit/test_full_qte.gd','tests/unit/test_pc_operations.gd','tests/unit/test_document_operations.gd','tests/unit/test_recipe_performance.gd')
+    qte = @('tests/unit/test_time_qte.gd','tests/unit/test_cooking_qte.gd','tests/unit/test_full_qte.gd','tests/unit/test_pc_operations.gd','tests/unit/test_document_operations.gd','tests/unit/test_recipe_performance.gd','tests/unit/test_season_hold.gd')
     platform = @('tests/unit/test_storage_scoring.gd','tests/unit/test_full_storage_scoring.gd')
     scoring = @('tests/unit/test_customer_scoring.gd','tests/unit/test_full_storage_scoring.gd')
     integration = @('tests/integration/test_application.gd','tests/integration/test_cooking_application.gd','tests/integration/test_kitchen_world.gd','tests/integration/test_cooking_action_view.gd','tests/integration/test_full_kitchen.gd','tests/integration/test_pc_kitchen.gd','tests/integration/test_guided_kitchen.gd','tests/integration/test_shop_application.gd')

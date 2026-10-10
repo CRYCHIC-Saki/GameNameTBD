@@ -6,8 +6,10 @@ signal dish_delivered(dish: Dictionary)
 signal time_advanced(seconds: float)
 # Optional business composition. Legacy kitchens retain their established routes.
 var station_handler: Callable
+var action_handler: Callable
 var time_boundary: Callable
 var station_names: Dictionary={}
+var single_fridge: bool = false
 const WORLD := preload("res://src/world/kitchen_world.tscn")
 var catalog: TDCookingCatalog
 var _content: Dictionary = {}
@@ -51,9 +53,13 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	world = WORLD.instantiate() as TDKitchenWorld
 	world.station_names=station_names
+	world.single_fridge=single_fridge
 	add_child(world)
 	handling = TDKitchenHandling.new(catalog)
 	world.cooking_requested.connect(_station_interaction)
+	world.station_action.connect(func(id:String,action:String)->void:
+		if action_handler.is_valid(): action_handler.call(id,action)
+		else: _station_interaction(id))
 	world.back_requested.connect(func() -> void: back_requested.emit())
 	beat_audio = TDBeatAudio.new(); add_child(beat_audio)
 	beat_audio.prepare_loop(float(_content.pc_operations.bpm))
@@ -118,6 +124,10 @@ func _ready() -> void:
 		if get_tree().paused or not stage.visible: return
 		var lane: TDCookingLane=prep if index==2 else lanes[index]
 		lane.input_action("spice:"+id,true); lane.input_action("spice:"+id,false))
+	stage.spice_input.connect(func(index: int,id: String,pressed: bool) -> void:
+		if get_tree().paused or not stage.visible: return
+		var lane: TDCookingLane=prep if index==2 else lanes[index]
+		lane.input_action("spice:"+id,pressed))
 	audio_delay = beat_audio.begin()
 	for lane: TDCookingLane in lanes + [prep]: lane.beat_offset_sec = audio_delay
 	_last_ticks = Time.get_ticks_usec()

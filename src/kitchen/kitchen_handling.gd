@@ -6,17 +6,21 @@ var board: TDCookingSession
 var hand_kind: String = ""
 var _catalog: TDCookingCatalog
 var _serial: int = 0
+var session_namespace: String = ""
+var material_sink: Callable
 
 func _init(catalog: TDCookingCatalog) -> void:
 	_catalog = catalog
 
-func pick(ingredient_id: String, recipe_id: String = "tomato_egg") -> TDOutcome:
+func pick(ingredient_id: String, recipe_id: String = "tomato_egg", amount: float = 1.0) -> TDOutcome:
 	if hand != null: return TDOutcome.new(false, "HANDS_FULL", "手上已有东西，先放到菜板或锅里。")
 	var config: Dictionary = _catalog.for_recipe(recipe_id)
 	if config.is_empty(): return TDOutcome.new(false,"UNKNOWN_RECIPE")
 	_serial += 1
-	var candidate := TDCookingSession.new("portable-%d" % _serial, _serial, config, {"pc_controls":true})
-	var request := TDRequest.new("portable-%d" % _serial, _serial, "pickup-%d" % _serial, "add", 0, {"ingredient_id":ingredient_id,"amount":1})
+	var identity: String = session_namespace+"portable-%d" % _serial
+	var candidate := TDCookingSession.new(identity, _serial, config, {"pc_controls":true,"document_rules":true})
+	candidate.set_material_sink(material_sink)
+	var request := TDRequest.new(identity, _serial, "pickup-%d" % _serial, "add", 0, {"ingredient_id":ingredient_id,"amount":amount})
 	request.schema_version = 3
 	var result := candidate.begin(request)
 	if not result.ok: return result
@@ -50,6 +54,27 @@ func take_dish(source: TDCookingSession) -> TDOutcome:
 	if source.snapshot().to_dict().state != "plated": return TDOutcome.new(false, "NOT_PLATED")
 	hand = source; hand_kind = "dish"
 	return TDOutcome.new(true, "DISH_PICKED", "端好盘子，走到出餐台按 E 试吃。")
+
+func take_ingredient(source: TDCookingSession, instance_id: String) -> TDOutcome:
+	if hand!=null: return TDOutcome.new(false,"HANDS_FULL")
+	_serial+=1
+	var candidate:=TDCookingSession.new(session_namespace+"retrieve-%d"%_serial,_serial,_catalog.for_recipe("service.tomato_egg"),{"pc_controls":true,"document_rules":true})
+	candidate.set_material_sink(material_sink)
+	var result:=source.transfer_to(candidate,instance_id,"retrieve-%d"%_serial)
+	if result.ok: hand=candidate; hand_kind="ingredient"
+	return result
+
+func take_stored(data: Dictionary) -> TDOutcome:
+	if hand!=null: return TDOutcome.new(false,"HANDS_FULL")
+	_serial+=1
+	var candidate:=TDCookingSession.new(session_namespace+"stored-%d"%_serial,_serial,_catalog.for_recipe("service.tomato_egg"),{"pc_controls":true,"document_rules":true})
+	var result:=candidate.restore_portable(data)
+	if result.ok:
+		candidate.set_material_sink(material_sink); hand=candidate; hand_kind="ingredient"
+	return result
+
+func clear_ingredient() -> void:
+	if hand_kind=="ingredient": hand.cancel(); hand=null; hand_kind=""
 
 func clear_dish() -> void:
 	if hand_kind == "dish": hand = null; hand_kind = ""

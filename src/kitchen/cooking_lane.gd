@@ -249,6 +249,7 @@ func _finish() -> void:
 	if not last_result.ok:
 		session.cancel_operation(str(result.data.operation_id))
 		_status.text = "本次工序未应用：" + _explain_error(last_result)
+		judgement_feedback={"grade":"Miss","action":"","message":last_result.message if not last_result.message.is_empty() else _status.text,"shown_at_sec":clock.qte_sec,"at_sec":clock.qte_sec}
 	qte = null
 	if not pc_controls: _audio.stop()
 	_refresh_targets()
@@ -565,6 +566,13 @@ func start_preparation() -> TDOutcome:
 	var id: String = str(recipe.get("preparation_sheets",{}).get(ingredient,""))
 	if id.is_empty(): return TDOutcome.new(false,"NO_PREPARATION_CHART","这份菜谱未配置该食材的备菜谱。")
 	return start_sheet(id)
+
+func use_recipe_profile(value: TDCookingCatalog, identity: String, customer: Dictionary = {}) -> TDOutcome:
+	var changed := session.select_recipe(value.for_recipe(identity))
+	if not changed.ok: return changed
+	catalog = value; _content = value.data(); base_recipe_id = identity
+	customer_override = [customer.duplicate(true)] if not customer.is_empty() else []
+	return changed
 
 func feedback_remaining() -> float:
 	return maxf(0,float(judgement_feedback.get("shown_at_sec",-10)) + float(_content.pc_operations.document_rules.get("feedback_sec",.9)) - clock.qte_sec)

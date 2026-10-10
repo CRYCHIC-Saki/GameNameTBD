@@ -39,7 +39,7 @@ func load_library() -> TDOutcome:
 func validate_plan(value: Variant) -> TDOutcome:
 	if not value is Dictionary: return TDOutcome.new(false, "INVALID_PLAN")
 	var plan: Dictionary = value
-	if plan.get("schema_version") != 1 and plan.get("schema_version") != 2: return TDOutcome.new(false, "UNSUPPORTED_PLAN")
+	if plan.get("schema_version") != 1 and plan.get("schema_version") != 2 and plan.get("schema_version") != 3: return TDOutcome.new(false, "UNSUPPORTED_PLAN")
 	for key: String in plan:
 		if key not in ["schema_version", "recipe_id", "ingredients", "operations"]:
 			return TDOutcome.new(false, "UNEXPECTED_PLAN_FIELD", key)
@@ -71,29 +71,35 @@ func validate_plan(value: Variant) -> TDOutcome:
 			return TDOutcome.new(false, "INVALID_OPERATION")
 		if step.size() != 2: return TDOutcome.new(false, "UNEXPECTED_PLAN_FIELD")
 		var args: Dictionary = step.parameters
+		if args.has("amounts") and (plan.schema_version != 3 or step.operation != "season" or not args.has("sequence")): return TDOutcome.new(false,"INVALID_PARAMETERS")
 		var allowed: Array = ["batch_id"]
 		match str(step.operation):
-			"add", "season": allowed = ["ingredient_id", "amount", "batch_id", "local_id"] + (["mode","sequence","local_ids"] if plan.schema_version == 2 and step.operation == "season" else [])
+			"add", "season": allowed = ["ingredient_id", "amount", "batch_id", "local_id"] + (["mode","sequence","local_ids"] if plan.schema_version >= 2 and step.operation == "season" else [])
 			"starch": allowed = ["ingredient_id","amount","batch_id","local_id"]
-			"cut": allowed = ["ingredient_id", "shape", "batch_id", "target_local_id"] + (["beats"] if plan.schema_version == 2 else [])
+			"cut": allowed = ["ingredient_id", "shape", "batch_id", "target_local_id"] + (["beats"] if plan.schema_version >= 2 else [])
 			"merge": allowed = ["source_batch", "target_batch"]
 			"plate": allowed = []
 		for key: String in args:
+			if plan.schema_version == 3 and step.operation == "season" and key == "amounts": continue
 			if key not in allowed: return TDOutcome.new(false, "UNEXPECTED_PLAN_FIELD", key)
 		if step.operation in ["cut", "add", "season", "starch"] and not definitions.has(args.get("ingredient_id")):
 			return TDOutcome.new(false, "MISSING_REFERENCE")
 		if step.operation in ["add", "season", "starch"] and not _number(args.get("amount", 1), .001, float(definitions[args.ingredient_id].max_amount)):
 			return TDOutcome.new(false, "INVALID_AMOUNT")
-		if step.operation == "cut" and not _config.cut_shapes.has(args.get("shape")) and not (plan.schema_version == 2 and args.get("shape") == "whole"):
+		if step.operation == "cut" and not _config.cut_shapes.has(args.get("shape")) and not (plan.schema_version >= 2 and args.get("shape") == "whole"):
 			return TDOutcome.new(false, "INVALID_SHAPE")
 		if step.operation == "cut" and args.has("beats") and (not _number(args.beats,1,12) or int(args.beats) != args.beats): return TDOutcome.new(false,"INVALID_PARAMETERS")
 		if step.operation == "season" and args.has("sequence"):
 			if not args.sequence is Array or not args.get("local_ids") is Array or args.sequence.is_empty() or args.sequence.size() > 5 or args.sequence.size() != args.local_ids.size(): return TDOutcome.new(false,"INVALID_PARAMETERS")
+			if args.has("amounts"):
+				if not args.amounts is Array or args.amounts.size() != args.sequence.size(): return TDOutcome.new(false,"INVALID_AMOUNT")
+				for amount: Variant in args.amounts:
+					if not _number(amount,.001,1): return TDOutcome.new(false,"INVALID_AMOUNT")
 			for index: int in args.sequence.size():
 				var local_id: Variant = args.local_ids[index]
 				if not local_id is String or not declared.has(local_id) or introduced.has(local_id): return TDOutcome.new(false,"INVALID_LOCAL_ID")
 				var item: Dictionary = declared[local_id]
-				if item.ingredient_id != args.sequence[index] or definitions[item.ingredient_id].category != "seasoning" or not is_equal_approx(float(item.amount),float(args.get("amount",1))) or item.batch_id != args.get("batch_id","main"): return TDOutcome.new(false,"PLAN_MISMATCH")
+				if item.ingredient_id != args.sequence[index] or definitions[item.ingredient_id].category != "seasoning" or not is_equal_approx(float(item.amount),float(args.amounts[index] if args.has("amounts") else args.get("amount",1))) or item.batch_id != args.get("batch_id","main"): return TDOutcome.new(false,"PLAN_MISMATCH")
 				introduced[local_id] = item.ingredient_id
 			continue
 		if step.operation in ["add", "season", "starch"]:
