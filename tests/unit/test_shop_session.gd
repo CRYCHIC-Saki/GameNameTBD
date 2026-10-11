@@ -154,6 +154,30 @@ func test_price_consequences_and_low_score_actual_refund() -> void:
 	assert_true(shop.deliver(id,dish).ok)
 	assert_gt(shop.order(id).refunded_cents,0); assert_eq(shop.snapshot().money_cents,cash)
 
+func test_day_summary_after_early_close_and_after_the_clock_runs_out() -> void:
+	var id: String=stock_and_open()
+	var opened_money: int=shop.snapshot().money_cents
+	var opened_popularity: int=shop.snapshot().popularity
+	assert_true(shop.deliver(id,rated_dish(id)).ok)
+	assert_eq(shop.close_early().code,"SETTLED")
+	var report: Dictionary=shop.day_summary()
+	assert_eq(report.reason,"early")
+	assert_eq(report.open_money_cents,opened_money)
+	assert_eq(report.open_popularity,opened_popularity)
+	assert_eq(report.popularity,opened_popularity+2)
+	assert_eq(report.popularity_delta,2)
+	assert_eq(report.orders.size(),1)
+	assert_eq(float(report.orders[0].satisfaction),100.0)
+	assert_gt(int(report.orders[0].stars),0)
+	assert_eq(int(report.money_cents)-int(report.open_money_cents),int(report.received_cents)+int(report.tip_cents)-int(report.refunded_cents))
+	assert_true(shop.validate_save(shop.snapshot()).ok)
+	var restored:=TDShopSession.new(catalog,"unit",22)
+	assert_true(restored.restore(JSON.parse_string(JSON.stringify(shop.snapshot()))).ok)
+	assert_eq(JSON.stringify(restored.day_summary()),JSON.stringify(shop.day_summary()))
+	shop.next_day(1); shop.open_day(); shop.advance(900)
+	assert_eq(shop.snapshot().phase,"SETTLED")
+	assert_eq(shop.day_summary().reason,"time")
+
 func test_consumption_limits_and_next_day_stale_dish_are_rejected() -> void:
 	var id: String=stock_and_open()
 	var before: Dictionary=shop.snapshot()

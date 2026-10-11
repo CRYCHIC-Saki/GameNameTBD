@@ -142,7 +142,7 @@ func _draw_lane(lane: TDCookingLane, area: Rect2, slot: int) -> void:
 	if p.is_empty(): label = "准备 · " + _next_label(lane)
 	if dish.state=="plated": label="已出锅 · 返回灶台端起"
 	_text(label,area.position+Vector2(24,34),21,GOLD)
-	if not lane.last_result.ok and lane.last_result.code=="INSUFFICIENT_STOCK": _text("调料不足 · 本次加料未生效",area.position+Vector2(24,62),18,Color("ef9371"))
+	if lane.last_result != null and not lane.last_result.ok and lane.last_result.code=="INSUFFICIENT_STOCK": _text("调料不足 · 本次加料未生效",area.position+Vector2(24,62),18,Color("ef9371"))
 	var fine: float = 0
 	for item: Dictionary in dish.ingredients.values(): fine=maxf(fine,float(item.fine))
 	if module=="M1" and lane.qte != null: fine=minf(1,fine+float(p.get("cut_hits",0))/8)

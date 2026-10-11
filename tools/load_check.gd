@@ -21,6 +21,16 @@ func _initialize() -> void:
 	if not full_result.ok:
 		printerr(full_result.message)
 		failures += 1
+	var towns := TDTownCatalog.new()
+	var town_result := towns.load_file()
+	if not town_result.ok:
+		printerr(town_result.message)
+		failures += 1
+	var restaurant_catalog := TDRestaurantCatalog.new()
+	var restaurant_result := restaurant_catalog.load_file()
+	if not restaurant_result.ok:
+		printerr(restaurant_result.message)
+		failures += 1
 	var recipe_result := recipes.load_file("res://content/cooking_prototype.json")
 	if not recipe_result.ok:
 		printerr(recipe_result.message)

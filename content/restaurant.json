@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "grid": {"columns": 20, "rows": 11, "cell_px": 64},
+  "cultures": ["plain", "modern", "life", "chinese", "japanese", "french", "british", "indian", "nordic", "russian"],
+  "culture_names": {"plain": "朴素", "modern": "现代", "life": "生活", "chinese": "中式", "japanese": "日式", "french": "法式", "british": "英式", "indian": "印度", "nordic": "北欧", "russian": "俄式"},
+  "tiers": ["low", "high"],
+  "tier_names": {"low": "低端", "high": "高端"},
+  "roles": ["greeter", "cashier"],
+  "furniture": [
+    {"id": "storefront", "name": "门面", "zone": "facade", "width": 6, "height": 1, "blocks": false, "role": "", "seat_use": "", "surface": "", "service": true, "approach": null},
+    {"id": "welcome_desk", "name": "迎宾台", "zone": "reception", "width": 2, "height": 1, "blocks": true, "role": "greeter", "seat_use": "", "surface": "", "service": true, "approach": [2, 0]},
+    {"id": "waiting_seat", "name": "等候座", "zone": "reception", "width": 1, "height": 1, "blocks": true, "role": "", "seat_use": "waiting", "surface": "", "service": true, "approach": [0, 1]},
+    {"id": "screen", "name": "屏风", "zone": "reception", "width": 1, "height": 1, "blocks": true, "role": "", "seat_use": "", "surface": "", "service": true, "approach": [1, 0]},
+    {"id": "cashier", "name": "收银台", "zone": "ordering", "width": 2, "height": 1, "blocks": true, "role": "cashier", "seat_use": "", "surface": "", "service": true, "approach": [-1, 0]},
+    {"id": "kiosk", "name": "自助点餐机", "zone": "ordering", "width": 1, "height": 1, "blocks": true, "role": "", "seat_use": "", "surface": "", "service": true, "approach": [-1, 0]},
+    {"id": "order_counter", "name": "点餐台", "zone": "ordering", "width": 3, "height": 1, "blocks": true, "role": "", "seat_use": "", "surface": "", "service": true, "approach": [-1, 0]},
+    {"id": "dining_table", "name": "餐桌", "zone": "dining", "width": 2, "height": 2, "blocks": true, "role": "", "seat_use": "dining", "surface": "", "service": true, "approach": [-1, 0]},
+    {"id": "booth", "name": "卡座", "zone": "dining", "width": 2, "height": 1, "blocks": true, "role": "", "seat_use": "dining", "surface": "", "service": true, "approach": [-1, 0]},
+    {"id": "sofa", "name": "沙发", "zone": "dining", "width": 2, "height": 1, "blocks": true, "role": "", "seat_use": "dining", "surface": "", "service": true, "approach": [2, 0]},
+    {"id": "stool", "name": "凳子", "zone": "dining", "width": 1, "height": 1, "blocks": true, "role": "", "seat_use": "dining", "surface": "", "service": true, "approach": [0, 1]},
+    {"id": "child_seat", "name": "儿童座椅", "zone": "dining", "width": 1, "height": 1, "blocks": true, "role": "", "seat_use": "dining", "surface": "", "service": true, "approach": [0, 1]},
+    {"id": "hotpot_table", "name": "火锅桌", "zone": "dining", "width": 2, "height": 2, "blocks": true, "role": "", "seat_use": "dining", "surface": "induction", "service": true, "approach": [2, 0]}
+  ],
+  "default_layout": {
+    "culture": "chinese",
+    "tier": "low",
+    "staff": {"greeter": false, "cashier": false},
+    "rows": [
+      "####################",
+      "#+.................#",
+      "#RR............OOOO#",
+      "#RR............OOOO#",
+      "#RR............OOOO#",
+      "#...DDDD..DDDD.....#",
+      "#...DDDD..DDDD.....#",
+      "#..................#",
+      "#..................#",
+      "#..................#",
+      "####################"
+    ],
+    "pieces": [
+      {"id": "piece-facade", "kind": "storefront", "x": 4, "y": 0, "rotation": 0, "style_id": "chinese_low"},
+      {"id": "piece-welcome", "kind": "welcome_desk", "x": 1, "y": 2, "rotation": 0, "style_id": "chinese_low"},
+      {"id": "piece-wait-1", "kind": "waiting_seat", "x": 1, "y": 4, "rotation": 0, "style_id": "chinese_low"},
+      {"id": "piece-wait-2", "kind": "waiting_seat", "x": 2, "y": 4, "rotation": 0, "style_id": "chinese_low"},
+      {"id": "piece-screen", "kind": "screen", "x": 2, "y": 3, "rotation": 0, "style_id": "chinese_low"},
+      {"id": "piece-cashier", "kind": "cashier", "x": 15, "y": 2, "rotation": 0, "style_id": "chinese_low"},
+      {"id": "piece-kiosk", "kind": "kiosk", "x": 15, "y": 3, "rotation": 0, "style_id": "chinese_low"},
+      {"id": "piece-counter", "kind": "order_counter", "x": 15, "y": 4, "rotation": 0, "style_id": "chinese_low"},
+      {"id": "piece-table", "kind": "dining_table", "x": 4, "y": 5, "rotation": 0, "style_id": "chinese_low"},
+      {"id": "piece-sofa", "kind": "sofa", "x": 6, "y": 5, "rotation": 0, "style_id": "chinese_low"},
+      {"id": "piece-booth", "kind": "booth", "x": 10, "y": 5, "rotation": 0, "style_id": "chinese_low"},
+      {"id": "piece-stool-1", "kind": "stool", "x": 6, "y": 6, "rotation": 0, "style_id": "chinese_low"},
+      {"id": "piece-child", "kind": "child_seat", "x": 7, "y": 6, "rotation": 0, "style_id": "chinese_low"},
+      {"id": "piece-stool-2", "kind": "stool", "x": 10, "y": 6, "rotation": 0, "style_id": "chinese_low"},
+      {"id": "piece-hotpot", "kind": "hotpot_table", "x": 12, "y": 5, "rotation": 0, "style_id": "chinese_low"}
+    ]
+  }
+}

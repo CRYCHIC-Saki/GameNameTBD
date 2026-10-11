@@ -37,6 +37,17 @@
 
 当前Windows存档：`%APPDATA%/TownDinerPhase0/shop-v1.json`，保留既有用户目录。写入有校验、临时文件和上一份有效备份；坏档不静默覆盖，继续页面可明确选择恢复已校验备份/临时文件。未知版本不降级覆盖。新开店首次保存前会确认并保留旧档。测试只使用 `artifacts/test-storage`。
 
+## 小镇与斜角餐厅
+
+主菜单「走进小镇」沿十字路走，E 查看市场、竞品和功能区。关掉一个功能区，当天客流人数、预算和外来饮食偏好会变。「布置餐厅」是斜角房间：地面加两面墙，方桌画成菱形。雇用迎宾和收银会从现金里付工资；下一天再扣租金、水电和设备维护。点「全程来客」。菜单外的菜可以拒绝；接下并上菜后，总体评价达到 60 会记入这套客流菜谱。点「去厨房」后，在原来的营业厨房里按谱做这道菜。客流面板能看到预算分布、选店结果、装修效果、开支和到货。「备料」可以按一道菜一次买齐原料，也可以点选一种食材；冷藏、冷冻和干藏会延长保质期。这套账用元，不写入原来的营业存档。
+
+Kenney 素材先检索再下载，不要把付费合集当免费包：
+
+```powershell
+python tools/kenney_fetch.py search --query furniture
+python tools/kenney_fetch.py download --query furniture --out artifacts/kenney --limit 3
+```
+
 ## 工程运行
 
 已锁定 Godot 4.7.2 stable、静态类型 GDScript、Compatibility、GUT 9.7.1。当前机器 Godot 在 Steam 安装目录，未修改全局环境；准确路径、版本与校验值见 `dependencies.lock.json`。命令需要 PowerShell 7.2+，本机实测7.6.5。

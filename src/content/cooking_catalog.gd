@@ -200,6 +200,12 @@ func load_data(raw: Variant, source: String = "<memory>") -> TDOutcome:
 func data() -> Dictionary:
 	return _data.duplicate(true)
 
+func adopt_recipe(recipe: Dictionary, sheet: Dictionary) -> void:
+	_data.recipes.append(recipe.duplicate(true))
+	if not (_data.active.recipes as Array).has(recipe.id):
+		_data.active.recipes.append(recipe.id)
+	_data.pc_operations.document_sheets[String(sheet.get("id", ""))] = sheet.duplicate(true)
+
 func recipe_ids(include_test: bool = false) -> Array:
 	var values: Array = []
 	for recipe: Dictionary in _data.get("recipes", []):

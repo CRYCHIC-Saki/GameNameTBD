@@ -1,5 +1,11 @@
 # 项目架构与接入边界
 
+## D021：小镇客流（当前入口）
+
+`TDApplication` 持有一份 `TDPhase3Session`，分给 `TDTownWorld` 和 `TDRestaurantWorld`。会话拥有目录、地图、供货、菜谱解锁、竞品、当天 NPC、迎宾/收银是否在岗，以及一份原料账。公式在 `TDEconomyMath`，保质期在 `TDPantry`，不放进界面。界面只发下一天、改价、开关功能区、接单、拒绝、上菜、雇用、按菜备料和点选食材。
+
+小镇镜头是跟随玩家的 `TownCamera`，视野比整张地图小。功能区按配置里的宽高占多格，十字路本身仍然只占一格宽。餐厅碰撞和寻路仍在原来的直角网格里。`TDRestaurantIsoView` 只负责把同一坐标画成地面菱形和两面墙，并按鼠标反算格子。没有新的 Autoload。Phase 2 的现金账仍分开。学会的新菜在进入营业时由 `TDKitchenLink` 装进现有 `TDServiceCatalog` / `TDFullKitchen`，走原来的逐拍表，不另建一套做菜流程。
+
 ## D020：自由备菜与探索（当前入口）
 
 仍沿用ShopView→FullKitchen→Handling/Lane→CookingSession/Model，未建立另一套演示流程。世界通过station_action发E/F/Q意图，锅的材料泡读取已有快照，切型弹窗只选谱，自动烹饪顺序不变。

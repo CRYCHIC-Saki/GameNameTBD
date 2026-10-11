@@ -1,5 +1,17 @@
 # 公共契约：v3完整烹饪，兼容v1/v2历史入口
 
+## D021 小镇客流与斜角餐厅
+
+- 运行配置是 `content/phase3_world.json`，schema 1。`doc/source/towns.json` 仍只读；能对上的菜写 `source=towns.json` 和原文 id，对不上的写 `source=PROPOSED`，不回写原文。
+- 货币是整数元，和 Phase 2 的分、`user://shop-v1.json` 分开。进入小镇或餐厅不写营业档。装修结果只进入 `TDPhase3Session` 的客流评价。
+- 参考价、装修效果、口碑、前评价、竞争优势、三项终评和星级按 `TDEconomyMath`。装修效果 = 统一度 / 100 × 高端度。展示分夹到 0–100；选店用未夹取的竞争优势。好评是展示分 ≥ 80，差评是 < 40。总体评价 ≥ `unlock_score`（60）且玩家接下，才把菜谱 id 写入 `TDRecipeBook`。拒绝、低分和重复学习都不新增。
+- 预算由 `budget_from_unit` 生成：15、50、130 的三角分布，结果至少 15。功能区人数、预算平移和外来偏好倍率来自配置，住房贡献有上限。竞品默认两家、各最多十道菜。
+- 供货 `TDSupplyBook.order` 默认下一天到。`pipeline` 或 `nearby_market` 为真时当天到，并在跨天时扣维护费，钱不够就关掉。
+- 备料是另一本原料账。食材身份只读 `doc/source/ingredients.json`。`content/pantry.json` 给出品类保质天数、单价和设备倍率，都标为 PROPOSED。`prep_dish` 按菜一次买齐清单；`prep_selected_ingredient` 只买当前点选的一种。钱从 Phase 3 现金扣，不够则整笔拒绝。入库日加保质天数得到 `expires_on`，跨天时 `expires_on <= 当天` 的份数清掉。换设备只影响新入库的份，不改已经放进去的。这本账不写 Phase 2 冷藏，也不改延迟进货。
+- 跨天从同一本现金账扣租金、水电和按家具件数计的设备维护。迎宾、收银 `employ` 当天付工资；钱不够则拒绝到岗。已付工资不因辞退退回。下一天开始时，仍在岗的人再付一天；付不出就离岗。金额在 `expenses`，标记为 PROPOSED。
+- 新学会、且原来厨房没有谱的菜，由 `TDKitchenLink.install` 挂成 `phase3.<菜谱id>`。它复用现有炒或蒸的逐拍表，并改用一份不与旧菜冲突的主料组合。评价解锁的汽锅鸡走原来的 `service.qiguoji`。旧营业档不必事先含有 `phase3.*` 菜单项。进入营业前只授予当前学会的这些菜，不改初始五菜的上架状态。
+- 餐厅寻路仍是四方向过道网格。画面投影是 `TDRestaurantIsoView.project` / `pick_cell`。客人全程状态在 `TDRestaurantGuest.phase`：welcome、order、seat、wait_serve、eat、pay、leave、gone。菜单外的单停在 order，上菜停在 wait_serve，没收银员停在 pay。
+
 ## D020 实现接口与存档补充
 
 - World.station_action(station_id, action)的action是interact/open/retrieve；旧cooking_requested与独立Phase1入口保持兼容。ShopView组合入口拥有路由，F开始后自动工序，E端成品，Q只从尚未开始加工的锅取指定实例。
@@ -30,6 +42,7 @@
 
 - TDServiceCatalog显式组合只读cooking_system基础与service_content增量，产出相同TDCookingCatalog；营业active菜单独立，禁止TEST_ONLY入菜单。来源/金额/整数库存量/谱引用必须校验。
 - TDShopSession拥有日期、PREPARE→OPEN→DRAINING→SETTLED、订单、库存、预留、账本、方案及经营指标；只通过方法变更，snapshot深复制。UI/厨房只发意图。订单WAITING→COOKING→SERVED或CANCELLED/TIMED_OUT；售后退款有独立幂等记录。
+- 提前打烊或营业时间结束且没有未完成订单时进入 SETTLED。`day_summary()` 只读当日账本和订单：净收支、开门后营业盈亏、每一单的实收、评价和实际人气增减。结算记录原因 `early` 或 `time`。它不另记一笔钱。
 - 金钱整数分，库存整数毫份（1000=1标准份），计时秒。采购/预留全量先检查再提交，库存总量不含重复副本；可用量=总量−有效预留。消费记录按食材和订单累计去重；取消仅释放未用预留。
 - 订单、菜品、交易、日结、配方使用稳定ID。重复请求返回DUPLICATE/ALREADY_FINISHED，不重复扣料收退或推进日期。错单保留盘子；评分读取真实成品且不回写属性。
 - 自建条目保存name/id/version与经过TDRecipeLibrary验证的食材工序plan及可复现谱，不保存成绩/随机结果。改名不变ID，制作仍执行真实QTE。

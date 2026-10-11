@@ -147,6 +147,9 @@ func wait_for_module(lane: TDCookingLane,module: String,limit: float=60) -> bool
 
 func test_real_recipe_notes_make_chunks_and_feedback_survives_release_pause_and_finish() -> void:
 	station("kitchen.supply.tomato"); station("kitchen.board")
+	assert_true(kitchen.stage.visible)
+	assert_null(kitchen.prep.last_result)
+	await get_tree().process_frame
 	var lane: TDCookingLane=kitchen.prep
 	assert_true(wait_for_module(lane,"M1",5))
 	assert_eq(lane.progress.cut_actions,["primary","rotate_right","primary"])

@@ -151,6 +151,10 @@ func test_real_three_days_save_restart_and_custom_menu() -> void:
 		view.shop.close_early()
 		for remaining: Dictionary in view.shop.active_orders(): view.cancel_order(remaining.id)
 		kitchen.advance(.01); assert_eq(view.shop.snapshot().phase,"SETTLED")
+		var summary_titles: int=0
+		for label: Label in view._page.find_children("*","Label",true,false):
+			if "收益总结" in label.text: summary_titles+=1
+		assert_gt(summary_titles,0)
 		if day==1:
 			var saved:=view.save_order_plan(id,"小店招牌炒蛋")
 			assert_true(saved.ok,saved.code+" "+saved.message)

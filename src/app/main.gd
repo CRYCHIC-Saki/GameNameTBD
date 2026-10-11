@@ -10,6 +10,9 @@ const FULL_SCENE := preload("res://src/kitchen/full_kitchen.tscn")
 @export var initial_full: bool = false
 var full_kitchen: TDFullKitchen
 var shop_view: TDShopView
+var restaurant: TDRestaurantWorld
+var town: TDTownWorld
+var phase3: TDPhase3Session
 var shop_save_path: String = "user://shop-v1.json"
 var full_catalog := TDCookingCatalog.new()
 var settings_path: String = "user://settings.json"
@@ -28,6 +31,7 @@ var _paused: bool = false
 func _ready() -> void:
 	get_tree().auto_accept_quit=false
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	theme = TDUI.theme()
 	_store = TDSettingsStore.new(settings_path)
 	var loaded := _store.load_settings()
@@ -71,9 +75,37 @@ func return_to_menu() -> void:
 	_dispose_kitchen()
 	_menu.show()
 
+func enter_restaurant(path: String = "") -> void:
+	_dispose_kitchen()
+	restaurant = TDRestaurantWorld.new()
+	restaurant.save_path = path
+	restaurant.session = _phase3()
+	restaurant.back_requested.connect(return_to_menu)
+	restaurant.pause_requested.connect(toggle_pause)
+	restaurant.kitchen_requested.connect(func() -> void: enter_shop(false))
+	_menu.hide()
+	add_child(restaurant)
+
+func enter_town() -> void:
+	_dispose_kitchen()
+	town = TDTownWorld.new()
+	town.session = _phase3()
+	town.back_requested.connect(return_to_menu)
+	town.pause_requested.connect(toggle_pause)
+	town.restaurant_requested.connect(func() -> void: enter_restaurant(""))
+	_menu.hide()
+	add_child(town)
+
+func _phase3() -> TDPhase3Session:
+	if phase3 == null:
+		phase3 = TDPhase3Session.new()
+		phase3.load_default()
+	return phase3
+
 func enter_shop(resume_saved: bool = false) -> void:
 	_dispose_kitchen()
 	shop_view=TDShopView.new(); shop_view.save_path=shop_save_path; shop_view.resume_saved=resume_saved
+	shop_view.learned_dishes=_phase3().learned_kitchen_dishes()
 	shop_view.back_requested.connect(return_to_menu); shop_view.pause_requested.connect(toggle_pause)
 	_menu.hide(); add_child(shop_view)
 
@@ -114,7 +146,7 @@ func enter_cooking() -> void:
 	add_child(cooking_kitchen)
 
 func toggle_pause() -> void:
-	if kitchen == null and cooking_kitchen == null and full_kitchen == null and shop_view == null:
+	if kitchen == null and cooking_kitchen == null and full_kitchen == null and shop_view == null and restaurant == null and town == null:
 		return
 	_paused = not _paused
 	get_tree().paused = _paused
@@ -130,7 +162,7 @@ func _notification(what: int) -> void:
 	if what==NOTIFICATION_WM_CLOSE_REQUEST and is_inside_tree():
 		if shop_view!=null: shop_view.request_leave(func()->void:get_tree().quit())
 		else: get_tree().quit()
-	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and is_inside_tree() and (kitchen != null or cooking_kitchen != null or full_kitchen != null or shop_view != null) and not _paused:
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and is_inside_tree() and (kitchen != null or cooking_kitchen != null or full_kitchen != null or shop_view != null or restaurant != null or town != null) and not _paused:
 		toggle_pause()
 
 func _dispose_kitchen() -> void:
@@ -139,6 +171,16 @@ func _dispose_kitchen() -> void:
 	if is_instance_valid(shop_view):
 		shop_view.close(); remove_child(shop_view); shop_view.queue_free()
 	shop_view=null
+	if is_instance_valid(restaurant):
+		restaurant.close()
+		remove_child(restaurant)
+		restaurant.queue_free()
+	restaurant = null
+	if is_instance_valid(town):
+		town.close()
+		remove_child(town)
+		town.queue_free()
+	town = null
 	if is_instance_valid(full_kitchen):
 		full_kitchen.close()
 		remove_child(full_kitchen)
@@ -157,6 +199,8 @@ func _dispose_kitchen() -> void:
 
 func _exit_tree() -> void:
 	if is_instance_valid(shop_view): shop_view.close()
+	if is_instance_valid(restaurant): restaurant.close()
+	if is_instance_valid(town): town.close()
 	if is_instance_valid(full_kitchen):
 		full_kitchen.close()
 	if is_instance_valid(kitchen):
@@ -191,6 +235,8 @@ func _build_menu(config: TDOutcome) -> void:
 	start.disabled = full_catalog.data().is_empty()
 	column.add_child(start)
 	column.add_child(TDUI.button("继续经营",func()->void:enter_shop(true)))
+	column.add_child(TDUI.button("布置餐厅", func() -> void: enter_restaurant("")))
+	column.add_child(TDUI.button("走进小镇", func() -> void: enter_town()))
 	column.add_child(TDUI.label("WASD 走动 · E 拿取 / 交互 · 跟随节拍做菜 · Esc 暂停", 17, TDUI.MUTED))
 	_settings_message = TDUI.label("占位界面 · 原型建议数值 · 人工玩法验收待完成。", 16, TDUI.MUTED)
 	column.add_child(_settings_message)

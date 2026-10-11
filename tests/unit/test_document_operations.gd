@@ -97,6 +97,31 @@ func test_material_reference_and_hold_gaps_rejected_before_runtime() -> void:
 		if row.t==21: row.lanes={}; row.rest=true
 	assert_eq(TDBeatSheet.new().configure(d,data.operations).code,"INVALID_HOLD")
 
+func test_season_holds_wait_one_extra_beat_between_pours() -> void:
+	var spices: Array=["spice:salt","spice:sugar","spice:oil"]
+	var beats: Array=[]
+	for index: int in spices.size():
+		beats.append({"t":5+index*2,"lanes":{"mouse":{"group":"season","op":"season","input":spices[index],"form":"hold","hold_beats":1}}})
+	var sheet: Dictionary={"id":"season-gap","bpm":120,"preview_beats":1,"charge_start_grace_beats":4,"groups":{"season":{"operation":"season","parameters":{"mode":"precise"}}},"beats":beats}
+	var compiled:=TDBeatSheet.new()
+	var outcome:=compiled.configure(sheet,data.operations)
+	assert_true(outcome.ok,outcome.code)
+	var event: Dictionary=compiled.snapshot().events[0]
+	assert_eq(event.settings.hold_durations_sec,[.5,.5,.5])
+	var times: Array=event.settings.beat_times_sec
+	assert_almost_eq(float(times[1])-float(times[0]),1.5,.000001)
+	assert_almost_eq(float(times[2])-float(times[1]),1.5,.000001)
+	var service:=TDServiceCatalog.new()
+	var loaded:=service.load_file()
+	assert_true(loaded.ok,loaded.code+" "+loaded.message)
+	if not loaded.ok: return
+	for id: String in service.cooking.data().pc_operations.document_sheets:
+		var chart: Dictionary=service.cooking.data().pc_operations.document_sheets[id]
+		if not chart.has("beats"): continue
+		var played:=TDBeatSheet.new()
+		var ready:=played.configure(chart,service.cooking.data().operations)
+		assert_true(ready.ok,id+" "+ready.code)
+
 func test_thermal_ratio_boundary_uses_document_grade_weights_once() -> void:
 	var config: Dictionary=data.pc_operations.modules.heat.duplicate(true); config.document_rules=true
 	var request:=TDRequest.new("thermal",0,"ratio","heat",0); request.schema_version=3

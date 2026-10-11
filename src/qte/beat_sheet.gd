@@ -128,6 +128,9 @@ func _configure_beats(sheet: Dictionary, operations: Dictionary) -> TDOutcome:
 			settings.target_sec = (float(g.first)-1-origin_beat)*_interval
 			settings.sweep_period_sec = settings.target_sec*4; settings.timeout_sec = settings.target_sec+.101
 		else:
+			# One extra beat between seasoning holds, so each pour can finish before the next prompt.
+			if definition.operation == "season" and g.form == "hold":
+				for index: int in relative.size(): relative[index] = float(relative[index]) + _interval * float(index)
 			settings.beat_times_sec = relative
 			if definition.operation != "cut": settings.sequence = g.inputs.duplicate()
 			else:
@@ -150,10 +153,12 @@ func _configure_beats(sheet: Dictionary, operations: Dictionary) -> TDOutcome:
 	# A preview is not an occupied input beat. Adjacent legal sequences may
 	# shorten the next preview while preserving every absolute target time.
 	var ends: Dictionary = {"hand":-1.0,"thermal":-1.0}
+	var slack: float = 0.0
 	for event: Dictionary in _events:
 		var track: String = "thermal" if event.operation in ["heat","boil"] else "hand"
 		var g: Dictionary = groups[event.group]
 		var overlap: float=float(ends[track])-float(event.beat)*_interval
+		var moved: float = 0.0
 		if overlap>.000001:
 			var settings: Dictionary=event.settings
 			if settings.has("beat_times_sec"):
@@ -163,15 +168,19 @@ func _configure_beats(sheet: Dictionary, operations: Dictionary) -> TDOutcome:
 				if float(settings.target_sec)-overlap<.101: return TDOutcome.new(false,"OVERLAPPING_GROUP")
 				settings.target_sec-=overlap; settings.timeout_sec-=overlap
 				settings.sweep_period_sec=settings.target_sec*4
+			elif event.operation in ["plate","steam"] and overlap<=slack+.000001:
+				moved=overlap
 			else: return TDOutcome.new(false,"OVERLAPPING_GROUP")
 			event.beat=float(ends[track])/_interval
-		ends[track] = (float(g.last)-1+pre_roll_beats)*_interval + (.101 if g.form == "tap" else _interval)
-		if event.operation == "season" and g.form == "hold": ends[track] = (float(g.last)-1+pre_roll_beats)*_interval+float(g.durations.back())*1.5+.101
+		var pad: float = _interval*float(maxi(0,g.times.size()-1)) if event.operation=="season" and g.form=="hold" else 0.0
+		ends[track] = (float(g.last)-1+pre_roll_beats)*_interval + (.101 if g.form == "tap" else _interval) + moved
+		if pad>0: ends[track] = (float(g.last)-1+pre_roll_beats)*_interval+float(g.durations.back())*1.5+.101+pad+moved
 		if event.settings.get("free_seasoning",false): ends[track]=float(event.beat)*_interval+float(event.settings.free_duration_sec)
 		if event.operation in ["plate","steam"]: ends[track] += start_grace + .201
+		slack = pad+moved
+	duration_sec = maxf((previous+pre_roll_beats)*_interval + .5, maxf(float(ends.hand), float(ends.thermal)))
 	_events.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return a.beat<b.beat)
 	cells = sheet.beats.duplicate(true)
-	duration_sec = (previous+pre_roll_beats)*_interval + .5
 	return TDOutcome.new(true,"CONFIGURED")
 
 func _number(value: Variant) -> bool:

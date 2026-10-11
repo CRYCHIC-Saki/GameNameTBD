@@ -8,6 +8,7 @@ var _rng: RefCounted
 var _next_arrival: float = 1.0
 var _kitchen: Array = []
 var _kitchen_key: String = ""
+var _day_end_reason: String = "time"
 
 func day_namespace() -> String:
 	return "%s:d%d:" % [_s.run_id,_s.day]
@@ -139,6 +140,15 @@ func _initial_unlocks() -> Array:
 func is_unlocked(id: String) -> bool:
 	return id in _s.unlocked
 
+func grant_recipe(id: String) -> TDOutcome:
+	var item := offer(id)
+	if item.is_empty(): return TDOutcome.new(false,"UNKNOWN_RECIPE")
+	if id not in _s.unlocked: _s.unlocked.append(id)
+	if not _s.menu.has(id): _s.menu[id] = {"enabled":true,"price_cents":int(item.reference_cents)}
+	else: _s.menu[id].enabled = true
+	if not _s.fame.has(id): _s.fame[id] = 0
+	return TDOutcome.new(true,"RECIPE_GRANTED",str(catalog.cooking.for_recipe(id).get("recipe",{}).get("name",id)))
+
 func observe_finished(dish: Dictionary) -> TDOutcome:
 	var id: String=str(dish.get("recipe_id",""))
 	if _s.phase not in ["OPEN","DRAINING"] or not str(dish.get("session_id","")).begins_with(day_namespace()) or dish.get("state") not in ["plated","delivered"]: return TDOutcome.new(false,"INVALID_DISH")
@@ -260,6 +270,9 @@ func open_day(random_source: RefCounted = null) -> TDOutcome:
 	if _s.phase != "PREPARE": return TDOutcome.new(false,"INVALID_STATE")
 	if _s.menu.values().filter(func(x:Dictionary)->bool:return x.enabled).is_empty(): return TDOutcome.new(false,"EMPTY_MENU")
 	_s.phase = "OPEN"; _s.elapsed_sec = 0.0; _s.orders = []; _next_arrival = 1.0
+	_s.day_open_money_cents = int(_s.money_cents)
+	_s.day_open_popularity = int(_s.popularity)
+	_day_end_reason = "time"
 	_kitchen.clear()
 	_rng = random_source if random_source != null else TDBusinessRandom.new(int(_s.seed)+int(_s.day))
 	return TDOutcome.new(true,"OPENED")
@@ -323,7 +336,7 @@ func cancel_order(id: String, reason: String = "CANCELLED") -> TDOutcome:
 	item.status = reason if reason in ["TIMED_OUT","REJECTED_STOCK"] else "CANCELLED"
 	item.refunded_cents = int(item.prepaid_cents)
 	_record("refund_cancel",-int(item.prepaid_cents),{},id,{"waste":item.used.duplicate(true),"reason":item.status})
-	_s.popularity = maxi(0,int(_s.popularity)-(int(catalog.config.settings.get("stock_rejection_popularity",1)) if reason=="REJECTED_STOCK" else 2))
+	_apply_popularity(-(int(catalog.config.settings.get("stock_rejection_popularity",1)) if reason=="REJECTED_STOCK" else 2), item)
 	if reason=="REJECTED_STOCK": item.feedback="食材不足，未能供应这道菜。"
 	return TDOutcome.new(true,item.status)
 
@@ -347,7 +360,7 @@ func deliver(id: String, dish: Dictionary) -> TDOutcome:
 	var item: Dictionary = _s.orders[_order_index(id)]
 	if dish.get("failed_dish",false):
 		item.status="SERVED"; item.dish_id=dish.dish_id; item.score=scored.data; item.plan={}; item.feedback="误送失败菜品，客人差评离开。"
-		_s.popularity=maxi(0,int(_s.popularity)-int(catalog.config.settings.get("failed_dish_popularity",4)))
+		_apply_popularity(-int(catalog.config.settings.get("failed_dish_popularity",4)), item)
 		_record("failed_delivery",0,{},id,{"dish_id":dish.dish_id})
 		return TDOutcome.new(true,"SERVED",item.feedback,item)
 	if item.status=="WAITING":
@@ -360,7 +373,7 @@ func deliver(id: String, dish: Dictionary) -> TDOutcome:
 	_record("tip",int(item.tip_cents),{},id)
 	var ratio: float = float(item.price_cents)/float(offer(item.recipe_id).reference_cents)
 	var pricing: float = -30.0*(ratio-1.0) if ratio > 1.0 else 5.0*(1.0-ratio)
-	_s.popularity = clampi(int(_s.popularity)+roundi(pricing+(satisfaction-60.0)/20.0),0,100)
+	_apply_popularity(roundi(pricing+(satisfaction-60.0)/20.0), item)
 	_s.fame[item.recipe_id] = maxi(0,int(_s.fame.get(item.recipe_id,0))+roundi((satisfaction-50.0)/10.0))
 	if satisfaction < float(catalog.config.settings.refund_below): refund(id)
 	return TDOutcome.new(true,"SERVED","",item)
@@ -376,19 +389,122 @@ func refund(id: String) -> TDOutcome:
 
 func close_early() -> TDOutcome:
 	if _s.phase != "OPEN": return TDOutcome.new(false,"INVALID_STATE")
+	_day_end_reason = "early"
 	_s.phase = "DRAINING"
 	if active_orders().is_empty(): return settle_day()
 	return TDOutcome.new(true,"DRAINING")
 
 func settle_day() -> TDOutcome:
 	if _s.phase != "DRAINING" or not active_orders().is_empty() or int(_s.day) in _s.settled_days: return TDOutcome.new(false,"INVALID_SETTLEMENT")
-	_s.settled_days.append(int(_s.day)); _s.phase = "SETTLED"; _record("settlement",0,{},"day-%d" % _s.day)
+	_s.settled_days.append(int(_s.day)); _s.phase = "SETTLED"; _record("settlement",0,{},"day-%d" % _s.day,{"reason":_day_end_reason})
 	return TDOutcome.new(true,"SETTLED")
 
 func next_day(expected_day: int) -> TDOutcome:
 	if _s.phase != "SETTLED" or int(_s.day) != expected_day: return TDOutcome.new(false,"DUPLICATE_DAY")
 	_s.day += 1; _s.phase = "PREPARE"; _s.elapsed_sec = 0.0; _s.orders = []
+	_s.erase("day_open_money_cents"); _s.erase("day_open_popularity")
 	return TDOutcome.new(true,"NEXT_DAY")
+
+func day_summary() -> Dictionary:
+	var purchased := 0
+	var received := 0
+	var tips := 0
+	var refunded := 0
+	var grant := 0
+	var reason := ""
+	for event: Dictionary in _s.ledger:
+		if int(event.day) != int(_s.day):
+			continue
+		match String(event.kind):
+			"purchase":
+				purchased += -int(event.cents)
+			"prepayment":
+				received += int(event.cents)
+			"tip":
+				tips += int(event.cents)
+			"refund_cancel", "refund_served":
+				refunded += -int(event.cents)
+			"emergency_grant":
+				grant += int(event.cents)
+			"settlement":
+				reason = str(event.extra.get("reason", ""))
+	var rows: Array = []
+	var summed_popularity := 0
+	for item: Dictionary in _s.orders:
+		var row := _order_effect(item)
+		summed_popularity += int(row.popularity_delta)
+		rows.append(row)
+	var net := received + tips - refunded - purchased + grant
+	var open_money := int(_s.get("day_open_money_cents", int(_s.money_cents) - (received + tips - refunded)))
+	var open_popularity := int(_s.get("day_open_popularity", int(_s.popularity) - summed_popularity))
+	return {
+		"day": int(_s.day),
+		"reason": reason,
+		"purchased_cents": purchased,
+		"received_cents": received,
+		"tip_cents": tips,
+		"refunded_cents": refunded,
+		"grant_cents": grant,
+		"net_cents": net,
+		"open_money_cents": open_money,
+		"money_cents": int(_s.money_cents),
+		"service_cents": int(_s.money_cents) - open_money,
+		"open_popularity": open_popularity,
+		"popularity": int(_s.popularity),
+		"popularity_delta": int(_s.popularity) - open_popularity,
+		"orders": rows,
+	}
+
+func _apply_popularity(delta: int, item: Dictionary) -> void:
+	var before := int(_s.popularity)
+	_s.popularity = clampi(before + delta, 0, 100)
+	item.popularity_delta = int(_s.popularity) - before
+
+func _order_effect(item: Dictionary) -> Dictionary:
+	var failed := _failed_order(item)
+	var delta := int(item.popularity_delta) if item.has("popularity_delta") else _legacy_popularity_delta(item, failed)
+	var score: Dictionary = item.score
+	var fame := 0
+	if item.status == "SERVED" and not score.is_empty() and not failed:
+		fame = roundi((float(score.satisfaction) - 50.0) / 10.0)
+	return {
+		"id": str(item.id),
+		"recipe_id": str(item.recipe_id),
+		"name": recipe_name(str(item.recipe_id)),
+		"customer": str(item.customer.get("name", "客人")),
+		"status": str(item.status),
+		"money_cents": int(item.prepaid_cents) + int(item.tip_cents) - int(item.refunded_cents),
+		"tip_cents": int(item.tip_cents),
+		"refunded_cents": int(item.refunded_cents),
+		"satisfaction": float(score.satisfaction) if not score.is_empty() else -1.0,
+		"stars": int(score.get("stars", 0)) if not score.is_empty() else 0,
+		"reasons": score.get("reasons", []).duplicate(true),
+		"feedback": str(item.get("feedback", "")),
+		"popularity_delta": delta,
+		"fame_delta": fame,
+		"failed": failed,
+	}
+
+func _failed_order(item: Dictionary) -> bool:
+	if str(item.get("feedback", "")).begins_with("误送失败"):
+		return true
+	for event: Dictionary in _s.ledger:
+		if event.kind == "failed_delivery" and str(event.reference) == str(item.id):
+			return true
+	return false
+
+func _legacy_popularity_delta(item: Dictionary, failed: bool) -> int:
+	if item.status == "REJECTED_STOCK":
+		return -int(catalog.config.settings.get("stock_rejection_popularity", 1))
+	if item.status in ["CANCELLED", "TIMED_OUT"]:
+		return -2
+	if failed:
+		return -int(catalog.config.settings.get("failed_dish_popularity", 4))
+	if item.status != "SERVED" or item.score.is_empty():
+		return 0
+	var ratio := float(item.price_cents) / float(offer(str(item.recipe_id)).reference_cents)
+	var pricing := -30.0 * (ratio - 1.0) if ratio > 1.0 else 5.0 * (1.0 - ratio)
+	return roundi(pricing + (float(item.score.satisfaction) - 60.0) / 20.0)
 
 func claim_grant() -> TDOutcome:
 	if _s.phase != "PREPARE" or int(_s.day) < 2 or int(_s.day) in _s.grant_days: return TDOutcome.new(false,"GRANT_UNAVAILABLE")
@@ -446,6 +562,8 @@ static func normalize_save(data: Dictionary) -> Dictionary:
 				entry.quality=float(entry.quality)
 				for i: int in entry.successful_directions.size(): entry.successful_directions[i]=int(entry.successful_directions[i])
 	for key: String in ["schema_version","seed","day","money_cents","serial","order_serial","popularity","reputation"]: value[key]=int(value[key])
+	for key: String in ["day_open_money_cents","day_open_popularity"]:
+		if value.has(key): value[key]=int(value[key])
 	for field: String in ["inventory","fame"]:
 		for id: String in value[field]: value[field][id]=int(value[field][id])
 	for item: Dictionary in value.menu.values(): item.price_cents=int(item.price_cents)
@@ -456,6 +574,7 @@ static func normalize_save(data: Dictionary) -> Dictionary:
 		for id: String in item.inventory_delta: item.inventory_delta[id]=int(item.inventory_delta[id])
 	for item: Dictionary in value.orders:
 		for key: String in ["lane","price_cents","prepaid_cents","refunded_cents","tip_cents"]: item[key]=int(item[key])
+		if item.has("popularity_delta"): item.popularity_delta=int(item.popularity_delta)
 		for field: String in ["reserved","used"]:
 			for id: String in item[field]: item[field][id]=int(item[field][id])
 	for item: Dictionary in value.custom: item.version=int(item.version)
@@ -497,7 +616,9 @@ func validate_save(data: Variant) -> TDOutcome:
 	for id: Variant in data.fame:
 		if not recipes.has(id) or not TDServiceCatalog.integer(data.fame[id],0,1000000000): return TDOutcome.new(false,"INVALID_FAME")
 	for id: String in recipes:
-		if (not data.menu.has(id) or not data.fame.has(id)) and (data.has("progress_version") or id!="service.qiguoji"): return TDOutcome.new(false,"MISSING_RECIPE_STATE")
+		if data.menu.has(id) and data.fame.has(id): continue
+		if id.begins_with("phase3."): continue
+		if data.has("progress_version") or id!="service.qiguoji": return TDOutcome.new(false,"MISSING_RECIPE_STATE")
 	var money: int = int(catalog.config.settings.initial_cents); var inventory: Dictionary = {}
 	for id: String in catalog.config.costs: inventory[id]=0
 	for event: Variant in data.ledger:

@@ -1,5 +1,15 @@
 # 项目状态
 
+## 当前检查点：D021 斜角餐厅与小镇客流（2026-10-11）
+
+- ENGINEERING_READY 仅限本轮框架；PLAYTEST=PENDING。用户授权 Phase 3 的餐厅、小镇、菜谱解锁、延迟进货和 NPC 全流程。官方 Phase_3 提示里的低 SAN 实验、成就和音量重绑定这次没做。
+- GRILL_SKILL=NOT_AVAILABLE。本机没有 `C:\Users\25293\.codex\skills\grilling\SKILL.md`，也没有 godot-gdscript-patterns。没有安装。按协议做了等价审查，GRILL_RESULT=NO_BLOCKING_PRODUCT_QUESTIONS。假设见 D021。
+- 可玩：主菜单进小镇，沿上下左右的路走，E 看市场、竞品和功能区；进斜角餐厅，雇迎宾和收银会扣工资。全程来客会走迎宾、点单、入座、等上菜、吃饭、收银、离开。菜单外的菜可拒绝或接下。学会后点「去厨房」，在原来的营业厨房按谱做。客流面板显示预算分布、选店、装修效果、口碑、开支和到货。「备料」按一道菜或点选一种食材入库，设备延长保质期，过期在下一天清掉。
+- 规则：评价公式按经济草稿。总体评价达到 60 才解锁。今天订货默认明天到；流水线或近市当天到。下一天扣租金、水电和设备维护，在岗员工再付一天工资。功能区改变人数、预算平移和外来偏好，关掉一个区人数会变。十三座小镇用用户给的昵称，能对上 towns.json 的菜保留原文 id。
+- 验证：Godot 4.7.2.stable.steam.ed1daf0bf，GUT 9.7.1。`test_phase3_rules` 11/11，`test_phase3_visit` 2/2，`test_restaurant_world` 8/8，断言 1897，0 失败。`tools/load_check.gd` 仍是上一轮的 resources=65 failures=0。画面 `artifacts/restaurant-play.png`、`restaurant-edit.png`、`restaurant-guest.png` 是上一轮截图。`python tools/kenney_fetch.py search --query furniture --pages 1` 列出 Furniture Kit 等 3 条。
+- 全量 `tools/check.ps1` 本机 PATH 没有 pwsh，NOT_RUN。物理键鼠和人工试玩 PENDING。新菜的逐拍表复用现有炒/蒸谱，主料是厨房里已有的组合。小镇贴图是色块，餐厅贴图是程序绘制的菱形。
+- 下一工作单元：按试玩反馈改斜角手感、客流公式或每道菜自己的拍点。不自动提交。
+
 ## GitHub同步：D019–D020交互改进（2026-10-10）
 
 - 用户已明确授权将本轮修改提交并推送到既有仓库CRYCHIC-Saki/GameNameTBD；目标沿用main，本地codex/phase1-upload，使用既有项目作者信息，正常追加提交，不改写远程历史。

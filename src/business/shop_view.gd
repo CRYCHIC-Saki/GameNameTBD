@@ -26,6 +26,7 @@ var _closed: bool = false
 var _load_blocked: bool = false
 var _new_needs_confirmation: bool = false
 var _serial: int = 0
+var learned_dishes: Array = []
 
 func _ready() -> void:
 	process_mode=Node.PROCESS_MODE_ALWAYS; theme=TDUI.theme(); set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -35,12 +36,16 @@ func _ready() -> void:
 	var background:=ColorRect.new(); background.color=Color("17251f"); background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); background.mouse_filter=Control.MOUSE_FILTER_IGNORE; add_child(background)
 	var loaded:=service.load_file()
 	if not loaded.ok: add_child(TDUI.label("营业配置错误："+loaded.message)); return
+	var linked:=TDKitchenLink.install(service, learned_dishes)
 	shop=TDShopSession.new(service); store=TDShopStore.new(save_path,shop)
 	if resume_saved:
 		var saved:=store.load_game()
 		if saved.ok: last_result=shop.restore(saved.data)
 		else: last_result=saved; _load_blocked=true
 	else: _new_needs_confirmation=store.load_game().code!="NOT_FOUND"
+	for recipe_id: String in linked:
+		var granted:=shop.grant_recipe(recipe_id)
+		if not granted.ok: last_result=granted
 	_build_shell(); _make_kitchen(); refresh(true)
 	if _load_blocked: _show_recovery()
 
@@ -98,6 +103,9 @@ func refresh(force: bool = false) -> void:
 	_save_button.disabled=not boundary or _load_blocked
 	_next_button.disabled=state.phase!="SETTLED" or _load_blocked
 	_page.visible=boundary; _holder.visible=not boundary
+	if state.phase=="SETTLED" and _last_phase!="SETTLED":
+		_close_popup()
+		_message.text="今日结束，请看收益总结。"
 	if _last_phase!=state.phase or (force and boundary):
 		_last_phase=state.phase; _planning_page(state)
 	var side_key: String=JSON.stringify([state.orders.map(func(o:Dictionary)->Array:return [o.id,o.status]),state.phase,int(state.elapsed_sec),state.money_cents])
@@ -110,7 +118,7 @@ func _planning_page(state: Dictionary) -> void:
 	_empty(_page)
 	var scroll:=ScrollContainer.new(); scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED; _page.add_child(scroll)
 	var column:=VBoxContainer.new(); column.size_flags_horizontal=Control.SIZE_EXPAND_FILL; column.add_theme_constant_override("separation",12); scroll.add_child(column)
-	column.add_child(TDUI.label("菜单与备货" if state.phase=="PREPARE" else "今日打烊 · 看反馈，准备下一天",25,TDUI.ORANGE))
+	column.add_child(TDUI.label("菜单与备货" if state.phase=="PREPARE" else "今日收益总结",25,TDUI.ORANGE))
 	column.add_child(TDUI.label("顾客自动排队；同菜优先先到的客人。备货包括主料和调料，实际拿取 / 倒入时扣除。",15,TDUI.MUTED))
 	if state.phase=="PREPARE":
 		var forecast: Dictionary=shop.visitor_forecast()
@@ -128,23 +136,7 @@ func _planning_page(state: Dictionary) -> void:
 			row.add_child(TDUI.button("再备1份",func()->void:buy_kit(id,false)))
 		column.add_child(TDUI.button("资金困难 · 申请应急补助",func()->void:_show(shop.claim_grant());refresh(true)))
 	else:
-		var purchased: int=0; var received: int=0; var refunded: int=0
-		for event: Dictionary in state.ledger:
-			if int(event.day)!=int(state.day): continue
-			if event.kind=="purchase": purchased-=int(event.cents)
-			elif event.kind in ["prepayment","tip"]: received+=int(event.cents)
-			elif event.kind in ["refund_cancel","refund_served"]: refunded-=int(event.cents)
-		column.add_child(TDUI.label("采购 ¥%.2f  ·  收款 ¥%.2f  ·  退款 ¥%.2f  ·  净收支 %+.2f" % [float(purchased)/100,float(received)/100,float(refunded)/100,float(received-refunded-purchased)/100],19,TDUI.ORANGE))
-		for item: Dictionary in state.orders:
-			var text: String=shop.recipe_name(item.recipe_id)+" · "+_status_name(item.status)
-			if not item.score.is_empty(): text+=" · %.1f分 · 实收¥%.2f" % [item.score.satisfaction,float(item.prepaid_cents+item.tip_cents-item.refunded_cents)/100]
-			column.add_child(TDUI.label(text,18))
-			if not item.score.is_empty():
-				for reason: Dictionary in item.score.reasons.slice(0,3): column.add_child(TDUI.label("  "+_feedback_text(str(reason.message)),14,TDUI.MUTED))
-				column.add_child(TDUI.button("退还此单款项",func()->void:_show(shop.refund(item.id));refresh(true)))
-				var row:=HBoxContainer.new(); column.add_child(row)
-				var name_input:=LineEdit.new(); name_input.placeholder_text="为这份做法命名"; name_input.custom_minimum_size.x=250; row.add_child(name_input)
-				var save_plan_button:=TDUI.button("保存食材与工序方案",func()->void:save_order_plan(item.id,name_input.text)); save_plan_button.disabled=item.plan.is_empty(); row.add_child(save_plan_button)
+		_summary_page(column, shop.day_summary())
 	column.add_child(TDUI.label("库存 · 单位：标准份",20,TDUI.ORANGE))
 	var stock_lines: Array[String]=[]
 	for id: String in state.inventory:
@@ -156,6 +148,63 @@ func _planning_page(state: Dictionary) -> void:
 		var rename:=LineEdit.new(); rename.text=entry.name; rename.custom_minimum_size.x=250; row.add_child(rename)
 		row.add_child(TDUI.button("改名 / 保存新版本",func()->void:_show(shop.save_plan(rename.text,entry.plan,entry.id));refresh(true)))
 	column.add_child(TDUI.label("声望：本阶段未启用。菜品名气分别累计；店名气只统计当前上架菜。",15,TDUI.MUTED))
+
+func _summary_page(column: VBoxContainer, report: Dictionary) -> void:
+	var reason := "今日已结算"
+	if str(report.reason) == "early":
+		reason = "提前打烊"
+	elif str(report.reason) == "time":
+		reason = "营业时间结束"
+	column.add_child(TDUI.label("第 %d 天 · %s" % [int(report.day), reason], 22, TDUI.ORANGE))
+	var net_color := Color("de755d")
+	if int(report.net_cents) >= 0:
+		net_color = TDUI.ORANGE
+	column.add_child(TDUI.label("今日净收支 %+.2f 元" % (float(report.net_cents) / 100.0), 28, net_color))
+	var money_line := "备货支出 ¥%.2f    菜款 ¥%.2f    小费 ¥%.2f    退款 ¥%.2f" % [float(report.purchased_cents) / 100.0, float(report.received_cents) / 100.0, float(report.tip_cents) / 100.0, float(report.refunded_cents) / 100.0]
+	if int(report.grant_cents) != 0:
+		money_line += "    应急补助 ¥%.2f" % (float(report.grant_cents) / 100.0)
+	column.add_child(TDUI.label(money_line, 16))
+	column.add_child(TDUI.label("开门 ¥%.2f → 打烊 ¥%.2f，营业盈亏 %+.2f 元。备货算在今日净收支里，不算进开门后的营业盈亏。" % [float(report.open_money_cents) / 100.0, float(report.money_cents) / 100.0, float(report.service_cents) / 100.0], 15, TDUI.MUTED))
+	var pop_color := TDUI.MUTED
+	if int(report.popularity_delta) > 0:
+		pop_color = Color("9fc48f")
+	elif int(report.popularity_delta) < 0:
+		pop_color = Color("de755d")
+	column.add_child(TDUI.label("人气 %d → %d（%+d）" % [int(report.open_popularity), int(report.popularity), int(report.popularity_delta)], 22, pop_color))
+	column.add_child(TDUI.label("每一单", 20, TDUI.ORANGE))
+	var orders: Array = report.orders
+	if orders.is_empty():
+		column.add_child(TDUI.label("今天没有客人留下订单。", 16, TDUI.MUTED))
+	for row: Dictionary in orders:
+		var panel := PanelContainer.new()
+		column.add_child(panel)
+		var body := VBoxContainer.new()
+		body.add_theme_constant_override("separation", 4)
+		panel.add_child(body)
+		body.add_child(TDUI.label("%s · %s · %s" % [str(row.customer), str(row.name), _status_name(str(row.status))], 18, TDUI.ORANGE))
+		var effect := "本单 %+.2f 元（小费 ¥%.2f，退款 ¥%.2f）    人气 %+d" % [float(row.money_cents) / 100.0, float(row.tip_cents) / 100.0, float(row.refunded_cents) / 100.0, int(row.popularity_delta)]
+		if int(row.fame_delta) != 0:
+			effect += "    名气 %+d" % int(row.fame_delta)
+		body.add_child(TDUI.label(effect, 16))
+		if float(row.satisfaction) >= 0.0:
+			body.add_child(TDUI.label("评价 %.1f 分 · %d 星" % [float(row.satisfaction), int(row.stars)], 16))
+			var reasons: Array = row.reasons
+			for note: Dictionary in reasons.slice(0, 3):
+				body.add_child(TDUI.label(_feedback_text(str(note.message)), 14, TDUI.MUTED))
+		if str(row.feedback) != "":
+			body.add_child(TDUI.label(str(row.feedback), 15, TDUI.MUTED))
+		if str(row.status) == "SERVED":
+			var order_id := str(row.id)
+			body.add_child(TDUI.button("退还此单款项", func() -> void: _show(shop.refund(order_id)); refresh(true)))
+			var actions := HBoxContainer.new()
+			body.add_child(actions)
+			var name_input := LineEdit.new()
+			name_input.placeholder_text = "为这份做法命名"
+			name_input.custom_minimum_size.x = 250
+			actions.add_child(name_input)
+			var save_plan_button := TDUI.button("保存食材与工序方案", func() -> void: save_order_plan(order_id, name_input.text))
+			save_plan_button.disabled = shop.order(order_id).plan.is_empty()
+			actions.add_child(save_plan_button)
 
 func _orders_panel(state: Dictionary) -> void:
 	_empty(_sidebar)
@@ -437,7 +486,7 @@ func _station_done(result: TDOutcome) -> void:
 func _show(result: TDOutcome) -> void:
 	last_result=result
 	if _message==null: return
-	var names: Dictionary={"TRANSFERRED":"食材已放入锅中。","ON_BOARD":"食材已放到砧板。","HANDS_FULL":"手里已有食材或菜品，请先放下。","NOT_OPEN":"现在尚未营业。","NO_PREPARATION_CHART":"这份食材不需要切配，可取回并直接入锅。","RECIPE_LOCKED":"这口锅已经开始加工，请使用另一口锅。","NO_INGREDIENT":"先到冰箱拿食材。","BOARD_OCCUPIED":"砧板上还有食材，请先取走。","EMPTY_BOARD":"砧板上没有食材。","SAVED":"进度已保存，可退出后继续。","PURCHASED":"采购完成，账本已记录。","RESERVED":"已预留食材。","OPENED":"开门迎客！订单自动排队，到大冰箱拿料；同菜按先到客人的要求制作。","INSUFFICIENT_STOCK":"缺少整份食材，未扣料、未收款。可售罄或取消。","INSUFFICIENT_FUNDS":"资金不足，采购未发生。","GRANT_NOT_NEEDED":"当前仍买得起至少一份备货，无需补助。","GRANT_UNAVAILABLE":"补助仅次日起资金不足时可领，每日一次。","GRANTED":"应急补助已到账，账本单独列出。","PLAN_SAVED":"方案已保存；下一天可上架并重新打谱制作。","DUPLICATE":"此操作已处理，不会重复结算。","NEXT_DAY":"新的一天，从菜单与备货开始。"}
+	var names: Dictionary={"TRANSFERRED":"食材已放入锅中。","ON_BOARD":"食材已放到砧板。","HANDS_FULL":"手里已有食材或菜品，请先放下。","NOT_OPEN":"现在尚未营业。","NO_PREPARATION_CHART":"这份食材不需要切配，可取回并直接入锅。","RECIPE_LOCKED":"这口锅已经开始加工，请使用另一口锅。","NO_INGREDIENT":"先到冰箱拿食材。","BOARD_OCCUPIED":"砧板上还有食材，请先取走。","EMPTY_BOARD":"砧板上没有食材。","SAVED":"进度已保存，可退出后继续。","PURCHASED":"采购完成，账本已记录。","RESERVED":"已预留食材。","OPENED":"开门迎客！订单自动排队，到大冰箱拿料；同菜按先到客人的要求制作。","SETTLED":"今日结束，请看收益总结。","DRAINING":"已停止迎客。剩下的客人离开后进入收益总结。","INSUFFICIENT_STOCK":"缺少整份食材，未扣料、未收款。可售罄或取消。","INSUFFICIENT_FUNDS":"资金不足，采购未发生。","GRANT_NOT_NEEDED":"当前仍买得起至少一份备货，无需补助。","GRANT_UNAVAILABLE":"补助仅次日起资金不足时可领，每日一次。","GRANTED":"应急补助已到账，账本单独列出。","PLAN_SAVED":"方案已保存；下一天可上架并重新打谱制作。","DUPLICATE":"此操作已处理，不会重复结算。","NEXT_DAY":"新的一天，从菜单与备货开始。"}
 	_message.text=result.message if not result.message.is_empty() else str(names.get(result.code,("已完成：" if result.ok else "未执行：")+result.code))
 
 func save_order_plan(id: String, title: String) -> TDOutcome:
