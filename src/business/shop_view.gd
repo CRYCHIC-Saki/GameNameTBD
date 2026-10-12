@@ -9,6 +9,7 @@ var service := TDServiceCatalog.new()
 var shop: TDShopSession
 var store: TDShopStore
 var kitchen: TDFullKitchen
+var day_san: float = -1.0
 var last_result := TDOutcome.new(true)
 var _title: Label
 var _message: Label
@@ -72,7 +73,7 @@ func _make_kitchen() -> void:
 	var catalog:=TDCookingCatalog.new()
 	if not config.ok or not catalog.load_data(config.data,"shop composition").ok:
 		_load_blocked=true; _message.text="自建方案无法装配，请保留存档并检查配方。"; return
-	kitchen=KITCHEN.instantiate() as TDFullKitchen; kitchen.catalog=catalog; kitchen.scorer=shop.scorer
+	kitchen=KITCHEN.instantiate() as TDFullKitchen; kitchen.catalog=catalog; kitchen.scorer=shop.scorer; kitchen.day_san=day_san
 	kitchen.library_path=save_path+".unused-library" # No player recipe write bypasses the business save.
 	kitchen.station_handler=_station
 	kitchen.action_handler=_station_action

@@ -1,5 +1,26 @@
 # 项目状态
 
+## 当前检查点：D024 规模维护、工资、情绪与性格（2026-10-12）
+
+- 维护费按餐厅占地增加。雇员工资可以加减；高于推荐值会提高服务质量。情绪和懒惰/勤奋、马虎/认真也会改服务质量和事故概率。相关测试 19 项、4378 条断言通过。PLAYTEST=PENDING。`tools/check.ps1` 仍 NOT_RUN。
+- 可玩：小镇里点「看员工」「工资+1」「工资-1」。换天或结算分店时会看到维护费。
+
+## 当前检查点：D023 餐厅面积、雇员与一家分店（2026-10-12）
+
+- ENGINEERING_READY 仅限本轮规则和入口；PLAYTEST=PENDING。主店在中心路口旁边，默认 3×4。店内面积随占地变大。非主小镇可以划地，同时只开一家分店。备菜、主厨、店长和原来的迎宾、收银、保洁按日薪分工。
+- GRILL_SKILL=NOT_AVAILABLE。没有安装。假设见 D023。
+- 可玩：走进小镇后，主店色块在路口旁边。选面积后可以改主店，或到巴黎这类非主小镇，站在空地左上角划分店。雇备菜、主厨、店长；教会当前菜；备菜岗动手和主厨出菜会扣仓库原料。分店单独备货、结算。同一天再点结算不会多给钱。
+- 验证：Godot 4.7.2.stable.steam.ed1daf0bf，GUT 9.7.1。`test_phase4_branch` 3/3，`test_phase3_rules` 12/12，`test_phase3_visit` 2/2，`test_restaurant_world` 8/8，共 25 项、4391 断言，0 失败。`tools/check.ps1` 本机没有 pwsh，NOT_RUN。人工试玩 PENDING。
+- 下一工作单元：按试玩看划地是否好找、主厨接手是否清楚、分店日结是否读得懂。不自动提交。
+
+## 当前检查点：D022 六座小镇、SAN 与营业时间（2026-10-12）
+
+- ENGINEERING_READY 仅限本轮规则和入口；PLAYTEST=PENDING。用户指定六座小镇、中心餐厅、随机四向道路、可调试 SAN、阴暗菜、营业时段和功能区互动。
+- GRILL_SKILL=NOT_AVAILABLE。本机没有 grilling 与 godot-gdscript-patterns，没有安装。GRILL_RESULT=NO_BLOCKING_PRODUCT_QUESTIONS。假设见 D022。
+- 可玩：主菜单进小镇。餐厅在道路中心，四条路长短随机。开局可改 SAN 和开关门时间，然后开始营业、收摊、去休息。E 选定菜市场或查看功能区，花时间和钱回复 SAN。低 SAN 进入原厨房时判定窗变窄，画面变暗，准备阶段可能短暂显示错误音符。SAN 低于 30 且番茄炒蛋评分达到 80，有概率学会西红柿炒皮蛋。
+- 验证：Godot 4.7.2.stable.steam.ed1daf0bf，GUT 9.7.1。`test_phase3_rules` 12/12，`test_phase3_visit` 2/2，`test_restaurant_world` 8/8，断言 4217，0 失败。`tools/check.ps1` 本机没有 pwsh，NOT_RUN。人工试玩 PENDING。
+- 下一工作单元：按试玩看道路是否太绕、SAN 掉得是否太快、假判定是否干扰读谱。不自动提交。
+
 ## 当前检查点：D021 斜角餐厅与小镇客流（2026-10-11）
 
 - ENGINEERING_READY 仅限本轮框架；PLAYTEST=PENDING。用户授权 Phase 3 的餐厅、小镇、菜谱解锁、延迟进货和 NPC 全流程。官方 Phase_3 提示里的低 SAN 实验、成就和音量重绑定这次没做。

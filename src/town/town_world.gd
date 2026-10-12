@@ -7,7 +7,7 @@ signal restaurant_requested
 
 const CELL := 48
 const VIEW_ZOOM := 2.4
-const BAR_HEIGHT := 160.0
+const BAR_HEIGHT := 210.0
 
 var session: TDPhase3Session
 var _player: TDKitchenPlayer
@@ -17,6 +17,9 @@ var _selected: Dictionary = {}
 var _board: TDEconomyBoard
 var _pantry: TDPantryBoard
 var _closed: bool = false
+var _blockers: StaticBody2D
+var _seen_revision: int = -1
+var _staff_role: String = "greeter"
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -39,8 +42,9 @@ func _ready() -> void:
 	var sprite := Sprite2D.new()
 	sprite.name = "Sprite2D"
 	sprite.texture = TDRestaurantArt.guest_texture()
-	sprite.position = Vector2(0, -28)
 	_player.add_child(sprite)
+	_player.body_lift = 0.0
+	_player.confine_to = _feet_on_road
 	var shape := CollisionShape2D.new()
 	var circle := CircleShape2D.new()
 	circle.radius = 10.0
@@ -58,12 +62,18 @@ func _ready() -> void:
 	_camera.make_current()
 	_follow_camera()
 	_build_blockers()
+	_seen_revision = session.map_revision
 	_status_bar()
-	_set_status("镜头跟着你走。WASD 沿十字路移动，E 查看路边的整片功能区。")
+	_set_status("镜头跟着你走。主店在中心路口旁边的空地上，默认3×4。别的小镇可以自己划地。E 和功能区互动。")
 	queue_redraw()
 
 func _process(_delta: float) -> void:
 	_follow_camera()
+	if session != null and session.map_revision != _seen_revision:
+		_seen_revision = session.map_revision
+		_build_blockers()
+		if _player != null:
+			_player.position = _origin() + Vector2((TDTownMap.CENTER + 0.5) * CELL, (TDTownMap.CENTER + 0.5) * CELL)
 	queue_redraw()
 
 func _follow_camera() -> void:
@@ -98,8 +108,6 @@ func _draw() -> void:
 			draw_rect(ground, color)
 	for item: Variant in session.town_map.plots:
 		var plot: Dictionary = item
-		if String(plot["kind"]) == "plaza":
-			continue
 		var width := int(plot.get("w", 1))
 		var height := int(plot.get("h", 1))
 		var rect := Rect2(origin + Vector2(int(plot["x"]) * CELL + 2, int(plot["y"]) * CELL + 2), Vector2(width * CELL - 4, height * CELL - 4))
@@ -112,6 +120,10 @@ func _draw() -> void:
 		if font != null:
 			var at := rect.position + Vector2(6, maxf(18.0, rect.size.y * 0.55))
 			draw_string(font, at, "%s  %d×%d" % [String(plot["name"]), width, height], HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 8, 14, Color.WHITE)
+	if session != null:
+		var shade := TDSanRules.vignette_alpha(float(session.san))
+		if shade > 0.01:
+			draw_rect(Rect2(_origin(), Vector2(TDTownMap.SIZE * CELL, TDTownMap.SIZE * CELL)), Color(0, 0, 0, shade))
 
 func _unhandled_input(event: InputEvent) -> void:
 	if _closed or session == null:
@@ -148,16 +160,23 @@ func _interact() -> void:
 				plot = neighbor
 				break
 	if plot.is_empty():
-		_set_status("旁边没有功能区。广场在十字路口中间。")
+		_set_status("旁边没有功能区。主店在中心路口旁边，沿路按E选区。")
 		return
 	_selected = plot
 	var kind := String(plot["kind"])
 	if kind == "player_diner":
-		_set_status("这是你的餐厅。可以进去布置、迎客和上菜。小镇贴图仍是色块。")
+		var size_id := String(plot.get("size", session.home_size))
+		if size_id == "":
+			size_id = "small"
+		var room := TDRestaurantSizes.interior(size_id)
+		if String(plot.get("id", "")) == "branch_diner":
+			_set_status("这是分店，地图%d×%d，店内%d×%d。菜单、员工和库存跟主店分开。" % [int(plot["w"]), int(plot["h"]), room.x, room.y])
+		else:
+			_set_status("这是主店，地图%d×%d，店内%d×%d。可以进去布置、迎客和上菜。" % [int(plot["w"]), int(plot["h"]), room.x, room.y])
 		return
 	if kind == "market":
-		var item := session.current_supply_item()
-		_set_status("市场。下一份可订：%s，%d元。没有加成时明天到。" % [String(item.get("name", "")), int(item.get("cost", 0))])
+		var picked := session.select_market(String(plot["id"]))
+		_set_status(picked.message if picked.message != "" else picked.code)
 		return
 	if kind == "competitor":
 		var names := ""
@@ -167,10 +186,20 @@ func _interact() -> void:
 		_set_status("竞品%s。客人会比较你和两家竞品菜单上的每一道菜。" % names)
 		return
 	var enabled := "计入客流" if bool(plot["enabled"]) else "不计入客流"
-	_set_status("%s，%s。人数贡献%d，预算平移%d。" % [String(plot["name"]), enabled, int(plot["pool"]), int(plot["budget_shift"])])
+	var offer := TDSanRules.recovery(kind)
+	var visit := ""
+	if not offer.is_empty():
+		visit = " 花%d元、%.0f小时可回复%d点SAN。" % [int(offer["cost"]), float(offer["hours"]), int(offer["san"])]
+	var near := ""
+	if kind == "amusement" or kind == "landmark":
+		near = " 离餐厅%d格，预计人气加成%d。" % [session.town_map.distance_to(String(plot["id"])), TDSanRules.near_bonus(session.town_map.distance_to(String(plot["id"])))]
+	_set_status("%s，%s。人数贡献%d，预算平移%d。%s%s" % [String(plot["name"]), enabled, int(plot["pool"]), int(plot["budget_shift"]), visit, near])
 
 func _build_blockers() -> void:
+	if _blockers != null and is_instance_valid(_blockers):
+		_blockers.queue_free()
 	var body := StaticBody2D.new()
+	_blockers = body
 	body.collision_layer = 1
 	body.collision_mask = 0
 	add_child(body)
@@ -190,13 +219,13 @@ func _status_bar() -> void:
 	layer.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(layer)
 	var panel := Panel.new()
-	panel.position = Vector2(0, 640)
-	panel.size = Vector2(1280, 160)
+	panel.position = Vector2(0, 590)
+	panel.size = Vector2(1280, 210)
 	panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	layer.add_child(panel)
 	var box := VBoxContainer.new()
 	box.position = Vector2(12, 8)
-	box.size = Vector2(1250, 144)
+	box.size = Vector2(1250, 194)
 	panel.add_child(box)
 	_status = Label.new()
 	_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -214,7 +243,34 @@ func _status_bar() -> void:
 	row.add_child(_button("订当前货", _order))
 	row.add_child(_button("换一种货", _cycle_goods))
 	row.add_child(_button("开关这个区", _toggle_selected))
-	row.add_child(_button("下一天", func() -> void: _set_status(_day_text(session.close_day()))))
+	row.add_child(_button("SAN-10", func() -> void: _set_status(session.set_san(session.san - 10).message)))
+	row.add_child(_button("SAN+10", func() -> void: _set_status(session.set_san(session.san + 10).message)))
+	row.add_child(_button("开门-1小时", func() -> void: _set_status(session.shift_open(-1).message)))
+	row.add_child(_button("开门+1小时", func() -> void: _set_status(session.shift_open(1).message)))
+	row.add_child(_button("收摊-1小时", func() -> void: _set_status(session.shift_close(-1).message)))
+	row.add_child(_button("收摊+1小时", func() -> void: _set_status(session.shift_close(1).message)))
+	row.add_child(_button("开始营业", func() -> void: _set_status(session.start_service().message)))
+	row.add_child(_button("收摊", func() -> void: _set_status(session.end_service().message)))
+	row.add_child(_button("去休息", func() -> void: _set_status(session.rest().message)))
+	row.add_child(_button("雇/辞保洁", _toggle_cleaner))
+	row.add_child(_button("花时间恢复", _visit_selected))
+	row.add_child(_button("下一天", func() -> void: _set_status(_day_text(session.advance_day()))))
+	row.add_child(_button("选面积", _cycle_size))
+	row.add_child(_button("改主店面积", _resize_home))
+	row.add_child(_button("在这里划地", _claim_here))
+	row.add_child(_button("关掉分店", func() -> void: _set_status(session.close_branch().message)))
+	row.add_child(_button("雇备菜", func() -> void: _hire("prep")))
+	row.add_child(_button("雇主厨", func() -> void: _hire("chef")))
+	row.add_child(_button("雇店长", func() -> void: _hire("manager")))
+	row.add_child(_button("教会这道菜", _teach))
+	row.add_child(_button("备菜岗动手", func() -> void: _set_status(session.hand_prep().message)))
+	row.add_child(_button("主厨出菜", func() -> void: _set_status(session.hand_cook().message)))
+	row.add_child(_button("接手", func() -> void: _set_status(session.take_over().message)))
+	row.add_child(_button("给分店备货", func() -> void: _set_status(session.stock_branch().message)))
+	row.add_child(_button("结算分店", _settle_branch))
+	row.add_child(_button("看员工", _inspect_staff))
+	row.add_child(_button("工资+1", func() -> void: _change_wage(1)))
+	row.add_child(_button("工资-1", func() -> void: _change_wage(-1)))
 
 func _open_board() -> void:
 	_close_pantry()
@@ -262,11 +318,95 @@ func _toggle_selected() -> void:
 	_set_status("%s现在%s客流。" % [String(_selected.get("name", id)), "计入" if enabled else "不计入"])
 	queue_redraw()
 
+func _cycle_size() -> void:
+	session.claim_size = TDRestaurantSizes.next(session.claim_size)
+	var foot := TDRestaurantSizes.footprint(session.claim_size)
+	var room := TDRestaurantSizes.interior(session.claim_size)
+	_set_status("当前选%s店，地图%d×%d，店内%d×%d。" % [TDRestaurantSizes.name_of(session.claim_size), foot.x, foot.y, room.x, room.y])
+
+func _resize_home() -> void:
+	var result := session.resize_home(session.claim_size)
+	_set_status(result.message if result.message != "" else result.code)
+	queue_redraw()
+
+func _claim_here() -> void:
+	var result := session.claim_branch(session.claim_size, _player_cell())
+	_set_status(result.message if result.message != "" else result.code)
+	queue_redraw()
+
+func _hire(role: String) -> void:
+	var store_id := "home"
+	if session.branch_open and session.town_id == session.branch_town:
+		store_id = "branch"
+	var hired := session.employ(role, store_id)
+	if hired.code == "ALREADY":
+		hired = session.dismiss(role, store_id)
+	_set_status(hired.message if hired.message != "" else hired.code)
+
+func _teach() -> void:
+	var store_id := "home"
+	if session.branch_open and session.town_id == session.branch_town:
+		store_id = "branch"
+	var taught := session.teach_chef(store_id, session.pantry_dish)
+	_set_status(taught.message if taught.message != "" else taught.code)
+
+func _active_store() -> String:
+	if session.branch_open and session.town_id == session.branch_town:
+		return "branch"
+	return "home"
+
+func _inspect_staff() -> void:
+	var index := TDPhase3Session.ROLES.find(_staff_role)
+	if index < 0:
+		index = 0
+	_staff_role = TDPhase3Session.ROLES[(index + 1) % TDPhase3Session.ROLES.size()]
+	var store_id := _active_store()
+	var hired := session.staff_on(_staff_role)
+	if store_id == "branch":
+		hired = bool(session.branch_staff.get(_staff_role, false))
+	if not hired:
+		_set_status("%s还没到岗。推荐日薪%d元。" % [session._role_title(_staff_role), session.catalog.wage_of(_staff_role)])
+		return
+	var card := session.staff_card(store_id, _staff_role)
+	_set_status("%s：日薪%d，推荐%d，情绪%d，%s、%s，服务质量%+d。" % [session._role_title(_staff_role), int(card["wage"]), int(card["recommended"]), int(card["mood"]), TDBranchSim.drive_name(String(card["drive"])), TDBranchSim.care_name(String(card["care"])), int(card["shift"])])
+
+func _change_wage(delta: int) -> void:
+	var result := session.set_wage(_staff_role, _active_store(), delta)
+	_set_status(result.message if result.message != "" else result.code)
+
+func _settle_branch() -> void:
+	var result := session.settle_branch()
+	if String(result.get("code", "")) == "CLOSED":
+		_set_status(String(result.get("events", "分店还没开。")))
+		return
+	_set_status("第%d天分店：客流%d，卖出%d，收入%d元，工资%d元，损耗%d。%s" % [int(result.get("day", 0)), int(result.get("guests", 0)), int(result.get("served", 0)), int(result.get("revenue", 0)), int(result.get("wages", 0)), int(result.get("waste", 0)), String(result.get("events", ""))])
+
+func _toggle_cleaner() -> void:
+	if session.staff_on("cleaner"):
+		_set_status(session.dismiss("cleaner").message)
+	else:
+		var hired := session.employ("cleaner")
+		_set_status(hired.message if hired.message != "" else hired.code)
+
+func _visit_selected() -> void:
+	if _selected.is_empty():
+		_set_status("先按E站到功能区旁边。")
+		return
+	var result := session.visit_zone(String(_selected["kind"]))
+	_set_status(result.message if result.message != "" else result.code)
+
 func _day_text(result: Dictionary) -> String:
 	return "进入第%d天。到货%d批，NPC池%d人。" % [int(result["day"]), (result["arrived"] as Array).size(), session.npcs.size()]
 
+func _feet_on_road(at: Vector2) -> bool:
+	var cell := _cell_at(at)
+	return session != null and session.town_map.is_walkable(cell.x, cell.y)
+
 func _player_cell() -> Vector2i:
-	var local := _player.position - _origin()
+	return _cell_at(_player.position)
+
+func _cell_at(at: Vector2) -> Vector2i:
+	var local := at - _origin()
 	return Vector2i(floori(local.x / CELL), floori(local.y / CELL))
 
 func _origin() -> Vector2:

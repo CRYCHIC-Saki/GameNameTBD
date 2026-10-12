@@ -112,34 +112,65 @@ func test_low_budget_has_one_preference_and_high_budget_can_have_more() -> void:
 	assert_false(bool((refused["learning"] as Dictionary)["learned"]))
 	assert_false(session.recipes.has("changfen"))
 
-func test_town_roads_reach_four_edges_and_fixed_zones_exist() -> void:
+func test_town_roads_grow_from_the_center_and_large_zones_fit() -> void:
 	var catalog := TDTownCatalog.new()
 	assert_true(catalog.load_file().ok)
 	var map := TDTownMap.new()
 	map.build(catalog, 11)
-	assert_true(map.is_walkable(TDTownMap.CENTER, 0))
-	assert_true(map.is_walkable(TDTownMap.CENTER, TDTownMap.SIZE - 1))
-	assert_true(map.is_walkable(0, TDTownMap.CENTER))
-	assert_true(map.is_walkable(TDTownMap.SIZE - 1, TDTownMap.CENTER))
+	assert_true(map.plot_at(TDTownMap.CENTER, TDTownMap.CENTER).is_empty())
+	assert_true(map.is_road(TDTownMap.CENTER, TDTownMap.CENTER))
+	assert_true(map.is_walkable(TDTownMap.CENTER, TDTownMap.CENTER))
+	var diner := {}
+	for item: Variant in map.plots:
+		if String((item as Dictionary)["kind"]) == "player_diner":
+			diner = item as Dictionary
+			break
+	assert_false(diner.is_empty())
+	assert_eq(int(diner["w"]) * int(diner["h"]), 12)
+	assert_false(map.covers_road(diner))
+	var lengths: Array[int] = []
+	for direction: Vector2i in [Vector2i(0, -1), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(1, 0)]:
+		var length := map.arm_length(direction)
+		assert_gte(length, 8)
+		assert_lt(length, TDTownMap.CENTER)
+		lengths.append(length)
+		var cursor := Vector2i(TDTownMap.CENTER, TDTownMap.CENTER)
+		for _step in length:
+			cursor += direction
+			assert_true(map.is_road(cursor.x, cursor.y))
+	var other := TDTownMap.new()
+	other.build(catalog, 29)
+	assert_ne(other.arm_length(Vector2i(1, 0)) + other.arm_length(Vector2i(0, 1)), lengths[1] + lengths[3])
+	for town_id: String in ["london", "paris", "stockholm", "guangzhou", "beijing", "shanghai"]:
+		var town := catalog.town(town_id)
+		assert_true(bool(town.get("playable", false)), town_id)
+		assert_eq(String(town["real"]), {"london": "伦敦", "paris": "巴黎", "stockholm": "斯德哥尔摩", "guangzhou": "广州", "beijing": "北京", "shanghai": "上海"}[town_id])
 	for kind: String in ["player_diner", "competitor", "market", "plaza", "urban_village", "rich_district", "commercial_street", "snack_street", "amusement", "zoo", "landmark"]:
 		var found := false
 		for item: Variant in map.plots:
 			if String((item as Dictionary)["kind"]) == kind:
 				found = true
+				if kind in TDTownMap.LONG_KINDS:
+					var plot: Dictionary = item
+					assert_gte(maxi(int(plot["w"]), int(plot["h"])), 10, kind)
 		assert_true(found, kind)
+	var areas: Array[int] = []
+	for stall: Variant in map.markets():
+		var row: Dictionary = stall
+		areas.append(int(row["w"]) * int(row["h"]))
+		assert_false(map.covers_road(row), String(row["id"]))
+	assert_eq(areas.size(), 3)
+	var biggest := areas[0]
+	var smallest := areas[0]
+	for area: int in areas:
+		biggest = maxi(biggest, area)
+		smallest = mini(smallest, area)
+	assert_gt(biggest, smallest)
 	assert_gt(map.housing_enabled(), 0)
-	var diner: Dictionary = {}
-	for item: Variant in map.plots:
-		if String((item as Dictionary)["kind"]) == "player_diner":
-			diner = item
-	assert_eq(String(diner["kind"]), "player_diner")
-	assert_gt(int(diner["w"]) * int(diner["h"]), 1)
-	assert_false(map.covers_road(diner))
-	assert_eq(String(map.plot_at(int(diner["x"]) + int(diner["w"]) - 1, int(diner["y"]) + int(diner["h"]) - 1)["id"]), "player_diner")
 	var occupied := {}
 	for item: Variant in map.plots:
 		var plot: Dictionary = item
-		if String(plot["kind"]) == "plaza":
+		if String(plot["kind"]) == "player_diner":
 			continue
 		assert_false(map.covers_road(plot), String(plot["id"]))
 		for y in int(plot["h"]):
@@ -163,7 +194,7 @@ func test_rent_utilities_and_wages_come_out_of_cash() -> void:
 	session.player_pieces = [{}, {}, {}]
 	var before_close := session.money
 	session.close_day()
-	assert_eq(session.money, before_close - 18 - 6 - 3 - 16)
+	assert_eq(session.money, before_close - 18 - 6 - 3 - TDRestaurantSizes.upkeep("small") - 16)
 	assert_true(session.staff_on("greeter"))
 	assert_true(session.staff_on("cashier"))
 	assert_true(session.report().contains("租金"))
@@ -258,6 +289,7 @@ func test_raw_ingredients_can_be_prepped_by_dish_or_by_pick() -> void:
 	var before := session.money
 	assert_eq(session.prep_dish("missing-dish").code, "NO_BILL")
 	assert_eq(session.money, before)
+	session.money = 30
 	var pear := session.prep_dish("dongli")
 	assert_true(pear.ok, pear.message)
 	assert_true(pear.message.contains("苹果"))
@@ -269,6 +301,60 @@ func test_raw_ingredients_can_be_prepped_by_dish_or_by_pick() -> void:
 	assert_eq(session.pantry.count("egg"), 0)
 	assert_true(session.pantry_text().contains("冷藏"))
 	assert_true(session.report().contains("原料"))
+
+func test_san_windows_dark_dish_hours_and_market_distance() -> void:
+	assert_almost_eq(TDSanRules.window_scale(100), 1.0, .000001)
+	assert_almost_eq(TDSanRules.window_scale(0), 0.6, .000001)
+	assert_almost_eq(TDSanRules.window_scale(50), 0.8, .000001)
+	assert_false(TDSanRules.shows_fake(80, 0, 3.0, 0.5))
+	assert_true(TDSanRules.shows_fake(0, 0, 3.0, 0.5))
+	assert_false(TDSanRules.shows_fake(0, 0, 0.9, 0.5))
+	assert_false(TDSanRules.dark_triggered(40, 90, 0.0))
+	assert_false(TDSanRules.dark_triggered(10, 79, 0.0))
+	assert_true(TDSanRules.dark_triggered(10, 80, 0.0))
+	assert_false(TDSanRules.dark_triggered(10, 90, 0.9))
+	assert_eq(TDSanRules.meal_guests(11, 20), 9)
+	assert_eq(TDSanRules.meal_guests(14, 16), -4)
+	assert_eq(TDSanRules.clean_minutes(true), 0)
+	assert_eq(TDSanRules.tidy_minutes(true, true), 30)
+	assert_eq(TDSanRules.stock_minutes(4, true), 50)
+	assert_eq(TDSanRules.hour_points(3.0, -1), -6)
+	assert_eq(TDSanRules.hour_points(1.5, 1), 3)
+	var session := TDPhase3Session.new()
+	assert_true(session.load_default().ok)
+	assert_eq(session.set_san(12).code, "SAN")
+	assert_eq(session.san, 12)
+	session.money = 50
+	var zone := session.visit_zone("plaza")
+	assert_true(zone.ok, zone.message)
+	assert_eq(session.san, 16)
+	assert_eq(session.money, 46)
+	var started := session.start_service()
+	assert_true(started.ok, started.message)
+	assert_eq(session.set_san(40).code, "LATE")
+	var before := session.san
+	assert_true(session.end_service().ok)
+	assert_lt(session.san, before)
+	var dark := session.settle_visit({"id": "guest", "budget": 40, "quality_expect": 50.0, "decor_expect": 40.0, "reputation_pref": 0.2, "preferences": ["plain"], "meal": "supper"}, "tomato_egg", 90.0, {"effect": 70.0, "majority": "plain", "unity": 100.0, "luxury": 70.0}, true)
+	assert_true(session.recipes.has("tomato_egg"))
+	session.san = 10
+	session.rng = TDBusinessRandom.new(1)
+	var learned := false
+	for _try in 12:
+		session.recipes.unlocked.erase("tomato_preserved_egg")
+		session.settle_visit({"id": "guest", "budget": 40, "quality_expect": 50.0, "decor_expect": 40.0, "reputation_pref": 0.2, "preferences": ["plain"], "meal": "off"}, "tomato_egg", 90.0, {"effect": 70.0, "majority": "plain", "unity": 100.0, "luxury": 70.0}, true)
+		learned = session.recipes.has("tomato_preserved_egg")
+		if learned:
+			break
+	assert_true(learned)
+	assert_eq(String(dark["dish_id"]), "tomato_egg")
+	var markets: Array = session.town_map.markets()
+	markets.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a["tier"]) < int(b["tier"]))
+	assert_true(session.select_market(String((markets[0] as Dictionary)["id"])).ok)
+	assert_eq(session.order_supply("beef").code, "LOCKED")
+	assert_true(session.select_market(String((markets[2] as Dictionary)["id"])).ok)
+	session.money = 20
+	assert_true(session.order_supply("beef").ok)
 
 func test_iso_projection_picks_the_same_cell_and_counts_two_walls() -> void:
 	assert_eq(TDRestaurantIsoView.wall_count(20, 11), 31)

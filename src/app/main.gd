@@ -79,7 +79,9 @@ func enter_restaurant(path: String = "") -> void:
 	_dispose_kitchen()
 	restaurant = TDRestaurantWorld.new()
 	restaurant.save_path = path
-	restaurant.session = _phase3()
+	var phase3_session := _phase3()
+	phase3_session.scaled_interior = true
+	restaurant.session = phase3_session
 	restaurant.back_requested.connect(return_to_menu)
 	restaurant.pause_requested.connect(toggle_pause)
 	restaurant.kitchen_requested.connect(func() -> void: enter_shop(false))
@@ -104,7 +106,7 @@ func _phase3() -> TDPhase3Session:
 
 func enter_shop(resume_saved: bool = false) -> void:
 	_dispose_kitchen()
-	shop_view=TDShopView.new(); shop_view.save_path=shop_save_path; shop_view.resume_saved=resume_saved
+	shop_view=TDShopView.new(); shop_view.save_path=shop_save_path; shop_view.resume_saved=resume_saved; shop_view.day_san=float(_phase3().san)
 	shop_view.learned_dishes=_phase3().learned_kitchen_dishes()
 	shop_view.back_requested.connect(return_to_menu); shop_view.pause_requested.connect(toggle_pause)
 	_menu.hide(); add_child(shop_view)

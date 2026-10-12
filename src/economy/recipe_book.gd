@@ -10,6 +10,12 @@ func learn_starters(dishes: Array) -> void:
 		if bool(dish.get("starter", false)):
 			unlocked[String(dish["id"])] = true
 
+func grant(dish_id: String) -> bool:
+	if dish_id == "" or has(dish_id):
+		return false
+	unlocked[dish_id] = true
+	return true
+
 func has(dish_id: String) -> bool:
 	return bool(unlocked.get(dish_id, false))
 

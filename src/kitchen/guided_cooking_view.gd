@@ -90,6 +90,9 @@ func _draw() -> void:
 		for index: int in lanes.size(): _draw_lane(lanes[index],_area(index),index)
 		if lanes.size()>1 and lanes.any(func(lane:TDCookingLane)->bool:return lane.thermal_qte!=null): _dual_thermal()
 	_draw_beat()
+	if not lanes.is_empty() and lanes[0].day_san>=0.0:
+		draw_rect(Rect2(0,0,1280,800),Color(0,0,0,TDSanRules.vignette_alpha(lanes[0].day_san)))
+		_text("SAN %d"%int(lanes[0].day_san),Vector2(32,78),18,GOLD)
 
 func _draw_feedback() -> void:
 	_text("已送达 · 客人反馈",Vector2(32,85),26,GOLD)
@@ -267,14 +270,17 @@ func _symbols(lane: TDCookingLane,area: Rect2,p: Dictionary) -> void:
 	var kind: String=p.get("qte_kind","")
 	var elapsed: float=float(p.get("elapsed_sec",0))
 	if kind=="rhythm":
-		_draw_notes(area,p,p.get("cut_actions",[]),lane.lane_index)
+		_draw_notes(area,p,p.get("cut_actions",[]),lane.lane_index,lane.day_san)
 	elif kind=="sequence":
-		_draw_notes(area,p,p.get("sequence",[]),lane.lane_index)
+		_draw_notes(area,p,p.get("sequence",[]),lane.lane_index,lane.day_san)
 	elif kind in ["window","charge"]:
 		var bar:=Rect2(c-Vector2(minf(240,area.size.x*.39),14),Vector2(minf(480,area.size.x*.78),28))
 		draw_rect(bar,Color("455345"))
 		var position: float=float(p.get("cursor",0))
 		var low: float=float(p.get("target_min",.43)); var high: float=float(p.get("target_max",.57))
+		var until: float=float(p.get("preview_remaining_sec",0))
+		if TDSanRules.shows_fake(lane.day_san,0,until,.5):
+			low=clampf(low+.18,0,.8); high=clampf(low+.12,.05,1)
 		if kind=="charge":
 			var max_time: float=float(p.get("target_max_sec",1.1))*1.6
 			low=float(p.get("target_min_sec",.9))/max_time; high=float(p.get("target_max_sec",1.1))/max_time
@@ -291,6 +297,14 @@ func _symbols(lane: TDCookingLane,area: Rect2,p: Dictionary) -> void:
 func _cabinet(lane: TDCookingLane,area: Rect2,p: Dictionary) -> void:
 	var status: Dictionary=season_prompt(p)
 	var next: String=str(status.spice)
+	var times: Array=p.get("beat_times_sec",[])
+	var index: int=int(p.get("sequence_index",0))
+	var elapsed: float=float(p.get("elapsed_sec",0))-float(p.get("input_offset_sec",0))
+	var until: float=0.0
+	if index>=0 and index<times.size(): until=float(times[index])-elapsed
+	if TDSanRules.shows_fake(lane.day_san,index,until,.5):
+		var slot: int=SPICES.find(next)
+		next=SPICES[0] if slot<0 else SPICES[posmod(slot+1,SPICES.size())]
 	var color: Color=GREEN if status.phase in ["press","release","holding"] else GOLD
 	if status.phase=="late": color=RED
 	for i: int in SPICES.size():
@@ -386,7 +400,7 @@ func _dual_thermal() -> void:
 			draw_line(Vector2(x,bar.position.y-3),Vector2(x,bar.end.y+3),INK,1)
 		_text("暂停判分" if p.get("control_suspended",false) else "稳定 %d%% · %.1fs"%[roundi(float(p.inside_sec)/maxf(.001,float(p.get("assessed_sec",p.elapsed_sec)))*100),float(p.remaining_sec)],Vector2(1082,bar.position.y+15),13,INK)
 
-func _draw_notes(area: Rect2,p: Dictionary,actions: Array,lane_index: int) -> void:
+func _draw_notes(area: Rect2,p: Dictionary,actions: Array,lane_index: int,san: float=-1.0) -> void:
 	var times: Array=p.get("beat_times_sec",[])
 	var judged: Array=p.get("judgements",[])
 	var elapsed: float=float(p.get("elapsed_sec",0))-float(p.get("input_offset_sec",0))
@@ -400,6 +414,11 @@ func _draw_notes(area: Rect2,p: Dictionary,actions: Array,lane_index: int) -> vo
 		draw_circle(point,26,color)
 		var label: String={"primary":"空格","rotate_left":"A","rotate_right":"D","up":"W","left":"A","down":"S","right":"D"}.get(actions[i],"?")
 		if lane_index==1: label={"up":"↑","left":"←","down":"↓","right":"→","primary":"空格"}.get(actions[i],label)
+		var until_note: float=0.0
+		if i<times.size(): until_note=float(times[i])-elapsed
+		if TDSanRules.shows_fake(san,i,until_note,.5):
+			var fakes: Array[String]=["空格","A","D","W","S"]
+			label=fakes[posmod(i+1,fakes.size())]
 		_text(label,point-Vector2(font.get_string_size(label,HORIZONTAL_ALIGNMENT_LEFT,-1,20).x*.5,-7),20,BG if grade!="pending" else INK)
 		var caption: String={"primary":"落刀","rotate_left":"左转","rotate_right":"右转"}.get(actions[i],"") if p.get("pc_module")=="M1" else ""
 		if grade!="pending": caption={"perfect":"完美","good":"良好","miss":"失误"}[grade]

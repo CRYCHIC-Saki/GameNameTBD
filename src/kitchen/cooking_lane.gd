@@ -13,6 +13,7 @@ var qte: TDCookingQTE
 var progress: Dictionary = {}
 var last_result: TDOutcome
 var input_offset_sec: float = 0.0
+var day_san: float = -1.0
 var dual: bool = false
 var generation: int = 0
 var base_recipe_id: String = "tomato_egg"
@@ -160,6 +161,7 @@ func perform(kind: String, args: Dictionary = {}) -> TDOutcome:
 		if pc_controls:
 			if _scheduled_settings.is_empty(): settings = _align_pc(settings)
 			else: settings.merge(_scheduled_settings,true)
+			_apply_day_san(settings)
 			settings.document_rules = document_rules
 			if document_rules and dual and settings.kind == "maintain":
 				var delta: float = -.16 if lane_index == 0 else .2
@@ -614,6 +616,14 @@ func _align_pc(settings: Dictionary) -> Dictionary:
 		for field: String in ["perfect_sec", "good_sec", "good_margin_sec"]:
 			if settings.has(field): settings[field] = float(settings[field]) * 1.5
 	return settings
+
+func _apply_day_san(settings: Dictionary) -> void:
+	if day_san < 0.0:
+		return
+	var scale := TDSanRules.window_scale(day_san)
+	for field: String in ["perfect_sec", "good_sec", "good_margin_sec"]:
+		if settings.has(field):
+			settings[field] = float(settings[field]) * scale
 
 func start_sheet(id: String) -> TDOutcome:
 	if qte != null or thermal_qte != null: return TDOutcome.new(false, "BUSY")

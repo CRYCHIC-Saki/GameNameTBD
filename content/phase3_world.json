@@ -16,7 +16,7 @@
     "rent": 18,
     "utilities": 6,
     "hardware_per_piece": 1,
-    "wages": {"greeter": 8, "cashier": 8},
+    "wages": {"greeter": 8, "cashier": 8, "cleaner": 6, "prep": 7, "chef": 16, "manager": 12},
     "note": "PROPOSED。草稿只列了租金、水电、设备维护和工资，没有给出数字。"
   },
   "kitchen_cards": {
@@ -41,7 +41,8 @@
     "guobaorou": {"method": "stir", "chart": "service.tomato_egg", "cut": "service.dice", "primary": ["pork", "tomato"]},
     "chongqinghuoguo": {"method": "steam", "chart": "service.qiguoji", "cut": "prepare", "primary": ["beef", "chili"]},
     "roujiamo": {"method": "stir", "chart": "service.tomato_egg", "cut": "service.slice", "primary": ["peanut", "pork"]},
-    "yangroupaomo": {"method": "steam", "chart": "service.qiguoji", "cut": "service.strips", "primary": ["beef", "tofu"]}
+    "yangroupaomo": {"method": "steam", "chart": "service.qiguoji", "cut": "service.strips", "primary": ["beef", "tofu"]},
+    "tomato_preserved_egg": {"method": "stir", "chart": "service.tomato_egg", "cut": "prepare", "primary": ["egg", "vinegar"]}
   },
   "supply": [
     {"id": "tomato", "name": "番茄", "cost": 3},
@@ -58,15 +59,15 @@
     {"id": "butter", "name": "黄油", "cost": 5}
   ],
   "zones": [
-    {"id": "player_diner", "name": "主人公餐厅", "pool": 0, "budget_shift": 0, "foreign_scale": 1, "w": 3, "h": 3},
+    {"id": "player_diner", "name": "主人公餐厅", "pool": 0, "budget_shift": 0, "foreign_scale": 1, "w": 3, "h": 4},
     {"id": "competitor", "name": "竞品餐厅", "pool": 0, "budget_shift": 0, "foreign_scale": 1, "w": 3, "h": 3},
     {"id": "market", "name": "市场", "pool": 6, "budget_shift": 0, "foreign_scale": 1, "w": 3, "h": 2},
-    {"id": "plaza", "name": "城市广场", "pool": 4, "budget_shift": 0, "foreign_scale": 1, "w": 1, "h": 1},
+    {"id": "plaza", "name": "城市广场", "pool": 4, "budget_shift": 0, "foreign_scale": 1, "w": 10, "h": 6},
     {"id": "urban_village", "name": "城中村", "pool": 10, "budget_shift": -8, "foreign_scale": 0.35, "w": 4, "h": 3},
     {"id": "rich_district", "name": "富人区", "pool": 4, "budget_shift": 12, "foreign_scale": 1.25, "w": 3, "h": 3},
-    {"id": "commercial_street", "name": "商业街", "pool": 5, "budget_shift": 4, "foreign_scale": 1.1, "w": 4, "h": 2},
-    {"id": "snack_street", "name": "小吃街", "pool": 8, "budget_shift": -4, "foreign_scale": 0.4, "w": 3, "h": 2},
-    {"id": "amusement", "name": "游乐场", "pool": 3, "budget_shift": 0, "foreign_scale": 1, "w": 4, "h": 3},
+    {"id": "commercial_street", "name": "商业街", "pool": 5, "budget_shift": 4, "foreign_scale": 1.1, "w": 11, "h": 4},
+    {"id": "snack_street", "name": "小吃街", "pool": 8, "budget_shift": -4, "foreign_scale": 0.4, "w": 10, "h": 5},
+    {"id": "amusement", "name": "游乐场", "pool": 3, "budget_shift": 0, "foreign_scale": 1, "w": 12, "h": 6},
     {"id": "zoo", "name": "动物园", "pool": 2, "budget_shift": 0, "foreign_scale": 1, "w": 3, "h": 3},
     {"id": "landmark", "name": "市内景点", "pool": 3, "budget_shift": 2, "foreign_scale": 1.05, "w": 2, "h": 3}
   ],
@@ -116,6 +117,7 @@
     {"id": "yangroupaomo", "name": "羊肉泡馍", "town_id": "xian", "culture": "chinese", "ingredient_cost": 9, "labor_factor": 1.4, "value_offset": 4, "price": 18, "starter": false, "service_recipe": "", "source": "towns.json", "source_town": "changan", "source_dish": "yangroupaomo"},
     {"id": "lajiaochaorou", "name": "辣椒炒肉", "town_id": "changsha", "culture": "chinese", "ingredient_cost": 7, "labor_factor": 1.3, "value_offset": 3, "price": 13, "starter": true, "service_recipe": "service.pepper_pork", "source": "towns.json", "source_town": "ladu", "source_dish": "lajiaochaorou"},
     {"id": "qiguoji", "name": "汽锅鸡", "town_id": "kunming", "culture": "chinese", "ingredient_cost": 12, "labor_factor": 1.6, "value_offset": 6, "price": 30, "starter": false, "service_recipe": "service.qiguoji", "source": "towns.json", "source_town": "dianguo", "source_dish": "qiguoji"},
-    {"id": "tomato_egg", "name": "番茄炒蛋", "town_id": "starter", "culture": "plain", "ingredient_cost": 4, "labor_factor": 1.2, "value_offset": 2, "price": 8, "starter": true, "service_recipe": "service.tomato_egg", "source": "onboarding", "source_town": "", "source_dish": ""}
+    {"id": "tomato_egg", "name": "番茄炒蛋", "town_id": "starter", "culture": "plain", "ingredient_cost": 4, "labor_factor": 1.2, "value_offset": 2, "price": 8, "starter": true, "service_recipe": "service.tomato_egg", "source": "onboarding", "source_town": "", "source_dish": ""},
+    {"id": "tomato_preserved_egg", "name": "西红柿炒皮蛋", "town_id": "starter", "culture": "plain", "ingredient_cost": 5, "labor_factor": 1.3, "value_offset": 3, "price": 12, "starter": false, "service_recipe": "", "dark_of": "tomato_egg", "source": "PROPOSED", "source_town": "", "source_dish": ""}
   ]
 }

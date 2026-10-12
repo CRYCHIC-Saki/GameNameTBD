@@ -34,6 +34,7 @@
     "exotic": 8
   },
   "notes": {
+    "tomato_preserved_egg": "食材表没有皮蛋，这一份仍按鸡蛋和西红柿入库。",
     "dongli": "食材表没有冻梨，这一份按苹果入库。",
     "gongbaojiding": "食材表没有花生，这一份不含花生。"
   },
@@ -45,6 +46,7 @@
   ],
   "dishes": {
     "tomato_egg": ["tomato", "egg", "vegetableoil"],
+    "tomato_preserved_egg": ["tomato", "egg", "vegetableoil"],
     "ganchaoniuhe": ["ricenoodle", "beefsteak", "scallion"],
     "mapodoufu": ["firmtofu", "doubanjiang", "porkloin"],
     "gongbaojiding": ["chickenbreast", "chili", "scallion"],

@@ -72,14 +72,28 @@ func _ready() -> void:
 			_tier = layout.tier
 		elif read.code != "NOT_FOUND":
 			warning = read.message
+	elif session != null and session.ready and session.scaled_interior:
+		var grid := session.interior_grid()
+		var sized := TDRestaurantLayout.make_sized(catalog, grid.x, grid.y, session.interior_culture())
+		if sized != null:
+			layout = sized
+			_culture = layout.culture
+			_tier = layout.tier
+		else:
+			warning = TDRestaurantLayout.floor_error
 	_build_world()
 	_build_status_bar()
 	_rebuild()
 	teleport_player(_spawn_cell())
-	if warning != "":
+	if warning != "" and save_path != "":
 		_set_status("布置档没有读入：" + warning)
+	elif warning != "":
+		_set_status(warning)
 	else:
-		_set_status("斜角看地面和两面墙。WASD 沿过道走，E 互动。装修会计入客流评价，不写入原来的营业账。")
+		var room := "斜角看地面和两面墙。WASD 沿过道走，E 互动。装修会计入客流评价，不写入原来的营业账。"
+		if session != null and session.scaled_interior:
+			room = "店内按地图面积生成，%d×%d格。%s" % [layout.columns, layout.rows, room]
+		_set_status(room)
 	_pull_layout_staff()
 
 func _process(delta: float) -> void:

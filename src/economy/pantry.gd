@@ -81,6 +81,15 @@ func store(item: Dictionary, device_id: String, day: int) -> Dictionary:
 	lots.append(lot)
 	return lot.duplicate(true)
 
+func take(ingredient_id: String) -> Dictionary:
+	for index in lots.size():
+		var lot: Dictionary = lots[index]
+		if String(lot["ingredient_id"]) != ingredient_id:
+			continue
+		lots.remove_at(index)
+		return lot.duplicate(true)
+	return {}
+
 func count(ingredient_id: String) -> int:
 	var total := 0
 	for item: Variant in lots:

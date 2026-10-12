@@ -18,6 +18,73 @@ var _pieces: Array = []
 var _staff: Dictionary = {}
 var _serial: int = 100
 
+static var floor_error: String = ""
+
+static func make_sized(catalog: TDRestaurantCatalog, columns_value: int, rows_value: int, culture_id: String = "chinese") -> TDRestaurantLayout:
+	floor_error = ""
+	if catalog == null or columns_value < 8 or rows_value < 8:
+		floor_error = "店内至少要 8×8，才放得下迎宾台和收银台"
+		return null
+	var style := culture_id
+	if not catalog.has_style(style, "low"):
+		style = "chinese"
+	var layout := TDRestaurantLayout.new()
+	layout._catalog = catalog
+	layout.columns = columns_value
+	layout.rows = rows_value
+	layout.cell_px = catalog.cell_px()
+	layout.culture = style
+	layout.tier = "low"
+	layout._staff = {"greeter": false, "cashier": false}
+	layout._zones = PackedStringArray()
+	layout._zones.resize(columns_value * rows_value)
+	layout._entrances = []
+	layout._pieces = []
+	for y in rows_value:
+		for x in columns_value:
+			var zone := "movement"
+			var entrance_cell := false
+			if y == 0 or y == rows_value - 1 or x == 0 or x == columns_value - 1:
+				zone = "facade"
+				if x == 1 and y == 0:
+					zone = "movement"
+					entrance_cell = true
+			elif y >= 2 and y <= 3 and x >= 2 and x <= 3:
+				zone = "reception"
+			elif y == 2 and x >= 5 and x <= 6:
+				zone = "ordering"
+			elif y == 3 and x == 5:
+				zone = "ordering"
+			elif y == 5 and x >= 2 and x <= 3:
+				zone = "dining"
+			elif y == 5 and x >= 8 and x < columns_value - 1 and x % 2 == 0:
+				zone = "dining"
+			layout._write_cell(x, y, zone, entrance_cell)
+	var style_id := "%s_low" % style
+	var welcome := layout._commit(-1, layout._make_piece("welcome", "welcome_desk", 2, 2, 0, style_id))
+	if not welcome.ok:
+		floor_error = welcome.message
+		return null
+	var cashier := layout._commit(-1, layout._make_piece("cashier", "cashier", 5, 2, 0, style_id))
+	if not cashier.ok:
+		floor_error = cashier.message
+		return null
+	var kiosk := layout._commit(-1, layout._make_piece("kiosk", "kiosk", 5, 3, 0, style_id))
+	if not kiosk.ok:
+		floor_error = kiosk.message
+		return null
+	var stool := layout._commit(-1, layout._make_piece("stool", "stool", 2, 5, 0, style_id))
+	if not stool.ok:
+		floor_error = stool.message
+		return null
+	var seat_serial := 1
+	for x in range(8, columns_value - 1):
+		if x % 2 != 0 or layout.cell_zone(x, 5) != "dining":
+			continue
+		seat_serial += 1
+		layout._commit(-1, layout._make_piece("stool-%d" % seat_serial, "stool", x, 5, 0, style_id))
+	return layout
+
 static func import_dict(data: Dictionary, catalog: TDRestaurantCatalog) -> TDRestaurantLayout:
 	import_code = "OK"
 	var layout := TDRestaurantLayout.new()

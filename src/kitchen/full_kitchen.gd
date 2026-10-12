@@ -18,6 +18,7 @@ var library_path: String = "user://recipe-library.json"
 var auto_advance: bool = true
 var world: TDKitchenWorld
 var lanes: Array[TDCookingLane] = []
+var day_san: float = -1.0
 var panel: Control
 var dual: bool = false
 var _dual_toggle: CheckButton
@@ -97,6 +98,7 @@ func _ready() -> void:
 	for index: int in 2:
 		var lane := TDCookingLane.new()
 		lane.catalog = catalog; lane.scorer = scorer; lane.lane_index = index
+		lane.day_san = day_san
 		lane.pc_controls = true; lane.shared_clock = shared_clock; lane.beat_offset_sec = audio_delay
 		lane.document_rules = guided_controls
 		lane.restart_allowed = func() -> bool: return handling.hand == null or handling.hand != lane.session
@@ -104,7 +106,7 @@ func _ready() -> void:
 		lane.dish_delivered.connect(_forward_dish)
 		row.add_child(lane)
 		lanes.append(lane)
-	prep = TDCookingLane.new(); prep.catalog = catalog; prep.scorer = scorer; prep.lane_index = 2
+	prep = TDCookingLane.new(); prep.catalog = catalog; prep.scorer = scorer; prep.lane_index = 2; prep.day_san = day_san
 	prep.pc_controls = true; prep.station_role = "board"; prep.shared_clock = shared_clock; prep.beat_offset_sec = audio_delay
 	prep.document_rules = guided_controls
 	prep.library = TDRecipeLibrary.new(library_path, _content); row.add_child(prep); prep.hide()

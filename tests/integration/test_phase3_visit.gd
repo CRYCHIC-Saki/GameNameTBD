@@ -65,6 +65,35 @@ func test_town_crossroads_supply_delay_and_zone_pool() -> void:
 	assert_eq(town.session.npcs.size(), before - 10)
 	assert_gt(town.session.report().length(), 40)
 
+func test_player_cannot_leave_the_town_roads() -> void:
+	var town := TDTownWorld.new()
+	add_child_autofree(town)
+	await get_tree().physics_frame
+	var player := town.get_node("Player") as TDKitchenPlayer
+	var spot := _road_with_blocked_neighbor(town.session.town_map, Vector2i(0, -1))
+	player.position = Vector2(300, 24) + Vector2((spot.x + 0.5) * TDTownWorld.CELL, (spot.y + 0.5) * TDTownWorld.CELL)
+	Input.action_press("world_up")
+	await wait_physics_frames(8)
+	Input.action_release("world_up")
+	var stayed := town._player_cell()
+	assert_true(town.session.town_map.is_road(stayed.x, stayed.y))
+	assert_ne(stayed, spot + Vector2i(0, -1))
+	Input.action_press("world_right")
+	await wait_physics_frames(6)
+	Input.action_release("world_right")
+	var moved := town._player_cell()
+	assert_true(town.session.town_map.is_road(moved.x, moved.y))
+
+func _road_with_blocked_neighbor(map: TDTownMap, neighbor: Vector2i) -> Vector2i:
+	for y in TDTownMap.SIZE:
+		for x in TDTownMap.SIZE:
+			if not map.is_road(x, y):
+				continue
+			if map.is_road(x + neighbor.x, y + neighbor.y):
+				continue
+			return Vector2i(x, y)
+	return Vector2i(TDTownMap.CENTER, TDTownMap.CENTER)
+
 func _until(guest: TDRestaurantGuest, ready: Callable) -> bool:
 	var guard := 0
 	while not bool(ready.call()) and guest.phase != "gone" and guard < 500:
