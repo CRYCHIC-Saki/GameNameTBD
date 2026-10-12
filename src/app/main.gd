@@ -13,6 +13,8 @@ var shop_view: TDShopView
 var restaurant: TDRestaurantWorld
 var town: TDTownWorld
 var phase3: TDPhase3Session
+var floor_kitchen: TDFloorKitchen
+var _observing_floor: bool = false
 var shop_save_path: String = "user://shop-v1.json"
 var full_catalog := TDCookingCatalog.new()
 var settings_path: String = "user://settings.json"
@@ -31,6 +33,7 @@ var _paused: bool = false
 func _ready() -> void:
 	get_tree().auto_accept_quit=false
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	set_process_unhandled_input(true)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	theme = TDUI.theme()
 	_store = TDSettingsStore.new(settings_path)
@@ -84,7 +87,7 @@ func enter_restaurant(path: String = "") -> void:
 	restaurant.session = phase3_session
 	restaurant.back_requested.connect(return_to_menu)
 	restaurant.pause_requested.connect(toggle_pause)
-	restaurant.kitchen_requested.connect(func() -> void: enter_shop(false))
+	restaurant.kitchen_requested.connect(_enter_floor_kitchen)
 	_menu.hide()
 	add_child(restaurant)
 
@@ -159,6 +162,7 @@ func toggle_pause() -> void:
 	if full_kitchen != null:
 		full_kitchen.set_paused(_paused)
 	if shop_view != null: shop_view.set_paused(_paused)
+	if floor_kitchen != null: floor_kitchen.set_paused(_paused)
 
 func _notification(what: int) -> void:
 	if what==NOTIFICATION_WM_CLOSE_REQUEST and is_inside_tree():
@@ -167,9 +171,69 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and is_inside_tree() and (kitchen != null or cooking_kitchen != null or full_kitchen != null or shop_view != null or restaurant != null or town != null) and not _paused:
 		toggle_pause()
 
+func _unhandled_input(event: InputEvent) -> void:
+	if not event.is_action_pressed("floor_look") or event.is_echo():
+		return
+	if not _floor_link_active():
+		return
+	_toggle_floor_look()
+	get_viewport().set_input_as_handled()
+
+func _enter_floor_kitchen() -> void:
+	if restaurant == null:
+		return
+	_observing_floor = false
+	restaurant.set_observe(false)
+	_ensure_floor_kitchen()
+	restaurant.set_floor_cover(true)
+	floor_kitchen.open_for(restaurant)
+
+func _return_to_restaurant() -> void:
+	_observing_floor = false
+	if restaurant != null:
+		restaurant.set_observe(false)
+	if floor_kitchen != null:
+		floor_kitchen.set_active(false)
+	if restaurant != null:
+		restaurant.set_floor_cover(false)
+		if restaurant.layout != null:
+			restaurant.teleport_player(restaurant.layout.entrance())
+
+func _toggle_floor_look() -> void:
+	if not _floor_link_active():
+		return
+	_observing_floor = not _observing_floor
+	if _observing_floor:
+		floor_kitchen.set_active(false)
+		restaurant.set_floor_cover(false)
+		restaurant.set_observe(true)
+		return
+	restaurant.set_observe(false)
+	restaurant.set_floor_cover(true)
+	floor_kitchen.set_active(true)
+
+func _floor_link_active() -> bool:
+	return restaurant != null and floor_kitchen != null and (floor_kitchen.visible or _observing_floor)
+
+func _ensure_floor_kitchen() -> void:
+	if floor_kitchen != null:
+		return
+	floor_kitchen = TDFloorKitchen.new()
+	floor_kitchen.session = _phase3()
+	floor_kitchen.restaurant_requested.connect(_return_to_restaurant)
+	floor_kitchen.look_requested.connect(_toggle_floor_look)
+	floor_kitchen.pause_requested.connect(toggle_pause)
+	add_child(floor_kitchen)
+
 func _dispose_kitchen() -> void:
 	_paused = false
+	_observing_floor = false
 	get_tree().paused = false
+	if is_instance_valid(floor_kitchen):
+		floor_kitchen.close()
+		remove_child(floor_kitchen)
+		floor_kitchen.queue_free()
+	floor_kitchen = null
 	if is_instance_valid(shop_view):
 		shop_view.close(); remove_child(shop_view); shop_view.queue_free()
 	shop_view=null

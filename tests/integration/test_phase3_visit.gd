@@ -65,6 +65,47 @@ func test_town_crossroads_supply_delay_and_zone_pool() -> void:
 	assert_eq(town.session.npcs.size(), before - 10)
 	assert_gt(town.session.report().length(), 40)
 
+func test_a_plate_reaches_only_the_guest_who_ordered_it() -> void:
+	assert_true(world.hire_role("greeter", true).ok)
+	assert_true(world.hire_role("cashier", true).ok)
+	assert_eq(world.session.catalog.dish_id_for_kitchen("service.tomato_egg"), "tomato_egg")
+	assert_eq(world.session.catalog.dish_id_for_kitchen("phase3.changfen"), "changfen")
+	var visit := world.spawn_service_guest("tomato_egg")
+	assert_true(visit.ok, visit.message)
+	var guest := world.guest_nodes()[0]
+	assert_ne(guest.ticket_id, "")
+	assert_true(_until(guest, func() -> bool: return guest.is_waiting() and guest.phase == "wait_serve"))
+	var wrong := world.deliver_to_guest("changfen", 90.0, false)
+	assert_false(wrong.ok)
+	assert_eq(wrong.code, "NO_GUEST")
+	assert_true(guest.is_waiting())
+	var unmatched := world.deliver_to_guest("", 90.0, false)
+	assert_eq(unmatched.code, "UNKNOWN_DISH")
+	assert_true(guest.is_waiting())
+	var served := world.deliver_to_guest("tomato_egg", 88.0, false)
+	assert_true(served.ok, served.message)
+	assert_eq(guest.quality, 88.0)
+	assert_false(guest.is_waiting())
+	assert_eq(String(served.data["id"]), guest.ticket_id)
+	var shop := "user://shop-v1.json"
+	var before := FileAccess.get_file_as_bytes(shop) if FileAccess.file_exists(shop) else PackedByteArray()
+	var after := FileAccess.get_file_as_bytes(shop) if FileAccess.file_exists(shop) else PackedByteArray()
+	assert_eq(after, before)
+
+func test_a_seated_guest_leaves_when_the_plate_never_comes() -> void:
+	assert_true(world.hire_role("greeter", true).ok)
+	var visit := world.spawn_service_guest("tomato_egg")
+	assert_true(visit.ok, visit.message)
+	var guest := world.guest_nodes()[0]
+	assert_true(_until(guest, func() -> bool: return guest.is_waiting() and guest.phase == "wait_serve"))
+	for item: Variant in world.session.floor.tickets:
+		(item as Dictionary)["patience"] = 0.25
+	world.pump_service(4, 0.2)
+	assert_true(guest.walkout)
+	assert_true(_until(guest, func() -> bool: return guest.phase == "gone"))
+	assert_false(bool(world.last_visit["accepted"]))
+	assert_true(world.session.log_lines[world.session.log_lines.size() - 1].contains("等太久"))
+
 func test_player_cannot_leave_the_town_roads() -> void:
 	var town := TDTownWorld.new()
 	add_child_autofree(town)

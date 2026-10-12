@@ -111,6 +111,16 @@ func kitchen_recipe_id(dish_id: String) -> String:
 		return "phase3." + dish_id
 	return ""
 
+func dish_id_for_kitchen(recipe_id: String) -> String:
+	if recipe_id == "":
+		return ""
+	for item: Variant in dish_list():
+		var current: Dictionary = item
+		var id := String(current["id"])
+		if kitchen_recipe_id(id) == recipe_id:
+			return id
+	return ""
+
 func wage_of(role: String) -> int:
 	return int((expenses.get("wages", {}) as Dictionary).get(role, 0))
 

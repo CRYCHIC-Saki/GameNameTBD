@@ -2,6 +2,8 @@ class_name TDRestaurantGuest
 extends Node2D
 
 var seat_id: String = ""
+var ticket_id: String = ""
+var walkout: bool = false
 var speed: float = 160.0
 var finished: bool = false
 var goal: Vector2 = Vector2.ZERO
@@ -75,6 +77,16 @@ func clear_wait() -> void:
 func refuse_order() -> void:
 	accepted = false
 	_waiting = false
+	_jump_to_leave()
+
+func leave_hungry() -> void:
+	if walkout or phase == "gone" or phase == "leave" or phase == "eat" or phase == "pay":
+		return
+	walkout = true
+	_waiting = false
+	_jump_to_leave()
+
+func _jump_to_leave() -> void:
 	for index in _stages.size():
 		if String((_stages[index] as Dictionary)["phase"]) == "leave":
 			_stage = index

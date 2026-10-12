@@ -5,6 +5,7 @@ extends Node2D
 signal cooking_requested(station_id: String)
 signal station_action(station_id: String, action: String)
 signal back_requested
+signal dining_requested
 
 const STATIONS: Array[Dictionary] = [
 	{"id":"kitchen.supply.tomato", "position":Vector2(170,290), "visual":Vector2(170,173), "name":"番茄", "kind":"supply"},
@@ -17,6 +18,8 @@ const STATIONS: Array[Dictionary] = [
 	{"id":"kitchen.serve", "position":Vector2(1040,635), "visual":Vector2(1040,560), "name":"出餐台", "kind":"serve"},
 ]
 const INTERACTION_RADIUS: float = 88.0
+const DOOR_POS := Vector2(640, 700)
+var service_door: bool = false
 var _controls_enabled: bool = true
 var _player: TDKitchenPlayer
 var _prompt: Label
@@ -95,10 +98,17 @@ func player_position() -> Vector2:
 func set_return_visible(value: bool) -> void:
 	if is_instance_valid(_back_button): _back_button.visible=value
 
+func set_return_label(text: String) -> void:
+	if is_instance_valid(_back_button):
+		_back_button.text = text
+
 func request_interaction() -> bool:
 	if not interaction_available():
 		return false
 	var station := _station_at_player()
+	if String(station.get("id", "")) == "kitchen.dining":
+		dining_requested.emit()
+		return true
 	set_controls_enabled(false)
 	cooking_requested.emit(String(station["id"]))
 	return true
@@ -117,6 +127,11 @@ func _station_at_player() -> Dictionary:
 		return {}
 	var best: Dictionary = {}
 	var shortest: float = INTERACTION_RADIUS
+	if service_door and is_instance_valid(_player):
+		var door_distance := _player.position.distance_to(DOOR_POS)
+		if door_distance <= shortest:
+			shortest = door_distance
+			best = {"id": "kitchen.dining", "position": DOOR_POS, "name": "餐厅门口", "visual": DOOR_POS + Vector2(0, -80)}
 	for station: Dictionary in stations():
 		var distance: float = _player.position.distance_to(station["position"] as Vector2)
 		if distance <= shortest:
@@ -198,11 +213,16 @@ func _station_hint(id: String) -> String:
 	if id=="kitchen.fridge" or id.begins_with("kitchen.supply."): return "选一份食材" if hand.is_empty() else "放回食材（保留切型）"
 	if id=="kitchen.trash": return "丢弃手上物品" if not hand.is_empty() else "清理锅 / 砧板"
 	if id == "kitchen.board": return "取走备好的食材" if _context.get("board_occupied",false) else "放下食材并备菜"
+	if id == "kitchen.dining": return "走进餐厅"
 	if id == "kitchen.serve": return "交付客人" if hand.get("kind") == "dish" else "把出锅的菜端到这里"
 	if single_fridge: return "取放食材 / 端盘 · F 开灶台 · Q 取回"
 	return "放入食材" if hand.get("kind") == "ingredient" else "操作 / 端起成品"
 
 func _draw() -> void:
+	if service_door:
+		draw_rect(Rect2(DOOR_POS + Vector2(-46, -18), Vector2(92, 36)), Color("c5a46c"), false, 3.0)
+		if _hud != null:
+			draw_string(_hud.get_theme_default_font(), DOOR_POS + Vector2(-40, -28), "餐厅", HORIZONTAL_ALIGNMENT_LEFT, 80, 16, TDUI.ORANGE)
 	if single_fridge and _hud!=null:
 		for i: int in pot_contents.size():
 			var box:=Rect2(435+i*270,215,252,76)

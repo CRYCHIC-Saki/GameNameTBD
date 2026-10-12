@@ -7,6 +7,7 @@ var supply := TDSupplyBook.new()
 var recipes := TDRecipeBook.new()
 var ingredients := TDIngredientBook.new()
 var pantry := TDPantry.new()
+var floor := TDFloorBoard.new()
 var rng := TDBusinessRandom.new(20261011)
 var ready: bool = false
 var day: int = 1
@@ -403,7 +404,7 @@ func choose_for(npc: Dictionary, player_decor: Dictionary) -> Dictionary:
 		_consider_menu(best, npc, String(row["id"]), String(row["name"]), row["decor"], int(row["good"]), int(row["bad"]), row["menu"])
 	return best
 
-func settle_visit(npc: Dictionary, dish_id: String, quality: float, player_decor: Dictionary, accepted: bool) -> Dictionary:
+func settle_visit(npc: Dictionary, dish_id: String, quality: float, player_decor: Dictionary, accepted: bool, reason: String = "") -> Dictionary:
 	var dish := catalog.dish(dish_id)
 	var offer := _offer(npc, dish, price_of(dish_id), player_decor, good_count, bad_count)
 	var meal := TDEconomyMath.evaluate_meal(offer, quality, float(npc["quality_expect"]))
@@ -435,7 +436,10 @@ func settle_visit(npc: Dictionary, dish_id: String, quality: float, player_decor
 		"dark_name": dark_name,
 	}
 	if not accepted:
-		_log("%s点的%s被拒绝，菜谱没变。" % [String(npc["id"]), String(dish.get("name", dish_id))])
+		if reason == "timeout":
+			_log("%s等太久，没吃到%s就离开了，菜谱没变。" % [String(npc["id"]), String(dish.get("name", dish_id))])
+		else:
+			_log("%s点的%s被拒绝，菜谱没变。" % [String(npc["id"]), String(dish.get("name", dish_id))])
 	elif bool(learning["learned"]):
 		_log("学会了%s，总体评价%.1f。回厨房可以按%s的谱做。" % [String(dish.get("name", dish_id)), float(meal["overall"]), catalog.kitchen_recipe_id(dish_id)])
 	else:

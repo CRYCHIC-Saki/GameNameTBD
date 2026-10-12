@@ -44,6 +44,9 @@ var _bar_box: VBoxContainer
 var _play_row: HFlowContainer
 var _service_buttons: Array[Button] = []
 var session: TDPhase3Session
+var _covered: bool = false
+var _observing: bool = false
+var _observe_banner: Label
 var _iso: TDRestaurantIsoView
 var _board: TDEconomyBoard
 var _pantry: TDPantryBoard
@@ -90,7 +93,7 @@ func _ready() -> void:
 	elif warning != "":
 		_set_status(warning)
 	else:
-		var room := "斜角看地面和两面墙。WASD 沿过道走，E 互动。装修会计入客流评价，不写入原来的营业账。"
+		var room := "斜角看地面和两面墙。WASD 沿过道走，E 互动。站在门口按 E 进后厨。后厨按 V 看餐厅。装修计入客流评价，不写入原来的营业账。"
 		if session != null and session.scaled_interior:
 			room = "店内按地图面积生成，%d×%d格。%s" % [layout.columns, layout.rows, room]
 		_set_status(room)
@@ -172,6 +175,8 @@ func _draw() -> void:
 
 func close() -> void:
 	_closed = true
+	if session != null:
+		session.floor.clear()
 	if _iso != null:
 		_iso.shutdown()
 	set_process(false)
@@ -208,8 +213,12 @@ func guest_nodes() -> Array[TDRestaurantGuest]:
 	return result
 
 func request_interaction() -> bool:
-	if _closed or _player == null or layout == null or get_tree().paused:
+	if _closed or _player == null or layout == null or get_tree().paused or _covered:
 		return false
+	if cell_of_player() == layout.entrance():
+		kitchen_requested.emit()
+		_set_status("走进后厨。出餐会端给最早坐下等这道菜的客人。按 V 只看餐厅，时间继续走。")
+		return true
 	var nearest := _nearest_piece()
 	if nearest.is_empty():
 		return false
@@ -383,6 +392,15 @@ func _build_status_bar() -> void:
 	panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	_bar = panel
 	layer.add_child(panel)
+	_observe_banner = Label.new()
+	_observe_banner.text = "正在看餐厅 · 再按 V 回后厨 · 客人和灶台的时间都在走"
+	_observe_banner.position = Vector2(24, 12)
+	_observe_banner.size = Vector2(900, 32)
+	_observe_banner.visible = false
+	_observe_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_observe_banner.add_theme_font_size_override("font_size", 18)
+	_observe_banner.add_theme_color_override("font_color", Color("f0cc70"))
+	layer.add_child(_observe_banner)
 	var box := VBoxContainer.new()
 	_bar_box = box
 	box.position = Vector2(10, 8)
@@ -571,9 +589,9 @@ func _interact_message(piece: Dictionary, code: String) -> String:
 		"welcome_desk":
 			return "迎宾在岗，试来客会从门口走到这里，再去空位。"
 		"kiosk":
-			return "自助点餐机可以直接使用，不必雇人。还不会生成今日订单。"
+			return "自助点餐机可以直接使用，不必雇人。客人点的菜和这个人绑在一起，后厨能看到。"
 		"order_counter":
-			return "点餐台。还不会把点的菜写进营业订单。"
+			return "点餐台。点下的菜就是后厨那一单，客人坐下后才等上菜。"
 		"hotpot_table":
 			return "火锅桌，桌面上是电磁炉。"
 		"waiting_seat":
@@ -778,6 +796,7 @@ func spawn_service_guest(forced_dish: String = "") -> TDOutcome:
 	guest.process_mode = Node.PROCESS_MODE_PAUSABLE
 	_guests.add_child(guest)
 	guest.begin_service(route["stages"], layout.cell_px, String(dish["id"]), String(dish["name"]), bool(order["off_menu"]), npc)
+	guest.ticket_id = active.floor.open_ticket(guest.dish_id, guest.dish_name, guest.off_menu, guest.seat_id, String(npc.get("id", "客人")))
 	_set_status("%s进门，%s%s。" % [String(npc["id"]), "菜单上没有的" if bool(order["off_menu"]) else "", String(dish["name"])])
 	return TDOutcome.new(true, "VISIT", String(dish["id"]))
 
@@ -795,6 +814,17 @@ func _tick_service(delta: float) -> void:
 	for guest: TDRestaurantGuest in guest_nodes():
 		if guest.service_active:
 			guest.service_tick(delta)
+	_sync_tickets()
+	var active := session if session != null and session.ready else null
+	if active == null:
+		return
+	var expired := active.floor.tick(delta)
+	for ticket_id: String in expired:
+		var guest := _guest_by_ticket(ticket_id)
+		if guest == null:
+			continue
+		guest.leave_hungry()
+		_set_status("%s等不及%s，起身离开。" % [String(guest.profile.get("id", "客人")), guest.dish_name])
 
 func _watch_service(guest: TDRestaurantGuest) -> void:
 	var shown := String(guest.get_meta("shown_phase", ""))
@@ -804,9 +834,14 @@ func _watch_service(guest: TDRestaurantGuest) -> void:
 		return
 	guest.set_meta("shown_phase", guest.phase)
 	if guest.phase == "leave" and guest.accepted and guest.review_score < 0.0:
-		var result := _session().settle_visit(guest.profile, guest.dish_id, guest.quality, _session().decor_from_pieces(layout.pieces()), true)
+		var served_meal := not guest.walkout
+		var reason := "timeout" if guest.walkout else ""
+		var meal_quality := guest.quality if served_meal else 0.0
+		var result := _session().settle_visit(guest.profile, guest.dish_id, meal_quality, _session().decor_from_pieces(layout.pieces()), served_meal, reason)
 		var meal: Dictionary = result["meal"]
 		guest.review_score = float(meal["overall"])
+		if guest.review_score < 0.0:
+			guest.review_score = 0.0
 		last_visit = result
 	if guest.phase == "pay" and guest.is_waiting() and layout.staff_hired("cashier"):
 		guest.clear_wait()
@@ -818,26 +853,94 @@ func _accept_order() -> void:
 		_set_status("没有客人在等你接单。")
 		return
 	guest.clear_wait()
-	_set_status("接下了%s。做好后按上菜。" % guest.dish_name)
+	_sync_tickets()
+	_set_status("接下了%s。客人入座后，后厨才能把这盘菜端给这个人。" % guest.dish_name)
 
 func _refuse_order() -> void:
 	var guest := _waiting_guest("order")
 	if guest == null:
 		_set_status("没有客人在等你决定点单。")
 		return
+	_session().floor.mark_refused(guest.ticket_id)
 	guest.refuse_order()
 	var result := _session().settle_visit(guest.profile, guest.dish_id, 0.0, _session().decor_from_pieces(layout.pieces()), false)
 	last_visit = result
 	_set_status("拒绝了%s，不会学会这道菜。" % guest.dish_name)
 
 func _serve(quality: float) -> void:
-	var guest := _waiting_guest("wait_serve")
-	if guest == null:
-		_set_status("没有客人在等上菜。")
+	var result := serve_waiting(quality)
+	_set_status(result.message)
+
+func serve_waiting(quality: float) -> TDOutcome:
+	var active := _session()
+	if active == null:
+		return TDOutcome.new(false, "NOT_READY", "客流数据还没准备好")
+	_sync_tickets()
+	return _apply_service(active.floor.serve("", quality), quality)
+
+func deliver_to_guest(dish_id: String, quality: float, failed: bool) -> TDOutcome:
+	var active := _session()
+	if active == null:
+		return TDOutcome.new(false, "NOT_READY", "客流数据还没准备好")
+	_sync_tickets()
+	if failed:
+		var failed_plate := _apply_service(active.floor.serve("", quality), quality)
+		if failed_plate.ok:
+			var who := String((failed_plate.data as Dictionary).get("npc_id", "客人"))
+			failed_plate.message = "这盘没做成，仍然端给最早在等的%s。" % who
+		return failed_plate
+	if dish_id == "":
+		return TDOutcome.new(false, "UNKNOWN_DISH", "这盘菜对不上菜单，没有送给任何客人。")
+	return _apply_service(active.floor.serve(dish_id, quality), quality)
+
+func set_floor_cover(covered: bool) -> void:
+	_covered = covered
+	visible = not covered
+	set_process_unhandled_input(not covered)
+	if _iso != null:
+		_iso.set_presented(not covered)
+	_lock_player()
+
+func set_observe(observing: bool) -> void:
+	_observing = observing
+	if _observe_banner != null:
+		_observe_banner.visible = observing
+	_lock_player()
+
+func _lock_player() -> void:
+	if _player == null:
 		return
+	_player.set_controls_enabled(not _closed and not _covered and not _observing)
+
+func _apply_service(result: TDOutcome, quality: float) -> TDOutcome:
+	if not result.ok:
+		return result
+	var ticket_id := String((result.data as Dictionary)["id"])
+	var guest := _guest_by_ticket(ticket_id)
+	if guest == null:
+		if session != null:
+			session.floor.revert_serve(ticket_id)
+		return TDOutcome.new(false, "NO_GUEST", "订单还在，人已经不在座位上。")
 	guest.quality = quality
 	guest.clear_wait()
-	_set_status("端上%s，这份质量按%.0f计。客人开始吃。" % [guest.dish_name, quality])
+	_sync_tickets()
+	result.message = "端上%s给%s，质量按%.0f计。客人开始吃。" % [guest.dish_name, String(guest.profile.get("id", "客人")), quality]
+	return result
+
+func _sync_tickets() -> void:
+	var active := session if session != null and session.ready else null
+	if active == null:
+		return
+	for guest: TDRestaurantGuest in guest_nodes():
+		if guest.ticket_id == "":
+			continue
+		active.floor.sync(guest.ticket_id, guest.phase, guest.is_waiting(), guest.accepted, guest.quality, guest.review_score)
+
+func _guest_by_ticket(ticket_id: String) -> TDRestaurantGuest:
+	for guest: TDRestaurantGuest in guest_nodes():
+		if guest.ticket_id == ticket_id:
+			return guest
+	return null
 
 func _waiting_guest(phase: String) -> TDRestaurantGuest:
 	for guest: TDRestaurantGuest in guest_nodes():
@@ -854,7 +957,7 @@ func _phase_text(guest: TDRestaurantGuest) -> String:
 		"seat":
 			return "客人走向座位。"
 		"wait_serve":
-			return "客人坐下等%s。认真上菜或马虎上菜。" % guest.dish_name
+			return "客人坐下等%s。后厨出餐会端给这一桌，也可以在这里认真或马虎上菜。" % guest.dish_name
 		"eat":
 			return "客人正在吃%s。" % guest.dish_name
 		"pay":

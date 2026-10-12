@@ -1,5 +1,13 @@
 # 公共契约：v3完整烹饪，兼容v1/v2历史入口
 
+## D025 餐厅客人与后厨订单
+
+- `TDPhase3Session.floor` 是当场的客单。进门生成 `floor-N`，离开后删掉。不进入 Phase 4 存档，也不写 `user://shop-v1.json`。
+- 可上菜的状态只有：阶段 `wait_serve`、正在等、已接下、还没上过、没超时、没拒绝。`TDFloorBoard.serve(dish_id, quality)` 在这些单里找序号最小的一张；`dish_id` 为空表示最早的任意一单。找不到返回 `NO_GUEST`。
+- 耐心 180 秒，只在可上菜时减少。走到 0 记为超时，客人改走离开，`settle_visit` 用 `accepted=false` 和 `reason=timeout`。
+- 后厨交付用 `deliver_to_guest`。菜谱 id 经 `dish_id_for_kitchen` 对回 Phase 3 的菜。对不上且不是失败菜时返回 `UNKNOWN_DISH`，不改客人。失败菜走最早一单。
+- 观察不暂停。餐厅在后厨打开时继续走客人。Phase 2 的 `TDShopView` 不读这本客单。
+
 ## D024 规模维护、工资、情绪与性格
 
 - `TDRestaurantSizes.upkeep` 是占地格子数的一半。主店记在换天账单的 `upkeep`，分店记在 `settle_branch` 的 `upkeep`。重复结算不再扣。

@@ -21,6 +21,14 @@ func test_scene_builds_a_walkable_room_with_placeholder_fixtures() -> void:
 	assert_eq(world.guest_nodes().size(), 0)
 	assert_false(world.request_interaction())
 
+func test_the_entrance_opens_the_kitchen_link() -> void:
+	var opened: Array[bool] = []
+	world.kitchen_requested.connect(func() -> void: opened.append(true))
+	world.teleport_player(world.layout.entrance())
+	assert_true(world.request_interaction())
+	assert_eq(opened.size(), 1)
+	assert_true(world._status.text.contains("后厨"))
+
 func test_player_walks_the_aisle_and_walls_stop_them() -> void:
 	var player := world.get_node("Player") as TDKitchenPlayer
 	var initial := world.player_position()

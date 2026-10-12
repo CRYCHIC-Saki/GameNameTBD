@@ -24,8 +24,14 @@ func _ready() -> void:
 	_camera.make_current()
 
 func shutdown() -> void:
-	if _camera != null:
-		_camera.enabled = false
+	set_presented(false)
+
+func set_presented(presented: bool) -> void:
+	if _camera == null:
+		return
+	_camera.enabled = presented
+	if presented:
+		_camera.make_current()
 
 func set_room(next: TDRestaurantLayout) -> void:
 	layout = next
