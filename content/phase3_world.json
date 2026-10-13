@@ -16,7 +16,7 @@
     "rent": 18,
     "utilities": 6,
     "hardware_per_piece": 1,
-    "wages": {"greeter": 8, "cashier": 8, "cleaner": 6, "prep": 7, "chef": 16, "manager": 12},
+    "wages": {"greeter": 8, "cashier": 8, "cleaner": 6, "prep": 7, "chef": 16, "manager": 12, "runner": 7},
     "note": "PROPOSED。草稿只列了租金、水电、设备维护和工资，没有给出数字。"
   },
   "kitchen_cards": {

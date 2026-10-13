@@ -1,5 +1,7 @@
 # Phase 3 框架：斜角餐厅与小镇客流
 
+状态（2026-10-13）：小组确认本阶段开发已完成。10 月 13 日会议不回头改这份验收，后续规则见 D027/D028、`docs/FULL_IMPLEMENTATION_FLOW.md` 与 `docs/phases/plan-1013.md`。下面的 PASS 只表示当时的工程测试，人工试玩仍是 PENDING。
+
 日期：2026-10-12。在已有餐厅和客流上增加六座小镇的随机道路、可调试 SAN、营业时段和功能区互动。成就、音量和教学打磨仍不在这次范围里。
 
 技能：grilling 与 godot-gdscript-patterns 在本机都不存在，GRILL_SKILL=NOT_AVAILABLE。没有安装。等价审查后没有阻塞问题。上一轮假设在 D021，这一轮在 D022。
@@ -23,7 +25,8 @@
 | AC-PHASE-3-013 SAN 0–100，开局可改；窗口按大纲公式；评分 ≥ 80 且 SAN < 30 才可能解锁西红柿炒皮蛋 | PASS | `test_san_windows_dark_dish_hours_and_market_distance` |
 | AC-PHASE-3-014 备货、收拾、整理和休息按小时改 SAN；小市场锁住牛肉，大市场可以买 | PASS | 同上 |
 | AC-PHASE-3-015 假判定在距离落点两拍内消失，且不改真实判定 | PASS | `shows_fake(0, 0, 3, 0.5)` 为真，`0.9` 秒为假 |
-| AC-PHASE-3-016 客人状态和后厨订单是同一张单；门口能进后厨，V 只看餐厅 | PASS | `test_floor_service` 4/4，来客送错菜不离座、等不到菜会走 |
+| AC-PHASE-3-016 客人状态和后厨订单是同一张单；门口能进后厨，V 只看餐厅 | PASS | `test_floor_service`，来客送错菜不离座、等不到菜会走 |
+| AC-PHASE-3-017 客人坐在座位上；玩家或传菜员把菜从传菜口端到那一桌 | PASS | 坐下后位置是座位格；不端过去人还在等；雇传菜员会自己送到 |
 | 全量 `tools/check.ps1` | NOT_RUN | 本机 PATH 没有 pwsh |
 | 人工试玩 | PENDING | 没有真人操作 |
 

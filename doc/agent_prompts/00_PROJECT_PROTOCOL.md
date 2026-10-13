@@ -1,5 +1,7 @@
 # 项目总控规范
 
+> 2026-10-13 补充：还必须读取 `doc/source/1013会议纪要.txt`、`docs/FULL_IMPLEMENTATION_FLOW.md` 和 `docs/AI_FILLED_DETAILS.md`。产品规则按“1013 会议明确内容 → 设计大纲 → 带编号 AI 填充”解释。Phase 1–3 已有实现不得因新版提示重做；当前阶段看 `docs/PROJECT_STATE.md`。
+
 你是《小镇食堂》（暂名）的 Godot 开发 Agent，承担技术负责人、开发者和测试者的职责。目标是交付可运行、可验证、可继续迭代的游戏，而不是只输出设计方案。你只执行当前指定的 Phase，不自行跨阶段扩张。
 
 一、读取事实，保留设计来源

@@ -37,6 +37,9 @@ func open_ticket(dish_id: String, dish_name: String, off_menu: bool, seat_id: St
 		"served": false,
 		"walkout": false,
 		"refused": false,
+		"plated": false,
+		"holder": "",
+		"plate_quality": -1.0,
 	})
 	return id
 
@@ -58,6 +61,69 @@ func mark_refused(id: String) -> void:
 		return
 	ticket["refused"] = true
 	ticket["accepted"] = false
+
+func hold_plate(dish_id: String, quality: float) -> TDOutcome:
+	var chosen := _earliest_queued(dish_id)
+	if chosen.is_empty():
+		var why := "没有坐下等这道菜的客人。" if dish_id != "" else "没有客人在等上菜。"
+		return TDOutcome.new(false, "NO_GUEST", why)
+	chosen["plated"] = true
+	chosen["holder"] = "pass"
+	chosen["plate_quality"] = quality
+	return TDOutcome.new(true, "PLATED", String(chosen["dish_name"]), _plate_data(chosen))
+
+func pass_plate() -> Dictionary:
+	var chosen: Dictionary = {}
+	var best := 1 << 30
+	for item: Variant in tickets:
+		var ticket: Dictionary = item
+		if not _on_pass(ticket):
+			continue
+		if int(ticket["serial"]) < best:
+			best = int(ticket["serial"])
+			chosen = ticket
+	if chosen.is_empty():
+		return {}
+	return _plate_data(chosen)
+
+func claim_plate(id: String, holder: String) -> TDOutcome:
+	var ticket := _ticket(id)
+	if ticket.is_empty() or not _on_pass(ticket):
+		return TDOutcome.new(false, "NO_PLATE", "传菜口没有这盘菜。")
+	if holder != "player" and holder != "runner":
+		return TDOutcome.new(false, "INVALID", "没有这个端菜的人。")
+	ticket["holder"] = holder
+	return TDOutcome.new(true, "CLAIMED", String(ticket["dish_name"]), _plate_data(ticket))
+
+func release_plate(id: String) -> void:
+	var ticket := _ticket(id)
+	if ticket.is_empty() or not bool(ticket.get("plated", false)) or bool(ticket.get("served", false)):
+		return
+	if bool(ticket.get("walkout", false)) or not bool(ticket.get("waiting", false)):
+		ticket["plated"] = false
+		ticket["holder"] = ""
+		return
+	ticket["holder"] = "pass"
+
+func set_plate_quality(id: String, quality: float) -> void:
+	var ticket := _ticket(id)
+	if ticket.is_empty():
+		return
+	ticket["plate_quality"] = quality
+
+func finish_plate(id: String) -> TDOutcome:
+	var ticket := _ticket(id)
+	if ticket.is_empty() or not bool(ticket.get("plated", false)) or bool(ticket.get("served", false)):
+		return TDOutcome.new(false, "NO_PLATE", "这盘菜还没准备好。")
+	if not _waiting_seat(ticket):
+		ticket["plated"] = false
+		ticket["holder"] = ""
+		return TDOutcome.new(false, "NO_GUEST", "客人已经不在座位上等这盘菜。")
+	ticket["served"] = true
+	ticket["waiting"] = false
+	ticket["quality"] = float(ticket["plate_quality"])
+	ticket["holder"] = ""
+	return TDOutcome.new(true, "SERVED", String(ticket["dish_name"]), _plate_data(ticket))
 
 func serve(dish_id: String, quality: float) -> TDOutcome:
 	var chosen := _earliest_queued(dish_id)
@@ -88,7 +154,7 @@ func tick(delta: float) -> Array[String]:
 		return expired
 	for item: Variant in tickets:
 		var ticket: Dictionary = item
-		if not _queued(ticket):
+		if not _waiting_seat(ticket):
 			continue
 		ticket["patience"] = maxf(0.0, float(ticket["patience"]) - delta)
 		if float(ticket["patience"]) <= 0.0:
@@ -102,6 +168,8 @@ func status_of(ticket: Dictionary) -> String:
 		return "refused"
 	if bool(ticket.get("walkout", false)):
 		return "timed_out"
+	if bool(ticket.get("plated", false)) and not bool(ticket.get("served", false)) and _waiting_seat(ticket):
+		return "plated"
 	if _queued(ticket):
 		return "queued"
 	if String(ticket.get("phase", "")) == "order" and bool(ticket.get("waiting", false)) and bool(ticket.get("off_menu", false)) and bool(ticket.get("accepted", false)):
@@ -116,7 +184,14 @@ func describe(ticket: Dictionary) -> String:
 	var state := status_of(ticket)
 	var detail := phase_name
 	if state == "queued":
-		detail = "等上菜，还可等%d秒" % int(ceili(float(ticket["patience"])))
+		detail = "坐着等上菜，还可等%d秒" % int(ceili(float(ticket["patience"])))
+	elif state == "plated":
+		var where := "传菜口"
+		if String(ticket.get("holder", "")) == "player":
+			where = "你手上"
+		elif String(ticket.get("holder", "")) == "runner":
+			where = "传菜员手上"
+		detail = "坐在座位上，菜在%s，还可等%d秒" % [where, int(ceili(float(ticket["patience"])))]
 	elif state == "deciding":
 		detail = "菜单上没有，等你接下或拒绝"
 	elif state == "timed_out":
@@ -163,7 +238,32 @@ func _queued(ticket: Dictionary) -> bool:
 		return false
 	if bool(ticket.get("served", false)) or bool(ticket.get("walkout", false)) or bool(ticket.get("refused", false)):
 		return false
+	if bool(ticket.get("plated", false)):
+		return false
 	return true
+
+func _waiting_seat(ticket: Dictionary) -> bool:
+	if String(ticket.get("phase", "")) != "wait_serve":
+		return false
+	if not bool(ticket.get("waiting", false)) or not bool(ticket.get("accepted", false)):
+		return false
+	if bool(ticket.get("served", false)) or bool(ticket.get("walkout", false)) or bool(ticket.get("refused", false)):
+		return false
+	return true
+
+func _on_pass(ticket: Dictionary) -> bool:
+	return bool(ticket.get("plated", false)) and String(ticket.get("holder", "")) == "pass" and _waiting_seat(ticket)
+
+func _plate_data(ticket: Dictionary) -> Dictionary:
+	return {
+		"id": String(ticket["id"]),
+		"dish_id": String(ticket["dish_id"]),
+		"dish_name": String(ticket["dish_name"]),
+		"npc_id": String(ticket["npc_id"]),
+		"seat_id": String(ticket["seat_id"]),
+		"quality": float(ticket.get("plate_quality", ticket.get("quality", 0))),
+		"holder": String(ticket.get("holder", "")),
+	}
 
 func _ticket(id: String) -> Dictionary:
 	for item: Variant in tickets:

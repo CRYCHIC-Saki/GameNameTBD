@@ -12,6 +12,11 @@ var selected_id: String = ""
 var player_point := Vector2.ZERO
 var player_moving: bool = false
 var actors: Array = []
+var runner_visible: bool = false
+var runner_point := Vector2.ZERO
+var runner_label: String = ""
+var pass_point := Vector2(-1, -1)
+var held_label: String = ""
 var _camera: Camera2D
 
 func _ready() -> void:
@@ -51,6 +56,7 @@ func sync(player: Node2D, guests: Array) -> void:
 			"phase": guest.phase,
 			"bob": guest.bob,
 			"gone": guest.phase == "gone",
+			"seated": guest.seated,
 			"label": guest.dish_name if guest.service_active else "",
 		})
 	queue_redraw()
@@ -84,12 +90,23 @@ func _draw() -> void:
 		_furniture(item)
 	if editing:
 		_edit_grid()
-	_person(player_point, player_moving, Color("#d86b4a"), "")
+	if pass_point.x >= 0.0:
+		var pass_grid := Vector2(pass_point.x / float(layout.cell_px), pass_point.y / float(layout.cell_px))
+		var pass_at := project(pass_grid.x, pass_grid.y)
+		draw_circle(pass_at + Vector2(0, -8), 7.0, Color("#f0cc70"))
+		var font := ThemeDB.fallback_font
+		if font != null:
+			draw_string(font, pass_at + Vector2(-18, -22), "传菜口", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("#fff4d2"))
+	var player_caption := held_label
+	_person(player_point, player_moving, Color("#d86b4a"), player_caption, false)
 	for item: Variant in actors:
 		var actor: Dictionary = item
 		if bool(actor["gone"]):
 			continue
-		_person(actor["position"], true, Color("#3f6f8f"), String(actor["label"]))
+		var sitting := bool(actor.get("seated", false))
+		_person(actor["position"], not sitting, Color("#3f6f8f"), String(actor["label"]), sitting)
+	if runner_visible:
+		_person(runner_point, true, Color("#6f8f4a"), runner_label if runner_label != "" else "传菜", false)
 
 func _floor_cell(cell: Vector2i) -> void:
 	var points := _quad(cell.x, cell.y, 1, 1)
@@ -137,14 +154,17 @@ func _edit_grid() -> void:
 			var points := _quad(x, y, 1, 1)
 			draw_polyline(points + PackedVector2Array([points[0]]), Color(1, 1, 1, 0.18), 1.0)
 
-func _person(point: Vector2, moving: bool, shirt: Color, caption: String) -> void:
+func _person(point: Vector2, moving: bool, shirt: Color, caption: String, seated: bool = false) -> void:
 	if layout == null:
 		return
 	var grid := Vector2(point.x / float(layout.cell_px), point.y / float(layout.cell_px))
-	var bob := sin(Time.get_ticks_msec() / 140.0) * 3.0 if moving else 0.0
-	var at := project(grid.x, grid.y) + Vector2(0, -20 - absf(bob))
+	var bob := sin(Time.get_ticks_msec() / 140.0) * 3.0 if moving and not seated else 0.0
+	var drop := -8.0 if seated else -20.0
+	var at := project(grid.x, grid.y) + Vector2(0, drop - absf(bob))
+	if seated:
+		draw_rect(Rect2(at + Vector2(-10, 8), Vector2(20, 5)), Color("#6b4a32"))
 	draw_circle(at + Vector2(0, -10), 6.0, Color("#f2d3b5"))
-	draw_rect(Rect2(at + Vector2(-7, -4), Vector2(14, 14)), shirt)
+	draw_rect(Rect2(at + Vector2(-7, -4), Vector2(14, 12 if seated else 14)), shirt)
 	if caption != "":
 		var font := ThemeDB.fallback_font
 		if font != null:

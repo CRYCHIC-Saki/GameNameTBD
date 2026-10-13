@@ -1,5 +1,67 @@
 # 分工与集成基线
 
+## 三人并行（2026-10-13）
+
+程序最多三人。三个人固定看三条线，集成的工作按波次轮换，不另设第四个人。任务在 `docs/phases/plan-1013.md`，规则在 D027。下面从 D020 起的段落是历史分工；目录冲突时以本节为准。
+
+| 线 | 波次中可以改 | 自己的检查 |
+|---|---|---|
+| 做菜与研发 | `src/cooking/`、`src/qte/`、`src/kitchen/`、`src/scoring/`，以及 `content/` 里的做菜谱和研发图。新测试用新文件，例如 `tests/unit/test_san_substitute.gd` | `tools/check.ps1 -Suite cooking` 和 `-Suite qte` |
+| 经济与供货 | `src/economy/`、`src/business/`、`content/pantry.json`，以及新建的调料、店种、市场配置。新测试单独建文件 | `tools/check.ps1 -Suite business`。Phase 2 的钱和 `user://shop-v1.json` 语义保持不动 |
+| 小镇与事件 | `src/town/` 里除 `phase3_session.gd` 以外的脚本、`src/restaurant/`、新建的事件配置，以及 `tests/unit/test_floor_service.gd`、`tests/unit/test_restaurant_layout.gd`、`tests/integration/test_phase3_visit.gd`、`tests/integration/test_restaurant_world.gd` | 合并日前运行上列测试文件。Phase 3 的全套规则测试不在这里改 |
+
+共享文件只有当波集成者在合并日改：`src/town/phase3_session.gd`、`src/app/main.gd`、`src/contracts/`、`project.godot`、`content/phase3_world.json`、`tests/unit/test_phase3_rules.gd`、`tests/unit/test_phase4_branch.gd`、`docs/CONTRACTS.md`。`src/town/san_rules.gd` 也算共享，因为现在的出锅概率还在里面；做菜线把入锅规则写到 `src/cooking/` 的新脚本，不直接改这个文件。
+
+集成者按波轮换：第 0 波和第 1 波是小镇与事件，第 2 波是经济与供货，第 3 波是做菜与研发。合并日之前，集成者也不改共享文件，把自己的规则写在自己的目录里。
+
+```mermaid
+flowchart LR
+  Cook[做菜与研发]
+  Econ[经济与供货]
+  Town[小镇与事件]
+  Merge[合并日接入会话]
+  Cook --> Merge
+  Econ --> Merge
+  Town --> Merge
+  Merge --> Next[下一波]
+```
+
+每天按这个顺序：
+
+1. 开工前写明今天要改的文件。文件落在别人的目录里，就改派或改到自己的新脚本，不直接改。
+2. 需要别人调用的类，作者在该波第一天交到自己的目录里，并带上已经通过的测试。调用方从第二天开始接。
+3. 界面只发意图。钱、库存、评分和菜名由对应的规则对象改。
+4. 下班前跑自己的检查。失败留在自己的测试里修。
+5. 合并日另外两人停止改文件。集成者把三个规则对象接进会话和主入口，更新共享测试，再跑 `tools/check.ps1`。没有 pwsh 就记 NOT_RUN。
+6. 玩法是否好用仍记 PENDING，直到有人按 `plan-1013.md` 的试玩步骤真的玩过。
+7. 提交和推送等用户开口。
+
+三个人同时做时，每人用自己的分支，只包含自己目录里的文件。分支名用 `cook/wave-1`、`economy/wave-1`、`town/wave-1` 这种形式。集成者在合并日把三条分支合进来。不要在同一个工作目录里同时保存三个人的改动。
+
+人不够三人时，空出来的目录本波不做，不由在场的人顺手改。用户明确改派目录之后，才换人。
+
+第 0 波只用半天，不写玩法。做菜线和经济线各自列出本波要交的函数名和返回值。小镇线把三边都确认过的字段写进 `docs/CONTRACTS.md`，并标明尚未接入。字段名确认之后才开始第 1 波。
+
+第 1 波和第 2 波不要改 `off_menu_chance`。客人改为大多点菜单，是第 3 波的事，到合并日再改 `test_phase3_rules.gd`。
+
+## Phase 5–6 三人延续方式
+
+完整阶段顺序以 `docs/FULL_IMPLEMENTATION_FLOW.md` 为准。Phase 4 完成后仍保留三条线，不重新按文件随意分人：
+
+- 做菜与研发线：正式菜配置、研发图内容、厨师 PK 的做菜入口、低 SAN 重演和做菜反馈；
+- 经济与供货线：野采入库、市场、分店模拟、品牌、全球影响力、成就业务事件和存档规则；
+- 小镇与事件线：装修、报刊亭、特殊 NPC、节日、市政表现、新手引导和设置界面。
+
+Phase 5 按 5-0 至 5-7 逐单元合并，不允许三个人分别做三个互不连通的小样。共享世界存档、主入口、active 内容清单、事件白名单和 `project.godot` 继续由当单元集成者独占。
+
+Phase 6 不再按功能扩张。三人分别主责：
+
+- 一人维护全量检查、存档迁移和漏洞回归；
+- 一人维护目标机、性能、输入音频和长时稳定；
+- 一人维护资产许可证、包体白名单、干净构建和发布文档。
+
+任何发布阻断修复仍回到原模块负责人；发布负责人不能在 UI 里绕过规则层补状态。每次修复后先跑受影响套件，再跑全量。
+
 ## D020 本轮文件归属与验证入口
 
 主开发/集成角色负责project.godot、ShopView、FullKitchen与共享契约；本轮仅委派grilling要求的只读事实审查，无外部任务/推送。后续烹饪线修改Model/Handling，QTE线修改controller/beat_sheet/GuidedView，经营线修改ShopSession/Store/Catalog；跨线先更新CONTRACTS与AC，再由集成角色验证。

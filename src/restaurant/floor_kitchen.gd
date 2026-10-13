@@ -105,7 +105,7 @@ func _build() -> void:
 	_orders.custom_minimum_size = Vector2(268, 420)
 	_orders.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	box.add_child(_orders)
-	_note = TDUI.label("走到下方门口按 E，或点回餐厅。V 只看店里，时间继续走。出餐对上最早在等的同菜客人。", 14, TDUI.MUTED)
+	_note = TDUI.label("走到下方门口按 E，或点回餐厅。V 只看店里，时间继续走。出餐后菜放在餐厅传菜口，要端到客人坐下的那一桌。", 14, TDUI.MUTED)
 	_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_note.custom_minimum_size = Vector2(268, 96)
 	box.add_child(_note)

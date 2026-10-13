@@ -1,5 +1,7 @@
 # Phase 4：雇员与一家分店
 
+状态（2026-10-13）：本文件是 10 月 12 日雇员和一家分店的验收。小组把它计入已完成的 Phase 3 可玩范围。会议要求以后只保留服务员、厨师、店长；新版 Phase 4 看 `doc/agent_prompts/Phase_4.md`、`docs/FULL_IMPLEMENTATION_FLOW.md` 和 `docs/phases/plan-1013.md`。这里已经记下的测试结果保持原样。
+
 日期：2026-10-12。主店改到中心路口旁边，并加上占地、店内面积、岗位分工和一家分店的日结。
 
 技能：grilling 与 godot-gdscript-patterns 在本机都不存在，GRILL_SKILL=NOT_AVAILABLE。没有安装。假设见 D023。

@@ -4,6 +4,7 @@ extends Node2D
 var seat_id: String = ""
 var ticket_id: String = ""
 var walkout: bool = false
+var seated: bool = false
 var speed: float = 160.0
 var finished: bool = false
 var goal: Vector2 = Vector2.ZERO

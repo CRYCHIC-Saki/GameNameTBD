@@ -1,4 +1,8 @@
-# 《小镇食堂》Godot 分阶段开发提示词包 · v2
+# 《小镇食堂》Godot 分阶段开发提示词包 · v2（历史快照）
+
+> `DEPRECATED 2026-10-13`：本文件不再作为 Phase 1–6 执行入口。
+> 使用 `docs/FULL_IMPLEMENTATION_FLOW.md`、`docs/AI_FILLED_DETAILS.md` 和本目录独立的 `Phase_1.md` 至 `Phase_6.md`。
+> 1013 会议规则优先于本文件内嵌的大纲旧流程；不要恢复旧的自由工序玩家菜单、出锅随机变菜、多岗位或低 SAN 必经主线。
 
 ## 本次修订：Phase 1 实现完整做菜系统
 

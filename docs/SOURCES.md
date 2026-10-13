@@ -10,11 +10,12 @@
 | doc/source/低SAN食谱.md | 地域料理、Tier与特殊钩子 | 3B89180E43ADCE8A591190AADA9C08FFF6277D7D0BC52966C3DED49F7F354D6D |
 | doc/source/游戏成就系统.md | 未来可观察行为与成就素材 | 9938B5192303C0A986F559AEAA5211AB6B85CE81CD4ABFAE6823D0DE8F7DC023 |
 | doc/source/做菜操作.md | 最新PC操作M1–M7、节拍表、键鼠并行及HUD；用户明确要求据此实现 | 67E6E1D1E15090B0BB736FEABEDAE87F67DCF930E41631598EE0437AB3D1643D |
+| doc/source/1013会议纪要.txt | 2026-10-13 小组会议。修订 Phase 3 之后的方案，不覆盖已落地的 D021–D026 | FC1B9B70FB4B7E212FDEC28D85F8D06AE0E672E6E615E0569F6C501DEF4659EA |
 
 开发规范原入口：doc/agent_prompts/00_PROJECT_PROTOCOL.md；工程持久入口：docs/DEVELOPMENT_PROTOCOL.md。
-近期范围：当前为Phase2，D020用户答复优先：选切型后按谱、订单外自由烹饪、保留处理状态的食材退回、锁定汽锅鸡探索及失败菜处理。D019统一冰箱、自动订单、长按调味继续复用；D015/D016中台面、自动工序、逐拍排布、双锅和简化HUD仍按做菜操作.md §3–7复用。汽锅鸡菜名/汽蒸来源于towns.json相应条目，定量配方与平衡参数标PROPOSED，不改原文。doc/agent_prompts/Phase_1.md和Phase_2.md为机制参考，范围冲突见DECISIONS。
+近期范围：Phase 3 开发已完成。Phase 1–6 新版总入口是 `docs/FULL_IMPLEMENTATION_FLOW.md`，逐阶段提示是 `doc/agent_prompts/Phase_1.md` 至 `Phase_6.md`，AI 补充总表是 `docs/AI_FILLED_DETAILS.md`。下一阶段是 D028 版 Phase 4，三波任务仍在 `docs/phases/plan-1013.md`。D021–D026 的餐厅、客流、分店和传菜继续有效，直到对应波次改掉调用。D020 的切型、取回和探索解锁，以及 D015/D016 的自动工序和逐拍表，继续作为做菜基线。
 
-来源优先级：用户最新明确决定与已确认决策可修订旧设计；大纲机制、附录内容和Onboarding案例分别溯源；建议值与实现假设不是用户产品决定。未决冲突见DECISIONS.md。
+来源优先级：1013 会议明确内容优先；会议未说明时用《美食游戏设计大纲 v0.2》；两者都模糊时只能使用 `docs/AI_FILLED_DETAILS.md` 中带编号的 AI 填充。其他资料用于内容候选、案例或历史实现，不能覆盖该顺序。建议值、PROPOSED 和 AI 填充都不是用户原话。未决冲突见 DECISIONS.md。
 
 Phase0/旧原型未制作电子表格或正式素材。后续完整Phase1按用户要求实际调用imagegen生成厨房背景与透明厨师，来源与提示词见assets/kitchen/README.md；grilling、godot-gdscript-patterns实际使用记录见阶段报告。本轮未涉及Spreadsheets/visualize/skill-creator任务。原文指纹复核见artifacts/source-verification.json。
 

@@ -1,7 +1,8 @@
 # 小镇食堂开发入口
 
-- 每阶段先读 `docs/DEVELOPMENT_PROTOCOL.md`、`docs/PROJECT_STATE.md`、`docs/DECISIONS.md`、对应阶段报告和用户最新范围。原始资料在 `doc/source/`，只读。
-- 当前执行 Phase 3（2026-10-11用户授权）：斜角餐厅、小镇功能区、客流公式、延迟进货和评价解锁菜谱，见 D021 与 docs/phases/phase-3.md。Phase 2 的厨房、订单和日结保持可用，不把新客流账写入旧营业档。
+- 每阶段先读 `docs/DEVELOPMENT_PROTOCOL.md`、`docs/PROJECT_STATE.md`、`docs/DECISIONS.md`、`docs/FULL_IMPLEMENTATION_FLOW.md`、`docs/AI_FILLED_DETAILS.md`、对应阶段报告和用户最新范围。原始资料在 `doc/source/`，只读。
+- 产品规则按 1013 会议→《美食游戏设计大纲 v0.2》→带编号的 `【AI填充细节 AI-xxx】` 解释。AI 填充不能冒充用户决定；覆盖时保留编号和历史。
+- Phase 3 已于 2026-10-13 由小组确认为开发完成，范围见 D021–D026 与 docs/phases/phase-3.md、phase-4.md。下一阶段是 D028 版 Phase 4，执行 `doc/agent_prompts/Phase_4.md` 与 `docs/phases/plan-1013.md`；未另获开工授权前不改玩法。Phase 2 的厨房、订单和日结保持可用，不把新世界账写入旧营业档。
 - 七模块复用五类QTE；炒菜按M2→M3下油/下料→M3∥M4→M6→M3勾芡→M7自动推进，蒸菜/M5炖煮与双锅按外置逐拍表运行。玩家不能选择下一工序。移除文档外的份量/刀数菜单、返工、拖盘、自建方案、测试开关和旧原型菜单；这些旧规则只保留兼容测试，不能当作生产功能重新暴露。
 - D016最新修正：切菜落刀与转向都按菜谱打谱；调味独占鼠标，不与手动控温抢输入；QTE须显示真实逐拍反馈，预告/起手/长按分开计时。当前入口和字段见CONTRACTS的D016部分。
 - D020优先：玩家选切型后按谱，备菜不依赖订单；E取放、F开灶台、Q取锅料。非空锅按材料+炒/蒸识别已知或锁定菜，未知组合完整流程后失败。原料/切配品可冷藏返还且保留状态，开始加工后只能整锅继续或丢弃。五菜初始解锁、汽锅鸡全计分工序Perfect且必需项齐全可提前解锁。失败菜误送匹配全队首客，幂等负评。见DECISIONS/CONTRACTS D020。
@@ -12,6 +13,6 @@
 - Windows 单机 2D、键鼠；QTE 中游戏时间正常流逝，主动暂停冻结游戏与操作时钟。引擎/依赖按 `dependencies.lock.json`，禁止自行升级。
 - 小型模块化单体、静态类型 GDScript；组合入口装配依赖，不建万能 Autoload。遵守 `docs/ARCHITECTURE.md` 与 `docs/CONTRACTS.md`。
 - 模板只读、会话独立，界面只发送意图；菜品计算与评分分离。原始 towns.json 不属于运行时配置。
-- 改共享契约先更新契约与验收；共享文件负责人、分工边界见 `docs/COLLABORATION.md`。
+- 改共享契约先更新契约与验收；三人并行的目录、波次和合并日见 `docs/COLLABORATION.md` 开头。
 - 使用 `tools/check.ps1` 的真实结果；零测试、跳过、解析错误或超时不能算通过。人工试玩未执行记 PENDING。
 - 不覆盖用户改动，不操作真实玩家存档，不擅自推送发布或修改全局环境。记录准确断点并在本阶段交付后停止。

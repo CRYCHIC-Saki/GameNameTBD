@@ -22,12 +22,12 @@ var pool: Dictionary = {}
 var log_lines: Array[String] = []
 var last_visit: Dictionary = {}
 var player_pieces: Array = []
-const ROLES: Array[String] = ["greeter", "cashier", "cleaner", "prep", "chef", "manager"]
-const ROLE_TITLE := {"greeter": "迎宾", "cashier": "收银", "cleaner": "保洁", "prep": "备菜", "chef": "主厨", "manager": "店长"}
+const ROLES: Array[String] = ["greeter", "cashier", "cleaner", "prep", "chef", "manager", "runner"]
+const ROLE_TITLE := {"greeter": "迎宾", "cashier": "收银", "cleaner": "保洁", "prep": "备菜", "chef": "主厨", "manager": "店长", "runner": "传菜员"}
 const CLAIM_FEE := 20
-var staff: Dictionary = {"greeter": false, "cashier": false, "cleaner": false, "prep": false, "chef": false, "manager": false}
-var wage_paid: Dictionary = {"greeter": 0, "cashier": 0, "cleaner": 0, "prep": 0, "chef": 0, "manager": 0}
-var home_skill: Dictionary = {"greeter": 20, "cashier": 20, "cleaner": 20, "prep": 20, "chef": 20, "manager": 20}
+var staff: Dictionary = {"greeter": false, "cashier": false, "cleaner": false, "prep": false, "chef": false, "manager": false, "runner": false}
+var wage_paid: Dictionary = {"greeter": 0, "cashier": 0, "cleaner": 0, "prep": 0, "chef": 0, "manager": 0, "runner": 0}
+var home_skill: Dictionary = {"greeter": 20, "cashier": 20, "cleaner": 20, "prep": 20, "chef": 20, "manager": 20, "runner": 20}
 var home_chef_recipes: Array = []
 var home_town_id: String = ""
 var home_size: String = "small"
@@ -43,9 +43,9 @@ var branch_w: int = 0
 var branch_h: int = 0
 var branch_menu: Array = []
 var branch_stock: Dictionary = {}
-var branch_staff: Dictionary = {"greeter": false, "cashier": false, "cleaner": false, "prep": false, "chef": false, "manager": false}
-var branch_wage_paid: Dictionary = {"greeter": 0, "cashier": 0, "cleaner": 0, "prep": 0, "chef": 0, "manager": 0}
-var branch_skill: Dictionary = {"greeter": 20, "cashier": 20, "cleaner": 20, "prep": 20, "chef": 20, "manager": 20}
+var branch_staff: Dictionary = {"greeter": false, "cashier": false, "cleaner": false, "prep": false, "chef": false, "manager": false, "runner": false}
+var branch_wage_paid: Dictionary = {"greeter": 0, "cashier": 0, "cleaner": 0, "prep": 0, "chef": 0, "manager": 0, "runner": 0}
+var branch_skill: Dictionary = {"greeter": 20, "cashier": 20, "cleaner": 20, "prep": 20, "chef": 20, "manager": 20, "runner": 20}
 var branch_chef_recipes: Array = []
 var branch_settled: Dictionary = {}
 var custom_recipes: Dictionary = {}
@@ -452,7 +452,7 @@ func report() -> String:
 	lines.append("第%d天  %s  现金%d元" % [day, town_name(), money])
 	lines.append("固定开支：租金%d元，水电%d元，每件家具设备维护%d元，主店规模维护%d元。推荐日薪仍是迎宾%d、收银%d。" % [int(catalog.expenses.get("rent", 0)), int(catalog.expenses.get("utilities", 0)), int(catalog.expenses.get("hardware_per_piece", 0)), store_upkeep("home"), catalog.wage_of("greeter"), catalog.wage_of("cashier")])
 	lines.append(_staff_mood_line("home"))
-	lines.append("在岗：迎宾%s，收银%s，保洁%s，备菜%s，主厨%s，店长%s。家具%d件。" % ["是" if staff_on("greeter") else "否", "是" if staff_on("cashier") else "否", "是" if staff_on("cleaner") else "否", "是" if staff_on("prep") else "否", "是" if staff_on("chef") else "否", "是" if staff_on("manager") else "否", player_pieces.size()])
+	lines.append("在岗：迎宾%s，收银%s，保洁%s，备菜%s，主厨%s，店长%s，传菜%s。家具%d件。" % ["是" if staff_on("greeter") else "否", "是" if staff_on("cashier") else "否", "是" if staff_on("cleaner") else "否", "是" if staff_on("prep") else "否", "是" if staff_on("chef") else "否", "是" if staff_on("manager") else "否", "是" if staff_on("runner") else "否", player_pieces.size()])
 	lines.append(_branch_line())
 	var hours := schedule()
 	var meal_names: PackedStringArray = []

@@ -133,6 +133,21 @@ func staff_hired(role: String) -> bool:
 func cell_center(cell: Vector2i) -> Vector2:
 	return Vector2((cell.x + 0.5) * cell_px, (cell.y + 0.5) * cell_px)
 
+func sit_cell(piece: Dictionary) -> Vector2i:
+	var approach := Vector2i(int(piece["approach_x"]), int(piece["approach_y"]))
+	var best := Vector2i(int(piece["x"]), int(piece["y"]))
+	var best_distance := 1 << 30
+	for dy in int(piece["h"]):
+		for dx in int(piece["w"]):
+			var cell := Vector2i(int(piece["x"]) + dx, int(piece["y"]) + dy)
+			var distance := absi(cell.x - approach.x) + absi(cell.y - approach.y)
+			var nearer := distance < best_distance
+			var tie := distance == best_distance and (cell.x < best.x or (cell.x == best.x and cell.y < best.y))
+			if nearer or tie:
+				best = cell
+				best_distance = distance
+	return best
+
 func place(kind: String, x: int, y: int, rotation: int, style_id: String = "") -> TDOutcome:
 	var id := "piece-%d" % _serial
 	_serial += 1
