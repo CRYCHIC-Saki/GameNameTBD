@@ -92,9 +92,15 @@ func enter_restaurant(path: String = "") -> void:
 	add_child(restaurant)
 
 func enter_town() -> void:
+	var session := _phase3()
+	if not session.ready:
+		var loaded := session.load_default()
+		if not loaded.ok:
+			_settings_message.text = "小镇加载失败：" + loaded.message
+			return
 	_dispose_kitchen()
 	town = TDTownWorld.new()
-	town.session = _phase3()
+	town.session = session
 	town.back_requested.connect(return_to_menu)
 	town.pause_requested.connect(toggle_pause)
 	town.restaurant_requested.connect(func() -> void: enter_restaurant(""))

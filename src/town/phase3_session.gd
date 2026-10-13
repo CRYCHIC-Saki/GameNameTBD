@@ -31,8 +31,13 @@ var home_skill: Dictionary = {"greeter": 20, "cashier": 20, "cleaner": 20, "prep
 var home_chef_recipes: Array = []
 var home_town_id: String = ""
 var home_size: String = "small"
+var home_built: bool = false
+var home_venue: String = ""
+var home_w: int = 0
+var home_h: int = 0
 var claim_size: String = "small"
 var scaled_interior: bool = false
+var factory_built: Dictionary = {}
 var branch_open: bool = false
 var branch_town: String = ""
 var branch_culture: String = ""
@@ -882,30 +887,114 @@ func _category_name(category_id: String) -> String:
 	return category_id
 
 func interior_grid() -> Vector2i:
-	var size_id := home_size
 	if branch_open and town_id == branch_town:
-		size_id = branch_size
-	return TDRestaurantSizes.interior(size_id)
+		return TDRestaurantSizes.interior(branch_size)
+	if home_built and home_size == "quarter" and home_w > 0 and home_h > 0:
+		return Vector2i(maxi(8, home_w * 2), maxi(8, home_h * 2))
+	return TDRestaurantSizes.interior(home_size)
 
 func interior_culture() -> String:
 	if branch_open and town_id == branch_town and branch_culture != "":
 		return branch_culture
+	if home_venue == "western":
+		return "french"
+	if home_venue == "chinese":
+		return "chinese"
 	return String(catalog.town(home_town_id).get("culture", "chinese"))
+
+func build_venue(venue: String) -> TDOutcome:
+	if venue != "chinese" and venue != "western":
+		return TDOutcome.new(false, "MISSING", "只能建中餐厅或西餐厅。")
+	if town_id != home_town_id:
+		return TDOutcome.new(false, "WRONG_TOWN", "只能在主小镇的餐厅建设区建店。")
+	if home_built:
+		return TDOutcome.new(false, "ALREADY", "主店已经建好了。")
+	var lot := town_map.diner_lot()
+	if lot.is_empty():
+		return TDOutcome.new(false, "MISSING", "这座小镇没有餐厅建设区。")
+	home_w = maxi(1, int(lot["w"]) / 2)
+	home_h = maxi(1, int(lot["h"]) / 2)
+	home_venue = venue
+	home_size = "quarter"
+	home_built = true
+	_rebuild_map()
+	var diner := _plot_by_id("player_diner")
+	var lot_area := int(lot["w"]) * int(lot["h"])
+	if diner.is_empty() or int(diner.get("w", 0)) * int(diner.get("h", 0)) * 4 != lot_area:
+		home_built = false
+		home_venue = ""
+		home_w = 0
+		home_h = 0
+		home_size = "small"
+		_rebuild_map()
+		return TDOutcome.new(false, "BLOCKED", "建设区落店失败，保持空地。")
+	var label := "西餐厅" if venue == "western" else "中餐厅"
+	return TDOutcome.new(true, "BUILT", "%s建好了，占建设区四分之一（%d×%d）。走到店里就能进去。" % [label, int(diner["w"]), int(diner["h"])])
+
+func build_home(venue: String = "chinese") -> TDOutcome:
+	return build_venue(venue)
+
+func build_factory(plot_id: String) -> TDOutcome:
+	var plot := _plot_by_id(plot_id)
+	if plot.is_empty():
+		return TDOutcome.new(false, "MISSING", "没有这块原料厂空地。")
+	if String(plot.get("kind", "")) != "factory_lot":
+		if String(plot.get("kind", "")) == "supply_factory":
+			return TDOutcome.new(false, "ALREADY", "这里已经建了原料提供厂。")
+		return TDOutcome.new(false, "INVALID", "只能在原料厂空地上建设。")
+	var key := _factory_key(plot_id)
+	if bool(factory_built.get(key, false)):
+		return TDOutcome.new(false, "ALREADY", "这里已经建了原料提供厂。")
+	factory_built[key] = true
+	_rebuild_map()
+	return TDOutcome.new(true, "BUILT", "原料提供厂建好了。共可建%d座。" % TDTownMap.FACTORY_SLOTS)
+
+func click_build_at(cell: Vector2i) -> TDOutcome:
+	var plot := town_map.plot_at(cell.x, cell.y)
+	if plot.is_empty():
+		return TDOutcome.new(false, "EMPTY", "这里没有可建设的空地。")
+	var kind := String(plot.get("kind", ""))
+	if kind == "diner_lot":
+		return TDOutcome.new(false, "CHOOSE", "先选择中餐厅或西餐厅。")
+	if kind == "factory_lot":
+		return build_factory(String(plot.get("id", "")))
+	if kind == "player_diner":
+		return TDOutcome.new(false, "ALREADY", "餐厅已经建在这里。")
+	if kind == "supply_factory":
+		return TDOutcome.new(false, "ALREADY", "原料提供厂已经建在这里。")
+	return TDOutcome.new(false, "INVALID", "点餐厅建设区或原料厂空地才能建设。")
 
 func resize_home(size_id: String) -> TDOutcome:
 	if not TDRestaurantSizes.IDS.has(size_id):
 		return TDOutcome.new(false, "MISSING", "没有这种面积")
 	if town_id != home_town_id:
 		return TDOutcome.new(false, "WRONG_TOWN", "先回到主小镇，再改主店面积。")
-	var previous := home_size
+	if not home_built:
+		return TDOutcome.new(false, "NEED_HOME", "先在餐厅建设区点空地建店。")
+	var lot := town_map.diner_lot()
+	var foot := TDRestaurantSizes.footprint(size_id)
+	var width := foot.x
+	var height := foot.y
+	if not lot.is_empty() and not _span_fits(width, height, lot):
+		if _span_fits(height, width, lot):
+			width = foot.y
+			height = foot.x
+		else:
+			return TDOutcome.new(false, "BLOCKED", "建设区放不下这个面积，主店保持原样。")
+	var previous_size := home_size
+	var previous_w := home_w
+	var previous_h := home_h
 	home_size = size_id
+	home_w = width
+	home_h = height
 	_rebuild_map()
 	var diner := _plot_by_id("player_diner")
-	var foot := TDRestaurantSizes.footprint(size_id)
-	if int(diner.get("w", 0)) * int(diner.get("h", 0)) != foot.x * foot.y:
-		home_size = previous
+	if int(diner.get("w", 0)) * int(diner.get("h", 0)) != width * height:
+		home_size = previous_size
+		home_w = previous_w
+		home_h = previous_h
 		_rebuild_map()
-		return TDOutcome.new(false, "BLOCKED", "中心旁边的空地放不下这个面积，主店保持原样。")
+		return TDOutcome.new(false, "BLOCKED", "建设区放不下这个面积，主店保持原样。")
 	var room := TDRestaurantSizes.interior(size_id)
 	return TDOutcome.new(true, "RESIZED", "主店地图%d×%d，店内%d×%d。" % [int(diner["w"]), int(diner["h"]), room.x, room.y])
 
@@ -913,7 +1002,7 @@ func claim_branch(size_id: String, origin: Vector2i) -> TDOutcome:
 	if not TDRestaurantSizes.IDS.has(size_id):
 		return TDOutcome.new(false, "MISSING", "没有这种面积")
 	if town_id == home_town_id:
-		return TDOutcome.new(false, "HOME", "主店已经在中心路口旁边。别的小镇才能自己划地。")
+		return TDOutcome.new(false, "HOME", "主店在餐厅建设区建造。别的小镇才能自己划分店。")
 	if branch_open and branch_town != town_id:
 		return TDOutcome.new(false, "ONE_BRANCH", "已经有一家分店。先关掉，才能在另一座小镇划地。")
 	var foot := TDRestaurantSizes.footprint(size_id)
@@ -1231,6 +1320,11 @@ func export_phase4() -> Dictionary:
 		"town_id": town_id,
 		"home_town_id": home_town_id,
 		"home_size": home_size,
+		"home_built": home_built,
+		"home_venue": home_venue,
+		"home_w": home_w,
+		"home_h": home_h,
+		"factory_built": factory_built.duplicate(true),
 		"branch_open": branch_open,
 		"branch_town": branch_town,
 		"branch_culture": branch_culture,
@@ -1261,6 +1355,11 @@ func import_phase4(data: Dictionary) -> void:
 	town_id = String(data.get("town_id", town_id))
 	home_town_id = String(data.get("home_town_id", home_town_id))
 	home_size = String(data.get("home_size", home_size))
+	home_built = bool(data.get("home_built", false))
+	home_venue = String(data.get("home_venue", ""))
+	home_w = int(data.get("home_w", 0))
+	home_h = int(data.get("home_h", 0))
+	factory_built = (data.get("factory_built", {}) as Dictionary).duplicate(true)
 	branch_open = bool(data.get("branch_open", false))
 	branch_town = String(data.get("branch_town", ""))
 	branch_culture = String(data.get("branch_culture", ""))
@@ -1290,8 +1389,29 @@ func _rebuild_map() -> void:
 	if branch_open and town_id == branch_town:
 		reserve = {"x": branch_x, "y": branch_y, "w": branch_w, "h": branch_h, "size": branch_size, "name": "分店"}
 	var at_home := town_id == home_town_id
-	town_map.build(catalog, TDTownMap.seed_of(town_id), home_size if at_home else "small", at_home, reserve)
+	var span := Vector2i(home_w, home_h) if at_home and home_built else Vector2i.ZERO
+	town_map.build(catalog, TDTownMap.seed_of(town_id), home_size if at_home else "small", at_home and home_built, reserve, _built_factory_ids(), span, home_venue if at_home else "")
 	map_revision += 1
+
+func _built_factory_ids() -> Array:
+	var rows: Array = []
+	var prefix := "%s:" % town_id
+	for key: Variant in factory_built.keys():
+		var text := String(key)
+		if not bool(factory_built[key]):
+			continue
+		if text.begins_with(prefix):
+			rows.append(text.substr(prefix.length()))
+	return rows
+
+func _factory_key(plot_id: String) -> String:
+	return "%s:%s" % [town_id, plot_id]
+
+func _span_fits(width: int, height: int, lot: Dictionary) -> bool:
+	return width <= int(lot.get("w", 0)) and height <= int(lot.get("h", 0))
+
+func _footprint_fits_lot(foot: Vector2i, lot: Dictionary) -> bool:
+	return _span_fits(foot.x, foot.y, lot) or _span_fits(foot.y, foot.x, lot)
 
 func _employ_branch(role: String) -> TDOutcome:
 	if not branch_open:
@@ -1580,8 +1700,10 @@ func _dish_name(dish_id: String) -> String:
 	return String(catalog.dish(dish_id).get("name", dish_id))
 
 func _branch_line() -> String:
+	if not home_built:
+		return "主店还没建。点餐厅建设区空地建店；点原料厂空地建厂。分店仍在别的小镇划地，同时只开一家。"
 	if not branch_open:
-		return "分店还没开。主店在中心路口旁边，默认3×4。别的小镇可以自己划地，同时只开一家。"
+		return "分店还没开。主店在餐厅建设区，默认%s。别的小镇可以自己划地，同时只开一家。" % TDRestaurantSizes.name_of(home_size)
 	var room := TDRestaurantSizes.interior(branch_size)
 	return "分店在%s，地图%d×%d，店内%d×%d。菜单和员工跟主店分开，钱和学会的菜谱共用。" % [branch_town, branch_w, branch_h, room.x, room.y]
 

@@ -1,5 +1,14 @@
 # 项目状态
 
+## 当前检查点：D030 小镇建设区重划（2026-10-13）
+
+- USER_CONFIRMED：餐厅建设区空地点击建主店；8 个原料厂空地点击建厂，不用 E。
+- 地图开局不再自动放主店。`diner_lot` + 8×`factory_lot` 固定生成；建成后为 `player_diner` / `supply_factory`。
+- 已改 `town_map.gd`、`phase3_session.gd`、`town_world.gd`、`phase3_world.json` 与相关单测期望；契约见 CONTRACTS D030，决定见 DECISIONS D030。
+- GRILL_SKILL=NOT_AVAILABLE。本机未找到锁定版 Godot，定向 GUT 与 `tools/check.ps1` 记 NOT_RUN。PLAYTEST=PENDING。
+- 可玩：走进小镇 → 点击餐厅建设区，选择中餐厅或西餐厅。建成的店只占建设区四分之一，走到店上就进入店内。点击绿色原料厂空地建厂。功能区与菜市场仍用 E。
+- 下一工作单元：本机装回锁定 Godot 后跑 `test_phase3_rules` / `test_phase4_branch`；人工试玩建设手感。不自动提交。
+
 ## 当前检查点：D029 三人合作框架（2026-10-13）
 
 - 已建立三条固定工作线、轮值集成者、角色分支→集成分支→`main` 的两级合并方式，以及文件所有权、共享锁、工作单、契约、交接、审查、合并日和完成定义。

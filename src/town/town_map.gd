@@ -3,6 +3,9 @@ extends RefCounted
 
 const SIZE := 41
 const CENTER := 20
+const FACTORY_SLOTS := 8
+const FACTORY_CELL := 2
+const DINER_LOT_SPAN := Vector2i(12, 18)
 const LONG_KINDS: Array[String] = ["plaza", "amusement", "snack_street", "commercial_street"]
 const MARKET_TIERS: Array = [
 	{"id": "market-small", "name": "街口菜摊", "tier": 1, "w": 2, "h": 2, "unlocks": ["tomato", "egg", "scallion", "oil", "salt"]},
@@ -20,14 +23,21 @@ static func seed_of(town_id: String) -> int:
 		value = (value * 33 + town_id.unicode_at(index)) % 1000003
 	return value
 
-func build(catalog: TDTownCatalog, seed_value: int, home_size: String = "small", place_diner: bool = true, reserve: Dictionary = {}) -> void:
+func build(catalog: TDTownCatalog, seed_value: int, _home_size: String = "small", place_diner: bool = false, reserve: Dictionary = {}, built_factories: Array = [], diner_span: Vector2i = Vector2i.ZERO, home_venue: String = "") -> void:
 	var rng := TDBusinessRandom.new(seed_value)
 	_grow_roads(rng)
 	plots = []
 	housing_names = []
 	var used := {}
+	_place_diner_lot(used, rng)
+	_place_factory_lots(used, rng)
 	if place_diner:
-		_place_home_diner(home_size, used)
+		var span := diner_span
+		if span.x <= 0 or span.y <= 0:
+			var lot_now := diner_lot()
+			span = Vector2i(maxi(1, int(lot_now.get("w", 2)) / 2), maxi(1, int(lot_now.get("h", 2)) / 2))
+		_place_home_diner(span, used, home_venue if home_venue != "" else "chinese")
+	_mark_built_factories(built_factories)
 	if not reserve.is_empty():
 		var reserved_width := int(reserve.get("w", 0))
 		var reserved_height := int(reserve.get("h", 0))
@@ -36,7 +46,7 @@ func build(catalog: TDTownCatalog, seed_value: int, home_size: String = "small",
 			_commit("player_diner", String(reserve.get("name", "分店")), reserved_origin.x, reserved_origin.y, reserved_width, reserved_height, used, {"id": "branch_diner", "size": String(reserve.get("size", "small"))})
 	var pending: Array[String] = []
 	for id: String in TDTownCatalog.ZONE_IDS:
-		if id == "player_diner" or id == "market":
+		if id == "player_diner" or id == "market" or id == "diner_lot":
 			continue
 		pending.append(id)
 	pending.sort_custom(func(a: String, b: String) -> bool:
@@ -89,7 +99,7 @@ func _copy_catalog(catalog: TDTownCatalog) -> void:
 		plot["pool"] = int(zone.get("pool", 0))
 		plot["budget_shift"] = int(zone.get("budget_shift", 0))
 		plot["foreign_scale"] = float(zone.get("foreign_scale", 1.0))
-		if String(plot["id"]) == kind:
+		if String(plot["id"]) == kind and String(plot.get("venue", "")) == "":
 			plot["name"] = String(zone.get("name", plot["name"]))
 		plots[index] = plot
 
@@ -97,15 +107,28 @@ func is_road(x: int, y: int) -> bool:
 	return roads.has(Vector2i(x, y))
 
 func is_walkable(x: int, y: int) -> bool:
-	return x >= 0 and y >= 0 and x < SIZE and y < SIZE and is_road(x, y)
+	if x < 0 or y < 0 or x >= SIZE or y >= SIZE:
+		return false
+	if is_road(x, y):
+		return true
+	return String(plot_at(x, y).get("id", "")) == "player_diner"
 
 func plot_at(x: int, y: int) -> Dictionary:
+	var lot := {}
 	for item: Variant in plots:
 		var plot: Dictionary = item
 		var width := int(plot.get("w", 1))
 		var height := int(plot.get("h", 1))
-		if x >= int(plot["x"]) and y >= int(plot["y"]) and x < int(plot["x"]) + width and y < int(plot["y"]) + height:
-			return plot.duplicate(true)
+		if x < int(plot["x"]) or y < int(plot["y"]) or x >= int(plot["x"]) + width or y >= int(plot["y"]) + height:
+			continue
+		var kind := String(plot.get("kind", ""))
+		if kind == "diner_lot" or kind == "factory_lot":
+			if lot.is_empty():
+				lot = plot
+			continue
+		return plot.duplicate(true)
+	if not lot.is_empty():
+		return lot.duplicate(true)
 	return {}
 
 func can_place(x: int, y: int, width: int, height: int) -> bool:
@@ -141,7 +164,7 @@ func set_enabled(id: String, enabled: bool) -> void:
 	for index in plots.size():
 		var plot: Dictionary = plots[index]
 		var kind := String(plot["kind"])
-		if kind == "player_diner" or kind == "plaza":
+		if kind == "player_diner" or kind == "plaza" or kind == "diner_lot" or kind == "factory_lot" or kind == "supply_factory":
 			continue
 		if String(plot["id"]) == id or kind == id:
 			plot["enabled"] = enabled
@@ -289,20 +312,120 @@ func _grow_roads(rng: TDBusinessRandom) -> void:
 				break
 			roads[cursor] = true
 
-func _place_home_diner(size_id: String, used: Dictionary) -> void:
-	var foot := TDRestaurantSizes.footprint(size_id)
-	var spot := _home_spot(foot.x, foot.y, used)
-	var width := foot.x
-	var height := foot.y
-	if spot.x < 0:
-		spot = _home_spot(foot.y, foot.x, used)
-		width = foot.y
-		height = foot.x
-	if spot.x < 0:
-		return
-	_commit("player_diner", "主人公餐厅", spot.x, spot.y, width, height, used, {"id": "player_diner", "size": size_id})
+func diner_lot() -> Dictionary:
+	return _by_kind("diner_lot")
 
-func _home_spot(width: int, height: int, used: Dictionary) -> Vector2i:
+func factory_lots() -> Array:
+	var rows: Array = []
+	for item: Variant in plots:
+		var plot: Dictionary = item
+		var kind := String(plot.get("kind", ""))
+		if kind == "factory_lot" or kind == "supply_factory":
+			rows.append(plot.duplicate(true))
+	rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return String(a.get("id", "")) < String(b.get("id", ""))
+	)
+	return rows
+
+func _place_diner_lot(used: Dictionary, rng: TDBusinessRandom) -> void:
+	var orientations: Array[Vector2i] = [DINER_LOT_SPAN, Vector2i(DINER_LOT_SPAN.y, DINER_LOT_SPAN.x)]
+	for orient: Vector2i in orientations:
+		var spot := _against_cross(orient.x, orient.y, used)
+		if spot.x >= 0:
+			_commit("diner_lot", "餐厅建设区", spot.x, spot.y, orient.x, orient.y, used, {"id": "diner_lot"})
+			return
+	for orient: Vector2i in orientations:
+		_place("diner_lot", "餐厅建设区", orient.x, orient.y, used, rng, {"id": "diner_lot"})
+		if not diner_lot().is_empty():
+			return
+
+func _place_factory_lots(used: Dictionary, rng: TDBusinessRandom) -> void:
+	var cell := FACTORY_CELL
+	var grids: Array[Vector2i] = [Vector2i(4, 2), Vector2i(2, 4)]
+	for grid: Vector2i in grids:
+		var width := grid.x * cell
+		var height := grid.y * cell
+		var origin := _against_cross(width, height, used)
+		if origin.x < 0:
+			continue
+		var serial := 1
+		for row in grid.y:
+			for column in grid.x:
+				if serial > FACTORY_SLOTS:
+					break
+				var x := origin.x + column * cell
+				var y := origin.y + row * cell
+				_commit("factory_lot", "原料厂空地%d" % serial, x, y, cell, cell, used, {"id": "factory-%d" % serial, "slot": serial})
+				serial += 1
+		return
+	for serial in range(1, FACTORY_SLOTS + 1):
+		_place("factory_lot", "原料厂空地%d" % serial, cell, cell, used, rng, {"id": "factory-%d" % serial, "slot": serial})
+
+func _against_cross(width: int, height: int, used: Dictionary) -> Vector2i:
+	var origins: Array[Vector2i] = [
+		Vector2i(CENTER - width, CENTER - height),
+		Vector2i(CENTER + 1, CENTER - height),
+		Vector2i(CENTER - width, CENTER + 1),
+		Vector2i(CENTER + 1, CENTER + 1),
+	]
+	for origin: Vector2i in origins:
+		if _fits(origin, width, height, used) and _touches_road(origin.x, origin.y, width, height):
+			return origin
+	for origin: Vector2i in origins:
+		var away := Vector2i(-1 if origin.x < CENTER else 1, -1 if origin.y < CENTER else 1)
+		for step in 10:
+			var shifted := origin + away * step
+			if _fits(shifted, width, height, used) and _touches_road(shifted.x, shifted.y, width, height):
+				return shifted
+	return _lot_spot(width, height, used, true)
+
+func _mark_built_factories(built_factories: Array) -> void:
+	var built := {}
+	for item: Variant in built_factories:
+		built[String(item)] = true
+	for index in plots.size():
+		var plot: Dictionary = plots[index]
+		if String(plot.get("kind", "")) != "factory_lot":
+			continue
+		var id := String(plot.get("id", ""))
+		if not built.has(id):
+			continue
+		plot["kind"] = "supply_factory"
+		plot["name"] = "原料提供厂%d" % int(plot.get("slot", index + 1))
+		plots[index] = plot
+
+func _place_home_diner(span: Vector2i, used: Dictionary, venue: String) -> void:
+	var lot := diner_lot()
+	if lot.is_empty():
+		return
+	var width := span.x
+	var height := span.y
+	if width > int(lot["w"]) or height > int(lot["h"]):
+		if height <= int(lot["w"]) and width <= int(lot["h"]):
+			var swapped := width
+			width = height
+			height = swapped
+		else:
+			return
+	var spot := _corner_near_center(lot, width, height)
+	var title := "西餐厅" if venue == "western" else "中餐厅"
+	_commit_overlap("player_diner", title, spot.x, spot.y, width, height, used, {"id": "player_diner", "size": "quarter", "venue": venue})
+
+func _corner_near_center(lot: Dictionary, width: int, height: int) -> Vector2i:
+	var base_x := int(lot["x"])
+	var base_y := int(lot["y"])
+	var best := Vector2i(base_x, base_y)
+	var best_distance := 9999
+	for ox: int in [0, maxi(0, int(lot["w"]) - width)]:
+		for oy: int in [0, maxi(0, int(lot["h"]) - height)]:
+			var origin := Vector2i(base_x + ox, base_y + oy)
+			var distance := absi(origin.x + (width >> 1) - CENTER) + absi(origin.y + (height >> 1) - CENTER)
+			if distance < best_distance:
+				best_distance = distance
+				best = origin
+	return best
+
+func _lot_spot(width: int, height: int, used: Dictionary, prefer_hub: bool) -> Vector2i:
 	var best := Vector2i(-1, -1)
 	var best_distance := 9999
 	if width <= 0 or height <= 0:
@@ -311,24 +434,72 @@ func _home_spot(width: int, height: int, used: Dictionary) -> Vector2i:
 		for x in range(0, SIZE - width + 1):
 			if not _fits(Vector2i(x, y), width, height, used):
 				continue
-			if not _touches_hub(x, y, width, height):
+			if not _touches_road(x, y, width, height):
 				continue
-			var distance := absi(x + width / 2 - CENTER) + absi(y + height / 2 - CENTER)
+			if prefer_hub and not _near_hub(x, y, width, height, 8):
+				continue
+			var distance := absi(x + (width >> 1) - CENTER) + absi(y + (height >> 1) - CENTER)
+			if prefer_hub:
+				if distance < best_distance:
+					best_distance = distance
+					best = Vector2i(x, y)
+			else:
+				if distance > best_distance or best.x < 0:
+					best_distance = distance
+					best = Vector2i(x, y)
+	if best.x >= 0 or not prefer_hub:
+		return best
+	best_distance = 9999
+	for y in range(0, SIZE - height + 1):
+		for x in range(0, SIZE - width + 1):
+			if not _fits(Vector2i(x, y), width, height, used):
+				continue
+			if not _touches_road(x, y, width, height):
+				continue
+			var distance := absi(x + (width >> 1) - CENTER) + absi(y + (height >> 1) - CENTER)
 			if distance < best_distance:
 				best_distance = distance
 				best = Vector2i(x, y)
 	return best
 
-func _touches_hub(x: int, y: int, width: int, height: int) -> bool:
+func _touches_road(x: int, y: int, width: int, height: int) -> bool:
 	for cy in height:
 		for cx in width:
-			var cell := Vector2i(x + cx, y + cy)
 			for step: Vector2i in [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
-				var neighbor := cell + step
-				var distance := absi(neighbor.x - CENTER) + absi(neighbor.y - CENTER)
-				if is_road(neighbor.x, neighbor.y) and distance <= 2:
+				var neighbor := Vector2i(x + cx, y + cy) + step
+				if is_road(neighbor.x, neighbor.y):
 					return true
 	return false
+
+func _near_hub(x: int, y: int, width: int, height: int, limit: int) -> bool:
+	var distance := absi(x + (width >> 1) - CENTER) + absi(y + (height >> 1) - CENTER)
+	return distance <= limit
+
+func _commit_overlap(kind: String, title: String, x: int, y: int, width: int, height: int, used: Dictionary, extra: Dictionary) -> void:
+	var plot := {
+		"id": String(extra.get("id", kind)),
+		"name": title,
+		"kind": kind,
+		"x": x,
+		"y": y,
+		"w": width,
+		"h": height,
+		"enabled": true,
+		"walkable": false,
+		"pool": 0,
+		"budget_shift": 0,
+		"foreign_scale": 1.0,
+		"tier": int(extra.get("tier", 0)),
+		"unlocks": (extra.get("unlocks", []) as Array).duplicate(),
+		"size": String(extra.get("size", "")),
+		"slot": int(extra.get("slot", 0)),
+		"venue": String(extra.get("venue", "")),
+	}
+	var door := _approach(x, y, width, height)
+	plot["approach_x"] = door.x
+	plot["approach_y"] = door.y
+	_claim(used, plot)
+	plots.append(plot)
 
 func _place(kind: String, title: String, width: int, height: int, used: Dictionary, rng: TDBusinessRandom, extra: Dictionary) -> void:
 	var roads_list := _road_cells()
@@ -393,6 +564,7 @@ func _commit(kind: String, title: String, x: int, y: int, width: int, height: in
 		"tier": int(extra.get("tier", 0)),
 		"unlocks": (extra.get("unlocks", []) as Array).duplicate(),
 		"size": String(extra.get("size", "")),
+		"slot": int(extra.get("slot", 0)),
 	}
 	if extra.is_empty():
 		plot["id"] = kind

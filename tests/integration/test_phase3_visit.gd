@@ -58,12 +58,15 @@ func test_town_crossroads_supply_delay_and_zone_pool() -> void:
 	Input.action_release("world_right")
 	assert_gt(player.position.x, initial.x)
 	var camera := town.get_node("TownCamera") as Camera2D
-	assert_gt(camera.zoom.x, 1.5)
+	var map_px := float(TDTownMap.SIZE * TDTownWorld.CELL)
+	var view := town.get_viewport().get_visible_rect().size
+	var fit := minf(view.x / map_px, (view.y - TDTownWorld.BAR_HEIGHT) / map_px) * 0.96
+	assert_almost_eq(camera.zoom.x, fit * 2.0, 0.02)
 	assert_true(camera.is_current())
-	var seen := camera.position.x
-	player.position += Vector2(240, 0)
+	var seen := camera.position
+	player.position += Vector2(0, 240)
 	await wait_process_frames(20)
-	assert_gt(camera.position.x, seen)
+	assert_gt(camera.position.y, seen.y)
 	var ordered := town.session.order_supply("tomato")
 	assert_true(ordered.ok, ordered.message)
 	assert_eq(int((town.session.supply.incoming[0] as Dictionary)["arrive"]), town.session.day + 1)

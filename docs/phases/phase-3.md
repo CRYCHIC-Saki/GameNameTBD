@@ -21,7 +21,8 @@
 | AC-PHASE-3-009 学会的新菜进入原厨房逐拍表 | PASS | `test_learned_dish_joins_the_kitchen_sheet` |
 | AC-PHASE-3-010 租金、水电、工资从现金扣除，没钱不能雇 | PASS | `test_rent_utilities_and_wages_come_out_of_cash` |
 | AC-PHASE-3-011 按菜或点选备原料，设备延长保质期 | PASS | `test_raw_ingredients_can_be_prepped_by_dish_or_by_pick` |
-| AC-PHASE-3-012 六座小镇从中心长出四向道路，四个大区最长边至少 10 | PASS | `test_town_roads_grow_from_the_center_and_large_zones_fit`。D023 起主店改到中心路口旁边的空地，不再占中心格 |
+| AC-PHASE-3-012 六座小镇从中心长出四向道路，四个大区最长边至少 10 | PASS | `test_town_roads_grow_from_the_center_and_large_zones_fit`。D030 起改为餐厅建设区+8 原料厂空地，主店需点击建设，不再自动落店 |
+| AC-PHASE-3-018 餐厅建设区空地可建主店；8 块原料厂空地点击建厂，不用 E | PENDING_RUN | 本机无锁定 Godot；用例已写入 `test_phase3_rules` / `test_phase4_branch` |
 | AC-PHASE-3-013 SAN 0–100，开局可改；窗口按大纲公式；评分 ≥ 80 且 SAN < 30 才可能解锁西红柿炒皮蛋 | PASS | `test_san_windows_dark_dish_hours_and_market_distance` |
 | AC-PHASE-3-014 备货、收拾、整理和休息按小时改 SAN；小市场锁住牛肉，大市场可以买 | PASS | 同上 |
 | AC-PHASE-3-015 假判定在距离落点两拍内消失，且不改真实判定 | PASS | `shows_fake(0, 0, 3, 0.5)` 为真，`0.9` 秒为假 |
@@ -34,7 +35,7 @@
 
 ## 试玩
 
-1. 主菜单进「走进小镇」。镜头跟着人，只能看到周围一段路。沿十字路走到餐厅、市场这些占多格的色块，或直接点「进入餐厅」。
+1. 主菜单进「走进小镇」。镜头跟着人。先点击餐厅建设区建主店，再点原料厂空地建厂；建好后才能点「进入餐厅」。功能区和菜市场仍沿路按 E。
 2. 雇迎宾、雇收银，看现金减少。点「全程来客」。菜单没有的菜出现后，点「接下」或「拒绝」。
 3. 客人坐下后点「认真上菜」或「马虎上菜」，看离开时的总体评价。也可以站在门口按 E 进后厨，做出客人点的菜；按 V 只看餐厅，再按一次回后厨。
 4. 点「客流面板」，看预算条、选店和已会菜谱。用菜价加减和「下一天」看数字变化。
