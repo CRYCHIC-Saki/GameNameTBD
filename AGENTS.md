@@ -13,6 +13,6 @@
 - Windows 单机 2D、键鼠；QTE 中游戏时间正常流逝，主动暂停冻结游戏与操作时钟。引擎/依赖按 `dependencies.lock.json`，禁止自行升级。
 - 小型模块化单体、静态类型 GDScript；组合入口装配依赖，不建万能 Autoload。遵守 `docs/ARCHITECTURE.md` 与 `docs/CONTRACTS.md`。
 - 模板只读、会话独立，界面只发送意图；菜品计算与评分分离。原始 towns.json 不属于运行时配置。
-- 改共享契约先更新契约与验收；三人并行的目录、波次和合并日见 `docs/COLLABORATION.md` 开头。
+- 改共享契约先更新契约与验收；三人并行规范见 `docs/collaboration/README.md`，机器所有权见 `collaboration.config.json`，当前锁见 `docs/collaboration/CURRENT_WAVE.md`。角色分支先运行 `tools/collab.ps1 -Action Check`；共享文件只由轮值集成者在集成分支修改。
 - 使用 `tools/check.ps1` 的真实结果；零测试、跳过、解析错误或超时不能算通过。人工试玩未执行记 PENDING。
 - 不覆盖用户改动，不操作真实玩家存档，不擅自推送发布或修改全局环境。记录准确断点并在本阶段交付后停止。

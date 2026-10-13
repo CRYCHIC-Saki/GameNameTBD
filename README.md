@@ -48,6 +48,27 @@ python tools/kenney_fetch.py search --query furniture
 python tools/kenney_fetch.py download --query furniture --out artifacts/kenney --limit 3
 ```
 
+## 三人协作
+
+正式规范见 `docs/collaboration/README.md`。三条固定工作线是做菜与研发、经济与供货、小镇与事件；每波由其中一人轮值集成，不增加第四人。
+
+```powershell
+# 校验三人目录所有权配置
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/collab.ps1 -Action Validate
+
+# 查看 Phase 4 第 0 波预期分支和现有工作树
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/collab.ps1 -Action Status -Phase 4 -Wave 0
+
+# 基线提交且工作区干净后，先预演创建四个工作树
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/collab.ps1 -Action Init -Phase 4 -Wave 0 -BaseRef main -WhatIf
+
+# 角色分支检查自己的未提交文件
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/collab.ps1 -Action Check -Role cook `
+  -BaseRef integration/phase-4-wave-0 -IncludeWorkingTree
+```
+
+协作工具兼容 Windows PowerShell 5.1；CI 仍使用 `pwsh`。当前 Phase 4 尚未开工，工作区也有未提交修改，因此现在不要实际运行 `-Action Init`。初始化脚本不会提交、推送或创建 PR。
+
 ## 工程运行
 
 已锁定 Godot 4.7.2 stable、静态类型 GDScript、Compatibility、GUT 9.7.1。当前机器 Godot 在 Steam 安装目录，未修改全局环境；准确路径、版本与校验值见 `dependencies.lock.json`。命令需要 PowerShell 7.2+，本机实测7.6.5。
@@ -88,6 +109,7 @@ CI配置在 `.github/workflows/check.yml`，推送和Pull Request调用同一 `t
 - `docs/PROJECT_STATE.md` / `docs/DECISIONS.md`：当前状态、已确认决定、建议与冲突。
 - `docs/ARCHITECTURE.md` / `docs/CONTRACTS.md`：模块职责、状态所有权和公共接口。
 - `docs/COLLABORATION.md`：目录归属、共享文件负责人、独立检查与接口变更。
+- `docs/collaboration/README.md` / `collaboration.config.json`：三人协作规范和机器可读所有权。
 - `docs/phases/phase-0.md`：AC与实际验收证据。
 - `docs/phases/phase-1.md`：完整系统AC与实际证据；旧76项验收保留历史。
 - `docs/systems/cooking.md`：当前v3接口、建议参数、数据扩展与外部接入；PHASE1_INTERFACES.md为旧v2原型。

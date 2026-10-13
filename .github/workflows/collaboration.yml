@@ -1,0 +1,25 @@
+name: Collaboration ownership
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ownership:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate collaboration configuration
+        shell: pwsh
+        run: ./tools/collab.ps1 -Action Validate
+
+      - name: Check role ownership
+        if: github.event_name == 'pull_request'
+        shell: pwsh
+        run: ./tools/collab.ps1 -Action Check -Role auto -BaseRef "origin/${{ github.base_ref }}" -TargetBranch "${{ github.base_ref }}"

@@ -1,18 +1,28 @@
 # 分工与集成基线
 
+正式三人规范和工具入口：
+
+- `docs/collaboration/README.md`：角色、分支、工作树、契约、交接、审查和 Definition of Done；
+- `collaboration.config.json`：机器可读目录所有权、共享文件和必跑套件；
+- `tools/collab.ps1`：配置校验、状态、所有权检查和工作树初始化；
+- `docs/collaboration/CURRENT_WAVE.md`：当前波次、负责人和共享锁；
+- `docs/collaboration/templates/`：工作单、交接和合并检查单。
+
+下文保留当前 Phase 4 分工和历史协作记录。与上面正式规范冲突时，以正式规范为准；产品范围仍以阶段提示和决定为准。
+
 ## 三人并行（2026-10-13）
 
-程序最多三人。三个人固定看三条线，集成的工作按波次轮换，不另设第四个人。任务在 `docs/phases/plan-1013.md`，规则在 D027。下面从 D020 起的段落是历史分工；目录冲突时以本节为准。
+程序最多三人。三个人固定看三条线，集成的工作按波次轮换，不另设第四个人。任务在 `docs/phases/plan-1013.md`，规则在 D027/D028。下面从 D020 起的段落是历史分工；目录冲突时以 `collaboration.config.json` 为准。
 
 | 线 | 波次中可以改 | 自己的检查 |
 |---|---|---|
-| 做菜与研发 | `src/cooking/`、`src/qte/`、`src/kitchen/`、`src/scoring/`，以及 `content/` 里的做菜谱和研发图。新测试用新文件，例如 `tests/unit/test_san_substitute.gd` | `tools/check.ps1 -Suite cooking` 和 `-Suite qte` |
-| 经济与供货 | `src/economy/`、`src/business/`、`content/pantry.json`，以及新建的调料、店种、市场配置。新测试单独建文件 | `tools/check.ps1 -Suite business`。Phase 2 的钱和 `user://shop-v1.json` 语义保持不动 |
-| 小镇与事件 | `src/town/` 里除 `phase3_session.gd` 以外的脚本、`src/restaurant/`、新建的事件配置，以及 `tests/unit/test_floor_service.gd`、`tests/unit/test_restaurant_layout.gd`、`tests/integration/test_phase3_visit.gd`、`tests/integration/test_restaurant_world.gd` | 合并日前运行上列测试文件。Phase 3 的全套规则测试不在这里改 |
+| 做菜与研发 | `src/cooking/`、`src/qte/`、`src/kitchen/`、`src/scoring/`，以及 `content/` 里的做菜谱和研发图。新测试用新文件，例如 `tests/unit/test_san_substitute.gd` | `tools/check.ps1 -Suite cooking`、`-Suite qte` 和 `-Suite scoring` |
+| 经济与供货 | `src/economy/`、`src/business/`、`content/pantry.json`，以及新建的调料、店种、市场配置。新测试单独建文件 | `tools/check.ps1 -Suite business` 和 `-Suite platform`。Phase 2 的钱和 `user://shop-v1.json` 语义保持不动 |
+| 小镇与事件 | `src/town/` 里除共享锁文件以外的脚本、`src/restaurant/`、新建的事件配置，以及 `tests/unit/test_floor_service.gd`、`tests/unit/test_restaurant_layout.gd`、`tests/integration/test_phase3_visit.gd`、`tests/integration/test_restaurant_world.gd` | `tools/check.ps1 -Suite service`。Phase 3 的全套规则测试不在这里改 |
 
-共享文件只有当波集成者在合并日改：`src/town/phase3_session.gd`、`src/app/main.gd`、`src/contracts/`、`project.godot`、`content/phase3_world.json`、`tests/unit/test_phase3_rules.gd`、`tests/unit/test_phase4_branch.gd`、`docs/CONTRACTS.md`。`src/town/san_rules.gd` 也算共享，因为现在的出锅概率还在里面；做菜线把入锅规则写到 `src/cooking/` 的新脚本，不直接改这个文件。
+共享文件只能由当波集成者在集成工作树按 Contract / Integrate 步骤修改：`src/town/phase3_session.gd`、`src/app/main.gd`、`src/contracts/`、`project.godot`、`content/phase3_world.json`、`tests/unit/test_phase3_rules.gd`、`tests/unit/test_phase4_branch.gd`、`docs/CONTRACTS.md`。`src/town/san_rules.gd` 也算共享，因为现在的出锅概率还在里面；做菜线把入锅规则写到 `src/cooking/` 的新脚本，不直接改这个文件。
 
-集成者按波轮换：第 0 波和第 1 波是小镇与事件，第 2 波是经济与供货，第 3 波是做菜与研发。合并日之前，集成者也不改共享文件，把自己的规则写在自己的目录里。
+集成者按波轮换：第 0 波和第 1 波是小镇与事件，第 2 波是经济与供货，第 3 波是做菜与研发。集成者兼任角色时，在角色工作树也不改共享文件；契约冻结和合并装配只在集成工作树处理。
 
 ```mermaid
 flowchart LR
@@ -36,7 +46,7 @@ flowchart LR
 6. 玩法是否好用仍记 PENDING，直到有人按 `plan-1013.md` 的试玩步骤真的玩过。
 7. 提交和推送等用户开口。
 
-三个人同时做时，每人用自己的分支，只包含自己目录里的文件。分支名用 `cook/wave-1`、`economy/wave-1`、`town/wave-1` 这种形式。集成者在合并日把三条分支合进来。不要在同一个工作目录里同时保存三个人的改动。
+三个人同时做时，每人用自己的分支，只包含自己目录里的文件。分支名统一用 `work/<role>/phase-<n>-wave-<n>`，角色 PR 合入 `integration/phase-<n>-wave-<n>`，最后再由集成 PR 合入 `main`。不要在同一个工作目录里同时保存三个人的改动。
 
 人不够三人时，空出来的目录本波不做，不由在场的人顺手改。用户明确改派目录之后，才换人。
 

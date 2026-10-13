@@ -1,5 +1,13 @@
 # 项目状态
 
+## 当前检查点：D029 三人合作框架（2026-10-13）
+
+- 已建立三条固定工作线、轮值集成者、角色分支→集成分支→`main` 的两级合并方式，以及文件所有权、共享锁、工作单、契约、交接、审查、合并日和完成定义。
+- 可执行入口是 `tools/collab.ps1`，机器配置是 `collaboration.config.json`，操作规范和当前看板分别是 `docs/collaboration/README.md` 与 `docs/collaboration/CURRENT_WAVE.md`。PR 模板和 GitHub 分支拓扑/所有权检查也已接入。
+- Windows PowerShell 5.1 实测：`Validate` 退出 0；Phase 4 第 0 波 `Status` 退出 0 并只列出预期分支/路径；角色 PR→同波集成分支、集成 PR→`main` 的正路径退出 0，角色 PR→`main` 按预期退出 1；用 `cook` 身份检查当前共享改动也按预期逐项报告越权。
+- 当前波次为 `IDLE`。现有工作区有未提交修改，`Init -WhatIf` 按预期退出 1，因此没有运行实际 `Init`，也没有创建分支、工作树、提交或 PR。Phase 4 仍未开工。
+- 本检查点没有改 Godot 玩法，没有运行 `tools/check.ps1` 或人工试玩；历史测试结果不变。下一步是在用户授权 Phase 4 且形成干净基线后，由轮值集成者填写工作单和共享锁，再预演并初始化工作树。
+
 ## 当前检查点：D028 Phase 1–6 完整方案（2026-10-13）
 
 - 已按“1013 会议优先、设计大纲其次、模糊处用编号 AI 填充”的规则重写 Phase 1–6 方案。

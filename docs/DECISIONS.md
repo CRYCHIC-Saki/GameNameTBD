@@ -1,5 +1,15 @@
 # 决策与来源
 
+## D029｜三人合作规范与并行框架（2026-10-13，框架已搭建/Phase 4 未开工）
+
+- USER_CONFIRMED：程序开发最多三人；需要明确三人合作规范，并搭建可直接用于后续开发的基本框架。
+- ENGINEERING_DECISION：固定三条工作线为做菜与研发 `cook`、经济与供货 `economy`、小镇与事件 `town`。每波由三人之一轮值集成者，不增加第四人；人员变化只换负责人，不改稳定角色 ID。
+- ENGINEERING_DECISION：每波使用一个 `integration/phase-{phase}-wave-{wave}` 集成分支和三个 `work/<role>/phase-{phase}-wave-{wave}` 角色分支。角色 PR 先进入集成分支，集成 PR 再进入 `main`。
+- ENGINEERING_DECISION：角色分支只改机器所有权清单中的文件。公共契约、主装配、世界总会话、活动内容、工具、CI 和阶段记录属于共享锁，只由当波集成者在集成工作树修改。跨线功能按工作单→契约冻结→红灯→角色实现→交接→集成→全量检查推进。
+- 框架入口为 `docs/collaboration/README.md`、`collaboration.config.json`、`tools/collab.ps1`、`docs/collaboration/CURRENT_WAVE.md`、工作单/交接/合并日模板以及 PR 模板和分支拓扑/所有权 CI。
+- 当前波次保持 `IDLE`。Phase 4 尚未获得开工授权，且当前工作区不是可复现的干净提交，因此没有创建分支或工作树；初始化工具明确拒绝脏基线，也不会自动提交、推送或创建 PR。
+- 本轮只改协作基础设施和文档，没有改玩法、没有运行 Godot 测试、没有把 Phase 4 标成开工。
+
 ## D028｜Phase 1–6 全流程与来源优先级（2026-10-13，方案已记录/尚未开工）
 
 - USER_CONFIRMED：重新设计 Phase 1–6 的全部实现流程。1013 会议明确提出的内容优先；会议未明确时按《美食游戏设计大纲 v0.2》；大纲仍模糊时允许结合游戏风格补齐，但必须明显标为 AI 填充，并用单独文档汇总。
