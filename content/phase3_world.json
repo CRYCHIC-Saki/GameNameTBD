@@ -59,6 +59,7 @@
     {"id": "butter", "name": "黄油", "cost": 5}
   ],
   "zones": [
+    {"id": "diner_lot", "name": "餐厅建设区", "pool": 0, "budget_shift": 0, "foreign_scale": 1, "w": 12, "h": 18},
     {"id": "player_diner", "name": "主人公餐厅", "pool": 0, "budget_shift": 0, "foreign_scale": 1, "w": 3, "h": 4},
     {"id": "competitor", "name": "竞品餐厅", "pool": 0, "budget_shift": 0, "foreign_scale": 1, "w": 3, "h": 3},
     {"id": "market", "name": "市场", "pool": 6, "budget_shift": 0, "foreign_scale": 1, "w": 3, "h": 2},

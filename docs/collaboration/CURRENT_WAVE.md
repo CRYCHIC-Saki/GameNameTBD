@@ -35,3 +35,8 @@ D031最终断点：347/347、7605断言、0失败/0跳过，全量artifacts/chec
 状态：IN_PROGRESS。复用recipe-tree波次与cook工作树。用户授权仅连续研习重试和前置连线。共享锁归轮值集成角色：公共文档、src/app/main.gd（如需）、tools/research_visual_check.gd；cook负责研习规则/UI/测试。无其他角色写入。契约/AC先见CONTRACTS R11–R12；原资料和玩家存档不动，完成后释放。
 
 D032最终断点：DELIVERED_LOCAL_PLAYTEST_PENDING。350/350、7831断言、0失败/0跳过；artifacts/check/pre-export-20261022-115956；Windows导出/374资源审计/启动exit0；GPU17图exit0；人工PENDING、远程CI NOT_RUN。cook所有权229通过，核心六文件集成一致。共享锁完成并释放，保留角色工作区，不自动继续Phase4。未提交/推送，原始资料和真实玩家档未动。
+
+## 2026-10-22 上传整合锁
+用户已授权本轮提交/上传。轮值集成者负责合入origin/main@262c86d；双方代码自动合并，DECISIONS/PROJECT_STATE冲突保留双方内容并区分重复D030来源。当前状态MERGE_VALIDATING；共享文档锁与主入口装配锁归集成者。其余角色本轮无新功能任务；不强推、不覆盖主分支。两份未跟踪原始资料继续保持本地。
+
+上传整合最终检查：INTEGRATION_VALIDATED / PLAYTEST_PENDING。双方代码与来源保留，重复D030按D030-TOWN显式区分。合并后全量350/350、7421断言、0失败/0跳过，pre-export-20261022-123120；Windows导出/374资源清单/启动exit0。integrator→main协作检查通过。用户已授权推送集成分支并交审查，不自动合并main。共享工作锁完成并释放，远程CI以PR实际状态为准。

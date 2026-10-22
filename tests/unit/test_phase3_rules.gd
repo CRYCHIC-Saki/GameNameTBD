@@ -121,13 +121,40 @@ func test_town_roads_grow_from_the_center_and_large_zones_fit() -> void:
 	assert_true(map.is_road(TDTownMap.CENTER, TDTownMap.CENTER))
 	assert_true(map.is_walkable(TDTownMap.CENTER, TDTownMap.CENTER))
 	var diner := {}
+	var lot := map.diner_lot()
+	assert_false(lot.is_empty())
+	assert_eq(maxi(int(lot["w"]), int(lot["h"])), 18)
+	assert_eq(mini(int(lot["w"]), int(lot["h"])), 12)
+	assert_false(map.covers_road(lot))
 	for item: Variant in map.plots:
 		if String((item as Dictionary)["kind"]) == "player_diner":
 			diner = item as Dictionary
 			break
-	assert_false(diner.is_empty())
-	assert_eq(int(diner["w"]) * int(diner["h"]), 12)
-	assert_false(map.covers_road(diner))
+	assert_true(diner.is_empty())
+	var factories := map.factory_lots()
+	assert_eq(factories.size(), TDTownMap.FACTORY_SLOTS)
+	for item: Variant in factories:
+		var factory: Dictionary = item
+		assert_eq(String(factory["kind"]), "factory_lot")
+		assert_eq(int(factory["w"]) * int(factory["h"]), 4)
+		assert_false(map.covers_road(factory), String(factory["id"]))
+	map.build(catalog, 11, "small", true, {}, ["factory-1"])
+	var home := {}
+	for item: Variant in map.plots:
+		if String((item as Dictionary)["kind"]) == "player_diner":
+			home = item as Dictionary
+			break
+	assert_false(home.is_empty())
+	var built_lot := map.diner_lot()
+	assert_eq(int(home["w"]) * 2, int(built_lot["w"]))
+	assert_eq(int(home["h"]) * 2, int(built_lot["h"]))
+	assert_eq(String(home["venue"]), "chinese")
+	assert_true(map.is_walkable(int(home["x"]), int(home["y"])))
+	var built := 0
+	for item: Variant in map.factory_lots():
+		if String((item as Dictionary)["kind"]) == "supply_factory":
+			built += 1
+	assert_eq(built, 1)
 	var lengths: Array[int] = []
 	for direction: Vector2i in [Vector2i(0, -1), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(1, 0)]:
 		var length := map.arm_length(direction)
@@ -145,7 +172,7 @@ func test_town_roads_grow_from_the_center_and_large_zones_fit() -> void:
 		var town := catalog.town(town_id)
 		assert_true(bool(town.get("playable", false)), town_id)
 		assert_eq(String(town["real"]), {"london": "伦敦", "paris": "巴黎", "stockholm": "斯德哥尔摩", "guangzhou": "广州", "beijing": "北京", "shanghai": "上海"}[town_id])
-	for kind: String in ["player_diner", "competitor", "market", "plaza", "urban_village", "rich_district", "commercial_street", "snack_street", "amusement", "zoo", "landmark"]:
+	for kind: String in ["diner_lot", "competitor", "market", "plaza", "urban_village", "rich_district", "commercial_street", "snack_street", "amusement", "zoo", "landmark"]:
 		var found := false
 		for item: Variant in map.plots:
 			if String((item as Dictionary)["kind"]) == kind:
@@ -170,7 +197,10 @@ func test_town_roads_grow_from_the_center_and_large_zones_fit() -> void:
 	var occupied := {}
 	for item: Variant in map.plots:
 		var plot: Dictionary = item
-		if String(plot["kind"]) == "player_diner":
+		var kind := String(plot["kind"])
+		if kind == "player_diner" or kind == "diner_lot" or kind == "factory_lot" or kind == "supply_factory":
+			if kind != "player_diner":
+				assert_false(map.covers_road(plot), String(plot["id"]))
 			continue
 		assert_false(map.covers_road(plot), String(plot["id"]))
 		for y in int(plot["h"]):

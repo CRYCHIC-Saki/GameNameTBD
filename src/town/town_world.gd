@@ -6,7 +6,6 @@ signal pause_requested
 signal restaurant_requested
 
 const CELL := 48
-const VIEW_ZOOM := 2.4
 const BAR_HEIGHT := 210.0
 
 var session: TDPhase3Session
@@ -20,6 +19,8 @@ var _closed: bool = false
 var _blockers: StaticBody2D
 var _seen_revision: int = -1
 var _staff_role: String = "greeter"
+var _venue_layer: CanvasLayer
+var _entering_diner: bool = false
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -54,9 +55,8 @@ func _ready() -> void:
 	add_child(_player)
 	_camera = Camera2D.new()
 	_camera.name = "TownCamera"
-	_camera.zoom = Vector2(VIEW_ZOOM, VIEW_ZOOM)
-	_camera.position_smoothing_enabled = true
-	_camera.position_smoothing_speed = 8.0
+	_camera.zoom = Vector2.ONE * _overview_zoom()
+	_camera.position_smoothing_enabled = false
 	_camera.enabled = true
 	add_child(_camera)
 	_camera.make_current()
@@ -64,11 +64,14 @@ func _ready() -> void:
 	_build_blockers()
 	_seen_revision = session.map_revision
 	_status_bar()
-	_set_status("镜头跟着你走。主店在中心路口旁边的空地上，默认3×4。别的小镇可以自己划地。E 和功能区互动。")
+	_set_status(_enter_hint())
 	queue_redraw()
 
 func _process(_delta: float) -> void:
 	_follow_camera()
+	_try_enter_diner()
+	if _closed:
+		return
 	if session != null and session.map_revision != _seen_revision:
 		_seen_revision = session.map_revision
 		_build_blockers()
@@ -76,15 +79,22 @@ func _process(_delta: float) -> void:
 			_player.position = _origin() + Vector2((TDTownMap.CENTER + 0.5) * CELL, (TDTownMap.CENTER + 0.5) * CELL)
 	queue_redraw()
 
+func _overview_zoom() -> float:
+	var view := get_viewport().get_visible_rect().size
+	var map_px := float(TDTownMap.SIZE * CELL)
+	var usable_height := maxf(1.0, view.y - BAR_HEIGHT)
+	return minf(view.x / map_px, usable_height / map_px) * 0.96 * 2.0
+
 func _follow_camera() -> void:
 	if _player == null or _camera == null:
 		return
-	var zoom := _camera.zoom
+	var zoom := _overview_zoom()
+	_camera.zoom = Vector2(zoom, zoom)
 	var view := get_viewport().get_visible_rect().size / zoom
 	var map_size := Vector2(TDTownMap.SIZE * CELL, TDTownMap.SIZE * CELL)
 	var origin := _origin()
 	var half := view * 0.5
-	var target := _player.position + Vector2(0, BAR_HEIGHT * 0.5 / zoom.y)
+	var target := _player.position + Vector2(0, BAR_HEIGHT * 0.5 / zoom)
 	if map_size.x > view.x:
 		target.x = clampf(target.x, origin.x + half.x, origin.x + map_size.x - half.x)
 	else:
@@ -111,11 +121,18 @@ func _draw() -> void:
 		var width := int(plot.get("w", 1))
 		var height := int(plot.get("h", 1))
 		var rect := Rect2(origin + Vector2(int(plot["x"]) * CELL + 2, int(plot["y"]) * CELL + 2), Vector2(width * CELL - 4, height * CELL - 4))
-		draw_rect(rect, _kind_color(String(plot["kind"]), bool(plot["enabled"])))
+		var fill := _kind_color(String(plot["kind"]), bool(plot["enabled"]))
+		if String(plot.get("venue", "")) == "western":
+			fill = Color("#3f6f99")
+		elif String(plot.get("venue", "")) == "chinese":
+			fill = Color("#b84a3c")
+		draw_rect(rect, fill)
 		if String(plot["id"]) == String(_selected.get("id", "")) and String(plot["kind"]) != "housing":
 			draw_rect(rect, Color("#f0cc70"), false, 3.0)
 		if String(plot["kind"]) == "housing":
 			continue
+		if String(plot["kind"]) == "diner_lot" or String(plot["kind"]) == "factory_lot":
+			draw_rect(rect, Color("#f4e27a"), false, 3.0)
 		var font := ThemeDB.fallback_font
 		if font != null:
 			var at := rect.position + Vector2(6, maxf(18.0, rect.size.y * 0.55))
@@ -134,6 +151,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if get_tree().paused:
 		return
+	if event is InputEventMouseButton:
+		var mouse := event as InputEventMouseButton
+		if mouse.pressed and mouse.button_index == MOUSE_BUTTON_LEFT and not mouse.is_echo():
+			_click_build(mouse.position)
+			get_viewport().set_input_as_handled()
+			return
 	if event.is_action_pressed("world_interact") and not event.is_echo():
 		_interact()
 		get_viewport().set_input_as_handled()
@@ -149,6 +172,7 @@ func close() -> void:
 		_board.queue_free()
 	if _pantry != null:
 		_pantry.queue_free()
+	_close_venue_choice()
 
 func _interact() -> void:
 	var cell := _player_cell()
@@ -160,10 +184,19 @@ func _interact() -> void:
 				plot = neighbor
 				break
 	if plot.is_empty():
-		_set_status("旁边没有功能区。主店在中心路口旁边，沿路按E选区。")
+		_set_status("旁边没有功能区。点建设区空地建店或建厂；沿路按E选功能区。")
 		return
 	_selected = plot
 	var kind := String(plot["kind"])
+	if kind == "diner_lot":
+		_set_status("餐厅建设区还是空地。点击这块地，选择中餐厅或西餐厅。")
+		return
+	if kind == "factory_lot":
+		_set_status("%s还是空地。点击建设原料提供厂，不用按E。" % String(plot.get("name", "原料厂空地")))
+		return
+	if kind == "supply_factory":
+		_set_status("%s已建成。供货仍走市场报价，这里不做单独工厂场景。" % String(plot.get("name", "原料提供厂")))
+		return
 	if kind == "player_diner":
 		var size_id := String(plot.get("size", session.home_size))
 		if size_id == "":
@@ -172,7 +205,7 @@ func _interact() -> void:
 		if String(plot.get("id", "")) == "branch_diner":
 			_set_status("这是分店，地图%d×%d，店内%d×%d。菜单、员工和库存跟主店分开。" % [int(plot["w"]), int(plot["h"]), room.x, room.y])
 		else:
-			_set_status("这是主店，地图%d×%d，店内%d×%d。可以进去布置、迎客和上菜。" % [int(plot["w"]), int(plot["h"]), room.x, room.y])
+			_set_status("这是%s，地图%d×%d。走到店里就能进去。" % [String(plot.get("name", "餐厅")), int(plot["w"]), int(plot["h"])])
 		return
 	if kind == "market":
 		var picked := session.select_market(String(plot["id"]))
@@ -237,7 +270,7 @@ func _status_bar() -> void:
 	box.add_child(row)
 	row.add_child(_button("返回", func() -> void: back_requested.emit()))
 	row.add_child(_button("暂停", func() -> void: pause_requested.emit()))
-	row.add_child(_button("进入餐厅", func() -> void: restaurant_requested.emit()))
+	row.add_child(_button("进入餐厅", _enter_restaurant))
 	row.add_child(_button("客流面板", _open_board))
 	row.add_child(_button("备料", _open_pantry))
 	row.add_child(_button("订当前货", _order))
@@ -309,8 +342,8 @@ func _toggle_selected() -> void:
 		_set_status("先按E选中一个功能区。")
 		return
 	var id := String(_selected["id"])
-	if id == "player_diner" or id == "plaza":
-		_set_status("餐厅和广场一直都在。")
+	if id == "player_diner" or id == "plaza" or id == "diner_lot" or String(_selected.get("kind", "")).begins_with("factory") or String(_selected.get("kind", "")) == "supply_factory":
+		_set_status("建设区和广场不能这样关掉。")
 		return
 	var enabled := not bool(session.town_map.plot_at(int(_selected["x"]), int(_selected["y"])).get("enabled", true))
 	session.set_zone_enabled(id, enabled)
@@ -412,9 +445,48 @@ func _cell_at(at: Vector2) -> Vector2i:
 func _origin() -> Vector2:
 	return Vector2(300, 24)
 
+func _enter_restaurant() -> void:
+	if session == null:
+		return
+	if session.town_id == session.home_town_id and not session.home_built:
+		_set_status("还没有主店。先点击餐厅建设区空地建店。")
+		return
+	restaurant_requested.emit()
+
+func _click_build(screen_pos: Vector2) -> void:
+	if session == null or _player == null:
+		return
+	var world := get_viewport().get_canvas_transform().affine_inverse() * screen_pos
+	var cell := _cell_at(world)
+	var plot := session.town_map.plot_at(cell.x, cell.y)
+	var kind := String(plot.get("kind", ""))
+	if kind == "diner_lot":
+		_selected = plot
+		_open_venue_choice()
+		return
+	if kind == "player_diner" and String(plot.get("id", "")) == "player_diner":
+		_selected = plot
+		_set_status("走到%s上就能进去。" % String(plot.get("name", "餐厅")))
+		return
+	if kind != "factory_lot":
+		if not plot.is_empty() and kind != "housing":
+			_selected = plot
+			_set_status("选中了%s。建设请点空地；功能区仍可用E。" % String(plot.get("name", kind)))
+		return
+	_selected = plot
+	var result := session.click_build_at(cell)
+	_set_status(result.message if result.message != "" else result.code)
+	queue_redraw()
+
 func _kind_color(kind: String, enabled: bool) -> Color:
 	var color := Color("#888888")
 	match kind:
+		"diner_lot":
+			color = Color("#e08a5a")
+		"factory_lot":
+			color = Color("#8fbf5a")
+		"supply_factory":
+			color = Color("#3d7a45")
 		"player_diner":
 			color = Color("#c45b4a")
 		"competitor":
@@ -442,6 +514,68 @@ func _kind_color(kind: String, enabled: bool) -> Color:
 	if not enabled:
 		color = color.darkened(0.45)
 	return color
+
+func _enter_hint() -> String:
+	if session == null or session.town_map.diner_lot().is_empty():
+		return "小镇已进入，但餐厅建设区没生成。看底部栏能否返回。"
+	var factories := session.town_map.factory_lots().size()
+	return "已进入小镇。点击橙色餐厅建设区，选择中餐厅或西餐厅。建成后只占四分之一，走到店里就能进去。绿色空地%d块可建原料厂。" % factories
+
+func _open_venue_choice() -> void:
+	if session == null:
+		return
+	if session.home_built:
+		_set_status("餐厅已经建好。走到店里就能进去。")
+		return
+	if session.town_id != session.home_town_id:
+		_set_status("只能在主小镇的餐厅建设区建店。")
+		return
+	_close_venue_choice()
+	_venue_layer = CanvasLayer.new()
+	_venue_layer.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(_venue_layer)
+	var panel := Panel.new()
+	panel.position = Vector2(390, 180)
+	panel.size = Vector2(500, 150)
+	panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	_venue_layer.add_child(panel)
+	var box := VBoxContainer.new()
+	box.position = Vector2(16, 12)
+	box.size = Vector2(468, 126)
+	panel.add_child(box)
+	var title := Label.new()
+	title.text = "在建设区建立哪一类餐厅？初始只占这块地的四分之一。"
+	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	box.add_child(title)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+	box.add_child(row)
+	row.add_child(_button("中餐厅", func() -> void: _pick_venue("chinese")))
+	row.add_child(_button("西餐厅", func() -> void: _pick_venue("western")))
+	row.add_child(_button("取消", _close_venue_choice))
+
+func _pick_venue(venue: String) -> void:
+	_close_venue_choice()
+	if session == null:
+		return
+	var result := session.build_venue(venue)
+	_set_status(result.message if result.message != "" else result.code)
+	queue_redraw()
+
+func _close_venue_choice() -> void:
+	if _venue_layer != null and is_instance_valid(_venue_layer):
+		_venue_layer.queue_free()
+	_venue_layer = null
+
+func _try_enter_diner() -> void:
+	if _closed or _entering_diner or session == null or _player == null or get_tree().paused:
+		return
+	var plot := session.town_map.plot_at(_player_cell().x, _player_cell().y)
+	if String(plot.get("id", "")) != "player_diner":
+		return
+	_entering_diner = true
+	_close_venue_choice()
+	restaurant_requested.emit()
 
 func _set_status(text: String) -> void:
 	if _status != null:
