@@ -1,11 +1,11 @@
 #Requires -Version 7.2
 [CmdletBinding()]
-param([string]$GodotPath = $env:GODOT_BIN)
+param([string]$GodotPath = $env:GODOT_BIN, [int]$CheckTimeoutSeconds = 600)
 $ErrorActionPreference = 'Stop'
 $root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $lock = Get-Content -LiteralPath (Join-Path $root 'dependencies.lock.json') -Raw | ConvertFrom-Json
 if (-not $GodotPath) { $GodotPath = $lock.godot.local_path }
-& (Join-Path $PSScriptRoot 'check.ps1') -GodotPath $GodotPath -ReportName ('pre-export-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
+& (Join-Path $PSScriptRoot 'check.ps1') -GodotPath $GodotPath -TimeoutSeconds $CheckTimeoutSeconds -ReportName ('pre-export-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
 if ($LASTEXITCODE -ne 0) { exit 1 }
 $build = Join-Path $root 'build'
 New-Item -ItemType Directory -Force -Path $build | Out-Null
@@ -40,7 +40,7 @@ try {
   try {
     $names = @($archive.Entries | ForEach-Object { $_.FullName })
     foreach ($name in $names) {
-      if ($name -notmatch '^(src/|\.godot/|assets/kitchen/[^/]+\.png(\.import)?$|content/(dev_samples|cooking_prototype|cooking_system|service_content)\.json$|project\.binary$)') { throw "Non-runtime resource exported: $name" }
+      if ($name -notmatch '^(src/|\.godot/|assets/kitchen/(recipe-icons/)?[^/]+\.png(\.import)?$|content/(dev_samples|cooking_prototype|cooking_system|service_content|restaurant|phase3_world|pantry|research/recipe_atlas|research/runtime_recipes)\.json$|project\.binary$)') { throw "Non-runtime resource exported: $name" }
     }
     $names | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'runtime-manifest.json') -Encoding utf8
   } finally { $archive.Dispose() }

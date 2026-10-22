@@ -1,5 +1,24 @@
 # 公共契约：v3完整烹饪，兼容v1/v2历史入口
 
+## D030 研习初版（历史；四轨输入与评分已被文末D031修正覆盖）
+
+- ResearchCatalog拥有只读图谱、稳定HTML节点ID、菜系ID、独立chart_id/version及显式世界/营业映射；100节点并不表示100道可烹饪菜。前置为ALL，无环、重复、缺引用，未配置谱面不得扣灵感。
+- ResearchSession拥有points、开放菜系、已购买资格、已解锁、最佳成绩、历史继承、奖励/推荐事件收据和挑战序号。begin(id)校验后购买一次资格并生成唯一token；input/update/finish使用真实TDCookingQTE，界面不能提交任意分数。finish仅当前挑战可执行一次，>=80解锁，低分保留资格；cancel废止token，暂停释放输入，不凭空完成。
+- recommend_cuisine(event_id,cuisine_id)与grant_inspiration(event_id,amount)为剧情/升级接入口；已处理event_id幂等，冲突负载拒绝。普通高分菜按每菜每日一次奖励1点，研习不自我返奖；不把HTML加点演示按钮暴露为游戏。
+- 新存档research-v1.json独立于shop-v1.json，保存本领域及世界时间摘要，不承诺全世界恢复。只读迁移已知营业ID；未来版本/坏档拒绝覆盖，临时文件/摘要/备份/明确恢复。旧解锁记录可越过祖先校验，但必须显式grandfathered；迁移不赋予其他节点免费解锁。
+- 应用入口装配研习会话和旧世界/厨房；生产图谱模式禁止旧60分直接学会和Perfect绕过新节点；旧独立测试入口保留兼容模式。新档仅蛋炒饭、番茄炒蛋，读旧档保留原合法已学菜。
+
+实际入口与语义：
+
+- `TDApplication.enter_research()`创建原生图谱；上层装配`TDResearchSession`、`TDResearchStore`和`TDPhase3Session.attach_research`。不新增Autoload。
+- `begin(id, {day,phase,spent}, available_hours)`只允许morning/evening且剩余>=1小时；点数/资格持久化成功才发STARTED及token。`input(token, action, pressed)`接收left/down/up/right；D/F/J/K或方向键通过InputMap进入。重复按住、暂停及旧token明确拒绝。
+- `advance(delta)`使用可注入TDClock，实际场景以单调时间推进；`finish(token)`从真实QTE读取成绩，不接收UI分数。`attempt_completed`仅持久化成功后发一次，更新空闲时间。保存失败保留真实结果，可重试保存；取消不扣小时，不退已购买资格。
+- 成绩=100×(Perfect数+0.65×Good数)/(谱面拍数+0.25×额外误按数)，80通过；仅对研习的aggregate_score生效，不改老做菜评分。读档不重新发奖励。
+- `recommend_cuisine(event_id,cuisine_id)`、`grant_inspiration(event_id,amount)`：重复ID同负载返回ALREADY_APPLIED，不同负载EVENT_CONFLICT。正式剧情内容未接，无开发加点按钮。`record_cooking(day,world_recipe_id,score)`接经营真实交付/小镇实际上菜，>=80每菜每日1灵感，研习不产灵感。
+- `recipe_atlas.json`是图谱和研习谱权威；C01/C03/C04厨房增量仅在`runtime_recipes.json`。营业ID为`study.egg_fried_rice`、`study.yangchun_noodles`、`study.steamed_egg`，显式映射世界ID。阳春面复用M5煮制并走现有灶台，蒸水蛋走蒸笼；金额/材料/风味参数标AI-037建议值。
+- `research-v1.json`外壳版本1、payload字符串及SHA256；内容版本1含点数、菜系、资格、已学、继承、最佳分、事件收据、挑战序号、累计完成小时、世界时间摘要及±200ms偏移。无QTE现场续传。tmp写入/flush/校验，旧主档转bak再替换；显式恢复保留坏档副本，未知版本拒绝降级。
+- 继续经营时只读已验证营业存档的合法解锁ID，导入研习历史；不把新实例默认五菜当旧进度。旧营业档缺新增食材键时只补零库存，不改钱和旧菜单启停；新研习解锁的菜单项才默认开启。
+
 ## D028 计划契约（PLANNED，尚未实现）
 
 本节只约定 Phase 4-0 要落地的边界，不能当作当前运行事实。当前运行仍以 D021–D026 和后续历史条目为准。
@@ -179,3 +198,30 @@
 
 ### D018 访客预估
 TDShopSession.visitor_forecast() 返回只读值 {day,min_visitors,max_visitors,expected_visitors}，单位为人。由同一 arrival_interval_sec() 和开门1秒后的首次到店规则派生；仅供筹备展示，零随机抽取、零库存/金钱变更。旧边界存档不增加必填字段，按其日期和人气即可稳定重建。settings.forecast_uncertainty_percent 为0～50整数建议参数，默认20供旧配置兼容。
+
+## D030 用户修正（2026-10-21，优先于旧四轨方案）
+
+- 来源：用户四项反馈及两张截图。选中仅表示查看；未掌握的前置连线不得因选择而激活。描边必须使用空心绘制，选中/已掌握分开表示。
+- 研习改用正式厨房的 TDFullKitchen / TDCookingLane / TDBeatSheet / TDGuidedCookingView；练习材料在独立会话提供，不接营业库存。配置 chart.kind=kitchen、version=2、recipe_id、primary；配置引用真实厨房逐拍表，取消原四轨生产入口。
+- 研习成绩来自实际工序结果，按厨房模块权重归一。完整流程结束才结算；空打不能解锁，重复结算/取消旧令牌无效。永久资格、失败免费重试、完成一小时及80分门槛保持。历史合法解锁不撤销。
+- B 打开/关闭独立屏幕覆盖层，保存底层节点与输入/处理状态，返回原场景。ASSUMPTION：主动打开书视为暂停底层游戏；研习拥有独立时钟；营业OPEN/DRAINING仅查看，不能开始研习；此前暂停则返回仍暂停。
+- 未开放菜系按钮显示锁图标、禁用；switch_cuisine/select_recipe也拒绝越权浏览。剧情推荐幂等开放后才能进入。
+- AC-PHASE-4-R07：选择未解锁节点不激活边；真实父子边正确、空心边框，截图及具体拓扑断言。
+- AC-PHASE-4-R08：阳春面/蒸水蛋复用真实煮制/蒸制；切配/炒制仍由同一厨房接口支持，不额外造通用四轨玩法；真实键鼠完成、漏操作失败、重试与暂停不串会话。
+- AC-PHASE-4-R09：游戏中B往返保留相同场景/订单/钱/食材/QTE令牌；不透传输入、不累计停留时间；营业不可研习；新解锁即时同步当前筹备菜单。
+- AC-PHASE-4-R10：锁菜系不能由按钮/程序选择/搜索查看，剧情开放后可访问。
+
+D031当前实现接口补充：begin返回token并创建未挂树的TDResearchLesson，由TrialView挂入真实Godot树后运行。input(token,action,pressed,value=1)支持原厨房primary/方向/旋转/spice:/连续温控，生产鼠标和按键经FullKitchen原路由；controller未就绪返回NOT_READY。finish从session.module_scores()读取真实模块结果，出锅流程完成后按厨房权重归一，替代D030初版四轨计分公式。lesson_mode只改变练习导航与自动衔接，不更改QTE规则；before_input保持输入前的单调时钟同步。close_research还原原对象与处理状态；失焦暂停时禁购并提示恢复，窗口关闭先还原原营业退出确认。show_san仅隐藏训练界面冗余标签，不改变真实营业SAN。
+- D031的窗口、节拍和长按量唯一权威是引用厨房菜谱的document_sheets/pc_operations；recipe_atlas.settings中的旧四轨perfect_sec/good_sec/good_quality/error_weight只保留历史配置兼容，不参与新研习计分。挑战结果附lesson_version=2，历史已学与最佳成绩保留，不反向撤销进度。
+
+
+## D032｜研习连续重试与选中前置连线（2026-10-22）
+
+- 来源：用户要求暂取消研习失败后的次日限制，并整理连线、选中菜谱时点亮其前置边。仅修正D030切片。
+- 研习暂与每日时间额度脱钩：begin保留available_hours参数以兼容调用，但不据此拒绝；完成无论成功失败均不新增游戏小时，不推进日期/时段。营业中只查阅限制不变；灵感购买永久资格、80分门槛不变。
+- study_hours保留历史计费累计值；校验0<=study_hours<=completed_attempts<=attempt_serial，旧相等计数仍有效。旧耗时不退款、不改玩家存档；新尝试使用当前时间摘要且不加时。写入仍先校验落盘、再发布结果；重复结果/旧token拒绝。
+- 失败结算提供立即免费重试，走同一begin入口与独立新会话，禁止结果按钮重复启动。暂停/取消/保存错误语义不变。
+- 连线仍严格来自HTML prerequisites（ALL）；edge_active只指双方已掌握，edge_selected仅为选中节点的直接入边。金色表示当前前置关系，绿色表示掌握关系；选中不改变解锁状态。布局缓存正交路径，绕开节点及文字，不用共享大横线假装多条依赖。
+- AC-PHASE-4-R11：同日零剩余时间/旧已耗尽存档，连续失败后立即重试与成功均不新增时间或重复扣灵感；真实场景结果按钮创建新token、旧回调无效；隔离读写验证旧/新计数。
+- AC-PHASE-4-R12：C09仅高亮C06，C10仅高亮C07；多前置全部高亮，切换取消旧高亮；全部五菜系100节点的路径无节点/文字穿越；数据前置不变，缩放后命中与路径一致；实际Godot图形检查。
+- 当前状态：R11/R12自动验收PASS；最终350/350测试和Windows导出/启动通过，证据见recipe-study.md D032。人工PENDING。

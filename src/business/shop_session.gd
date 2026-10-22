@@ -9,6 +9,9 @@ var _next_arrival: float = 1.0
 var _kitchen: Array = []
 var _kitchen_key: String = ""
 var _day_end_reason: String = "time"
+var research_controlled: bool = false
+var cooking_reward: Callable
+var _starter_override: Array = []
 
 func day_namespace() -> String:
 	return "%s:d%d:" % [_s.run_id,_s.day]
@@ -123,8 +126,9 @@ func menu_available(id: String, customer: Dictionary = {}) -> bool:
 	if offer(id).is_empty() or not is_unlocked(family_id(id)): return false
 	return "prospective" not in _allocation({"id":"prospective","recipe_id":id,"customer":customer}).rejected
 
-func _init(content: TDServiceCatalog, run_id: String = "", seed_value: int = 101) -> void:
+func _init(content: TDServiceCatalog, run_id: String = "", seed_value: int = 101, starter_ids: Array = []) -> void:
 	catalog = content
+	_starter_override=starter_ids.duplicate();research_controlled=not starter_ids.is_empty()
 	var identity: String = run_id if not run_id.is_empty() else "shop-%d-%d" % [Time.get_unix_time_from_system(),Time.get_ticks_usec()]
 	var inventory: Dictionary = {}; var menu: Dictionary = {}; var fame: Dictionary = {}
 	for id: String in catalog.config.costs: inventory[id] = 0
@@ -135,6 +139,7 @@ func _init(content: TDServiceCatalog, run_id: String = "", seed_value: int = 101
 	_s.cold_foods=[]; _s.unlocked=_initial_unlocks(); _s.progress_version=1
 
 func _initial_unlocks() -> Array:
+	if not _starter_override.is_empty(): return _starter_override.duplicate()
 	return catalog.config.offers.filter(func(o:Dictionary)->bool:return catalog.cooking.for_recipe(o.id).recipe.get("initially_unlocked",true)).map(func(o:Dictionary)->String:return o.id)
 
 func is_unlocked(id: String) -> bool:
@@ -154,6 +159,7 @@ func observe_finished(dish: Dictionary) -> TDOutcome:
 	if _s.phase not in ["OPEN","DRAINING"] or not str(dish.get("session_id","")).begins_with(day_namespace()) or dish.get("state") not in ["plated","delivered"]: return TDOutcome.new(false,"INVALID_DISH")
 	if catalog.offer(id).is_empty() or dish.get("failed_dish",false): return TDOutcome.new(false,"UNKNOWN_RECIPE")
 	if is_unlocked(id): return TDOutcome.new(true,"ALREADY_UNLOCKED")
+	if research_controlled: return TDOutcome.new(false,"RESEARCH_REQUIRED","请在菜谱研习中通过谱面后解锁。")
 	if not dish.get("missing_required") is Array or not dish.missing_required.is_empty() or not dish.get("steps") is Array or dish.steps.is_empty(): return TDOutcome.new(false,"NOT_PERFECT")
 	var threshold: float=float(catalog.cooking.data().rules.perfect_grade_threshold)
 	for step: Dictionary in dish.steps:
@@ -376,6 +382,7 @@ func deliver(id: String, dish: Dictionary) -> TDOutcome:
 	_apply_popularity(roundi(pricing+(satisfaction-60.0)/20.0), item)
 	_s.fame[item.recipe_id] = maxi(0,int(_s.fame.get(item.recipe_id,0))+roundi((satisfaction-50.0)/10.0))
 	if satisfaction < float(catalog.config.settings.refund_below): refund(id)
+	if cooking_reward.is_valid(): cooking_reward.call(int(_s.day),family_id(item.recipe_id),satisfaction)
 	return TDOutcome.new(true,"SERVED","",item)
 
 func refund(id: String) -> TDOutcome:
@@ -541,6 +548,11 @@ func restore(data: Variant) -> TDOutcome:
 	var checked := validate_save(data)
 	if not checked.ok: return checked
 	_s = normalize_save(data)
+	for id:String in catalog.config.get("research_cost_ids",[]):
+		if not _s.inventory.has(id): _s.inventory[id]=0
+	for item:Dictionary in catalog.config.offers:
+		if item.id.begins_with("study.") and not _s.menu.has(item.id):
+			_s.menu[item.id]={"enabled":false,"price_cents":int(item.reference_cents)};_s.fame[item.id]=0
 	if not _s.has("progress_version"):
 		_s.progress_version=1; _s.unlocked=_initial_unlocks(); _s.cold_foods=[]
 		for item: Dictionary in catalog.config.offers:
@@ -617,7 +629,7 @@ func validate_save(data: Variant) -> TDOutcome:
 		if not recipes.has(id) or not TDServiceCatalog.integer(data.fame[id],0,1000000000): return TDOutcome.new(false,"INVALID_FAME")
 	for id: String in recipes:
 		if data.menu.has(id) and data.fame.has(id): continue
-		if id.begins_with("phase3."): continue
+		if id.begins_with("phase3.") or id.begins_with("study."): continue
 		if data.has("progress_version") or id!="service.qiguoji": return TDOutcome.new(false,"MISSING_RECIPE_STATE")
 	var money: int = int(catalog.config.settings.initial_cents); var inventory: Dictionary = {}
 	for id: String in catalog.config.costs: inventory[id]=0
@@ -632,8 +644,12 @@ func validate_save(data: Variant) -> TDOutcome:
 		for id: Variant in event.inventory_delta:
 			if not inventory.has(id) or not TDServiceCatalog.integer(event.inventory_delta[id],-1000000,1000000): return TDOutcome.new(false,"INVALID_LEDGER")
 			inventory[id]+=int(event.inventory_delta[id])
-	if money != int(data.money_cents) or int(data.serial)!=data.ledger.size() or (data.inventory.size()!=inventory.size() and (data.has("progress_version") or data.inventory.size()!=inventory.size()-1)): return TDOutcome.new(false,"LEDGER_MISMATCH")
+	var added_missing:int=0
+	for id:String in catalog.config.get("research_cost_ids",[]):
+		if not data.inventory.has(id): added_missing+=1
+	if money != int(data.money_cents) or int(data.serial)!=data.ledger.size() or (data.inventory.size()+added_missing!=inventory.size() and (data.has("progress_version") or data.inventory.size()+added_missing!=inventory.size()-1)): return TDOutcome.new(false,"LEDGER_MISMATCH")
 	for id: String in inventory:
+		if id in catalog.config.get("research_cost_ids",[]) and not data.inventory.has(id) and inventory[id]==0: continue
 		if id=="mushroom" and not data.has("progress_version") and not data.inventory.has(id): continue
 		if not TDServiceCatalog.integer(data.inventory.get(id),0,1000000) or int(data.inventory[id]) != inventory[id]: return TDOutcome.new(false,"STOCK_MISMATCH")
 	var order_ids: Dictionary={}

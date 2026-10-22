@@ -1,5 +1,32 @@
 # 决策与来源
 
+## D032｜连续研习重试与前置线聚焦（2026-10-22）
+
+- USER_CONFIRMED：暂取消研习失败后必须次日再试的机制；整理菜谱树连线，选中菜谱时点亮其连接前置菜谱的边。覆盖D030/D031中与本次相冲突的行为。
+- 事实：没有单独的次日冷却字段；失败与成功均扣1小时，剩余不足1小时时begin拒绝，导致等次日的体验。只改失败结算仍会卡住已经耗尽时间的旧进度。
+- ASSUMPTION（AI-039，可逆）：本轮先把研习与每日时间额度完全脱钩，所有新研习结果不新增游戏小时；保留旧耗时统计与时间摘要、不退改历史账。营业中只查阅、永久资格/免费重试/80分门槛不变。
+- ENGINEERING_DECISION：失败结果页立即重试使用原begin装配全新真实厨房会话；旧令牌和旧结果信号不影响新关卡。存档校验接受历史累计耗时小于等于完成次数，保留格式1。
+- ENGINEERING_DECISION：真实前置数据不变；金线是选中节点的直接入边，绿线是已掌握关系，灰线淡化。按层间轨道与节点间空隙布线，留出菜名空间；选中不会授予掌握状态。
+- GRILL_RESULT=NO_BLOCKING_PRODUCT_QUESTIONS。实际读取grilling和godot-gdscript-patterns的本机SKILL.md（路径同D031，无版本字段），依grilling派发只读事实调查确认时间入口与旧档边界；用户两项要求已明确，未追加产品问卷。
+- 范围仅研习切片修正，不自动推进Phase4、不提交推送；实际验收见recipe-study.md R11–R12。
+
+## D031｜研习入口、厨房操作复用与锁定页修正（2026-10-21）
+
+- USER_CONFIRMED：选中/激活边框修正；研习使用此前厨房切配、炒制、蒸制的QTE；增加游戏内快捷键；未开放菜系显示锁且不可查看菜谱。来源为用户本次四项反馈及两张截图，覆盖D030旧四轨与锁页可浏览的实现。
+- ENGINEERING_DECISION：真实复用FullKitchen、Lane、BeatSheet和GuidedCookingView；两关仍为阳春面（点火/煮制/出锅）、蒸水蛋（调味/上笼/出锅）。切配/炒制通路由同一宿主的真实番茄炒蛋集成用例验证，不另造研习专用QTE。
+- GRILL_RESULT=NO_BLOCKING_PRODUCT_QUESTIONS：四项用户规则明确；费用、80分、时耗、初始菜谱、历史继承沿用已答决定。实际读取C:/Users/Administrator/.codex/skills/grilling/SKILL.md及C:/Users/Administrator/.codex/skills/godot-gdscript-patterns/SKILL.md（均无版本字段），按grilling派发只读入口/输入事实调查，不委派写入。
+- ASSUMPTION见AI-038：B打开/关闭，查看主动暂停底层；营业仅查看；研习训练SAN=100；模块权重沿用厨房。没有变更真实营业的SAN/评分规则。
+- 作用域仅D030修正；不提交、不推送、不进入其余Phase4功能。
+
+## D030｜菜谱研习图与节奏挑战（2026-10-21，工程已实现/待试玩）
+
+- USER_CONFIRMED：按用户指定的F:/Downloads/xiaozhen_recipe_skilltree_vertical.html制作原生Godot竖向技能树，包括五菜系/100节点、所有前置、成本、搜索/定位与详情；HTML原文只读。初始只有中餐，其他分支由剧情推荐开放；推荐本身不直接解锁各菜。
+- USER_CONFIRMED（已更正菜名后确认）：新档蛋炒饭C01、番茄炒蛋C02起步，历史合法解锁保留且不赠送全部祖先。覆盖新档默认五菜及HTML的四个外餐起点。
+- USER_CONFIRMED：灵感按HTML节点费用购买永久研习资格，失败/取消后可免费重试；本轮不扣研发食材，一次完成的挑战耗1游戏小时。必须实际打谱达到80分才解锁。80分沿用1013会议，显示谱面覆盖旧隐藏精确目标研发设计。
+- GRILL_RESULT=RESOLVED：两项关键规则已回答。实际读取C:/Users/Administrator/.codex/skills/grilling/SKILL.md与godot-gdscript-patterns/SKILL.md，无版本字段；按grilling委派只读事实审查，没有委派实现。
+- 限定授权：Phase4菜谱研习纵向切片，先C03阳春面、C04蒸水蛋两关；其他节点未配置关卡时明确提示且不扣点。不自动启动熟练度、员工、市场、市政或剧情量产。
+- 编号默认：AI-036研习谱面与奖励接入，AI-037研习专用存档与历史兼容，见AI_FILLED_DETAILS。三人协作规范沿用，单Agent分角色隔离实现，集成角色只修改共享装配；不自动提交/推送。
+
 ## D029｜三人合作规范与并行框架（2026-10-13，框架已搭建/Phase 4 未开工）
 
 - USER_CONFIRMED：程序开发最多三人；需要明确三人合作规范，并搭建可直接用于后续开发的基本框架。

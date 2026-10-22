@@ -28,6 +28,9 @@ var _load_blocked: bool = false
 var _new_needs_confirmation: bool = false
 var _serial: int = 0
 var learned_dishes: Array = []
+var recipe_unlocks: Array = []
+var cooking_reward: Callable
+var legacy_loaded: Callable
 
 func _ready() -> void:
 	process_mode=Node.PROCESS_MODE_ALWAYS; theme=TDUI.theme(); set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -38,13 +41,16 @@ func _ready() -> void:
 	var loaded:=service.load_file()
 	if not loaded.ok: add_child(TDUI.label("营业配置错误："+loaded.message)); return
 	var linked:=TDKitchenLink.install(service, learned_dishes)
-	shop=TDShopSession.new(service); store=TDShopStore.new(save_path,shop)
+	shop=TDShopSession.new(service,"",101,recipe_unlocks); shop.cooking_reward=cooking_reward; store=TDShopStore.new(save_path,shop)
 	if resume_saved:
 		var saved:=store.load_game()
-		if saved.ok: last_result=shop.restore(saved.data)
+		if saved.ok:
+			last_result=shop.restore(saved.data)
+			if last_result.ok and legacy_loaded.is_valid(): legacy_loaded.call(shop.snapshot().unlocked)
 		else: last_result=saved; _load_blocked=true
 	else: _new_needs_confirmation=store.load_game().code!="NOT_FOUND"
 	for recipe_id: String in linked:
+		if resume_saved and shop.is_unlocked(recipe_id): continue # Keep saved menu enabled/price choices.
 		var granted:=shop.grant_recipe(recipe_id)
 		if not granted.ok: last_result=granted
 	_build_shell(); _make_kitchen(); refresh(true)
@@ -561,3 +567,9 @@ func close() -> void:
 
 func _status_name(value: String) -> String:
 	return {"WAITING":"等候","COOKING":"制作中","SERVED":"已送达","CANCELLED":"已取消","TIMED_OUT":"等太久离开","REJECTED_STOCK":"缺料谢客"}.get(value,value)
+
+func sync_research_recipes(ids:Array) -> void:
+	if shop==null or shop.snapshot().phase not in ["PREPARE","SETTLED"]: return
+	for id:String in ids:
+		if not shop.is_unlocked(id): shop.grant_recipe(id)
+	refresh(true)

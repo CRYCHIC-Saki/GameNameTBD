@@ -1,5 +1,15 @@
 # 项目架构与接入边界
 
+## D030：菜谱研习切片
+
+主入口装配图谱视图、研习会话、独立存储和现有世界会话。D031中图谱用屏幕CanvasLayer覆盖原场景，逐节点保存/恢复处理模式并调用既有时钟暂停接口；不销毁订单或重建厨房。B/返回关闭覆盖层，当前筹备菜单增量接入新解锁。
+
+TDResearchSession拥有资格和保存事务；D032暂不消耗游戏小时，旧study_hours仅保留历史统计。TDResearchLesson仅装配一间隔离的TDFullKitchen并自动提供练习原料，真实转移备菜并开始外置逐拍表。TDCookingLane、TDBeatSheet、TDCookingQTE、TDGuidedCookingView仍负责原厨房的全部判定、状态与画面。TDResearchTrialView负责取消/结算展示，失败重试发意图到Atlas，再调用同一begin建立新会话，不能提交任意成绩。TDCookingSession.module_scores()提供模型既有只读模块结果，研习按其权重汇总。
+
+图谱与关卡关联权威为content/research/recipe_atlas.json；kind=kitchen、version=2引用真实recipe_id与primary。TDResearchRuntime显式装配三道最小厨房增量，HTML原始100图标直接复用。独立user://research-v1.json保持格式1与历史合法解锁；完整世界档仍在后续范围。
+
+剧情通过稳定事件ID开放菜系/奖励。UI按钮和公开选择方法共同限制未开放菜系；选择高亮与真实掌握连线独立。未编写正式剧情或其余98关，旧四轨生产入口已移除，现有营业QTE默认行为保持。
+
 ## D021：小镇客流（当前入口）
 
 `TDApplication` 持有一份 `TDPhase3Session`，分给 `TDTownWorld` 和 `TDRestaurantWorld`。会话拥有目录、地图、供货、菜谱解锁、竞品、当天 NPC、迎宾/收银是否在岗，以及一份原料账。公式在 `TDEconomyMath`，保质期在 `TDPantry`，不放进界面。界面只发下一天、改价、开关功能区、接单、拒绝、上菜、雇用、按菜备料和点选食材。

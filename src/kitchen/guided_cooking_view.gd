@@ -14,6 +14,9 @@ var lanes: Array = []
 var beat_sec: float = 0
 var bpm: float = 120
 var feedback: String = ""
+var navigation_hint: String = "E 返回厨房   ·   Esc 暂停"
+var requirements_hint: String = ""
+var show_san: bool = true
 var customer_feedback: Array=[]
 var simmer_meters: Array=[]
 var font: SystemFont
@@ -82,7 +85,7 @@ func _draw() -> void:
 	draw_rect(Rect2(0,0,1280,119),Color("17231f"))
 	draw_line(Vector2(28,119),Vector2(1252,119),Color("816945"),2)
 	_text("小 镇 食 堂",Vector2(32,34),20,GOLD)
-	_text("E 返回厨房   ·   Esc 暂停",Vector2(994,34),15,Color("9daa94"))
+	_text(navigation_hint,Vector2(994,34),15,Color("9daa94"))
 	_boxes.clear()
 	if not feedback.is_empty():
 		_draw_feedback()
@@ -90,7 +93,7 @@ func _draw() -> void:
 		for index: int in lanes.size(): _draw_lane(lanes[index],_area(index),index)
 		if lanes.size()>1 and lanes.any(func(lane:TDCookingLane)->bool:return lane.thermal_qte!=null): _dual_thermal()
 	_draw_beat()
-	if not lanes.is_empty() and lanes[0].day_san>=0.0:
+	if show_san and not lanes.is_empty() and lanes[0].day_san>=0.0:
 		draw_rect(Rect2(0,0,1280,800),Color(0,0,0,TDSanRules.vignette_alpha(lanes[0].day_san)))
 		_text("SAN %d"%int(lanes[0].day_san),Vector2(32,78),18,GOLD)
 
@@ -182,6 +185,7 @@ func _draw_lane(lane: TDCookingLane, area: Rect2, slot: int) -> void:
 	_draw_judgement(lane,area)
 
 func _requirements(lane: TDCookingLane) -> String:
+	if not requirements_hint.is_empty(): return requirements_hint
 	if lane.station_role=="board": return lane.stage_label if lane.sheet != null else "依照目标菜谱备菜，再端到锅中"
 	var customers: Array=lane.customer_profiles()
 	if customers.is_empty(): return "依照菜谱制作"

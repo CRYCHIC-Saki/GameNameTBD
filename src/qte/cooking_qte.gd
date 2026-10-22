@@ -305,6 +305,12 @@ func finish() -> TDOutcome:
 				_judge(_grade(_current_quality()),"THERMAL_RESULT","adjust")
 			"sequence":
 				_reason = "MISSING_STEPS"
+				if _config.get("aggregate_score", false):
+					for index: int in _judgements.size():
+						if _judgements[index] == "pending":
+							_judgements[index] = "miss"
+							_miss += 1
+							_combo = 0
 		_resolved = true
 	_state = "completed"
 	_pressed.clear()
@@ -505,6 +511,8 @@ func _current_quality() -> float:
 			return ratio
 		"sequence":
 			if _config.get("on_beat", false):
+				if _config.get("aggregate_score",false):
+					return (float(_perfect)+float(_good)*float(_config.get("good_quality",.6)))/maxf(1.0,float(_beats.size())+float(_errors)*error_weight)
 				var bad: int = _miss + _errors + _judgements.count("pending")
 				if _config.get("cabinet", false): return 0.0 if bad > 0 else (1.0 if _good == 0 else float(_config.get("good_quality",.6)))
 				bad += _good

@@ -21,7 +21,13 @@ func before_each() -> void:
 	layer=CanvasLayer.new(); layer.layer=131; autofree(layer); get_tree().root.add_child(layer)
 	app=APP.instantiate() as TDApplication; app.settings_path="res://artifacts/test-storage/phase2-settings.json"
 	save_path="res://artifacts/test-storage/service-%d.json" % Time.get_ticks_usec(); app.shop_save_path=save_path
-	layer.add_child(app); app.enter_shop(); view=app.shop_view; kitchen=view.kitchen; kitchen.auto_advance=false; sent={}
+	layer.add_child(app)
+	# Historical five-recipe save fixture; new-player research is covered separately.
+	var world:=app._phase3()
+	app.research.inherit_legacy(world.catalog.dish_list().filter(func(d:Dictionary)->bool:return d.get("starter",false)).map(func(d:Dictionary)->String:return d.id))
+	app.enter_shop(); view=app.shop_view; kitchen=view.kitchen; kitchen.auto_advance=false; sent={}
+	for recipe_id:String in view.shop.snapshot().menu:
+		view.shop.set_menu(recipe_id,recipe_id=="service.tomato_egg",int(view.shop.offer(recipe_id).reference_cents))
 	await get_tree().process_frame
 
 func after_each() -> void:
@@ -97,14 +103,16 @@ func choose_requested_cut(ingredient: String, order: Dictionary) -> void:
 
 func cook_order(id: String) -> void:
 	var recipe_id: String=view.shop.order(id).recipe_id
+	var target:String="kitchen.steamer" if kitchen.catalog.for_recipe(recipe_id).recipe.get("cooking_method")=="steam" else "kitchen.stove.left"
+	var lane_index:int=1 if target=="kitchen.steamer" else 0
 	for ingredient: String in view.shop.offer(recipe_id).primary:
 		station("kitchen.fridge"); assert_true(view.pick_ingredient(ingredient).ok); view._close_popup()
 		if kitchen.catalog.for_recipe(recipe_id).recipe.preparation_sheets.has(ingredient):
 			station("kitchen.board"); choose_requested_cut(ingredient,view.shop.order(id)); assert_true(kitchen.stage.visible); play(12); station("kitchen.board")
-		station("kitchen.stove.left")
-	station("kitchen.stove.left",KEY_F); assert_true(kitchen.stage.visible); play(70)
-	assert_eq(kitchen.lanes[0].snapshot().state,"plated")
-	station("kitchen.stove.left"); station("kitchen.serve")
+		station(target)
+	station(target,KEY_F); assert_true(kitchen.stage.visible); play(70)
+	assert_eq(kitchen.lanes[lane_index].snapshot().state,"plated")
+	station(target); station("kitchen.serve")
 	assert_eq(view.shop.order(id).status,"SERVED")
 	assert_true(view.shop.order(id).score.has("satisfaction"))
 	assert_eq(kitchen.handling.hand_kind,"")
@@ -114,6 +122,17 @@ func test_real_tomato_egg_inventory_cooking_and_customer_delivery() -> void:
 	cook_order(id)
 	var before: Dictionary=view.shop.snapshot()
 	station("kitchen.serve"); assert_eq(view.shop.snapshot(),before)
+
+func test_research_starters_and_unlocked_examples_use_real_cooking_and_delivery() -> void:
+	for id:String in ["C03","C04"]:
+		var begun:=app._begin_study(id);assert_true(begun.ok)
+		app.add_child(app.research.controller)
+		assert_true(load("res://tools/test_support/research_input.gd").play(app.research,begun.data.token))
+		assert_true(app.research.finish(begun.data.token).ok)
+	for id:String in ["study.egg_fried_rice","study.yangchun_noodles","study.steamed_egg"]:
+		app.return_to_menu();await get_tree().process_frame;app.shop_save_path=save_path+"."+id;app.enter_shop();view=app.shop_view;kitchen=view.kitchen;kitchen.auto_advance=false
+		assert_true(view.shop.is_unlocked(id));var order_id:=prepare_order(id);cook_order(order_id)
+		assert_false(view.shop.order(order_id).score.is_empty());assert_false(kitchen.lanes[0 if id!="study.steamed_egg" else 1].snapshot().failed_dish)
 
 func test_real_beef_noodles_inventory_cooking_and_customer_delivery() -> void:
 	var id: String=prepare_order("service.beef_noodles")
@@ -421,7 +440,7 @@ func test_failed_dish_serves_first_customer_once_and_lowers_popularity() -> void
 	assert_true(view.shop.order(first).plan.is_empty())
 	var after: Dictionary=view.shop.snapshot(); station("kitchen.serve"); assert_eq(view.shop.snapshot(),after)
 
-func test_actual_perfect_steam_unlocks_without_customer_and_survives_restart() -> void:
+func test_actual_perfect_steam_requires_research_but_historical_unlock_survives_restart() -> void:
 	view.buy_kit("service.qiguoji")
 	view.open_day(); kitchen=view.kitchen; kitchen.auto_advance=false
 	assert_false(view.shop.is_unlocked("service.qiguoji"))
@@ -431,8 +450,9 @@ func test_actual_perfect_steam_unlocks_without_customer_and_survives_restart() -
 	var dish: Dictionary=kitchen.lanes[1].snapshot()
 	assert_eq(dish.state,"plated"); assert_false(dish.failed_dish); assert_true(dish.missing_required.is_empty())
 	for step: Dictionary in dish.steps: assert_eq(step.grade,"Perfect",step.operation)
-	assert_true(view.shop.is_unlocked("service.qiguoji"))
-	assert_eq(view.shop.observe_finished(dish).code,"ALREADY_UNLOCKED")
+	assert_false(view.shop.is_unlocked("service.qiguoji")) # D030: Perfect no longer bypasses research.
+	assert_true(app.research.inherit_legacy(["qiguoji"]).ok) # A legitimate historical unlock remains compatible.
+	assert_eq(view.shop.observe_finished(dish).code,"RESEARCH_REQUIRED")
 	view.shop.close_early(); kitchen.advance(.01)
 	var plan:=view.shop.save_plan("第一份汽锅鸡做法",dish.custom_plan)
 	assert_true(plan.ok,plan.code)
