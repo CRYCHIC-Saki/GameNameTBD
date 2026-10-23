@@ -33,6 +33,7 @@
 负责：
 
 - 餐厅、小镇、NPC、服务流程、事件、市政、装修和引导表现；
+- `assets/town/` 的小镇/餐厅像素材质与来源记录（D033）；
 - 客流、实体客人、事件场景和对应测试；
 - 调用公开做菜/经济边界，不复制规则。
 
@@ -296,5 +297,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/collab.ps1 -Action Che
 工具兼容 Windows PowerShell 5.1 和 PowerShell 7；CI 使用 `pwsh`。CI 会根据分支名自动检查所有权和 PR 目标：角色分支只能进入同波集成分支，集成分支只能进入 `main`。非协作分支只提示跳过，不影响历史维护流程。
 
 ## 10. 当前状态
+
+D033入口修正：content/ingredient_index.json归economy，工具/导出与tests/integration/test_title_entry.gd归轮值集成者；职责为保留原始食材身份的运行索引，不修改原资料或玩法。
 
 当前仓库还没有启动 Phase 4，`CURRENT_WAVE.md` 为 `IDLE`。现有工作区包含未提交改动，因此不应立即运行 `-Action Init`。先由用户决定提交边界，再从明确提交创建工作树。

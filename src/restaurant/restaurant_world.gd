@@ -5,6 +5,10 @@ signal fixture_used(piece_id: String, code: String)
 signal back_requested
 signal pause_requested
 signal kitchen_requested
+signal object_requested(action: String)
+var player_mode: bool = false
+var business: TDShopSession
+var _business_guests: Dictionary = {}
 
 const CHEF := preload("res://assets/kitchen/chef-v1.png")
 const INTERACTION_RADIUS := 78.0
@@ -106,11 +110,16 @@ func _ready() -> void:
 			room = "店内按地图面积生成，%d×%d格。%s" % [layout.columns, layout.rows, room]
 		_set_status(room)
 	_pull_layout_staff()
+	if player_mode:
+		_set_status("WASD 走动 · 靠近门牌、账本、装修桌或门按 E · B 菜谱 · Esc 暂停")
+		_iso.interaction_markers=interaction_points()
 
 func _process(delta: float) -> void:
 	if _player != null:
 		_player.z_index = int(_player.position.y)
-	if not get_tree().paused:
+	if player_mode and not get_tree().paused:
+		_sync_business_guests()
+	elif not get_tree().paused:
 		_tick_service(delta)
 	for guest: TDRestaurantGuest in guest_nodes():
 		_place_seated(guest)
@@ -119,9 +128,9 @@ func _process(delta: float) -> void:
 			guest.set_meta("announced", true)
 			var seat := layout.piece(guest.seat_id)
 			_set_status("客人走到了%s" % String(seat.get("name", "座位")))
-		elif guest.service_active:
+		elif guest.service_active and not player_mode:
 			_watch_service(guest)
-	if not get_tree().paused:
+	if not get_tree().paused and not player_mode:
 		_tick_runner(delta)
 	if _iso != null:
 		_iso.editing = _editing
@@ -231,6 +240,14 @@ func guest_nodes() -> Array[TDRestaurantGuest]:
 func request_interaction() -> bool:
 	if _closed or _player == null or layout == null or get_tree().paused or _covered:
 		return false
+	if player_mode:
+		var nearest: Dictionary={};var distance:float=1.6
+		for entry: Dictionary in interaction_points():
+			var gap:=Vector2(cell_of_player()).distance_to(entry.cell)
+			if gap<distance: nearest=entry;distance=gap
+		if nearest.is_empty(): return false
+		object_requested.emit(str(nearest.action))
+		return true
 	if _held_ticket != "" and _player_at_seat(_held_ticket):
 		_set_status(deliver_held_plate().message)
 		return true
@@ -382,7 +399,8 @@ func _build_world() -> void:
 	add_child(_floor)
 	_blockers = StaticBody2D.new()
 	_blockers.name = "Blockers"
-	_blockers.collision_layer = 1
+	# Rooms coexist to keep service/QTE state alive; visibility does not disable physics.
+	_blockers.collision_layer = 4
 	_blockers.collision_mask = 0
 	add_child(_blockers)
 	_fixtures = Node2D.new()
@@ -395,8 +413,8 @@ func _build_world() -> void:
 	_player.name = "Player"
 	_player.process_mode = Node.PROCESS_MODE_PAUSABLE
 	_player.motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
-	_player.collision_layer = 2
-	_player.collision_mask = 1
+	_player.collision_layer = 8
+	_player.collision_mask = 4
 	var sprite := Sprite2D.new()
 	sprite.name = "Sprite2D"
 	sprite.texture = CHEF
@@ -497,6 +515,10 @@ func _build_status_bar() -> void:
 	_edit_box.add_child(_button("转向", _rotate_selected))
 	_edit_box.add_child(_button("拆除", remove_selected))
 	_edit_box.add_child(_button("恢复默认", reset_layout))
+	if player_mode:
+		_play_row.hide()
+		_edit_box.get_child(_edit_box.get_child_count()-1).hide()
+		_edit_box.add_child(_button("完成布置",_toggle_edit))
 	_fit_bar()
 
 func _rebuild() -> void:
@@ -759,7 +781,7 @@ func _add_service_button(row: HFlowContainer, text: String, action: Callable) ->
 func _fit_bar() -> void:
 	if _bar == null:
 		return
-	var height := 220 if _editing else 168
+	var height := 220 if _editing else (68 if player_mode else 168)
 	_bar.size = Vector2(1280, height)
 	_bar.position = Vector2(0, 800 - height)
 	if _bar_box != null:
@@ -991,6 +1013,9 @@ func set_floor_cover(covered: bool) -> void:
 	if _iso != null:
 		_iso.set_presented(not covered)
 	_lock_player()
+	if player_mode:
+		for child: Node in get_children():
+			if child is CanvasLayer: child.visible=not covered
 
 func set_observe(observing: bool) -> void:
 	_observing = observing
@@ -1213,5 +1238,52 @@ func _close_pantry() -> void:
 	if _pantry != null and is_instance_valid(_pantry):
 		_pantry.queue_free()
 	_pantry = null
+
+func interaction_points() -> Array[Dictionary]:
+	if layout==null: return []
+	return [
+		{"action":"town","name":"店门 · 小镇","cell":Vector2(layout.entrance())},
+		{"action":"menu","name":"营业牌","cell":Vector2(1,3)},
+		{"action":"ledger","name":"账本","cell":Vector2(5,2)},
+		{"action":"recipes","name":"菜谱架","cell":Vector2(3,2)},
+		{"action":"decorate","name":"装修桌","cell":Vector2(1,layout.rows-3)},
+		{"action":"rest","name":"休息处","cell":Vector2(layout.columns-2,layout.rows-4)},
+		{"action":"kitchen","name":"后厨","cell":Vector2(layout.columns-2,layout.rows-2)}]
+
+func _sync_business_guests() -> void:
+	if business==null or layout==null: return
+	var orders: Array=business.snapshot().orders
+	for order: Dictionary in orders:
+		if order.status not in ["WAITING","COOKING"]: continue
+		if _business_guests.has(order.id): continue
+		var occupied: Array=[]
+		for current: TDRestaurantGuest in guest_nodes(): occupied.append(current.seat_id)
+		var seat: Dictionary={};var route: Array=[]
+		for piece: Dictionary in layout.pieces():
+			if piece.seat_use!="dining" or piece.id in occupied: continue
+			var path:=layout.path(layout.entrance(),Vector2i(piece.approach_x,piece.approach_y))
+			if not path.is_empty(): seat=piece;route=path;break
+		var guest:=TDRestaurantGuest.new()
+		guest.ticket_id=order.id;guest.dish_name=business.recipe_name(order.recipe_id);guest.phase="approach"
+		guest.seat_id=str(seat.get("id",""));guest.process_mode=Node.PROCESS_MODE_PAUSABLE
+		_guests.add_child(guest)
+		guest.set_path(route if not route.is_empty() else [layout.entrance(),Vector2i(1,1)],layout.cell_px)
+		_business_guests[order.id]=guest
+	for id: String in _business_guests.keys():
+		var guest: TDRestaurantGuest=_business_guests[id]
+		if not is_instance_valid(guest): _business_guests.erase(id);continue
+		if guest.phase=="approach" and guest.finished: guest.phase="wait_serve"
+		var status: String="CANCELLED"
+		for order: Dictionary in orders:
+			if order.id==id: status=order.status;break
+		if status in ["WAITING","COOKING"]: continue
+		if guest.phase!="leave":
+			guest.phase="leave";guest.seated=false
+			var cell:=_cell_at(guest.position)
+			var seat:=layout.piece(guest.seat_id)
+			if not layout.is_walkable(cell.x,cell.y) and not seat.is_empty(): cell=Vector2i(seat.approach_x,seat.approach_y)
+			guest.set_path(layout.path(cell,layout.entrance()),layout.cell_px)
+		elif guest.finished:
+			_guests.remove_child(guest);guest.queue_free();_business_guests.erase(id)
 
 var last_visit: Dictionary = {}

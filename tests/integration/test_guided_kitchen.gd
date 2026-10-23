@@ -123,14 +123,14 @@ func test_unexpected_space_is_a_real_m3_mistake() -> void:
 	tap(KEY_SPACE)
 	assert_eq(int(lane.progress.miss),1)
 
-func test_guided_restart_cleans_schedules_and_main_menu_has_only_play_and_exit() -> void:
+func test_guided_restart_cleans_schedules_and_returns_to_player_title() -> void:
 	prepared_to("kitchen.stove.left"); station("kitchen.stove.left"); play(8)
 	var old: TDFullKitchen=kitchen
 	app.return_to_menu(); await get_tree().process_frame; await get_tree().process_frame
 	assert_false(is_instance_valid(old))
 	var labels: Array=[]
 	for button: Button in app._menu.find_children("*","Button",true,false): labels.append(button.text)
-	assert_eq(labels,["新开一间店   →","继续经营","菜谱研习","布置餐厅","走进小镇","退出"])
+	assert_eq(labels,["开始游戏","继续游戏","载入存档","设置","退出游戏"])
 	app.enter_full_kitchen(); kitchen=app.full_kitchen; kitchen.auto_advance=false
 	assert_false(kitchen.stage.visible)
 	assert_eq(kitchen.get_signal_connection_list("dish_delivered").size(),0)

@@ -260,6 +260,23 @@ func buy(cart: Dictionary, token: String) -> TDOutcome:
 	_s.seen[token] = true; _record("purchase",-cost,change,token)
 	return TDOutcome.new(true,"PURCHASED","",{"cost_cents":cost})
 
+func world_adjustment(delta_cents: int, token: String, label: String) -> TDOutcome:
+	if _s.phase not in ["PREPARE","SETTLED"]: return TDOutcome.new(false,"NOT_AT_BOUNDARY")
+	if token.is_empty() or _s.seen.has(token): return TDOutcome.new(false,"DUPLICATE")
+	if absi(delta_cents)>100000000 or int(_s.money_cents)+delta_cents<0: return TDOutcome.new(false,"INSUFFICIENT_FUNDS")
+	_s.seen[token]=true
+	_record("world_adjustment",delta_cents,{},token,{"label":label})
+	return TDOutcome.new(true,"RECORDED")
+
+func receive_supply(units: Dictionary, token: String) -> TDOutcome:
+	if _s.phase not in ["PREPARE","SETTLED"]: return TDOutcome.new(false,"NOT_AT_BOUNDARY")
+	if token.is_empty() or _s.seen.has(token): return TDOutcome.new(false,"DUPLICATE")
+	if units.is_empty(): return TDOutcome.new(false,"EMPTY_DELIVERY")
+	for id: Variant in units:
+		if not _s.inventory.has(id) or not TDServiceCatalog.integer(units[id],1,1000000) or int(_s.inventory[id])+int(units[id])>1000000: return TDOutcome.new(false,"STOCK_CAPACITY")
+	_s.seen[token]=true;_record("supply_delivery",0,units,token)
+	return TDOutcome.new(true,"RECEIVED","订货已送入厨房库存。")
+
 func set_menu(id: String, enabled: bool, price_cents: int) -> TDOutcome:
 	if _s.phase != "PREPARE" or offer(id).is_empty(): return TDOutcome.new(false,"INVALID_MENU")
 	if enabled and not is_unlocked(family_id(id)): return TDOutcome.new(false,"RECIPE_NOT_UNLOCKED")
@@ -418,6 +435,7 @@ func day_summary() -> Dictionary:
 	var tips := 0
 	var refunded := 0
 	var grant := 0
+	var world_net := 0
 	var reason := ""
 	for event: Dictionary in _s.ledger:
 		if int(event.day) != int(_s.day):
@@ -433,6 +451,8 @@ func day_summary() -> Dictionary:
 				refunded += -int(event.cents)
 			"emergency_grant":
 				grant += int(event.cents)
+			"world_adjustment":
+				world_net += int(event.cents)
 			"settlement":
 				reason = str(event.extra.get("reason", ""))
 	var rows: Array = []
@@ -441,7 +461,7 @@ func day_summary() -> Dictionary:
 		var row := _order_effect(item)
 		summed_popularity += int(row.popularity_delta)
 		rows.append(row)
-	var net := received + tips - refunded - purchased + grant
+	var net := received + tips - refunded - purchased + grant + world_net
 	var open_money := int(_s.get("day_open_money_cents", int(_s.money_cents) - (received + tips - refunded)))
 	var open_popularity := int(_s.get("day_open_popularity", int(_s.popularity) - summed_popularity))
 	return {
@@ -452,6 +472,7 @@ func day_summary() -> Dictionary:
 		"tip_cents": tips,
 		"refunded_cents": refunded,
 		"grant_cents": grant,
+		"world_net_cents": world_net,
 		"net_cents": net,
 		"open_money_cents": open_money,
 		"money_cents": int(_s.money_cents),
@@ -635,7 +656,7 @@ func validate_save(data: Variant) -> TDOutcome:
 	for id: String in catalog.config.costs: inventory[id]=0
 	for event: Variant in data.ledger:
 		if not event is Dictionary or not event.get("id") is String or ids.has(event.id) or not event.get("kind") is String or not TDServiceCatalog.integer(event.get("cents"),-1000000000,1000000000) or not event.get("inventory_delta") is Dictionary or not TDServiceCatalog.integer(event.get("day"),1,int(data.day)): return TDOutcome.new(false,"INVALID_LEDGER")
-		if not event.get("reference") is String or not event.get("extra") is Dictionary or event.kind not in ["purchase","prepayment","consumption","tip","refund_cancel","refund_served","settlement","emergency_grant","recipe_unlock","failed_delivery"]: return TDOutcome.new(false,"INVALID_LEDGER")
+		if not event.get("reference") is String or not event.get("extra") is Dictionary or event.kind not in ["purchase","prepayment","consumption","tip","refund_cancel","refund_served","settlement","emergency_grant","recipe_unlock","failed_delivery","world_adjustment","supply_delivery"]: return TDOutcome.new(false,"INVALID_LEDGER")
 		if event.extra.has("waste"):
 			if not event.extra.waste is Dictionary: return TDOutcome.new(false,"INVALID_LEDGER")
 			for id: Variant in event.extra.waste:

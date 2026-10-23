@@ -89,7 +89,7 @@ func test_hired_guest_reaches_the_seat_approach() -> void:
 
 func test_edit_paint_moves_a_blocked_player_and_can_add_a_stool() -> void:
 	world.teleport_player(Vector2i(8, 8))
-	var painted := world.paint_cell(8, 8, "D")
+	var painted := world.paint_cell(8, 8, "#")
 	assert_true(painted.ok, painted.message)
 	assert_false(world.layout.is_walkable(8, 8))
 	assert_eq(world.cell_of_player(), world.layout.entrance())

@@ -1,6 +1,6 @@
 #Requires -Version 7.2
 [CmdletBinding()]
-param([string]$GodotPath = $env:GODOT_BIN, [int]$CheckTimeoutSeconds = 600)
+param([string]$GodotPath = $env:GODOT_BIN, [int]$CheckTimeoutSeconds = 1200)
 $ErrorActionPreference = 'Stop'
 $root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $lock = Get-Content -LiteralPath (Join-Path $root 'dependencies.lock.json') -Raw | ConvertFrom-Json
@@ -40,13 +40,24 @@ try {
   try {
     $names = @($archive.Entries | ForEach-Object { $_.FullName })
     foreach ($name in $names) {
-      if ($name -notmatch '^(src/|\.godot/|assets/kitchen/(recipe-icons/)?[^/]+\.png(\.import)?$|content/(dev_samples|cooking_prototype|cooking_system|service_content|restaurant|phase3_world|pantry|research/recipe_atlas|research/runtime_recipes)\.json$|project\.binary$)') { throw "Non-runtime resource exported: $name" }
+      if ($name -notmatch '^(src/|\.godot/|assets/(kitchen/(recipe-icons/)?|town/)[^/]+\.png(\.import)?$|content/(dev_samples|cooking_prototype|cooking_system|service_content|restaurant|phase3_world|pantry|ingredient_index|research/recipe_atlas|research/runtime_recipes)\.json$|project\.binary$)') { throw "Non-runtime resource exported: $name" }
     }
     $names | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'runtime-manifest.json') -Encoding utf8
   } finally { $archive.Dispose() }
   # Exported games locate their adjacent PCK themselves. Do not pass a --path override.
-  Run-Process (Join-Path $build 'TownDiner.exe') 'smoke' @('--headless','--quit-after','12')
-  $summary = [ordered]@{status='PASS';export_exit=0;smoke_exit=0;runtime_files=$names.Count;package='build/TownDiner.exe + TownDiner.pck';kind='DEVELOPMENT_DEMO';human_playtest='PENDING';remote_ci='NOT_RUN'}
+  Run-Process (Join-Path $build 'TownDiner.exe') 'smoke' @('--headless','--quit-after','12','--',('--validation-root=' + (Join-Path $evidence 'smoke-storage')))
+  # Editor runs can resolve missing res:// dependencies from the checkout. Exercise
+  # the actual exported executable with a sibling disposable PCK instead. Preserve
+  # every production resource, replacing only the entry scene with the mouse driver.
+  Run-Process $GodotPath 'title-probe-pack' @('--headless','--path',$root,'--script','res://tools/pack_title_probe.gd')
+  $probe = Join-Path $evidence 'title-probe'
+  Copy-Item -LiteralPath (Join-Path $build 'TownDiner.exe') -Destination (Join-Path $probe 'TitleProbe.exe')
+  Copy-Item -LiteralPath (Join-Path $probe 'probe.pck') -Destination (Join-Path $probe 'TitleProbe.pck')
+  Run-Process (Join-Path $probe 'TitleProbe.exe') 'title-input' @('--headless','--',('--probe-root=' + $probe))
+  $probeLog = Get-Content -LiteralPath (Join-Path $evidence 'title-input.log') -Raw
+  if ($probeLog -notmatch 'TITLE_PROBE success=true checks=(\d+)' -or [int]$Matches[1] -lt 29) { throw 'Exported title and movement regression did not complete its checks' }
+  $titleChecks = [int]$Matches[1]
+  $summary = [ordered]@{status='PASS';export_exit=0;smoke_exit=0;title_input_exit=0;title_input_checks=$titleChecks;runtime_files=$names.Count;package='build/TownDiner.exe + TownDiner.pck';kind='DEVELOPMENT_DEMO';human_playtest='PENDING';remote_ci='NOT_RUN'}
   $summary | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'summary.json') -Encoding utf8
   Write-Host "EXPORT PASS; evidence=$evidence"
   exit 0

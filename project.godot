@@ -24,6 +24,15 @@ window/size/window_width_override=1280
 window/size/window_height_override=800
 window/stretch/mode="canvas_items"
 
+[layer_names]
+
+2d_physics/layer_1="Kitchen walls"
+2d_physics/layer_2="Kitchen actors"
+2d_physics/layer_3="Restaurant walls"
+2d_physics/layer_4="Restaurant actors"
+2d_physics/layer_5="Town walls"
+2d_physics/layer_6="Town actors"
+
 [input]
 
 world_open={
@@ -134,6 +143,11 @@ restart_probe={
 recipe_book={
 "deadzone":0.2,
 "events":[Object(InputEventKey,"physical_keycode":66)]
+}
+
+debug_console={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":96)]
 }
 
 [rendering]

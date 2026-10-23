@@ -1,7 +1,7 @@
 class_name TDIngredientBook
 extends RefCounted
 
-const SOURCE := "res://doc/source/ingredients.json"
+const SOURCE := "res://content/ingredient_index.json"
 
 var categories: Array = []
 var items: Dictionary = {}

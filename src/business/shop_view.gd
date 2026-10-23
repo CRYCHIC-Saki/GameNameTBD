@@ -2,6 +2,8 @@ class_name TDShopView
 extends Control
 signal back_requested
 signal pause_requested
+var embedded: bool = false
+var boundary_save: Callable
 const KITCHEN := preload("res://src/kitchen/full_kitchen.tscn")
 var save_path: String = "user://shop-v1.json"
 var resume_saved: bool = false
@@ -38,17 +40,21 @@ func _ready() -> void:
 		var style:=theme.get_stylebox(state,"Button") as StyleBoxFlat
 		style.content_margin_left=10; style.content_margin_right=10; style.content_margin_top=8; style.content_margin_bottom=8
 	var background:=ColorRect.new(); background.color=Color("17251f"); background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); background.mouse_filter=Control.MOUSE_FILTER_IGNORE; add_child(background)
-	var loaded:=service.load_file()
-	if not loaded.ok: add_child(TDUI.label("营业配置错误："+loaded.message)); return
-	var linked:=TDKitchenLink.install(service, learned_dishes)
-	shop=TDShopSession.new(service,"",101,recipe_unlocks); shop.cooking_reward=cooking_reward; store=TDShopStore.new(save_path,shop)
-	if resume_saved:
+	var linked: Array=[]
+	if embedded and shop!=null:
+		service=shop.catalog
+	else:
+		var loaded:=service.load_file()
+		if not loaded.ok: add_child(TDUI.label("营业配置错误："+loaded.message)); return
+		linked=TDKitchenLink.install(service, learned_dishes)
+		shop=TDShopSession.new(service,"",101,recipe_unlocks); shop.cooking_reward=cooking_reward; store=TDShopStore.new(save_path,shop)
+	if resume_saved and not embedded:
 		var saved:=store.load_game()
 		if saved.ok:
 			last_result=shop.restore(saved.data)
 			if last_result.ok and legacy_loaded.is_valid(): legacy_loaded.call(shop.snapshot().unlocked)
 		else: last_result=saved; _load_blocked=true
-	else: _new_needs_confirmation=store.load_game().code!="NOT_FOUND"
+	elif not embedded: _new_needs_confirmation=store.load_game().code!="NOT_FOUND"
 	for recipe_id: String in linked:
 		if resume_saved and shop.is_unlocked(recipe_id): continue # Keep saved menu enabled/price choices.
 		var granted:=shop.grant_recipe(recipe_id)
@@ -67,6 +73,7 @@ func _build_shell() -> void:
 	actions.add_child(TDUI.button("经营账本",_show_ledger))
 	actions.add_child(TDUI.button("暂停 / 恢复",func()->void:pause_requested.emit()))
 	actions.add_child(TDUI.button("返回主界面",request_back))
+	if embedded: actions.hide()
 	_holder=Control.new(); _holder.position=Vector2(12,174); _holder.size=Vector2(920,575); add_child(_holder)
 	var scroll:=ScrollContainer.new(); scroll.position=Vector2(953,166); scroll.size=Vector2(303,610); scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED; add_child(scroll)
 	_sidebar=VBoxContainer.new(); _sidebar.size_flags_horizontal=Control.SIZE_EXPAND_FILL; _sidebar.add_theme_constant_override("separation",10); scroll.add_child(_sidebar)
@@ -91,6 +98,9 @@ func _make_kitchen() -> void:
 	_holder.add_child(kitchen); kitchen.world.scale=Vector2(.71875,.71875)
 	kitchen.world.get_node("Background").z_index=-1
 	kitchen.world.set_return_visible(false)
+	if embedded:
+		kitchen.world.service_door=true
+		kitchen.world.dining_requested.connect(func()->void:back_requested.emit())
 	kitchen.handling.session_namespace=shop.day_namespace()
 	kitchen.handling.material_sink=shop.consume_materials
 	for lane: TDCookingLane in kitchen.lanes:
@@ -106,15 +116,18 @@ func refresh(force: bool = false) -> void:
 		if state.menu[id].enabled: fame+=int(state.fame.get(id,0))
 	_title.text="小镇食堂  ·  第 %d 天     ¥ %.2f     人气 %d   店名气 %d" % [state.day,float(state.money_cents)/100.0,state.popularity,fame]
 	var boundary: bool=state.phase in ["PREPARE","SETTLED"]
+	if embedded and _last_phase!=state.phase:
+		_message.text={"PREPARE":"到集市采购，再回餐厅营业牌确认菜单与价格。","OPEN":"营业中 · 按订单备菜，做好的菜交到出餐台 · B 查看菜谱","DRAINING":"已停止接新客，请处理最后的订单。","SETTLED":"今天打烊了。回餐厅查看账本，休息后迎接新一天。"}.get(state.phase,"")
 	_open_button.disabled=state.phase!="PREPARE" or _load_blocked
 	_save_button.disabled=not boundary or _load_blocked
 	_next_button.disabled=state.phase!="SETTLED" or _load_blocked
-	_page.visible=boundary; _holder.visible=not boundary
+	_page.visible=boundary and not embedded; _holder.visible=not boundary or embedded
 	if state.phase=="SETTLED" and _last_phase!="SETTLED":
 		_close_popup()
 		_message.text="今日结束，请看收益总结。"
 	if _last_phase!=state.phase or (force and boundary):
-		_last_phase=state.phase; _planning_page(state)
+		_last_phase=state.phase
+		if not embedded: _planning_page(state)
 	var side_key: String=JSON.stringify([state.orders.map(func(o:Dictionary)->Array:return [o.id,o.status]),state.phase,int(state.elapsed_sec),state.money_cents])
 	if force or side_key!=_side_key: _side_key=side_key; _orders_panel(state)
 
@@ -262,6 +275,8 @@ func buy_kit(id: String, missing_only: bool = true) -> TDOutcome:
 	_show(result); refresh(true); return result
 
 func save_boundary() -> TDOutcome:
+	if embedded:
+		return boundary_save.call() if boundary_save.is_valid() else TDOutcome.new(false,"NO_STORAGE")
 	if _load_blocked: return TDOutcome.new(false,"LOAD_BLOCKED")
 	if _new_needs_confirmation:
 		_confirm("已有经营存档。确认新开一间店？旧档会另存备份，不再作为继续游戏的入口。",func()->void:
@@ -550,6 +565,7 @@ func _confirm(message: String, action: Callable) -> void:
 	dialog.confirmed.connect(func()->void:action.call();dialog.queue_free()); dialog.canceled.connect(dialog.queue_free); dialog.popup_centered(Vector2i(570,190))
 
 func request_back() -> void:
+	if embedded: back_requested.emit();return
 	request_leave(func()->void:back_requested.emit())
 
 func request_leave(action: Callable) -> void:

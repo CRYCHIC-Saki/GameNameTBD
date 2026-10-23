@@ -156,3 +156,18 @@ Phase 2库存通过供料/消耗适配器与烹饪边界交互，经济订阅唯
 - 暂停与process_mode：[暂停文档](https://docs.godotengine.org/en/4.7/tutorials/scripting/pausing_games.html)
 - 模板资源和复制语义：[Resource文档](https://docs.godotengine.org/en/4.7/classes/class_resource.html)。本工程对嵌套Resource显式重建，值容器再深复制，配隔离测试。
 - GUT 9.7.1对应Godot 4.7：[维护者版本表](https://github.com/bitwes/Gut)。已下载并验证版本，锁文件记录archive SHA256；不使用浮动main。
+
+## D033 当前正式游戏装配（2026-10-23）
+
+以上 Phase 0 内容保留为历史；本节描述当前入口。
+
+- `TDApplication` 装配 `TDGameShell`。正常菜单只开始/继续/载入/设置/退出；旧原型方法留作自动测试与独立 debug 工具。`--validation-root=<绝对路径>` 将检查进程的设置与存档全部重定向，导出冒烟检查不读取玩家档。
+- `TDGameProfile` 一槽一实例，拥有 `TDShopSession`、`TDPhase3Session`、`TDResearchSession` 和持久 `TDRestaurantLayout`。正常经营的金额（分）、库存（千分份）、订单、评价、日结全部由既有 Shop 规则决定；World 不再独立收取另一笔订单收入。世界消费通过 profile 的事务适配器把元转换成分，并写入营业明细，保留零钱；失败恢复世界快照。
+- Town / Restaurant / 嵌入的 ShopView 同时存在，场景往返切显示、摄像机和输入，不重建做菜或订单对象。厨房在餐厅中仍推进营业时间；离开店铺仅 PREPARE/SETTLED 可用。餐厅实体客人是现有订单的投影，没有第二套接单/付款状态。
+- 世界物件发意图：门→travel，摊贩→buy，营业牌→set_menu/open_day，账本→summary/save，装修桌→原布局工具，菜谱架/B→原 Atlas，休息处→save/next_day。供应处复用 SupplyBook 的到货时间；已到货以单次账目入厨房库存。旧员工、分店、伪评分及客流试验仍在独立 debug 场景，不作为本轮已整合的正常单店功能。
+- 研习购买/成绩先通过 save_sink(candidate) 保存完整候选槽包才发布；营业做菜奖励留在本槽内存，与营业边界一起保存。新档不会读取独立的全局研究档。旧营业/研究只经用户点击显式导入空槽，原文件不改；按已确认稳定 ID 安装历史菜谱定义，不把定义安装当解锁。
+- 槽包包含 schema_version、kind、slot_id、title、updated_at、revision、shop/research/world/layout。复用既有校验→临时文件→读回校验→备份→替换链；加载先校验全部领域，再装配。未知版本、损坏与槽ID不符均拒绝。研究旧 token 与关闭后的 profile 回调不再能提交。
+- 暂停菜单/失焦冻结厨房与营业，Atlas 暂停底层分支后使用自己的真实厨房练习时钟。文本输入不抢移动/研习键，控制台必须输入 debug 才执行调试命令；进入旧试验入口前要求营业结束，并保存/关闭当前槽。
+- 美术采用 assets/town 的生成 PNG 与既有厨房/厨师资源，图集原生切片、nearest 采样。布局仍可编辑，画面不代替路径、阻挡或库存逻辑。
+- 标题开始入口按TDProfileStore.latest直入最近成功保存的有效槽；无有效档选择首个真正空槽。创建/读取呈现进度并拒绝重复请求，初始化失败先返回结构化错误。TDIngredientBook只读content/ingredient_index.json运行身份索引，tools/build_ingredient_index.ps1显式从只读来源提取并检查一致；生产运行不再读取doc/source。
+- 同时存在的Town/Restaurant/Kitchen使用独立物理层（掩码墙体/人物：16/32、4/8、1/2），隐藏不等于移除碰撞，不能再共用墙体层。餐厅is_walkable由边界和真实阻挡家具决定，空功能区地砖可走；寻路和StaticBody生成同源，家具服务落脚规则仍保留专用过道。IsoView用脚底投影定位人物，并按地面位置排序人物/家具，原存档和位图不改变。

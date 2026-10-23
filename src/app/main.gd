@@ -36,8 +36,16 @@ var _menu: Control
 var _settings_message: Label
 var _show_debug: bool = false
 var _paused: bool = false
+var game_shell: TDGameShell
 
 func _ready() -> void:
+	# Export smoke and developer captures can explicitly isolate every save location.
+	for argument: String in OS.get_cmdline_user_args():
+		if argument.begins_with("--validation-root="):
+			var directory:=argument.trim_prefix("--validation-root=")
+			settings_path=directory.path_join("settings.json")
+			shop_save_path=directory.path_join("shop.json")
+			research_save_path=directory.path_join("research.json")
 	get_tree().auto_accept_quit=false
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	set_process_unhandled_input(true)
@@ -178,6 +186,7 @@ func close_research() -> void:
 		shop_view.sync_research_recipes(_phase3().research_service_ids())
 
 func _input(event:InputEvent) -> void:
+	if game_shell!=null and _menu.visible and atlas==null: return
 	if event.is_action_pressed("recipe_book") and not event.is_echo():
 		var focus:=get_viewport().gui_get_focus_owner()
 		if focus is LineEdit or focus is TextEdit: return
@@ -280,6 +289,12 @@ func toggle_pause() -> void:
 	if floor_kitchen != null: floor_kitchen.set_paused(_paused)
 
 func _notification(what: int) -> void:
+	if game_shell!=null and is_inside_tree() and _menu.visible:
+		if what==NOTIFICATION_WM_CLOSE_REQUEST: game_shell.request_quit();return
+		if what==NOTIFICATION_APPLICATION_FOCUS_OUT and game_shell.atlas!=null:
+			game_shell.atlas.set_paused(true);get_tree().paused=true;return
+		if what==NOTIFICATION_APPLICATION_FOCUS_OUT and game_shell.profile!=null and not get_tree().paused and game_shell.atlas==null:
+			game_shell.show_pause();return
 	if what==NOTIFICATION_WM_CLOSE_REQUEST and is_inside_tree():
 		close_research() # Reveal the existing unsaved-business confirmation above its own scene.
 		if shop_view!=null: shop_view.request_leave(func()->void:get_tree().quit())
@@ -400,34 +415,22 @@ func _save_debug(value: bool) -> void:
 	var result := _store.save_settings({"show_debug": value})
 	_settings_message.text = "设置已保存。" if result.ok else "设置保存失败：" + result.code + "；原文件未被静默覆盖。"
 
-func _build_menu(config: TDOutcome) -> void:
-	_menu = MarginContainer.new()
-	_menu.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	for side: String in ["left", "right", "top", "bottom"]:
-		_menu.add_theme_constant_override("margin_" + side, 64)
-	add_child(_menu)
-	var column := TDUI.column(_menu, 14)
-	column.add_child(TDUI.label("TOWN DINER   /   SINGLE STORE", 17, TDUI.ORANGE))
-	column.add_child(TDUI.label("小镇食堂", 62))
-	column.add_child(TDUI.label("从一间小店，开始我们的故事。", 26))
-	column.add_child(TDUI.label("备好食材，写下今日菜单，迎接第一位客人。\n按菜谱打谱做菜，用每天的反馈经营这间小店。", 20, TDUI.MUTED))
-	var spacer := Control.new()
-	spacer.custom_minimum_size.y = 20
-	column.add_child(spacer)
-	var start := TDUI.button("新开一间店   →", func()->void:enter_shop(false))
-	start.custom_minimum_size = Vector2(360, 60)
-	start.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	start.disabled = full_catalog.data().is_empty()
-	column.add_child(start)
-	column.add_child(TDUI.button("继续经营",func()->void:enter_shop(true)))
-	column.add_child(TDUI.button("菜谱研习",enter_research))
-	column.add_child(TDUI.button("布置餐厅", func() -> void: enter_restaurant("")))
-	column.add_child(TDUI.button("走进小镇", func() -> void: enter_town()))
-	column.add_child(TDUI.label("WASD 走动 · E 拿取 / 交互 · B 菜谱研习 · Esc 暂停", 17, TDUI.MUTED))
-	_settings_message = TDUI.label("占位界面 · 原型建议数值 · 人工玩法验收待完成。", 16, TDUI.MUTED)
-	column.add_child(_settings_message)
-	if not config.ok:
-		_settings_message.text = "配置错误：" + config.message
-	var exit_button := TDUI.button("退出", func() -> void: get_tree().quit())
-	exit_button.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	column.add_child(exit_button)
+func _build_menu(_config: TDOutcome) -> void:
+	_menu=Control.new();_menu.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);add_child(_menu)
+	_settings_message=TDUI.label("");_settings_message.hide();_menu.add_child(_settings_message)
+	game_shell=TDGameShell.new()
+	if settings_path!="user://settings.json":
+		game_shell.profile_root=settings_path+".profiles"
+		game_shell.preferences_path=settings_path+".player"
+	game_shell.debug_entry_requested.connect(_enter_debug_tool)
+	_menu.add_child(game_shell)
+
+func _enter_debug_tool(entry: String) -> void:
+	# Debug prototypes use a separate directory and cannot overwrite normal slot saves.
+	shop_save_path=game_shell.profile_root.path_join("debug-shop.json")
+	research_save_path=game_shell.profile_root.path_join("debug-research.json")
+	match entry:
+		"厨房": enter_full_kitchen()
+		"营业": enter_shop(false)
+		"小镇": enter_town()
+		"餐厅": enter_restaurant("")

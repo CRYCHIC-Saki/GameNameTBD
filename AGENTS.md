@@ -1,5 +1,7 @@
 # 小镇食堂开发入口
 
+- D033（2026-10-23）当前统一游戏入口：见`docs/phases/game-shell.md`。TDGameProfile按六槽绑定Shop/World/Research/Layout；新档不读取全局研究，旧进度显式只读导入。Shop分钱账是正式单店权威。现货采购在筹备期即时入库，OPEN/DRAINING禁止离店采购；只在筹备/日结保存。主菜单只开始/继续/载入/设置/退出；门、摊贩、营业牌、账本、装修桌、菜谱架、休息处负责游戏交互。反引号控制台输入debug开启独立旧试验入口，不能重曝常驻调试按钮或将其数据写入当前槽。整个Phase4未完成。
+
 - 每阶段先读 `docs/DEVELOPMENT_PROTOCOL.md`、`docs/PROJECT_STATE.md`、`docs/DECISIONS.md`、`docs/FULL_IMPLEMENTATION_FLOW.md`、`docs/AI_FILLED_DETAILS.md`、对应阶段报告和用户最新范围。原始资料在 `doc/source/`，只读。
 - 产品规则按 1013 会议→《美食游戏设计大纲 v0.2》→带编号的 `【AI填充细节 AI-xxx】` 解释。AI 填充不能冒充用户决定；覆盖时保留编号和历史。
 - D030（2026-10-21）仅授权菜谱研习切片，见 `docs/phases/recipe-study.md`；不等于整个 Phase 4 完成。新进度只有蛋炒饭C01、番茄炒蛋C02；历史合法解锁保留。HTML前置为ALL，灵感买永久资格，完成谱面>=80解锁；其他菜系只能由剧情推荐接口开放。生产入口不再用旧60分/Perfect直接解锁；未配谱面不扣灵感。独立research-v1.json不回写营业账。

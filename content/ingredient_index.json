@@ -1,0 +1,1343 @@
+{
+  "schema_version": 1,
+  "source": "doc/source/ingredients.json",
+  "source_version": "0.1.0",
+  "source_sha256": "89d74a474a440d9c63bab05a22cd39727e4a42d11245693d86c3d78bc1d831d0",
+  "purpose": "Identity and display index only; no flavor or recipe balancing data.",
+  "categories": [
+    {
+      "id": "vegetable",
+      "name": "蔬菜",
+      "items": [
+        {
+          "id": "tomato",
+          "name": "西红柿",
+          "sub": "茄果"
+        },
+        {
+          "id": "cucumber",
+          "name": "黄瓜",
+          "sub": "瓜类"
+        },
+        {
+          "id": "potato",
+          "name": "土豆",
+          "sub": "根茎"
+        },
+        {
+          "id": "napa",
+          "name": "大白菜",
+          "sub": "叶菜"
+        },
+        {
+          "id": "bokchoy",
+          "name": "小油菜",
+          "sub": "叶菜"
+        },
+        {
+          "id": "spinach",
+          "name": "菠菜",
+          "sub": "叶菜"
+        },
+        {
+          "id": "celery",
+          "name": "芹菜",
+          "sub": "叶菜"
+        },
+        {
+          "id": "onion",
+          "name": "洋葱",
+          "sub": "葱蒜"
+        },
+        {
+          "id": "ginger",
+          "name": "姜",
+          "sub": "葱蒜"
+        },
+        {
+          "id": "garlic",
+          "name": "大蒜",
+          "sub": "葱蒜"
+        },
+        {
+          "id": "scallion",
+          "name": "小葱",
+          "sub": "葱蒜"
+        },
+        {
+          "id": "leek",
+          "name": "韭菜",
+          "sub": "葱蒜"
+        },
+        {
+          "id": "chili",
+          "name": "辣椒",
+          "sub": "茄果"
+        },
+        {
+          "id": "bellpepper",
+          "name": "甜椒",
+          "sub": "茄果"
+        },
+        {
+          "id": "eggplant",
+          "name": "茄子",
+          "sub": "茄果"
+        },
+        {
+          "id": "radish",
+          "name": "白萝卜",
+          "sub": "根茎"
+        },
+        {
+          "id": "carrot",
+          "name": "胡萝卜",
+          "sub": "根茎"
+        },
+        {
+          "id": "lotusroot",
+          "name": "莲藕",
+          "sub": "根茎"
+        },
+        {
+          "id": "yam",
+          "name": "山药",
+          "sub": "根茎"
+        },
+        {
+          "id": "taro",
+          "name": "芋头",
+          "sub": "根茎"
+        },
+        {
+          "id": "pumpkin",
+          "name": "南瓜",
+          "sub": "瓜类"
+        },
+        {
+          "id": "wintermelon",
+          "name": "冬瓜",
+          "sub": "瓜类"
+        },
+        {
+          "id": "bittermelon",
+          "name": "苦瓜",
+          "sub": "瓜类"
+        },
+        {
+          "id": "okra",
+          "name": "秋葵",
+          "sub": "豆荚"
+        },
+        {
+          "id": "greenbean",
+          "name": "四季豆",
+          "sub": "豆荚"
+        },
+        {
+          "id": "snowpea",
+          "name": "荷兰豆",
+          "sub": "豆荚"
+        },
+        {
+          "id": "broccoli",
+          "name": "西兰花",
+          "sub": "叶菜"
+        },
+        {
+          "id": "bambooshoot",
+          "name": "竹笋",
+          "sub": "根茎"
+        },
+        {
+          "id": "cilantro",
+          "name": "香菜",
+          "sub": "香草"
+        },
+        {
+          "id": "fishmint",
+          "name": "折耳根",
+          "sub": "香草"
+        },
+        {
+          "id": "basil",
+          "name": "罗勒",
+          "sub": "香草"
+        },
+        {
+          "id": "lemongrass",
+          "name": "香茅",
+          "sub": "香草"
+        },
+        {
+          "id": "mint",
+          "name": "薄荷",
+          "sub": "香草"
+        },
+        {
+          "id": "beansprout",
+          "name": "豆芽",
+          "sub": "芽苗"
+        },
+        {
+          "id": "shepherds",
+          "name": "荠菜",
+          "sub": "叶菜"
+        },
+        {
+          "id": "beetroot",
+          "name": "甜菜根",
+          "sub": "根茎"
+        },
+        {
+          "id": "arugula",
+          "name": "芝麻菜",
+          "sub": "叶菜"
+        },
+        {
+          "id": "asparagus",
+          "name": "芦笋",
+          "sub": "根茎"
+        },
+        {
+          "id": "amaranth",
+          "name": "苋菜",
+          "sub": "叶菜"
+        }
+      ]
+    },
+    {
+      "id": "meat",
+      "name": "肉类",
+      "items": [
+        {
+          "id": "porkbelly",
+          "name": "五花肉",
+          "sub": "猪"
+        },
+        {
+          "id": "porkloin",
+          "name": "猪里脊",
+          "sub": "猪"
+        },
+        {
+          "id": "porkrib",
+          "name": "猪排骨",
+          "sub": "猪"
+        },
+        {
+          "id": "pigtrotter",
+          "name": "猪蹄",
+          "sub": "猪"
+        },
+        {
+          "id": "beefbrisket",
+          "name": "牛腩",
+          "sub": "牛"
+        },
+        {
+          "id": "beefsteak",
+          "name": "牛排（里脊）",
+          "sub": "牛"
+        },
+        {
+          "id": "beefshank",
+          "name": "牛腱",
+          "sub": "牛"
+        },
+        {
+          "id": "fattybeef",
+          "name": "肥牛",
+          "sub": "牛"
+        },
+        {
+          "id": "tripe",
+          "name": "牛肚（毛肚）",
+          "sub": "内脏"
+        },
+        {
+          "id": "tendon",
+          "name": "牛筋",
+          "sub": "内脏"
+        },
+        {
+          "id": "lamb",
+          "name": "羊肉",
+          "sub": "羊"
+        },
+        {
+          "id": "lambchop",
+          "name": "羊排",
+          "sub": "羊"
+        },
+        {
+          "id": "chickenbreast",
+          "name": "鸡胸肉",
+          "sub": "禽"
+        },
+        {
+          "id": "chickenleg",
+          "name": "鸡腿",
+          "sub": "禽"
+        },
+        {
+          "id": "chickenwing",
+          "name": "鸡翅",
+          "sub": "禽"
+        },
+        {
+          "id": "chickenfeet",
+          "name": "鸡爪",
+          "sub": "禽"
+        },
+        {
+          "id": "duck",
+          "name": "鸭肉",
+          "sub": "禽"
+        },
+        {
+          "id": "goose",
+          "name": "鹅肉",
+          "sub": "禽"
+        },
+        {
+          "id": "folegras",
+          "name": "鹅肝",
+          "sub": "内脏"
+        },
+        {
+          "id": "porkliver",
+          "name": "猪肝",
+          "sub": "内脏"
+        },
+        {
+          "id": "intestine",
+          "name": "猪大肠",
+          "sub": "内脏"
+        },
+        {
+          "id": "blood",
+          "name": "猪血/鸭血",
+          "sub": "内脏"
+        },
+        {
+          "id": "bacon",
+          "name": "培根",
+          "sub": "加工肉"
+        },
+        {
+          "id": "sausage",
+          "name": "香肠",
+          "sub": "加工肉"
+        },
+        {
+          "id": "curedpork",
+          "name": "腊肉",
+          "sub": "加工肉"
+        },
+        {
+          "id": "ham",
+          "name": "火腿（金华/西班牙）",
+          "sub": "加工肉"
+        },
+        {
+          "id": "kangaroo",
+          "name": "袋鼠肉",
+          "sub": "其他"
+        },
+        {
+          "id": "guineapig",
+          "name": "豚鼠",
+          "sub": "其他"
+        }
+      ]
+    },
+    {
+      "id": "seafood",
+      "name": "水产",
+      "items": [
+        {
+          "id": "carp",
+          "name": "鲤鱼/鲫鱼",
+          "sub": "淡水鱼"
+        },
+        {
+          "id": "mandarinfish",
+          "name": "鳜鱼",
+          "sub": "淡水鱼"
+        },
+        {
+          "id": "salmon",
+          "name": "三文鱼",
+          "sub": "海鱼"
+        },
+        {
+          "id": "tuna",
+          "name": "金枪鱼",
+          "sub": "海鱼"
+        },
+        {
+          "id": "cod",
+          "name": "鳕鱼",
+          "sub": "海鱼"
+        },
+        {
+          "id": "seabass",
+          "name": "鲈鱼",
+          "sub": "海鱼"
+        },
+        {
+          "id": "herring",
+          "name": "鲱鱼",
+          "sub": "海鱼"
+        },
+        {
+          "id": "shark",
+          "name": "鲨鱼肉",
+          "sub": "水产猎奇"
+        },
+        {
+          "id": "skate",
+          "name": "鳐鱼",
+          "sub": "水产猎奇"
+        },
+        {
+          "id": "fugu",
+          "name": "河豚",
+          "sub": "海鱼"
+        },
+        {
+          "id": "eel",
+          "name": "鳗鱼",
+          "sub": "淡水鱼"
+        },
+        {
+          "id": "sardine",
+          "name": "沙丁鱼",
+          "sub": "海鱼"
+        },
+        {
+          "id": "anchovy",
+          "name": "凤尾鱼",
+          "sub": "海鱼"
+        },
+        {
+          "id": "shrimp",
+          "name": "虾",
+          "sub": "虾蟹"
+        },
+        {
+          "id": "lobster",
+          "name": "龙虾",
+          "sub": "虾蟹"
+        },
+        {
+          "id": "crayfish",
+          "name": "小龙虾",
+          "sub": "虾蟹"
+        },
+        {
+          "id": "crab",
+          "name": "蟹",
+          "sub": "虾蟹"
+        },
+        {
+          "id": "clam",
+          "name": "蛤蜊",
+          "sub": "贝类"
+        },
+        {
+          "id": "bloodclam",
+          "name": "血蚶",
+          "sub": "贝类"
+        },
+        {
+          "id": "oyster",
+          "name": "生蚝",
+          "sub": "贝类"
+        },
+        {
+          "id": "scallop",
+          "name": "扇贝",
+          "sub": "贝类"
+        },
+        {
+          "id": "abalone",
+          "name": "鲍鱼",
+          "sub": "贝类"
+        },
+        {
+          "id": "seacucumber",
+          "name": "海参",
+          "sub": "贝类"
+        },
+        {
+          "id": "squid",
+          "name": "鱿鱼",
+          "sub": "头足"
+        },
+        {
+          "id": "octopus",
+          "name": "章鱼",
+          "sub": "头足"
+        },
+        {
+          "id": "seaurchin",
+          "name": "海胆",
+          "sub": "其他"
+        },
+        {
+          "id": "roe",
+          "name": "鱼子/鱼卵",
+          "sub": "其他"
+        },
+        {
+          "id": "shirako",
+          "name": "白子",
+          "sub": "其他"
+        },
+        {
+          "id": "kelp",
+          "name": "海带",
+          "sub": "藻类"
+        },
+        {
+          "id": "nori",
+          "name": "紫菜",
+          "sub": "藻类"
+        },
+        {
+          "id": "sandworm",
+          "name": "沙虫",
+          "sub": "水产猎奇"
+        }
+      ]
+    },
+    {
+      "id": "egg_dairy",
+      "name": "蛋奶",
+      "items": [
+        {
+          "id": "egg",
+          "name": "鸡蛋",
+          "sub": "蛋"
+        },
+        {
+          "id": "duckegg",
+          "name": "鸭蛋",
+          "sub": "蛋"
+        },
+        {
+          "id": "quaiilegg",
+          "name": "鹌鹑蛋",
+          "sub": "蛋"
+        },
+        {
+          "id": "balut",
+          "name": "毛蛋/活珠子",
+          "sub": "蛋"
+        },
+        {
+          "id": "milk",
+          "name": "牛奶",
+          "sub": "乳制品"
+        },
+        {
+          "id": "cream",
+          "name": "奶油",
+          "sub": "乳制品"
+        },
+        {
+          "id": "butter",
+          "name": "黄油",
+          "sub": "乳制品"
+        },
+        {
+          "id": "cheese",
+          "name": "奶酪",
+          "sub": "奶酪"
+        },
+        {
+          "id": "bluecheese",
+          "name": "蓝纹奶酪",
+          "sub": "奶酪"
+        },
+        {
+          "id": "mozzarella",
+          "name": "马苏里拉",
+          "sub": "奶酪"
+        },
+        {
+          "id": "parmesan",
+          "name": "帕玛森",
+          "sub": "奶酪"
+        },
+        {
+          "id": "feta",
+          "name": "羊乳酪",
+          "sub": "奶酪"
+        },
+        {
+          "id": "yogurt",
+          "name": "酸奶",
+          "sub": "乳制品"
+        },
+        {
+          "id": "ghee",
+          "name": "酥油",
+          "sub": "乳制品"
+        }
+      ]
+    },
+    {
+      "id": "soy",
+      "name": "豆制品",
+      "items": [
+        {
+          "id": "tofu",
+          "name": "嫩豆腐",
+          "sub": "豆制品"
+        },
+        {
+          "id": "firmtofu",
+          "name": "老豆腐",
+          "sub": "豆制品"
+        },
+        {
+          "id": "tofuskin",
+          "name": "腐竹/豆皮",
+          "sub": "豆制品"
+        },
+        {
+          "id": "driedtofu",
+          "name": "豆干",
+          "sub": "豆制品"
+        },
+        {
+          "id": "soymilk",
+          "name": "豆浆",
+          "sub": "豆制品"
+        },
+        {
+          "id": "stinkytofu",
+          "name": "臭豆腐",
+          "sub": "发酵豆"
+        },
+        {
+          "id": "hairytofu",
+          "name": "毛豆腐",
+          "sub": "发酵豆"
+        },
+        {
+          "id": "fermentedbeancurd",
+          "name": "腐乳",
+          "sub": "发酵豆"
+        },
+        {
+          "id": "natto",
+          "name": "纳豆",
+          "sub": "发酵豆"
+        },
+        {
+          "id": "miso",
+          "name": "味噌",
+          "sub": "发酵豆"
+        },
+        {
+          "id": "douchi",
+          "name": "豆豉",
+          "sub": "发酵豆"
+        },
+        {
+          "id": "chickpea",
+          "name": "鹰嘴豆",
+          "sub": "豆"
+        },
+        {
+          "id": "mungbean",
+          "name": "绿豆",
+          "sub": "豆"
+        }
+      ]
+    },
+    {
+      "id": "grain",
+      "name": "谷物主食",
+      "items": [
+        {
+          "id": "rice",
+          "name": "大米",
+          "sub": "米"
+        },
+        {
+          "id": "glutinousrice",
+          "name": "糯米",
+          "sub": "米"
+        },
+        {
+          "id": "millet",
+          "name": "小米",
+          "sub": "其他谷物"
+        },
+        {
+          "id": "flour",
+          "name": "面粉",
+          "sub": "面"
+        },
+        {
+          "id": "noodle",
+          "name": "面条",
+          "sub": "面点"
+        },
+        {
+          "id": "ricenoodle",
+          "name": "河粉/米粉",
+          "sub": "面点"
+        },
+        {
+          "id": "pasta",
+          "name": "意大利面",
+          "sub": "面点"
+        },
+        {
+          "id": "oats",
+          "name": "燕麦",
+          "sub": "其他谷物"
+        },
+        {
+          "id": "barley",
+          "name": "青稞",
+          "sub": "其他谷物"
+        },
+        {
+          "id": "corn",
+          "name": "玉米",
+          "sub": "其他谷物"
+        },
+        {
+          "id": "bread",
+          "name": "面包",
+          "sub": "面点"
+        },
+        {
+          "id": "mantou",
+          "name": "馒头",
+          "sub": "面点"
+        },
+        {
+          "id": "flatbread",
+          "name": "馍/饼",
+          "sub": "面点"
+        },
+        {
+          "id": "teff",
+          "name": "苔麸",
+          "sub": "其他谷物"
+        },
+        {
+          "id": "starch",
+          "name": "淀粉",
+          "sub": "其他谷物"
+        }
+      ]
+    },
+    {
+      "id": "mushroom",
+      "name": "菌菇",
+      "items": [
+        {
+          "id": "shiitake",
+          "name": "香菇",
+          "sub": "菌菇"
+        },
+        {
+          "id": "oystermushroom",
+          "name": "平菇",
+          "sub": "菌菇"
+        },
+        {
+          "id": "enoki",
+          "name": "金针菇",
+          "sub": "菌菇"
+        },
+        {
+          "id": "kingoyster",
+          "name": "杏鲍菇",
+          "sub": "菌菇"
+        },
+        {
+          "id": "woodear",
+          "name": "木耳",
+          "sub": "菌菇"
+        },
+        {
+          "id": "snowfungus",
+          "name": "银耳",
+          "sub": "菌菇"
+        },
+        {
+          "id": "porcini",
+          "name": "牛肝菌",
+          "sub": "菌菇"
+        },
+        {
+          "id": "truffle",
+          "name": "松露",
+          "sub": "菌菇"
+        }
+      ]
+    },
+    {
+      "id": "fruit",
+      "name": "水果",
+      "items": [
+        {
+          "id": "apple",
+          "name": "苹果",
+          "sub": "水果"
+        },
+        {
+          "id": "lemon",
+          "name": "柠檬",
+          "sub": "水果"
+        },
+        {
+          "id": "lime",
+          "name": "青柠",
+          "sub": "水果"
+        },
+        {
+          "id": "pineapple",
+          "name": "菠萝",
+          "sub": "水果"
+        },
+        {
+          "id": "mango",
+          "name": "芒果",
+          "sub": "水果"
+        },
+        {
+          "id": "strawberry",
+          "name": "草莓",
+          "sub": "水果"
+        },
+        {
+          "id": "watermelon",
+          "name": "西瓜",
+          "sub": "水果"
+        },
+        {
+          "id": "durian",
+          "name": "榴莲",
+          "sub": "水果"
+        },
+        {
+          "id": "avocado",
+          "name": "牛油果",
+          "sub": "水果"
+        },
+        {
+          "id": "coconut",
+          "name": "椰子",
+          "sub": "水果"
+        },
+        {
+          "id": "date",
+          "name": "椰枣",
+          "sub": "水果"
+        },
+        {
+          "id": "lingonberry",
+          "name": "越橘/蔓越莓",
+          "sub": "水果"
+        },
+        {
+          "id": "passionfruit",
+          "name": "百香果",
+          "sub": "水果"
+        },
+        {
+          "id": "hawthorn",
+          "name": "山楂",
+          "sub": "水果"
+        },
+        {
+          "id": "lychee",
+          "name": "荔枝",
+          "sub": "水果"
+        }
+      ]
+    },
+    {
+      "id": "spice",
+      "name": "香辛料",
+      "items": [
+        {
+          "id": "sichuanpepper",
+          "name": "花椒",
+          "sub": "辛香"
+        },
+        {
+          "id": "staranise",
+          "name": "八角",
+          "sub": "辛香"
+        },
+        {
+          "id": "cinnamon",
+          "name": "桂皮",
+          "sub": "辛香"
+        },
+        {
+          "id": "bayleaf",
+          "name": "香叶",
+          "sub": "辛香"
+        },
+        {
+          "id": "clove",
+          "name": "丁香",
+          "sub": "辛香"
+        },
+        {
+          "id": "cumin",
+          "name": "孜然",
+          "sub": "辛香"
+        },
+        {
+          "id": "fennelseed",
+          "name": "小茴香",
+          "sub": "辛香"
+        },
+        {
+          "id": "chilipowder",
+          "name": "辣椒粉",
+          "sub": "辛香"
+        },
+        {
+          "id": "fivespice",
+          "name": "五香粉",
+          "sub": "复合香料"
+        },
+        {
+          "id": "currypowder",
+          "name": "咖喱粉",
+          "sub": "复合香料"
+        },
+        {
+          "id": "turmeric",
+          "name": "姜黄",
+          "sub": "辛香"
+        },
+        {
+          "id": "saffron",
+          "name": "藏红花",
+          "sub": "辛香"
+        },
+        {
+          "id": "blackpepper",
+          "name": "黑胡椒",
+          "sub": "辛香"
+        },
+        {
+          "id": "garammasala",
+          "name": "玛莎拉",
+          "sub": "复合香料"
+        },
+        {
+          "id": "tangerinepeel",
+          "name": "陈皮",
+          "sub": "辛香"
+        },
+        {
+          "id": "vanilla",
+          "name": "香草",
+          "sub": "辛香"
+        },
+        {
+          "id": "rosemary",
+          "name": "迷迭香",
+          "sub": "香草干"
+        },
+        {
+          "id": "sichuanpepperpowder",
+          "name": "花椒粉",
+          "sub": "辛香"
+        }
+      ]
+    },
+    {
+      "id": "seasoning",
+      "name": "调味料",
+      "items": [
+        {
+          "id": "salt",
+          "name": "盐",
+          "sub": "基础味"
+        },
+        {
+          "id": "sugar",
+          "name": "白糖",
+          "sub": "甜味"
+        },
+        {
+          "id": "brownsugar",
+          "name": "红糖/冰糖",
+          "sub": "甜味"
+        },
+        {
+          "id": "vinegar_shanxi",
+          "name": "山西醋（小类）",
+          "sub": "酸味"
+        },
+        {
+          "id": "vinegar_guangdong",
+          "name": "广东醋（小类）",
+          "sub": "酸味"
+        },
+        {
+          "id": "vinegar_apple",
+          "name": "苹果醋（小类）",
+          "sub": "酸味"
+        },
+        {
+          "id": "soy_light",
+          "name": "生抽（小类）",
+          "sub": "咸鲜"
+        },
+        {
+          "id": "soy_dark",
+          "name": "老抽（小类）",
+          "sub": "咸鲜"
+        },
+        {
+          "id": "soy_seafood",
+          "name": "海鲜酱油（小类）",
+          "sub": "咸鲜"
+        },
+        {
+          "id": "oystersauce",
+          "name": "蚝油",
+          "sub": "咸鲜"
+        },
+        {
+          "id": "fishsauce",
+          "name": "鱼露",
+          "sub": "咸鲜"
+        },
+        {
+          "id": "shrimppaste",
+          "name": "虾酱",
+          "sub": "咸鲜"
+        },
+        {
+          "id": "doubanjiang",
+          "name": "豆瓣酱",
+          "sub": "酱类"
+        },
+        {
+          "id": "sweetbeansauce",
+          "name": "甜面酱",
+          "sub": "酱类"
+        },
+        {
+          "id": "sataysauce",
+          "name": "沙茶酱",
+          "sub": "酱类"
+        },
+        {
+          "id": "ketchup",
+          "name": "番茄酱",
+          "sub": "酱类"
+        },
+        {
+          "id": "chilisauce",
+          "name": "辣椒酱",
+          "sub": "酱类"
+        },
+        {
+          "id": "wasabi",
+          "name": "芥末",
+          "sub": "其他"
+        },
+        {
+          "id": "cookingwine",
+          "name": "料酒",
+          "sub": "酒"
+        },
+        {
+          "id": "huangjiu",
+          "name": "黄酒",
+          "sub": "酒"
+        },
+        {
+          "id": "mirin",
+          "name": "味淋",
+          "sub": "酒"
+        },
+        {
+          "id": "honey",
+          "name": "蜂蜜",
+          "sub": "甜味"
+        },
+        {
+          "id": "maplesyrup",
+          "name": "枫糖",
+          "sub": "甜味"
+        },
+        {
+          "id": "msg",
+          "name": "味精/鸡精",
+          "sub": "其他"
+        },
+        {
+          "id": "tomato_paste",
+          "name": "番茄膏",
+          "sub": "酱类"
+        }
+      ]
+    },
+    {
+      "id": "fat",
+      "name": "油脂",
+      "items": [
+        {
+          "id": "vegetableoil",
+          "name": "植物油",
+          "sub": "植物油"
+        },
+        {
+          "id": "peanutoil",
+          "name": "花生油",
+          "sub": "植物油"
+        },
+        {
+          "id": "oliveoil",
+          "name": "橄榄油",
+          "sub": "植物油"
+        },
+        {
+          "id": "sesameoil",
+          "name": "香油（芝麻油）",
+          "sub": "植物油"
+        },
+        {
+          "id": "chilioil",
+          "name": "辣椒油",
+          "sub": "植物油"
+        },
+        {
+          "id": "coconutoil",
+          "name": "椰子油",
+          "sub": "植物油"
+        },
+        {
+          "id": "lard",
+          "name": "猪油",
+          "sub": "动物油"
+        },
+        {
+          "id": "beeftallow",
+          "name": "牛油（牛脂）",
+          "sub": "动物油"
+        },
+        {
+          "id": "duckfat",
+          "name": "鸭油",
+          "sub": "动物油"
+        }
+      ]
+    },
+    {
+      "id": "fermented",
+      "name": "发酵腌制",
+      "items": [
+        {
+          "id": "kimchi",
+          "name": "泡菜",
+          "sub": "腌菜"
+        },
+        {
+          "id": "sauerkraut",
+          "name": "酸菜",
+          "sub": "腌菜"
+        },
+        {
+          "id": "picklebamboo",
+          "name": "酸笋",
+          "sub": "腌菜"
+        },
+        {
+          "id": "picklecucumber",
+          "name": "腌黄瓜",
+          "sub": "腌菜"
+        },
+        {
+          "id": "olive",
+          "name": "橄榄",
+          "sub": "腌菜"
+        },
+        {
+          "id": "oliveveg",
+          "name": "梅干菜",
+          "sub": "腌菜"
+        },
+        {
+          "id": "saltedfish",
+          "name": "咸鱼",
+          "sub": "腌菜"
+        },
+        {
+          "id": "stinkyfish",
+          "name": "臭鳜鱼（原料）",
+          "sub": "发酵猎奇"
+        },
+        {
+          "id": "fermentedamaranth",
+          "name": "霉苋菜梗",
+          "sub": "发酵猎奇"
+        },
+        {
+          "id": "stinkymelon",
+          "name": "臭冬瓜",
+          "sub": "发酵猎奇"
+        },
+        {
+          "id": "douzhi",
+          "name": "豆汁",
+          "sub": "发酵猎奇"
+        },
+        {
+          "id": "surstromming",
+          "name": "鲱鱼罐头",
+          "sub": "发酵猎奇"
+        },
+        {
+          "id": "hakarl",
+          "name": "发酵鲨鱼肉",
+          "sub": "发酵猎奇"
+        },
+        {
+          "id": "niupi",
+          "name": "牛瘪（牛胃草汁）",
+          "sub": "发酵猎奇"
+        },
+        {
+          "id": "bittergutwater",
+          "name": "牛苦肠水",
+          "sub": "发酵猎奇"
+        }
+      ]
+    },
+    {
+      "id": "dried",
+      "name": "干货",
+      "items": [
+        {
+          "id": "driedshiitake",
+          "name": "干香菇",
+          "sub": "干货"
+        },
+        {
+          "id": "driedscallop",
+          "name": "干贝",
+          "sub": "干货"
+        },
+        {
+          "id": "driedshrimp",
+          "name": "虾米",
+          "sub": "干货"
+        },
+        {
+          "id": "driedabalone",
+          "name": "干鲍",
+          "sub": "干货"
+        },
+        {
+          "id": "fishmaw",
+          "name": "花胶（鱼肚）",
+          "sub": "干货"
+        },
+        {
+          "id": "driedwoodear",
+          "name": "干木耳",
+          "sub": "干货"
+        },
+        {
+          "id": "vermicelli",
+          "name": "粉丝/粉条",
+          "sub": "干货"
+        },
+        {
+          "id": "reddate",
+          "name": "红枣",
+          "sub": "干货"
+        },
+        {
+          "id": "goji",
+          "name": "枸杞",
+          "sub": "干货"
+        },
+        {
+          "id": "driedchili",
+          "name": "干辣椒",
+          "sub": "干货"
+        }
+      ]
+    },
+    {
+      "id": "exotic",
+      "name": "猎奇食材",
+      "items": [
+        {
+          "id": "silkworm",
+          "name": "蚕蛹",
+          "sub": "虫类"
+        },
+        {
+          "id": "bambooworm",
+          "name": "竹虫",
+          "sub": "虫类"
+        },
+        {
+          "id": "beepupa",
+          "name": "蜂蛹",
+          "sub": "虫类"
+        },
+        {
+          "id": "waterbug",
+          "name": "龙虱（水蟑螂）",
+          "sub": "虫类"
+        },
+        {
+          "id": "grasshopper",
+          "name": "蚱蜢",
+          "sub": "虫类"
+        },
+        {
+          "id": "casumarzu",
+          "name": "活蛆奶酪",
+          "sub": "T4"
+        },
+        {
+          "id": "rawpork",
+          "name": "生猪肉（生皮/生食）",
+          "sub": "生食"
+        },
+        {
+          "id": "rawbeef",
+          "name": "生牛肉（鞑靼/生肉泥）",
+          "sub": "生食"
+        },
+        {
+          "id": "liveoctopus",
+          "name": "活章鱼",
+          "sub": "生食"
+        },
+        {
+          "id": "liveeel",
+          "name": "活鱼/活鲜",
+          "sub": "生食"
+        }
+      ]
+    }
+  ]
+}

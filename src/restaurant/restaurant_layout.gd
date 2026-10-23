@@ -94,6 +94,23 @@ static func import_dict(data: Dictionary, catalog: TDRestaurantCatalog) -> TDRes
 		return null
 	return layout
 
+func furnish_player_home() -> TDOutcome:
+	# Only for a new profile. Loading an existing layout never calls this method.
+	for item: Dictionary in pieces():
+		if item.seat_use=="dining" or item.kind=="kiosk": remove_piece(item.id)
+	for y: int in rows:
+		for x: int in columns:
+			if cell_zone(x,y)=="dining": paint(x,y,".")
+	for point: Vector2i in [Vector2i(3,5),Vector2i(8,5),Vector2i(3,10),Vector2i(8,10)]:
+		if point.x+2>=columns-1 or point.y+2>=rows-2: continue
+		for y: int in range(point.y,point.y+2):
+			for x: int in range(point.x,point.x+2):
+				var painted:=paint(x,y,"D")
+				if not painted.ok: return painted
+		var placed:=place("dining_table",point.x,point.y,0,"chinese_low")
+		if not placed.ok: return placed
+	return TDOutcome.new(true,"FURNISHED")
+
 func pieces() -> Array:
 	var copy: Array = []
 	for piece: Variant in _pieces:
@@ -119,7 +136,12 @@ func cell_zone(x: int, y: int) -> String:
 	return _zones[y * columns + x]
 
 func is_walkable(x: int, y: int) -> bool:
-	return cell_zone(x, y) == "movement"
+	# Floor zoning controls placement; only walls and occupied furniture block feet.
+	if cell_zone(x,y) not in ["movement","reception","ordering","dining"]:
+		return false
+	for item: Dictionary in _pieces:
+		if bool(item.blocks) and _contains(item,x,y): return false
+	return true
 
 func is_entrance(x: int, y: int) -> bool:
 	return _entrances.has(Vector2i(x, y))
@@ -328,10 +350,10 @@ func to_dict() -> Dictionary:
 
 func _load(data: Dictionary, catalog: TDRestaurantCatalog) -> TDOutcome:
 	_catalog = catalog
-	if int(data.get("columns", -1)) != catalog.grid_columns():
-		return _fail("BAD_GRID", "网格列数和餐厅目录不一致")
-	columns = catalog.grid_columns()
-	rows = catalog.grid_rows()
+	if not TDServiceCatalog.integer(data.get("columns"), 8, 64) or not data.get("rows") is Array or data.rows.size() < 8 or data.rows.size() > 64:
+		return _fail("BAD_GRID", "餐厅网格范围为8至64格")
+	columns = int(data.columns)
+	rows = data.rows.size()
 	cell_px = catalog.cell_px()
 	culture = String(data.get("culture", ""))
 	tier = String(data.get("tier", ""))
@@ -376,6 +398,8 @@ func _load(data: Dictionary, catalog: TDRestaurantCatalog) -> TDOutcome:
 		var committed := _commit(-1, built)
 		if not committed.ok:
 			return committed
+		if id.begins_with("piece-") and id.trim_prefix("piece-").is_valid_int():
+			_serial = maxi(_serial, int(id.trim_prefix("piece-")) + 1)
 	return TDOutcome.new(true, "OK")
 
 func _commit(index: int, built: Dictionary) -> TDOutcome:
@@ -439,7 +463,8 @@ func _validate_piece(built: Dictionary) -> TDOutcome:
 	if bool(built["has_approach"]):
 		var ax := int(built["approach_x"])
 		var ay := int(built["approach_y"])
-		if not is_walkable(ax, ay):
+		# Service approaches still require a dedicated aisle, preserving saved layouts.
+		if cell_zone(ax,ay)!="movement":
 			return _fail("BAD_APPROACH", "%s旁边没有顾客能走的格子" % String(built["name"]))
 		if _contains(built, ax, ay):
 			return _fail("BAD_APPROACH", "落脚点不能压在家具上")

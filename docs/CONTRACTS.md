@@ -232,3 +232,29 @@ D031当前实现接口补充：begin返回token并创建未挂树的TDResearchLe
 - AC-PHASE-4-R11：同日零剩余时间/旧已耗尽存档，连续失败后立即重试与成功均不新增时间或重复扣灵感；真实场景结果按钮创建新token、旧回调无效；隔离读写验证旧/新计数。
 - AC-PHASE-4-R12：C09仅高亮C06，C10仅高亮C07；多前置全部高亮，切换取消旧高亮；全部五菜系100节点的路径无节点/文字穿越；数据前置不变，缩放后命中与路径一致；实际Godot图形检查。
 - 当前状态：R11/R12自动验收PASS；最终350/350测试和Windows导出/启动通过，证据见recipe-study.md D032。人工PENDING。
+
+
+## D033 统一游戏入口（历史PLANNED，已由下节替代）
+应用持有当前存档的shop/world/research/layout，切场景不重建领域对象。TDShopSession为正式单店钱/库存/订单权威，集市购买只在PREPARE/SETTLED允许；门牌开业前确认菜单。存档包按稳定槽ID、schema、revision及checksum校验；研究save_sink(candidate)使用候选完整研究数据，营业奖励只留内存至边界。换槽作废旧回调；整个包通过校验才装配。旧原型接口默认行为保持，新生产整合通过显式模式注入。AC见game-shell.md。
+
+### D033 已实现契约（替代上面的 PLANNED）
+
+- 身份/单位：slot-01…06为稳定槽ID；显示名可独立修改；profile schema=1、revision仅成功落盘后+1；业务钱为整数分、食材1000=1份，World的元只做转换适配。研究仍使用既有节点ID、版本和token。
+- TDGameProfile公开：buy(cart)、order_remote(id)、receive_supplies()、world_transaction(callable,label)、save(candidate={})、restore(data)、next_day()、close()。at_boundary/can_leave_shop是同一PREPARE/SETTLED门禁；现货buy进一步沿用Shop的PREPARE限制。厨房保留原material_sink/实际交付接口。
+- TDProfileStore公开：slots/latest/load_slot/save_slot/recover_slot；路径只能从固定ID生成。外层checksum和内部所有领域校验均通过才载入；NOT_FOUND/INTERRUPTED_SAVE/UNSUPPORTED_VERSION/SLOT_MISMATCH区别处理，损坏不会自动成为新档。
+- 跨场景：Town.place_requested、Restaurant.object_requested、Kitchen.dining_requested由GameShell连接；travel切换呈现、输入和摄像机，保持同一会话。营业中去town返回SHOP_OPEN。显式模式player_mode/embedded默认为false，使旧测试与独立调试入口保留行为。
+- 研究事务：save_sink收到候选，保存候选研究状态及对应业务解锁的完整包；失败不扣点、不发布解锁。营业期返回BUFFERED_UNTIL_DAY_BOUNDARY，不能写全局研究档。close使旧sink返回STALE_PROFILE；换槽取消旧试炼并断开持有的信号。
+- 供货：order_remote经已有World.order_supply报价/时点和同一分钱账付款；SupplyBookcollect后receive_supply原子增加有效厨房库存并清除对应待领货。重复领取无账目或库存变化；超出容量保留供货库存，明确拒绝，不做半笔入库。
+- 只读UI：右侧订单与餐厅来客投影来自同一Shop；菜单/价格、购物、退款、自建做法保存仍调用原业务方法。物件交互可打开必要清单，但常驻界面不放刷客、接拒单、伪造分数、改SAN或跨场景捷径按钮。
+- 新流程的员工自动服务/分店经营未接入，保留独立debug原型和历史测试。不是删除其实现，也不对玩家收取不产生作用的雇用费用。
+
+### D033 标题入口反馈修正（2026-10-23）
+- 用户决定：开始游戏直接载入最近有效存档；没有有效存档时使用首个空槽和默认店名创建。载入存档保留选槽，另提供新建存档入口。损坏/未知版本/待恢复槽绝不按空槽覆盖；无可用槽显示明确提示。
+- 标题创建/载入显示进度并防重复点击；初始化、读写错误必须在当前可见界面显示。创建、载入、旧档导入均先检查Profile初始化结果，再使用其领域对象。
+- 运行食材索引固定为content/ingredient_index.json：由只读doc/source/ingredients.json显式提取分类ID/名称及食材ID/名称/sub，保留全部历史身份；不转换风味、不加入配方平衡。工具记录来源SHA256并检查派生内容一致性；原始资料继续排除出包。
+- 导出验收增加实际Windows运行程序＋生产资源包的鼠标创建/读取回归，不能仅凭标题启动退出0判定存档入口可用。测试入口只注入隔离验证包，不进入发布包；写入artifacts隔离目录。
+
+### D033餐厅移动修正
+- 来源：用户报告餐厅人物在无障碍处卡住。隐藏场景不得贡献其他房间的物理阻挡。厨房墙体/人物掩码为1/2（第1/2层），餐厅为4/8（第3/4层），小镇为16/32（第5/6层）；各人物只检测自己的墙体层。层名已写入project.godot。场景切换仍保留原会话/营业时钟。
+- 空地规则修正：功能分区仅限制家具放置，不再将空的迎宾/点餐/用餐地砖当墙；可通行性由边界/门面与实际blocks家具占地决定。玩家物理碰撞和顾客寻路读取同一is_walkable。家具服务落脚点仍须在movement过道，保持旧合法存档与布局约束，不把区域/家具定义重写入存档。
+- 等距呈现以人物脚底为位置基准；显示落脚点和物理脚底投影一致，家具用占地底影展示阻挡范围。不修改原位图、烹饪输入或移动速度。

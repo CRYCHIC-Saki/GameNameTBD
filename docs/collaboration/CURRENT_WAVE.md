@@ -40,3 +40,24 @@ D032最终断点：DELIVERED_LOCAL_PLAYTEST_PENDING。350/350、7831断言、0�
 用户已授权本轮提交/上传。轮值集成者负责合入origin/main@262c86d；双方代码自动合并，DECISIONS/PROJECT_STATE冲突保留双方内容并区分重复D030来源。当前状态MERGE_VALIDATING；共享文档锁与主入口装配锁归集成者。其余角色本轮无新功能任务；不强推、不覆盖主分支。两份未跟踪原始资料继续保持本地。
 
 上传整合最终检查：INTEGRATION_VALIDATED / PLAYTEST_PENDING。双方代码与来源保留，重复D030按D030-TOWN显式区分。合并后全量350/350、7421断言、0失败/0跳过，pre-export-20261022-123120；Windows导出/374资源清单/启动exit0。integrator→main协作检查通过。用户已授权推送集成分支并交审查，不自动合并main。共享工作锁完成并释放，远程CI以PR实际状态为准。
+
+
+## 2026-10-23 game-shell 工作锁
+状态IN_PROGRESS；新范围D033，基线main@a164b1c，集成分支integration/phase-4-wave-game-shell。economy/town隔离工作区artifacts/game-shell-work；单Agent顺序角色实现，代理只读。集成者持有main.gd、project.godot、phase3_session.gd、存档公共装配、检查导出及共享文档锁；不提交推送，原始资料不动。
+
+cook补充工作区同目录/cook，仅更新旧厨房兼容测试的正式标题菜单标签预期，不改做菜玩法。工作单见各角色phase-4-wave-game-shell.md；最终所有权cook2/economy9/town16通过，集成分支拓扑通过。当前全量重跑，不能把此前366/368写成通过；最终证据统一写game-shell.md。
+
+D033最终断点：DELIVERED_LOCAL / ENGINEERING_READY / PLAYTEST_PENDING。全量368/368、7659断言，pre-export-20261023-184702；最终输入专项6/6、124断言，game-shell-input-final；均0失败/0跳过/退出0。Windows导出、392资源审计、隔离启动退出0；GPU12图退出0。人工PENDING、远程CI NOT_RUN。角色核心哈希一致，原始资料保留；未提交推送。共享工作锁完成并释放，保留角色工作区供审查，不自动继续Phase4。
+
+2026-10-23 D033入口反馈修正：IN_PROGRESS。用户报告空槽按钮无反应，并明确“开始游戏”默认进最近存档。轮值集成者重新持有src/app/game_shell.gd、标题输入测试、检查/导出工具与文档锁；不改烹饪/营业规则，不碰真实存档，不提交推送。grilling审查NO_BLOCKING_PRODUCT_QUESTIONS；仅本次反馈修复。
+
+已复现导出程序缺少doc/source/ingredients.json，Profile未初始化；此前启动smoke不足以覆盖新档。economy原工作区负责ingredient_book与派生运行索引/单测；新增content/ingredient_index.json归economy。集成者负责转换工具、导出白名单、标题鼠标回归与文档。无需其他角色改动。
+
+D033入口反馈修正最终断点：DELIVERED_LOCAL / ENGINEERING_READY / PLAYTEST_PENDING。全量374/374、8272断言，pre-export-20261023-193931，0失败/0跳过/退出0；393资源导出及Windows实际鼠标23检查通过（headless/GPU均退出0）。GPU四图核对，artifacts/title-native-after-gpu.log。economy13项与集成拓扑检查通过，新增核心哈希一致。共享锁完成并释放；无提交推送，原始资料/玩家档未动。后续以新证据覆盖此前仅标题启动的不足，不自动继续其他Phase4。
+
+## 2026-10-23 D033餐厅移动修正
+IN_PROGRESS。用户报告无障碍处卡住；town角色在既有工作区修复餐厅/小镇碰撞隔离、空分区通行及人物落脚绘制，并写test_town_motion集成测试。集成者持有公共契约/阶段记录、project.godot层名称、检查与图形回归工具锁。单Agent顺序角色，无其他角色并行写入；不改做菜经济/存档，不推送。先记录G12–G14再实施。
+
+餐厅移动最终断点：DELIVERED_LOCAL / ENGINEERING_READY / PLAYTEST_PENDING。专项19/19、最终全量378/378、8318断言、492.291秒，0失败/0跳过/退出0；pre-export-20261023-204745。Windows导出393资源审计通过；隔离检查驱动错误已修复并重跑受影响步骤，headless/GPU各29项、232路径零阻挡、退出0。9张最终GPU截图见artifacts/movement-native-gpu/run-1763109。town19项所有权与integrator75项拓扑通过；核心文件一致。共享锁完成并释放，保留角色工作区；人工PENDING、远程CI NOT_RUN。未动玩家存档，未提交推送，不继续其他Phase4。
+
+2026-10-23上传交接：用户授权提交与推送新增功能/修复。fetch后origin/main=a164b1c，无新增远端提交；按integration/phase-4-wave-game-shell→main准备集成审查，不直接合主分支。集成者仅补上传记录并提交已验收内容，没有其他角色写入；忽略缓存/导出/验证产物，保留两个未跟踪原始文件。复用上述最终验证，人工PENDING；远程CI以GitHub结果为准。功能锁不重新开放。

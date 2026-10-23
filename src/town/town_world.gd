@@ -4,6 +4,8 @@ extends Node2D
 signal back_requested
 signal pause_requested
 signal restaurant_requested
+signal place_requested(kind: String, id: String)
+var player_mode: bool = false
 
 const CELL := 48
 const BAR_HEIGHT := 210.0
@@ -38,13 +40,14 @@ func _ready() -> void:
 	_player.name = "Player"
 	_player.process_mode = Node.PROCESS_MODE_PAUSABLE
 	_player.motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
-	_player.collision_layer = 2
-	_player.collision_mask = 1
+	_player.collision_layer = 32
+	_player.collision_mask = 16
 	var sprite := Sprite2D.new()
 	sprite.name = "Sprite2D"
-	sprite.texture = TDRestaurantArt.guest_texture()
+	sprite.texture = preload("res://assets/kitchen/chef-v1.png") if player_mode else TDRestaurantArt.guest_texture()
+	if player_mode: sprite.scale=Vector2(.055,.055)
 	_player.add_child(sprite)
-	_player.body_lift = 0.0
+	_player.body_lift = 24.0 if player_mode else 0.0
 	_player.confine_to = _feet_on_road
 	var shape := CollisionShape2D.new()
 	var circle := CircleShape2D.new()
@@ -64,12 +67,14 @@ func _ready() -> void:
 	_build_blockers()
 	_seen_revision = session.map_revision
 	_status_bar()
+	if player_mode: spawn_at_home()
 	_set_status(_enter_hint())
+	if player_mode: _set_status("小镇清晨 · WASD 走动 · 靠近店门 / 菜摊按 E · B 菜谱 · Esc 暂停")
 	queue_redraw()
 
 func _process(_delta: float) -> void:
 	_follow_camera()
-	_try_enter_diner()
+	if not player_mode: _try_enter_diner()
 	if _closed:
 		return
 	if session != null and session.map_revision != _seen_revision:
@@ -80,9 +85,10 @@ func _process(_delta: float) -> void:
 	queue_redraw()
 
 func _overview_zoom() -> float:
+	if player_mode: return 1.0
 	var view := get_viewport().get_visible_rect().size
 	var map_px := float(TDTownMap.SIZE * CELL)
-	var usable_height := maxf(1.0, view.y - BAR_HEIGHT)
+	var usable_height := maxf(1.0, view.y - (80.0 if player_mode else BAR_HEIGHT))
 	return minf(view.x / map_px, usable_height / map_px) * 0.96 * 2.0
 
 func _follow_camera() -> void:
@@ -94,7 +100,7 @@ func _follow_camera() -> void:
 	var map_size := Vector2(TDTownMap.SIZE * CELL, TDTownMap.SIZE * CELL)
 	var origin := _origin()
 	var half := view * 0.5
-	var target := _player.position + Vector2(0, BAR_HEIGHT * 0.5 / zoom)
+	var target := _player.position + Vector2(0, -70 if player_mode else BAR_HEIGHT * 0.5 / zoom)
 	if map_size.x > view.x:
 		target.x = clampf(target.x, origin.x + half.x, origin.x + map_size.x - half.x)
 	else:
@@ -107,6 +113,9 @@ func _follow_camera() -> void:
 
 func _draw() -> void:
 	if session == null or session.town_map.plots.is_empty():
+		return
+	if player_mode:
+		TDTownArt.draw_world(self,session,_selected)
 		return
 	var origin := _origin()
 	for y in TDTownMap.SIZE:
@@ -152,6 +161,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if get_tree().paused:
 		return
 	if event is InputEventMouseButton:
+		if player_mode: return
 		var mouse := event as InputEventMouseButton
 		if mouse.pressed and mouse.button_index == MOUSE_BUTTON_LEFT and not mouse.is_echo():
 			_click_build(mouse.position)
@@ -188,6 +198,10 @@ func _interact() -> void:
 		return
 	_selected = plot
 	var kind := String(plot["kind"])
+	if player_mode:
+		if kind=="player_diner" and plot.id=="player_diner": restaurant_requested.emit()
+		else: place_requested.emit(kind,str(plot.id))
+		return
 	if kind == "diner_lot":
 		_set_status("餐厅建设区还是空地。点击这块地，选择中餐厅或西餐厅。")
 		return
@@ -233,7 +247,7 @@ func _build_blockers() -> void:
 		_blockers.queue_free()
 	var body := StaticBody2D.new()
 	_blockers = body
-	body.collision_layer = 1
+	body.collision_layer = 16
 	body.collision_mask = 0
 	add_child(body)
 	for y in TDTownMap.SIZE:
@@ -265,6 +279,11 @@ func _status_bar() -> void:
 	_status.custom_minimum_size = Vector2(1240, 48)
 	_status.add_theme_font_size_override("font_size", 15)
 	box.add_child(_status)
+	if player_mode:
+		panel.position=Vector2(0,730);panel.size=Vector2(1280,70)
+		box.size=Vector2(1250,54)
+		_status.text="WASD 走动 · 靠近店门或摊贩按 E · B 菜谱 · Esc 暂停"
+		return
 	var row := HFlowContainer.new()
 	row.add_theme_constant_override("h_separation", 6)
 	box.add_child(row)
@@ -588,3 +607,27 @@ func _button(text: String, callback: Callable) -> Button:
 	button.custom_minimum_size = Vector2(110, 32)
 	button.pressed.connect(callback)
 	return button
+
+func set_presented(value: bool) -> void:
+	visible=value
+	if _camera!=null:
+		_camera.enabled=value
+		if value: _camera.make_current()
+	if _player!=null: _player.set_controls_enabled(value)
+	for child: Node in get_children():
+		if child is CanvasLayer: child.visible=value
+	set_process_unhandled_input(value)
+
+func spawn_at_home() -> void:
+	var home: Dictionary=session._plot_by_id("player_diner")
+	if home.is_empty(): return
+	var goal:=Vector2i(int(home.x)+int(home.w)/2,int(home.y)+int(home.h))
+	var best:=Vector2i(TDTownMap.CENTER,TDTownMap.CENTER);var distance:float=INF
+	for y: int in TDTownMap.SIZE:
+		for x: int in TDTownMap.SIZE:
+			if not session.town_map.is_road(x,y): continue
+			var at:=Vector2i(x,y);var score:=Vector2(at).distance_squared_to(Vector2(goal))
+			if score<distance: best=at;distance=score
+	_player.position=_origin()+(Vector2(best)+Vector2(.5,.5))*CELL
+	_player.velocity=Vector2.ZERO
+	_follow_camera()

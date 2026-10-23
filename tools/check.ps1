@@ -2,9 +2,9 @@
 [CmdletBinding()]
 param(
   [string]$GodotPath = $env:GODOT_BIN,
-  [ValidateSet('all','content','cooking','qte','platform','scoring','integration','business','service','research')]
+  [ValidateSet('all','content','cooking','qte','platform','scoring','integration','business','service','research','profiles','game','title','movement')]
   [string]$Suite = 'all',
-  [int]$TimeoutSeconds = 600,
+  [int]$TimeoutSeconds = 1200,
   [string]$ReportName = ''
 )
 $ErrorActionPreference = 'Stop'
@@ -55,6 +55,7 @@ function Invoke-Engine([string]$Stage, [string[]]$EngineArgs) {
 }
 
 try {
+  & (Join-Path $PSScriptRoot 'build_ingredient_index.ps1') -Check
   $version = (Invoke-Engine 'version' @('--headless','--version')).Trim()
   if (-not $version.StartsWith($lock.godot.release + '.')) { throw "Engine version mismatch: $version" }
   if ([IO.Path]::GetFullPath($GodotPath) -eq [IO.Path]::GetFullPath($lock.godot.local_path)) {
@@ -66,6 +67,10 @@ try {
   if ($plugin -notmatch ('version="' + [regex]::Escape($lock.gut.version) + '"')) { throw 'GUT version mismatch' }
 
   $testMap = @{
+    movement = @('tests/integration/test_town_motion.gd','tests/integration/test_restaurant_world.gd','tests/unit/test_restaurant_layout.gd')
+    title = @('tests/integration/test_title_entry.gd','tests/unit/test_economy_ingredients.gd')
+    game = @('tests/integration/test_game_shell.gd')
+    profiles = @('tests/unit/test_shop_profiles.gd')
     research = @('tests/unit/test_research_rules.gd','tests/integration/test_kitchen_research.gd')
     business = @('tests/unit/test_shop_session.gd','tests/unit/test_shop_store.gd','tests/unit/test_kitchen_freedom.gd')
     service = @('tests/integration/test_shop_application.gd')
