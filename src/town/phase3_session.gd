@@ -66,6 +66,9 @@ var home_h: int = 0
 var claim_size: String = "small"
 var scaled_interior: bool = false
 var factory_built: Dictionary = {}
+var factory_level: Dictionary = {}
+var factory_jobs: Dictionary = {}
+const FACTORY_HOUR_SECONDS := 3600.0
 var branch_open: bool = false
 var branch_town: String = ""
 var branch_culture: String = ""
@@ -970,14 +973,200 @@ func build_factory(plot_id: String) -> TDOutcome:
 		return TDOutcome.new(false, "MISSING", "没有这块原料厂空地。")
 	if String(plot.get("kind", "")) != "factory_lot":
 		if String(plot.get("kind", "")) == "supply_factory":
-			return TDOutcome.new(false, "ALREADY", "这里已经建了原料提供厂。")
+			return TDOutcome.new(false, "ALREADY", "%s已经建好了。" % TDTownMap.supply_name(String(plot.get("supply", "")), true))
 		return TDOutcome.new(false, "INVALID", "只能在原料厂空地上建设。")
 	var key := _factory_key(plot_id)
 	if bool(factory_built.get(key, false)):
-		return TDOutcome.new(false, "ALREADY", "这里已经建了原料提供厂。")
+		return TDOutcome.new(false, "ALREADY", "%s已经建好了。" % TDTownMap.supply_name(String(plot.get("supply", "")), true))
 	factory_built[key] = true
 	_rebuild_map()
-	return TDOutcome.new(true, "BUILT", "原料提供厂建好了。共可建%d座。" % TDTownMap.FACTORY_SLOTS)
+	var supply := String(plot.get("supply", ""))
+	return TDOutcome.new(true, "BUILT", "%s建好了，提供%s。点击厂房安排生产。" % [TDTownMap.supply_name(supply, true), TDTownMap.supply_goods(supply)])
+
+func factory_level_of(plot_id: String) -> int:
+	return clampi(int(factory_level.get(_factory_key(plot_id), 1)), 1, TDTownMap.FACTORY_LEVEL_MAX)
+
+func factory_quote(item_id: String) -> int:
+	var base := int(_supply_item(item_id).get("cost", 0))
+	if base <= 0:
+		return 0
+	var distance := 0
+	if selected_market != "":
+		distance = town_map.distance_to(selected_market)
+	return maxi(1, int(round(float(base) * (1.0 + float(distance) * 0.05))))
+
+func factory_hours(plot_id: String, item_id: String, qty: int) -> float:
+	var plot := _plot_by_id(plot_id)
+	var product := TDTownMap.product_of(String(plot.get("supply", "")), item_id)
+	if product.is_empty():
+		return 0.0
+	return float(product["hours"]) * float(maxi(qty, 0)) * TDTownMap.time_scale(factory_level_of(plot_id))
+
+func factory_lines(plot_id: String) -> int:
+	return factory_level_of(plot_id)
+
+func factory_running(plot_id: String) -> Array:
+	var rows: Array = []
+	for item: Variant in _factory_job_list(plot_id):
+		if item is Dictionary:
+			rows.append((item as Dictionary).duplicate(true))
+	return rows
+
+func factory_job(plot_id: String) -> Dictionary:
+	var rows := factory_running(plot_id)
+	if rows.is_empty():
+		return {}
+	return (rows[0] as Dictionary).duplicate(true)
+
+func factory_progress(plot_id: String) -> float:
+	var job := factory_job(plot_id)
+	if job.is_empty():
+		return 0.0
+	var total := float(job.get("unit_hours", 0.0))
+	var elapsed := float(job.get("unit_elapsed", 0.0))
+	if total <= 0.001:
+		total = float(job.get("total_hours", 0.0))
+		elapsed = float(job.get("elapsed_hours", 0.0))
+	if total <= 0.001:
+		return 1.0
+	return clampf(elapsed / total, 0.0, 1.0)
+
+func _factory_job_list(plot_id: String) -> Array:
+	var key := _factory_key(plot_id)
+	var raw: Variant = factory_jobs.get(key, [])
+	if raw is Array:
+		return raw
+	var wrapped: Array = []
+	if raw is Dictionary and not (raw as Dictionary).is_empty():
+		wrapped.append(raw)
+	if not wrapped.is_empty() or factory_jobs.has(key):
+		factory_jobs[key] = wrapped
+	return wrapped
+
+func factory_goods() -> Array:
+	var rows: Array = []
+	for supply_id: String in ["seasoning", "vegetable", "meat", "fruit"]:
+		for item: Variant in TDTownMap.products_of(supply_id):
+			var item_id := String((item as Dictionary).get("id", ""))
+			var qty := supply.count(item_id)
+			if qty <= 0:
+				continue
+			rows.append({
+				"supply": supply_id,
+				"id": item_id,
+				"name": String(_supply_item(item_id).get("name", item_id)),
+				"qty": qty,
+			})
+	return rows
+
+func produce_factory(plot_id: String, item_id: String, qty: int, line_no: int = 0) -> TDOutcome:
+	var plot := _plot_by_id(plot_id)
+	if plot.is_empty() or String(plot.get("kind", "")) != "supply_factory":
+		return TDOutcome.new(false, "MISSING", "先建成这家原料厂。")
+	if qty < TDTownMap.FACTORY_QTY_MIN or qty > TDTownMap.FACTORY_QTY_MAX:
+		return TDOutcome.new(false, "RANGE", "数量要在%d到%d之间。" % [TDTownMap.FACTORY_QTY_MIN, TDTownMap.FACTORY_QTY_MAX])
+	var product := TDTownMap.product_of(String(plot.get("supply", "")), item_id)
+	if product.is_empty():
+		return TDOutcome.new(false, "WRONG", "这家厂不生产这种原料。")
+	var key := _factory_key(plot_id)
+	var running := _factory_job_list(plot_id)
+	var used := {}
+	for item: Variant in running:
+		var existing: Dictionary = item
+		used[int(existing.get("line", 0))] = true
+	var line := line_no
+	if line > 0:
+		if line > factory_lines(plot_id):
+			return TDOutcome.new(false, "MISSING", "没有这条产线。")
+		if used.has(line):
+			return TDOutcome.new(false, "BUSY", "产线%d正在生产。" % line)
+	else:
+		if running.size() >= factory_lines(plot_id):
+			var current: Dictionary = running[0]
+			return TDOutcome.new(false, "BUSY", "产线都在生产，当前是%s×%d。" % [String(current.get("name", "")), int(current.get("qty", 0))])
+		line = 1
+		while used.has(line):
+			line += 1
+	var unit_hours := factory_hours(plot_id, item_id, 1)
+	var unit := factory_quote(item_id)
+	var cost := unit * qty
+	if money < cost:
+		return TDOutcome.new(false, "BROKE", "生产要%d元。" % cost)
+	var name := String(_supply_item(item_id).get("name", item_id))
+	money -= cost
+	running.append({
+		"plot_id": plot_id,
+		"line": line,
+		"item_id": item_id,
+		"name": name,
+		"qty": qty,
+		"cost": cost,
+		"unit_hours": unit_hours,
+		"unit_elapsed": 0.0,
+		"total_hours": unit_hours * float(qty),
+		"elapsed_hours": 0.0,
+	})
+	factory_jobs[key] = running
+	_log("%s产线%d开始生产%s×%d，花%d元，每份%.1f小时。" % [String(plot.get("name", "原料厂")), line, name, qty, cost, unit_hours])
+	return TDOutcome.new(true, "STARTED", "产线%d开始生产%s×%d，每份%.1f小时。做完一份就放进背包。" % [line, name, qty, unit_hours])
+
+func tick_factories(delta_sec: float) -> Array:
+	var finished: Array = []
+	if delta_sec <= 0.0 or factory_jobs.is_empty():
+		return finished
+	var step := maxf(delta_sec, 0.0) / FACTORY_HOUR_SECONDS
+	var pending: Array[String] = []
+	for key: Variant in factory_jobs.keys():
+		pending.append(String(key))
+	for key: String in pending:
+		var jobs: Array = []
+		var raw: Variant = factory_jobs.get(key, [])
+		if raw is Array:
+			jobs = raw
+		elif raw is Dictionary and not (raw as Dictionary).is_empty():
+			jobs = [raw]
+		var keep: Array = []
+		for item: Variant in jobs:
+			var job: Dictionary = item
+			var unit_hours := float(job.get("unit_hours", 0.0))
+			if unit_hours <= 0.001:
+				var whole := maxi(int(job.get("qty", 1)), 1)
+				unit_hours = float(job.get("total_hours", 0.0)) / float(whole)
+				job["unit_hours"] = unit_hours
+				job["unit_elapsed"] = float(job.get("elapsed_hours", 0.0))
+			job["unit_elapsed"] = float(job.get("unit_elapsed", 0.0)) + step
+			while unit_hours > 0.001 and float(job["unit_elapsed"]) + 0.0001 >= unit_hours and int(job.get("qty", 0)) > 0:
+				job["unit_elapsed"] = float(job["unit_elapsed"]) - unit_hours
+				job["qty"] = int(job.get("qty", 0)) - 1
+				var item_id := String(job.get("item_id", ""))
+				supply.stock[item_id] = int(supply.stock.get(item_id, 0)) + 1
+				var done := job.duplicate(true)
+				done["qty"] = 1
+				done["stock"] = supply.count(item_id)
+				finished.append(done)
+				_log("产线%d的%s做好一份，背包里有%d。" % [int(job.get("line", 0)), String(job.get("name", item_id)), supply.count(item_id)])
+			job["elapsed_hours"] = float(job.get("elapsed_hours", 0.0)) + step
+			if int(job.get("qty", 0)) > 0:
+				keep.append(job)
+		if keep.is_empty():
+			factory_jobs.erase(key)
+		else:
+			factory_jobs[key] = keep
+	return finished
+
+func upgrade_factory(plot_id: String) -> TDOutcome:
+	var plot := _plot_by_id(plot_id)
+	if plot.is_empty() or String(plot.get("kind", "")) != "supply_factory":
+		return TDOutcome.new(false, "MISSING", "先建成这家原料厂。")
+	var level := factory_level_of(plot_id)
+	if level >= TDTownMap.FACTORY_LEVEL_MAX:
+		return TDOutcome.new(false, "MAX", "厂房已经升到%d级。" % TDTownMap.FACTORY_LEVEL_MAX)
+	var cost := 30 * level
+	if money < cost:
+		return TDOutcome.new(false, "BROKE", "升级要%d元。" % cost)
+	money -= cost
+	factory_level[_factory_key(plot_id)] = level + 1
+	return TDOutcome.new(true, "UPGRADED", "升到%d级，新增一条产线，现在有%d条。新批次的时间变为原来的%.0f%%。" % [level + 1, level + 1, TDTownMap.time_scale(level + 1) * 100.0])
 
 func click_build_at(cell: Vector2i) -> TDOutcome:
 	var plot := town_map.plot_at(cell.x, cell.y)
@@ -991,7 +1180,7 @@ func click_build_at(cell: Vector2i) -> TDOutcome:
 	if kind == "player_diner":
 		return TDOutcome.new(false, "ALREADY", "餐厅已经建在这里。")
 	if kind == "supply_factory":
-		return TDOutcome.new(false, "ALREADY", "原料提供厂已经建在这里。")
+		return TDOutcome.new(false, "ALREADY", "%s已经建在这里。" % TDTownMap.supply_name(String(plot.get("supply", "")), true))
 	return TDOutcome.new(false, "INVALID", "点餐厅建设区或原料厂空地才能建设。")
 
 func resize_home(size_id: String) -> TDOutcome:
@@ -1355,6 +1544,8 @@ func export_phase4() -> Dictionary:
 		"home_w": home_w,
 		"home_h": home_h,
 		"factory_built": factory_built.duplicate(true),
+		"factory_level": factory_level.duplicate(true),
+		"factory_jobs": factory_jobs.duplicate(true),
 		"branch_open": branch_open,
 		"branch_town": branch_town,
 		"branch_culture": branch_culture,
@@ -1390,6 +1581,8 @@ func import_phase4(data: Dictionary) -> void:
 	home_w = int(data.get("home_w", 0))
 	home_h = int(data.get("home_h", 0))
 	factory_built = (data.get("factory_built", {}) as Dictionary).duplicate(true)
+	factory_level = (data.get("factory_level", {}) as Dictionary).duplicate(true)
+	factory_jobs = (data.get("factory_jobs", {}) as Dictionary).duplicate(true)
 	branch_open = bool(data.get("branch_open", false))
 	branch_town = String(data.get("branch_town", ""))
 	branch_culture = String(data.get("branch_culture", ""))

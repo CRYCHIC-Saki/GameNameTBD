@@ -56,7 +56,22 @@
     {"id": "fish", "name": "鱼", "cost": 9},
     {"id": "flour", "name": "面粉", "cost": 2},
     {"id": "beet", "name": "甜菜", "cost": 3},
-    {"id": "butter", "name": "黄油", "cost": 5}
+    {"id": "butter", "name": "黄油", "cost": 5},
+    {"id": "salt", "name": "盐", "cost": 1},
+    {"id": "peanut_oil", "name": "花生油", "cost": 4},
+    {"id": "sugar", "name": "白糖", "cost": 2},
+    {"id": "soy_sauce", "name": "生抽", "cost": 2},
+    {"id": "shanxi_vinegar", "name": "山西醋", "cost": 2},
+    {"id": "star_anise", "name": "八角", "cost": 3},
+    {"id": "cinnamon", "name": "肉桂", "cost": 3},
+    {"id": "peppercorn", "name": "花椒", "cost": 2},
+    {"id": "potato", "name": "土豆", "cost": 2},
+    {"id": "cabbage", "name": "白菜", "cost": 2},
+    {"id": "mutton", "name": "羊肉", "cost": 7},
+    {"id": "milk", "name": "牛奶", "cost": 3},
+    {"id": "offal", "name": "内脏", "cost": 4},
+    {"id": "watermelon", "name": "西瓜", "cost": 3},
+    {"id": "lemon", "name": "柠檬", "cost": 2}
   ],
   "zones": [
     {"id": "diner_lot", "name": "餐厅建设区", "pool": 0, "budget_shift": 0, "foreign_scale": 1, "w": 12, "h": 18},

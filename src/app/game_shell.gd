@@ -283,7 +283,13 @@ func _object(action: String) -> void:
 func _place(kind: String, id: String) -> void:
 	if kind=="market":
 		profile.world.select_market(id);show_market()
-	elif kind=="supply_factory": show_supplier()
+	elif kind=="supply_factory":
+		if town!=null:
+			var plot:Dictionary=profile.world._plot_by_id(id)
+			if not plot.is_empty():
+				town._open_factory_panel(plot)
+				return
+		show_supplier()
 	else:
 		var box:=_dialog("街坊告示")
 		box.add_child(TDUI.label("这里是"+str(profile.world._plot_by_id(id).get("name","小镇街区"))+"。",22))

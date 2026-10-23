@@ -5,6 +5,27 @@ const SIZE := 41
 const CENTER := 20
 const FACTORY_SLOTS := 8
 const FACTORY_CELL := 2
+const SUPPLY_KINDS: Array[String] = ["seasoning", "vegetable", "meat", "fruit"]
+const FACTORY_QTY_MIN := 1
+const FACTORY_QTY_MAX := 8
+const FACTORY_LEVEL_MAX := 3
+const FACTORY_PRODUCTS := {
+	"seasoning": [
+		{"id": "salt", "hours": 0.5}, {"id": "peanut_oil", "hours": 0.5}, {"id": "sugar", "hours": 0.5},
+		{"id": "soy_sauce", "hours": 0.5}, {"id": "shanxi_vinegar", "hours": 0.5}, {"id": "star_anise", "hours": 0.5},
+		{"id": "cinnamon", "hours": 0.5}, {"id": "peppercorn", "hours": 0.5},
+	],
+	"vegetable": [
+		{"id": "tomato", "hours": 0.5}, {"id": "potato", "hours": 0.5}, {"id": "cabbage", "hours": 0.5},
+	],
+	"meat": [
+		{"id": "pork", "hours": 1.0}, {"id": "beef", "hours": 1.0}, {"id": "mutton", "hours": 1.0},
+		{"id": "fish", "hours": 1.0}, {"id": "egg", "hours": 1.0}, {"id": "milk", "hours": 1.0}, {"id": "offal", "hours": 1.0},
+	],
+	"fruit": [
+		{"id": "watermelon", "hours": 0.5}, {"id": "lemon", "hours": 0.5},
+	],
+}
 const DINER_LOT_SPAN := Vector2i(12, 18)
 const LONG_KINDS: Array[String] = ["plaza", "amusement", "snack_street", "commercial_street"]
 const MARKET_TIERS: Array = [
@@ -16,6 +37,72 @@ const MARKET_TIERS: Array = [
 var plots: Array = []
 var housing_names: Array[String] = []
 var roads: Dictionary = {}
+
+static func supply_of_slot(slot: int) -> String:
+	if slot <= 0:
+		return SUPPLY_KINDS[0]
+	return SUPPLY_KINDS[(slot - 1) % SUPPLY_KINDS.size()]
+
+static func supply_color(supply: String, built: bool) -> Color:
+	var color := Color("#888888")
+	match supply:
+		"seasoning":
+			color = Color("#d4a017")
+		"vegetable":
+			color = Color("#3f8f45")
+		"meat":
+			color = Color("#c45b4a")
+		"fruit":
+			color = Color("#e07a3d")
+	if not built:
+		color = color.darkened(0.35)
+	return color
+
+static func supply_name(supply: String, built: bool) -> String:
+	match supply:
+		"seasoning":
+			return "调料厂" if built else "调料厂空地"
+		"vegetable":
+			return "蔬菜厂" if built else "蔬菜厂空地"
+		"meat":
+			return "肉类厂" if built else "肉类厂空地"
+		"fruit":
+			return "水果厂" if built else "水果厂空地"
+		_:
+			return "原料厂" if built else "原料厂空地"
+
+static func supply_goods(supply: String) -> String:
+	match supply:
+		"seasoning":
+			return "盐、花生油、白糖、生抽、山西醋，以及八角、肉桂、花椒"
+		"vegetable":
+			return "西红柿、土豆、白菜等蔬菜"
+		"meat":
+			return "猪羊牛肉、鱼、鸡蛋、牛奶、内脏"
+		"fruit":
+			return "西瓜、柠檬等水果"
+		_:
+			return ""
+
+static func time_scale(level: int) -> float:
+	var steps := clampi(level, 1, FACTORY_LEVEL_MAX) - 1
+	var scale := 1.0
+	for _step in steps:
+		scale *= 0.75
+	return scale
+
+static func products_of(supply: String) -> Array:
+	var rows: Variant = FACTORY_PRODUCTS.get(supply, [])
+	if rows is Array:
+		return (rows as Array).duplicate(true)
+	return []
+
+static func product_of(supply: String, item_id: String) -> Dictionary:
+	for item: Variant in products_of(supply):
+		var row: Dictionary = item
+		if String(row.get("id", "")) == item_id:
+			return row
+	return {}
 
 static func seed_of(town_id: String) -> int:
 	var value := 20261012
@@ -355,11 +442,13 @@ func _place_factory_lots(used: Dictionary, rng: TDBusinessRandom) -> void:
 					break
 				var x := origin.x + column * cell
 				var y := origin.y + row * cell
-				_commit("factory_lot", "原料厂空地%d" % serial, x, y, cell, cell, used, {"id": "factory-%d" % serial, "slot": serial})
+				var supply := supply_of_slot(serial)
+				_commit("factory_lot", supply_name(supply, false), x, y, cell, cell, used, {"id": "factory-%d" % serial, "slot": serial, "supply": supply})
 				serial += 1
 		return
 	for serial in range(1, FACTORY_SLOTS + 1):
-		_place("factory_lot", "原料厂空地%d" % serial, cell, cell, used, rng, {"id": "factory-%d" % serial, "slot": serial})
+		var supply := supply_of_slot(serial)
+		_place("factory_lot", supply_name(supply, false), cell, cell, used, rng, {"id": "factory-%d" % serial, "slot": serial, "supply": supply})
 
 func _against_cross(width: int, height: int, used: Dictionary) -> Vector2i:
 	var origins: Array[Vector2i] = [
@@ -391,7 +480,7 @@ func _mark_built_factories(built_factories: Array) -> void:
 		if not built.has(id):
 			continue
 		plot["kind"] = "supply_factory"
-		plot["name"] = "原料提供厂%d" % int(plot.get("slot", index + 1))
+		plot["name"] = supply_name(String(plot.get("supply", "")), true)
 		plots[index] = plot
 
 func _place_home_diner(span: Vector2i, used: Dictionary, venue: String) -> void:
@@ -565,6 +654,7 @@ func _commit(kind: String, title: String, x: int, y: int, width: int, height: in
 		"unlocks": (extra.get("unlocks", []) as Array).duplicate(),
 		"size": String(extra.get("size", "")),
 		"slot": int(extra.get("slot", 0)),
+		"supply": String(extra.get("supply", "")),
 	}
 	if extra.is_empty():
 		plot["id"] = kind

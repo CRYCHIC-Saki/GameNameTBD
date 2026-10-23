@@ -138,6 +138,13 @@ func test_town_roads_grow_from_the_center_and_large_zones_fit() -> void:
 		assert_eq(String(factory["kind"]), "factory_lot")
 		assert_eq(int(factory["w"]) * int(factory["h"]), 4)
 		assert_false(map.covers_road(factory), String(factory["id"]))
+	var supply_counts := {"seasoning": 0, "vegetable": 0, "meat": 0, "fruit": 0}
+	for item: Variant in factories:
+		var supply := String((item as Dictionary).get("supply", ""))
+		assert_true(supply_counts.has(supply), supply)
+		supply_counts[supply] = int(supply_counts[supply]) + 1
+	for kind_id: String in TDTownMap.SUPPLY_KINDS:
+		assert_eq(int(supply_counts[kind_id]), 2, kind_id)
 	map.build(catalog, 11, "small", true, {}, ["factory-1"])
 	var home := {}
 	for item: Variant in map.plots:
@@ -155,6 +162,14 @@ func test_town_roads_grow_from_the_center_and_large_zones_fit() -> void:
 		if String((item as Dictionary)["kind"]) == "supply_factory":
 			built += 1
 	assert_eq(built, 1)
+	var seasoning := {}
+	for item: Variant in map.factory_lots():
+		var row: Dictionary = item
+		if String(row.get("id", "")) == "factory-1":
+			seasoning = row
+	assert_eq(String(seasoning.get("kind", "")), "supply_factory")
+	assert_eq(String(seasoning.get("supply", "")), "seasoning")
+	assert_eq(String(seasoning.get("name", "")), "调料厂")
 	var lengths: Array[int] = []
 	for direction: Vector2i in [Vector2i(0, -1), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(1, 0)]:
 		var length := map.arm_length(direction)

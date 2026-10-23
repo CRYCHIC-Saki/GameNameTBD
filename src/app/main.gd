@@ -299,7 +299,12 @@ func _notification(what: int) -> void:
 		close_research() # Reveal the existing unsaved-business confirmation above its own scene.
 		if shop_view!=null: shop_view.request_leave(func()->void:get_tree().quit())
 		else: get_tree().quit()
-	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and is_inside_tree() and (kitchen != null or cooking_kitchen != null or full_kitchen != null or shop_view != null or restaurant != null or town != null or atlas != null) and not _paused:
+	if what == NOTIFICATION_APPLICATION_FOCUS_IN and town != null and _paused:
+		toggle_pause()
+		return
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and is_inside_tree() and town != null:
+		return
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and is_inside_tree() and (kitchen != null or cooking_kitchen != null or full_kitchen != null or shop_view != null or restaurant != null or atlas != null) and not _paused:
 		toggle_pause()
 
 func _unhandled_input(event: InputEvent) -> void:

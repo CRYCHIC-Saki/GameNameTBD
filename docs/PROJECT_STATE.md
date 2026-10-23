@@ -68,7 +68,7 @@
 - 地图开局不再自动放主店。`diner_lot` + 8×`factory_lot` 固定生成；建成后为 `player_diner` / `supply_factory`。
 - 已改 `town_map.gd`、`phase3_session.gd`、`town_world.gd`、`phase3_world.json` 与相关单测期望；契约见 CONTRACTS D030-TOWN，决定见 DECISIONS D030-TOWN。
 - GRILL_SKILL=NOT_AVAILABLE。本机未找到锁定版 Godot，定向 GUT 与 `tools/check.ps1` 记 NOT_RUN。PLAYTEST=PENDING。
-- 可玩：走进小镇 → 点击餐厅建设区，选择中餐厅或西餐厅。建成的店只占建设区四分之一，走到店上就进入店内。点击绿色原料厂空地建厂。功能区与菜市场仍用 E。
+- 可玩：走进小镇 → 点击餐厅建设区，选择中餐厅或西餐厅。建成的店只占建设区四分之一，走到店上就进入店内。点击原料厂空地建厂，再点厂房安排生产；面板显示正在生产的进度，完成后从底部「背包」查看一级原料。小镇底栏只留返回和背包。功能区与菜市场仍用 E。
 - 下一工作单元：本机装回锁定 Godot 后跑 `test_phase3_rules` / `test_phase4_branch`；人工试玩建设手感。不自动提交。
 
 ## 当前检查点：D029 三人合作框架（2026-10-13）

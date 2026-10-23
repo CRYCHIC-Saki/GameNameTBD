@@ -31,8 +31,14 @@ static func draw_world(canvas: Node2D, session: TDPhase3Session, selected: Dicti
 			canvas.draw_rect(rect,Color("8b8661"))
 			continue
 		if kind in ["factory_lot","supply_factory"]:
-			canvas.draw_rect(rect.grow(-4),Color("9e916d"));canvas.draw_rect(rect.grow(-6),Color("776b4d"),false,2)
-			if kind=="supply_factory": canvas.draw_texture_rect(sprite(1),rect,false)
+			var built: bool = kind=="supply_factory"
+			var fill: Color = TDTownMap.supply_color(str(plot.get("supply","")), built)
+			canvas.draw_rect(rect.grow(-2), fill)
+			canvas.draw_rect(rect.grow(-4), fill.lightened(0.18 if built else 0.08), false, 2)
+			if built:
+				canvas.draw_rect(Rect2(rect.position+Vector2(6,6), Vector2(rect.size.x-12, 14)), fill.darkened(0.25))
+				canvas.draw_rect(Rect2(rect.position+Vector2(rect.size.x-22, -8), Vector2(10, 22)), Color("4a3a32"))
+				canvas.draw_rect(Rect2(rect.position+Vector2(rect.size.x-24, -12), Vector2(14, 6)), Color("3a2c26"))
 		elif kind=="housing" or kind=="competitor":
 			if kind=="housing":
 				var block:=Vector2i(plot.x,plot.y)
@@ -68,7 +74,7 @@ static func draw_world(canvas: Node2D, session: TDPhase3Session, selected: Dicti
 			for row: int in range(0,int(plot.h),3):
 				for column: int in range(0,int(plot.w),3):
 					canvas.draw_texture_rect(sprite(3),Rect2(rect.position+Vector2(column,row)*cell,Vector2.ONE*minf(3*cell,rect.size.x)),false)
-		if kind!="housing" and kind!="factory_lot":
+		if kind!="housing":
 			var font:=ThemeDB.fallback_font
 			var label: String="小镇食堂" if plot.id=="player_diner" else str(plot.name)
 			var panel:=Rect2(rect.position+Vector2(3,rect.size.y-24),Vector2(maxf(80,rect.size.x-6),23))
