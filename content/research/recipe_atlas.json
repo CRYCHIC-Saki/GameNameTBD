@@ -1,0 +1,1542 @@
+{
+  "schema_version": 1,
+  "title": "小镇食堂 · 菜谱研习",
+  "cuisines": [
+    {
+      "id": "cn",
+      "name": "中式料理",
+      "desc": "从家常炒菜出发，沿锅气、蒸炖、面点与宴席料理逐步深入。",
+      "seal": "中",
+      "chapter": "卷一",
+      "roman": "I",
+      "english": "CHINESE CUISINE"
+    },
+    {
+      "id": "eu",
+      "name": "欧陆料理",
+      "desc": "掌握面团、酱汁、烘烤与火候，让家常菜进阶为主厨套餐。",
+      "seal": "欧",
+      "chapter": "卷二",
+      "roman": "II",
+      "english": "EUROPEAN CUISINE"
+    },
+    {
+      "id": "jp",
+      "name": "日本料理",
+      "desc": "从米饭、出汁与基础刀工开始，通向寿司、拉面、天妇罗和怀石料理。",
+      "seal": "和",
+      "chapter": "卷三",
+      "roman": "III",
+      "english": "JAPANESE CUISINE"
+    },
+    {
+      "id": "sea",
+      "name": "东南亚料理",
+      "desc": "酸、辣、香草、椰浆与发酵酱料交织，最终汇聚成香料盛宴。",
+      "seal": "南",
+      "chapter": "卷四",
+      "roman": "IV",
+      "english": "SOUTHEAST ASIAN CUISINE"
+    },
+    {
+      "id": "lat",
+      "name": "拉丁美洲料理",
+      "desc": "玉米、豆类、青柠、辣椒与炭火，连接墨西哥、秘鲁、巴西和阿根廷风味。",
+      "seal": "美",
+      "chapter": "卷五",
+      "roman": "V",
+      "english": "LATIN AMERICAN CUISINE"
+    }
+  ],
+  "recipes": [
+    {
+      "id": "C01",
+      "name": "蛋炒饭",
+      "tier": 1,
+      "prerequisites": [],
+      "cost": 1,
+      "ingredients": "米饭、鸡蛋、葱花",
+      "flavor": "基础炒制",
+      "description": "用剩饭练习油温与快速翻炒。",
+      "cuisine_id": "cn",
+      "difficulty": 1
+    },
+    {
+      "id": "C02",
+      "name": "番茄炒蛋",
+      "tier": 1,
+      "prerequisites": [],
+      "cost": 1,
+      "ingredients": "番茄、鸡蛋、酸甜",
+      "flavor": "家常 / 鲜香",
+      "description": "调和番茄酸甜与鸡蛋的柔嫩口感。",
+      "cuisine_id": "cn",
+      "difficulty": 1
+    },
+    {
+      "id": "C03",
+      "name": "阳春面",
+      "tier": 1,
+      "prerequisites": [],
+      "cost": 1,
+      "ingredients": "面条、清汤、葱油",
+      "flavor": "汤面 / 清鲜",
+      "description": "用简单高汤和葱油建立面食基础。",
+      "cuisine_id": "cn",
+      "difficulty": 1
+    },
+    {
+      "id": "C04",
+      "name": "蒸水蛋",
+      "tier": 1,
+      "prerequisites": [],
+      "cost": 1,
+      "ingredients": "鸡蛋、蒸汽、细嫩",
+      "flavor": "蒸制 / 细腻",
+      "description": "控制水蛋比例与蒸汽，让蛋羹平滑无蜂窝。",
+      "cuisine_id": "cn",
+      "difficulty": 1
+    },
+    {
+      "id": "C05",
+      "name": "扬州炒饭",
+      "tier": 2,
+      "prerequisites": [
+        "C01"
+      ],
+      "cost": 1,
+      "ingredients": "米饭、虾仁、火腿、豌豆",
+      "flavor": "炒饭 / 复合配料",
+      "description": "练习配料切配与分段下锅。",
+      "cuisine_id": "cn",
+      "difficulty": 2
+    },
+    {
+      "id": "C06",
+      "name": "青椒肉丝",
+      "tier": 2,
+      "prerequisites": [
+        "C02"
+      ],
+      "cost": 1,
+      "ingredients": "猪肉、青椒、酱油",
+      "flavor": "快炒 / 锅气",
+      "description": "切丝与大火快炒让肉丝嫩、青椒脆。",
+      "cuisine_id": "cn",
+      "difficulty": 2
+    },
+    {
+      "id": "C07",
+      "name": "葱油拌面",
+      "tier": 2,
+      "prerequisites": [
+        "C03"
+      ],
+      "cost": 1,
+      "ingredients": "面条、葱油、酱油",
+      "flavor": "拌面 / 油香",
+      "description": "熬制葱油并平衡咸鲜。",
+      "cuisine_id": "cn",
+      "difficulty": 2
+    },
+    {
+      "id": "C08",
+      "name": "清蒸鱼",
+      "tier": 2,
+      "prerequisites": [
+        "C04"
+      ],
+      "cost": 1,
+      "ingredients": "鲜鱼、姜葱、蒸汽",
+      "flavor": "蒸鲜 / 原味",
+      "description": "练习鱼类蒸制时机，突出食材本味。",
+      "cuisine_id": "cn",
+      "difficulty": 2
+    },
+    {
+      "id": "C09",
+      "name": "宫保鸡丁",
+      "tier": 3,
+      "prerequisites": [
+        "C06"
+      ],
+      "cost": 2,
+      "ingredients": "鸡肉、花生、干辣椒",
+      "flavor": "炒制 / 荔枝味",
+      "description": "掌握复合调味与酸甜平衡。",
+      "cuisine_id": "cn",
+      "difficulty": 3
+    },
+    {
+      "id": "C10",
+      "name": "炸酱面",
+      "tier": 3,
+      "prerequisites": [
+        "C07"
+      ],
+      "cost": 2,
+      "ingredients": "面条、肉酱、黄瓜",
+      "flavor": "面食 / 酱香",
+      "description": "熬制浓郁炸酱，并组合冷热配菜。",
+      "cuisine_id": "cn",
+      "difficulty": 3
+    },
+    {
+      "id": "C11",
+      "name": "红烧肉",
+      "tier": 3,
+      "prerequisites": [
+        "C06",
+        "C08"
+      ],
+      "cost": 2,
+      "ingredients": "五花肉、糖、酱油",
+      "flavor": "红烧 / 焖煮",
+      "description": "把炒糖色与长时间焖烧结合起来。",
+      "cuisine_id": "cn",
+      "difficulty": 3
+    },
+    {
+      "id": "C12",
+      "name": "小笼包",
+      "tier": 3,
+      "prerequisites": [
+        "C07",
+        "C04"
+      ],
+      "cost": 2,
+      "ingredients": "面皮、猪肉馅、汤冻",
+      "flavor": "面点 / 蒸制",
+      "description": "融合面点制作、馅料调味与蒸制控制。",
+      "cuisine_id": "cn",
+      "difficulty": 3
+    },
+    {
+      "id": "C13",
+      "name": "鱼香肉丝",
+      "tier": 4,
+      "prerequisites": [
+        "C06",
+        "C09"
+      ],
+      "cost": 2,
+      "ingredients": "猪肉、木耳、泡椒",
+      "flavor": "复合味型 / 快炒",
+      "description": "掌握鱼香味型的酸甜咸辣与蒜香。",
+      "cuisine_id": "cn",
+      "difficulty": 4
+    },
+    {
+      "id": "C14",
+      "name": "麻婆豆腐",
+      "tier": 4,
+      "prerequisites": [
+        "C09",
+        "C11"
+      ],
+      "cost": 2,
+      "ingredients": "豆腐、豆瓣酱、花椒",
+      "flavor": "麻辣 / 烧制",
+      "description": "用豆瓣酱、花椒与肉末构建麻辣层次。",
+      "cuisine_id": "cn",
+      "difficulty": 4
+    },
+    {
+      "id": "C15",
+      "name": "红烧牛肉面",
+      "tier": 4,
+      "prerequisites": [
+        "C10",
+        "C11"
+      ],
+      "cost": 2,
+      "ingredients": "牛肉、面条、香料汤",
+      "flavor": "炖汤 / 面食",
+      "description": "把红烧牛肉与面食组合成完整主食。",
+      "cuisine_id": "cn",
+      "difficulty": 4
+    },
+    {
+      "id": "C16",
+      "name": "腊味煲仔饭",
+      "tier": 4,
+      "prerequisites": [
+        "C05",
+        "C11"
+      ],
+      "cost": 2,
+      "ingredients": "米饭、腊肠、砂锅",
+      "flavor": "砂锅 / 焖饭",
+      "description": "掌握砂锅受热与锅巴形成时机。",
+      "cuisine_id": "cn",
+      "difficulty": 4
+    },
+    {
+      "id": "C17",
+      "name": "北京烤鸭",
+      "tier": 5,
+      "prerequisites": [
+        "C08",
+        "C11"
+      ],
+      "cost": 3,
+      "ingredients": "鸭、麦饼、甜面酱",
+      "flavor": "烤制 / 皮脆肉嫩",
+      "description": "处理鸭皮、风干与分段烤制，形成招牌大菜。",
+      "cuisine_id": "cn",
+      "difficulty": 5
+    },
+    {
+      "id": "C18",
+      "name": "叉烧酥",
+      "tier": 5,
+      "prerequisites": [
+        "C12",
+        "C17"
+      ],
+      "cost": 3,
+      "ingredients": "酥皮、叉烧馅",
+      "flavor": "烘焙 / 酥皮",
+      "description": "将酥皮工艺与烧味馅料结合。",
+      "cuisine_id": "cn",
+      "difficulty": 5
+    },
+    {
+      "id": "C19",
+      "name": "佛跳墙",
+      "tier": 5,
+      "prerequisites": [
+        "C11",
+        "C17"
+      ],
+      "cost": 3,
+      "ingredients": "多种干货、肉类、高汤",
+      "flavor": "煨炖 / 奢华宴席",
+      "description": "以多种高价值食材和长时间煨制打造宴席菜。",
+      "cuisine_id": "cn",
+      "difficulty": 5
+    },
+    {
+      "id": "C20",
+      "name": "满汉风味宴席",
+      "tier": 5,
+      "prerequisites": [
+        "C16",
+        "C18",
+        "C19"
+      ],
+      "cost": 4,
+      "ingredients": "多道热菜、面点、汤品",
+      "flavor": "宴席 / 综合调度",
+      "description": "统筹砂锅、酥点与高汤，解锁中式宴席路线。",
+      "cuisine_id": "cn",
+      "difficulty": 5
+    },
+    {
+      "id": "E01",
+      "name": "德式椒盐卷饼",
+      "tier": 1,
+      "prerequisites": [],
+      "cost": 1,
+      "ingredients": "面团、粗盐、麦芽",
+      "flavor": "面团 / 烘烤",
+      "description": "揉面、整形与碱水处理的入门练习。",
+      "cuisine_id": "eu",
+      "difficulty": 1
+    },
+    {
+      "id": "E02",
+      "name": "意式番茄意面",
+      "tier": 1,
+      "prerequisites": [],
+      "cost": 1,
+      "ingredients": "意面、番茄、橄榄油",
+      "flavor": "意面 / 酱汁",
+      "description": "从番茄酱开始理解面条与酱汁的结合。",
+      "cuisine_id": "eu",
+      "difficulty": 1
+    },
+    {
+      "id": "E03",
+      "name": "法式洋葱汤",
+      "tier": 1,
+      "prerequisites": [],
+      "cost": 1,
+      "ingredients": "洋葱、清汤、面包",
+      "flavor": "汤品 / 焦糖化",
+      "description": "慢炒洋葱，建立甜味与汤底的层次。",
+      "cuisine_id": "eu",
+      "difficulty": 1
+    },
+    {
+      "id": "E04",
+      "name": "香煎肉排",
+      "tier": 1,
+      "prerequisites": [],
+      "cost": 1,
+      "ingredients": "牛肉、黄油、香草",
+      "flavor": "煎制 / 火候",
+      "description": "练习锅温、煎封和静置肉汁。",
+      "cuisine_id": "eu",
+      "difficulty": 1
+    },
+    {
+      "id": "E05",
+      "name": "意式披萨",
+      "tier": 2,
+      "prerequisites": [
+        "E01",
+        "E02"
+      ],
+      "cost": 1,
+      "ingredients": "面团、番茄酱、奶酪",
+      "flavor": "烘焙 / 面团",
+      "description": "将发酵面团与番茄酱组合，掌握高温烘烤。",
+      "cuisine_id": "eu",
+      "difficulty": 2
+    },
+    {
+      "id": "E06",
+      "name": "奶油蘑菇意面",
+      "tier": 2,
+      "prerequisites": [
+        "E02",
+        "E03"
+      ],
+      "cost": 1,
+      "ingredients": "意面、蘑菇、奶油",
+      "flavor": "意面 / 奶油酱",
+      "description": "从番茄酱扩展到乳化奶油酱。",
+      "cuisine_id": "eu",
+      "difficulty": 2
+    },
+    {
+      "id": "E07",
+      "name": "法式焗土豆",
+      "tier": 2,
+      "prerequisites": [
+        "E01",
+        "E03"
+      ],
+      "cost": 1,
+      "ingredients": "土豆、奶油、奶酪",
+      "flavor": "焗烤 / 分层",
+      "description": "练习切片厚度、奶油浸润与表面焗色。",
+      "cuisine_id": "eu",
+      "difficulty": 2
+    },
+    {
+      "id": "E08",
+      "name": "香草烤鸡",
+      "tier": 2,
+      "prerequisites": [
+        "E04"
+      ],
+      "cost": 1,
+      "ingredients": "鸡肉、香草、黄油",
+      "flavor": "烤制 / 香草",
+      "description": "把煎制火候迁移到整鸡烤制。",
+      "cuisine_id": "eu",
+      "difficulty": 2
+    },
+    {
+      "id": "E09",
+      "name": "西班牙海鲜饭",
+      "tier": 3,
+      "prerequisites": [
+        "E02",
+        "E04"
+      ],
+      "cost": 2,
+      "ingredients": "米、海鲜、藏红花",
+      "flavor": "米饭 / 海鲜",
+      "description": "掌握米粒吸汁与海鲜分时下锅。",
+      "cuisine_id": "eu",
+      "difficulty": 3
+    },
+    {
+      "id": "E10",
+      "name": "意式烩饭",
+      "tier": 3,
+      "prerequisites": [
+        "E02",
+        "E03"
+      ],
+      "cost": 2,
+      "ingredients": "米、清汤、黄油、奶酪",
+      "flavor": "烩煮 / 乳化",
+      "description": "通过分次加汤与搅拌控制米芯口感。",
+      "cuisine_id": "eu",
+      "difficulty": 3
+    },
+    {
+      "id": "E11",
+      "name": "法式红酒炖牛肉",
+      "tier": 3,
+      "prerequisites": [
+        "E04",
+        "E03"
+      ],
+      "cost": 2,
+      "ingredients": "牛肉、红酒、根茎蔬菜",
+      "flavor": "慢炖 / 酱汁",
+      "description": "把煎封、红酒脱釉和长时间炖煮连成一体。",
+      "cuisine_id": "eu",
+      "difficulty": 3
+    },
+    {
+      "id": "E12",
+      "name": "德式猪肘配酸菜",
+      "tier": 3,
+      "prerequisites": [
+        "E04",
+        "E07"
+      ],
+      "cost": 2,
+      "ingredients": "猪肘、酸菜、土豆",
+      "flavor": "烤炖 / 酸香",
+      "description": "结合猪肘烤制、酸菜和扎实配菜。",
+      "cuisine_id": "eu",
+      "difficulty": 3
+    },
+    {
+      "id": "E13",
+      "name": "意式千层面",
+      "tier": 4,
+      "prerequisites": [
+        "E05",
+        "E06"
+      ],
+      "cost": 2,
+      "ingredients": "面皮、肉酱、奶酪酱",
+      "flavor": "分层烘焙",
+      "description": "掌握多层酱汁与面皮的水分平衡。",
+      "cuisine_id": "eu",
+      "difficulty": 4
+    },
+    {
+      "id": "E14",
+      "name": "法式油封鸭",
+      "tier": 4,
+      "prerequisites": [
+        "E08",
+        "E11"
+      ],
+      "cost": 2,
+      "ingredients": "鸭腿、鸭油、香草",
+      "flavor": "低温油封",
+      "description": "以低温长时间烹调保存鸭肉的柔嫩与风味。",
+      "cuisine_id": "eu",
+      "difficulty": 4
+    },
+    {
+      "id": "E15",
+      "name": "西班牙海鲜烩饭",
+      "tier": 4,
+      "prerequisites": [
+        "E09",
+        "E10"
+      ],
+      "cost": 2,
+      "ingredients": "米、海鲜高汤、贝类",
+      "flavor": "海鲜 / 烩饭",
+      "description": "汇合海鲜饭与烩饭技法，强调浓缩海味。",
+      "cuisine_id": "eu",
+      "difficulty": 4
+    },
+    {
+      "id": "E16",
+      "name": "法式可丽饼",
+      "tier": 4,
+      "prerequisites": [
+        "E01",
+        "E10"
+      ],
+      "cost": 2,
+      "ingredients": "薄面糊、黄油、馅料",
+      "flavor": "薄煎 / 面糊",
+      "description": "用低筋面糊和均匀锅温做出薄而柔韧的饼皮。",
+      "cuisine_id": "eu",
+      "difficulty": 4
+    },
+    {
+      "id": "E17",
+      "name": "牛肉惠灵顿",
+      "tier": 5,
+      "prerequisites": [
+        "E11",
+        "E01"
+      ],
+      "cost": 3,
+      "ingredients": "牛里脊、酥皮、蘑菇酱",
+      "flavor": "酥皮 / 精准烘烤",
+      "description": "将肉排火候、蘑菇馅与酥皮包裹组合。",
+      "cuisine_id": "eu",
+      "difficulty": 5
+    },
+    {
+      "id": "E18",
+      "name": "法式舒芙蕾",
+      "tier": 5,
+      "prerequisites": [
+        "E03",
+        "E16"
+      ],
+      "cost": 3,
+      "ingredients": "蛋、奶、糖",
+      "flavor": "打发 / 蓬松结构",
+      "description": "掌握蛋白打发、折拌与出炉时机。",
+      "cuisine_id": "eu",
+      "difficulty": 5
+    },
+    {
+      "id": "E19",
+      "name": "勃艮第风味宴席",
+      "tier": 5,
+      "prerequisites": [
+        "E14",
+        "E17"
+      ],
+      "cost": 3,
+      "ingredients": "鸭、牛肉、红酒酱汁",
+      "flavor": "宴席 / 经典法式",
+      "description": "把低温鸭肉与酥皮主菜组织成宴席核心。",
+      "cuisine_id": "eu",
+      "difficulty": 5
+    },
+    {
+      "id": "E20",
+      "name": "欧洲主厨品鉴套餐",
+      "tier": 5,
+      "prerequisites": [
+        "E15",
+        "E18",
+        "E19"
+      ],
+      "cost": 4,
+      "ingredients": "海鲜、主菜、甜点",
+      "flavor": "套餐 / 出餐节奏",
+      "description": "统筹海鲜、主菜和甜点的顺序与出餐温度。",
+      "cuisine_id": "eu",
+      "difficulty": 5
+    },
+    {
+      "id": "J01",
+      "name": "盐饭团",
+      "tier": 1,
+      "prerequisites": [],
+      "cost": 1,
+      "ingredients": "米饭、盐、海苔",
+      "flavor": "米饭 / 成形",
+      "description": "从米饭含水量与手部压力开始。",
+      "cuisine_id": "jp",
+      "difficulty": 1
+    },
+    {
+      "id": "J02",
+      "name": "日式玉子烧",
+      "tier": 1,
+      "prerequisites": [],
+      "cost": 1,
+      "ingredients": "鸡蛋、出汁、糖",
+      "flavor": "煎制 / 卷蛋",
+      "description": "练习分层倒蛋液与连续卷制。",
+      "cuisine_id": "jp",
+      "difficulty": 1
+    },
+    {
+      "id": "J03",
+      "name": "日式乌冬",
+      "tier": 1,
+      "prerequisites": [],
+      "cost": 1,
+      "ingredients": "乌冬面、出汁、葱",
+      "flavor": "面食 / 清汤",
+      "description": "用简单出汁与面条口感建立汤面基础。",
+      "cuisine_id": "jp",
+      "difficulty": 1
+    },
+    {
+      "id": "J04",
+      "name": "盐烤鱼",
+      "tier": 1,
+      "prerequisites": [],
+      "cost": 1,
+      "ingredients": "鲜鱼、盐、柠檬",
+      "flavor": "烤制 / 原味",
+      "description": "控制鱼皮焦香与内部水分。",
+      "cuisine_id": "jp",
+      "difficulty": 1
+    },
+    {
+      "id": "J05",
+      "name": "照烧鸡肉饭",
+      "tier": 2,
+      "prerequisites": [
+        "J01",
+        "J02"
+      ],
+      "cost": 1,
+      "ingredients": "鸡肉、酱油、味醂、米饭",
+      "flavor": "照烧 / 米饭",
+      "description": "用甜咸酱汁收亮鸡肉，搭配米饭。",
+      "cuisine_id": "jp",
+      "difficulty": 2
+    },
+    {
+      "id": "J06",
+      "name": "亲子丼",
+      "tier": 2,
+      "prerequisites": [
+        "J02",
+        "J03"
+      ],
+      "cost": 1,
+      "ingredients": "鸡肉、鸡蛋、出汁、米饭",
+      "flavor": "盖饭 / 半熟蛋",
+      "description": "将出汁、鸡肉与半熟蛋液组合。",
+      "cuisine_id": "jp",
+      "difficulty": 2
+    },
+    {
+      "id": "J07",
+      "name": "炸猪排",
+      "tier": 2,
+      "prerequisites": [
+        "J04"
+      ],
+      "cost": 1,
+      "ingredients": "猪肉、面粉、面包糠",
+      "flavor": "油炸 / 酥脆",
+      "description": "控制裹粉层次、油温与肉汁。",
+      "cuisine_id": "jp",
+      "difficulty": 2
+    },
+    {
+      "id": "J08",
+      "name": "黄瓜卷寿司",
+      "tier": 2,
+      "prerequisites": [
+        "J01",
+        "J04"
+      ],
+      "cost": 1,
+      "ingredients": "寿司米、海苔、黄瓜",
+      "flavor": "寿司 / 米醋",
+      "description": "练习寿司饭调味与卷制。",
+      "cuisine_id": "jp",
+      "difficulty": 2
+    },
+    {
+      "id": "J09",
+      "name": "天妇罗",
+      "tier": 3,
+      "prerequisites": [
+        "J03",
+        "J07"
+      ],
+      "cost": 2,
+      "ingredients": "虾、蔬菜、薄面衣",
+      "flavor": "油炸 / 轻盈面衣",
+      "description": "低温混合面衣并控制油炸时间。",
+      "cuisine_id": "jp",
+      "difficulty": 3
+    },
+    {
+      "id": "J10",
+      "name": "酱油拉面",
+      "tier": 3,
+      "prerequisites": [
+        "J03",
+        "J04"
+      ],
+      "cost": 2,
+      "ingredients": "拉面、酱油汤底、叉烧",
+      "flavor": "拉面 / 汤底",
+      "description": "把汤底、面条与配料组织成完整碗面。",
+      "cuisine_id": "jp",
+      "difficulty": 3
+    },
+    {
+      "id": "J11",
+      "name": "炸猪排盖饭",
+      "tier": 3,
+      "prerequisites": [
+        "J07",
+        "J06"
+      ],
+      "cost": 2,
+      "ingredients": "炸猪排、鸡蛋、米饭",
+      "flavor": "盖饭 / 酥软结合",
+      "description": "把酥脆猪排与出汁蛋液组合。",
+      "cuisine_id": "jp",
+      "difficulty": 3
+    },
+    {
+      "id": "J12",
+      "name": "三文鱼握寿司",
+      "tier": 3,
+      "prerequisites": [
+        "J08",
+        "J04"
+      ],
+      "cost": 2,
+      "ingredients": "寿司米、三文鱼、芥末",
+      "flavor": "寿司 / 刀工",
+      "description": "练习鱼料切片、米团成形与温度控制。",
+      "cuisine_id": "jp",
+      "difficulty": 3
+    },
+    {
+      "id": "J13",
+      "name": "味噌拉面",
+      "tier": 4,
+      "prerequisites": [
+        "J10",
+        "J02"
+      ],
+      "cost": 2,
+      "ingredients": "味噌、骨汤、玉米",
+      "flavor": "拉面 / 发酵鲜味",
+      "description": "将味噌的发酵鲜味融入浓郁汤底。",
+      "cuisine_id": "jp",
+      "difficulty": 4
+    },
+    {
+      "id": "J14",
+      "name": "鳗鱼饭",
+      "tier": 4,
+      "prerequisites": [
+        "J05",
+        "J04"
+      ],
+      "cost": 2,
+      "ingredients": "鳗鱼、照烧汁、米饭",
+      "flavor": "蒲烧 / 刷酱",
+      "description": "反复刷酱烤制鳗鱼，形成光泽与焦香。",
+      "cuisine_id": "jp",
+      "difficulty": 4
+    },
+    {
+      "id": "J15",
+      "name": "综合寿司拼盘",
+      "tier": 4,
+      "prerequisites": [
+        "J08",
+        "J12"
+      ],
+      "cost": 2,
+      "ingredients": "多种鱼料、寿司米",
+      "flavor": "寿司 / 拼盘",
+      "description": "协调不同鱼料、切片与摆盘。",
+      "cuisine_id": "jp",
+      "difficulty": 4
+    },
+    {
+      "id": "J16",
+      "name": "豚骨拉面",
+      "tier": 4,
+      "prerequisites": [
+        "J10",
+        "J13"
+      ],
+      "cost": 2,
+      "ingredients": "猪骨浓汤、拉面、叉烧",
+      "flavor": "浓汤 / 长时熬制",
+      "description": "掌握乳化骨汤与多层次拉面配料。",
+      "cuisine_id": "jp",
+      "difficulty": 4
+    },
+    {
+      "id": "J17",
+      "name": "天丼",
+      "tier": 5,
+      "prerequisites": [
+        "J09",
+        "J06"
+      ],
+      "cost": 3,
+      "ingredients": "天妇罗、出汁酱汁、米饭",
+      "flavor": "盖饭 / 油炸",
+      "description": "将天妇罗与甜咸酱汁、米饭组合。",
+      "cuisine_id": "jp",
+      "difficulty": 5
+    },
+    {
+      "id": "J18",
+      "name": "炭火烤鳗鱼",
+      "tier": 5,
+      "prerequisites": [
+        "J14",
+        "J09"
+      ],
+      "cost": 3,
+      "ingredients": "鳗鱼、炭火、秘制酱汁",
+      "flavor": "炭烤 / 火候",
+      "description": "在蒲烧基础上掌握炭火距离与翻烤节奏。",
+      "cuisine_id": "jp",
+      "difficulty": 5
+    },
+    {
+      "id": "J19",
+      "name": "主厨特选寿司",
+      "tier": 5,
+      "prerequisites": [
+        "J12",
+        "J15"
+      ],
+      "cost": 3,
+      "ingredients": "时令鱼料、寿司米",
+      "flavor": "时令 / 精细刀工",
+      "description": "依据食材状态安排握寿司顺序与风味。",
+      "cuisine_id": "jp",
+      "difficulty": 5
+    },
+    {
+      "id": "J20",
+      "name": "怀石料理套餐",
+      "tier": 5,
+      "prerequisites": [
+        "J16",
+        "J18",
+        "J19"
+      ],
+      "cost": 4,
+      "ingredients": "汤品、烤物、寿司、时令食材",
+      "flavor": "套餐 / 季节性",
+      "description": "协调汤、烤物、寿司与季节食材的完整体验。",
+      "cuisine_id": "jp",
+      "difficulty": 5
+    },
+    {
+      "id": "S01",
+      "name": "越式鲜春卷",
+      "tier": 1,
+      "prerequisites": [],
+      "cost": 1,
+      "ingredients": "米纸、鲜虾、香草、生菜",
+      "flavor": "鲜食 / 香草",
+      "description": "以清爽香草与蘸酱建立风味基础。",
+      "cuisine_id": "sea",
+      "difficulty": 1
+    },
+    {
+      "id": "S02",
+      "name": "椰香米饭",
+      "tier": 1,
+      "prerequisites": [],
+      "cost": 1,
+      "ingredients": "米、椰浆、盐",
+      "flavor": "米饭 / 椰香",
+      "description": "控制椰浆比例，让米饭香浓而不腻。",
+      "cuisine_id": "sea",
+      "difficulty": 1
+    },
+    {
+      "id": "S03",
+      "name": "越式清汤粉",
+      "tier": 1,
+      "prerequisites": [],
+      "cost": 1,
+      "ingredients": "米粉、清汤、香草",
+      "flavor": "清汤 / 米粉",
+      "description": "练习清澈高汤、米粉和香草搭配。",
+      "cuisine_id": "sea",
+      "difficulty": 1
+    },
+    {
+      "id": "S04",
+      "name": "泰式炒河粉",
+      "tier": 1,
+      "prerequisites": [],
+      "cost": 1,
+      "ingredients": "河粉、鸡蛋、豆芽、鱼露",
+      "flavor": "炒粉 / 镬气",
+      "description": "在高温下快速翻炒，平衡咸甜酸。",
+      "cuisine_id": "sea",
+      "difficulty": 1
+    },
+    {
+      "id": "S05",
+      "name": "越南牛肉河粉",
+      "tier": 2,
+      "prerequisites": [
+        "S03",
+        "S02"
+      ],
+      "cost": 1,
+      "ingredients": "牛肉、米粉、香料高汤",
+      "flavor": "汤粉 / 香料",
+      "description": "让香料高汤、牛肉与香草形成层次。",
+      "cuisine_id": "sea",
+      "difficulty": 2
+    },
+    {
+      "id": "S06",
+      "name": "印尼炒饭",
+      "tier": 2,
+      "prerequisites": [
+        "S02",
+        "S04"
+      ],
+      "cost": 1,
+      "ingredients": "米饭、甜酱油、虾片",
+      "flavor": "炒饭 / 甜咸",
+      "description": "用甜酱油和香料打造浓郁炒饭。",
+      "cuisine_id": "sea",
+      "difficulty": 2
+    },
+    {
+      "id": "S07",
+      "name": "沙嗲串烧",
+      "tier": 2,
+      "prerequisites": [
+        "S01"
+      ],
+      "cost": 1,
+      "ingredients": "鸡肉、花生酱、香料",
+      "flavor": "炭烤 / 花生酱",
+      "description": "掌握腌制、串烤与浓郁花生蘸酱。",
+      "cuisine_id": "sea",
+      "difficulty": 2
+    },
+    {
+      "id": "S08",
+      "name": "泰式红咖喱",
+      "tier": 2,
+      "prerequisites": [
+        "S02",
+        "S03"
+      ],
+      "cost": 1,
+      "ingredients": "红咖喱酱、椰浆、肉类",
+      "flavor": "咖喱 / 椰浆",
+      "description": "理解咖喱酱煸炒与椰浆分次加入。",
+      "cuisine_id": "sea",
+      "difficulty": 2
+    },
+    {
+      "id": "S09",
+      "name": "泰式绿咖喱",
+      "tier": 3,
+      "prerequisites": [
+        "S08",
+        "S01"
+      ],
+      "cost": 2,
+      "ingredients": "绿咖喱酱、椰浆、茄子",
+      "flavor": "咖喱 / 青香",
+      "description": "用香草与青辣椒构建清亮辛香。",
+      "cuisine_id": "sea",
+      "difficulty": 3
+    },
+    {
+      "id": "S10",
+      "name": "冬阴功汤",
+      "tier": 3,
+      "prerequisites": [
+        "S03",
+        "S04"
+      ],
+      "cost": 2,
+      "ingredients": "虾、香茅、青柠、辣椒",
+      "flavor": "酸辣汤 / 海鲜",
+      "description": "平衡酸、辣、咸与香茅气息。",
+      "cuisine_id": "sea",
+      "difficulty": 3
+    },
+    {
+      "id": "S11",
+      "name": "马来西亚叻沙",
+      "tier": 3,
+      "prerequisites": [
+        "S08",
+        "S10"
+      ],
+      "cost": 2,
+      "ingredients": "米粉、咖喱汤底、虾",
+      "flavor": "汤面 / 香料",
+      "description": "将咖喱厚度与海鲜酸香整合为复合汤底。",
+      "cuisine_id": "sea",
+      "difficulty": 3
+    },
+    {
+      "id": "S12",
+      "name": "越式炸春卷",
+      "tier": 3,
+      "prerequisites": [
+        "S01",
+        "S04"
+      ],
+      "cost": 2,
+      "ingredients": "米纸、肉馅、木耳",
+      "flavor": "油炸 / 脆皮",
+      "description": "将鲜春卷的包制基础转为酥脆炸制。",
+      "cuisine_id": "sea",
+      "difficulty": 3
+    },
+    {
+      "id": "S13",
+      "name": "海南鸡饭",
+      "tier": 4,
+      "prerequisites": [
+        "S02",
+        "S05"
+      ],
+      "cost": 2,
+      "ingredients": "鸡肉、鸡油饭、姜葱酱",
+      "flavor": "白切 / 米饭",
+      "description": "控制鸡肉熟度，并用鸡油饭和蘸酱提升风味。",
+      "cuisine_id": "sea",
+      "difficulty": 4
+    },
+    {
+      "id": "S14",
+      "name": "椰浆咖喱面",
+      "tier": 4,
+      "prerequisites": [
+        "S08",
+        "S11"
+      ],
+      "cost": 2,
+      "ingredients": "面条、椰浆咖喱汤、豆腐泡",
+      "flavor": "浓汤 / 椰香",
+      "description": "将椰浆咖喱与叻沙汤面技法结合。",
+      "cuisine_id": "sea",
+      "difficulty": 4
+    },
+    {
+      "id": "S15",
+      "name": "泰式打抛猪肉饭",
+      "tier": 4,
+      "prerequisites": [
+        "S02",
+        "S06"
+      ],
+      "cost": 2,
+      "ingredients": "猪肉、罗勒、辣椒、米饭",
+      "flavor": "快炒 / 香草",
+      "description": "用罗勒、辣椒与鱼露快速炒出强烈香气。",
+      "cuisine_id": "sea",
+      "difficulty": 4
+    },
+    {
+      "id": "S16",
+      "name": "马萨曼咖喱",
+      "tier": 5,
+      "prerequisites": [
+        "S08",
+        "S07"
+      ],
+      "cost": 3,
+      "ingredients": "马萨曼咖喱酱、土豆、花生",
+      "flavor": "慢炖 / 温和香料",
+      "description": "把烤香料、坚果与慢炖肉类结合。",
+      "cuisine_id": "sea",
+      "difficulty": 5
+    },
+    {
+      "id": "S17",
+      "name": "印尼沙爹饭",
+      "tier": 5,
+      "prerequisites": [
+        "S07",
+        "S06"
+      ],
+      "cost": 3,
+      "ingredients": "沙嗲串烧、米饭、花生酱",
+      "flavor": "炭烤 / 套餐",
+      "description": "把沙嗲烧烤与印尼风味米饭组合。",
+      "cuisine_id": "sea",
+      "difficulty": 5
+    },
+    {
+      "id": "S18",
+      "name": "海鲜叻沙",
+      "tier": 5,
+      "prerequisites": [
+        "S11",
+        "S10"
+      ],
+      "cost": 3,
+      "ingredients": "虾、鱼片、叻沙汤底",
+      "flavor": "海鲜 / 复合汤底",
+      "description": "强化叻沙的海鲜层次与酸辣平衡。",
+      "cuisine_id": "sea",
+      "difficulty": 5
+    },
+    {
+      "id": "S19",
+      "name": "特色香料海鲜拼盘",
+      "tier": 5,
+      "prerequisites": [
+        "S16",
+        "S18"
+      ],
+      "cost": 3,
+      "ingredients": "海鲜、香料酱、香草",
+      "flavor": "拼盘 / 香料",
+      "description": "用咖喱香料和海鲜汤底打造多种海鲜组合。",
+      "cuisine_id": "sea",
+      "difficulty": 5
+    },
+    {
+      "id": "S20",
+      "name": "东南亚风味宴席",
+      "tier": 5,
+      "prerequisites": [
+        "S13",
+        "S17",
+        "S19"
+      ],
+      "cost": 4,
+      "ingredients": "鸡饭、沙嗲、海鲜、咖喱",
+      "flavor": "宴席 / 多风味统筹",
+      "description": "让清爽、炭烤、浓郁咖喱与海鲜形成完整宴席。",
+      "cuisine_id": "sea",
+      "difficulty": 5
+    },
+    {
+      "id": "L01",
+      "name": "墨西哥玉米饼",
+      "tier": 1,
+      "prerequisites": [],
+      "cost": 1,
+      "ingredients": "玉米面、盐、水",
+      "flavor": "玉米面团 / 平煎",
+      "description": "学习玉米面团的含水量与饼皮厚度。",
+      "cuisine_id": "lat",
+      "difficulty": 1
+    },
+    {
+      "id": "L02",
+      "name": "黑豆饭",
+      "tier": 1,
+      "prerequisites": [],
+      "cost": 1,
+      "ingredients": "黑豆、米饭、香料",
+      "flavor": "豆类 / 主食",
+      "description": "用豆类、米饭与香料建立基础组合。",
+      "cuisine_id": "lat",
+      "difficulty": 1
+    },
+    {
+      "id": "L03",
+      "name": "阿根廷肉馅饼",
+      "tier": 1,
+      "prerequisites": [],
+      "cost": 1,
+      "ingredients": "酥皮、牛肉、洋葱",
+      "flavor": "包馅 / 烘烤",
+      "description": "练习馅料调味、封口和烘烤。",
+      "cuisine_id": "lat",
+      "difficulty": 1
+    },
+    {
+      "id": "L04",
+      "name": "秘鲁青柠腌鱼",
+      "tier": 1,
+      "prerequisites": [],
+      "cost": 1,
+      "ingredients": "鲜鱼、青柠、红洋葱",
+      "flavor": "酸腌 / 鲜食",
+      "description": "利用酸汁改变鱼肉质地，掌握腌制时间。",
+      "cuisine_id": "lat",
+      "difficulty": 1
+    },
+    {
+      "id": "L05",
+      "name": "墨西哥玉米片配莎莎酱",
+      "tier": 2,
+      "prerequisites": [
+        "L01"
+      ],
+      "cost": 1,
+      "ingredients": "玉米片、番茄、洋葱、辣椒",
+      "flavor": "脆食 / 莎莎酱",
+      "description": "从玉米饼延伸出脆片与新鲜莎莎酱。",
+      "cuisine_id": "lat",
+      "difficulty": 2
+    },
+    {
+      "id": "L06",
+      "name": "墨西哥塔可",
+      "tier": 2,
+      "prerequisites": [
+        "L01",
+        "L02"
+      ],
+      "cost": 1,
+      "ingredients": "玉米饼、肉类、豆类、莎莎酱",
+      "flavor": "玉米饼 / 组合",
+      "description": "练习饼皮、馅料和配料的平衡。",
+      "cuisine_id": "lat",
+      "difficulty": 2
+    },
+    {
+      "id": "L07",
+      "name": "巴西芝士面包",
+      "tier": 2,
+      "prerequisites": [
+        "L03"
+      ],
+      "cost": 1,
+      "ingredients": "木薯淀粉、奶酪、鸡蛋",
+      "flavor": "烘焙 / 木薯",
+      "description": "学习木薯淀粉带来的弹韧口感。",
+      "cuisine_id": "lat",
+      "difficulty": 2
+    },
+    {
+      "id": "L08",
+      "name": "墨西哥玉米粽",
+      "tier": 2,
+      "prerequisites": [
+        "L01",
+        "L02"
+      ],
+      "cost": 1,
+      "ingredients": "玉米面、玉米叶、馅料",
+      "flavor": "蒸制 / 包裹",
+      "description": "将玉米面团包馅后蒸制，拓展玉米主食路线。",
+      "cuisine_id": "lat",
+      "difficulty": 2
+    },
+    {
+      "id": "L09",
+      "name": "阿根廷炭烤牛肉",
+      "tier": 2,
+      "prerequisites": [
+        "L03"
+      ],
+      "cost": 1,
+      "ingredients": "牛肉、盐、炭火",
+      "flavor": "炭烤 / 肉类",
+      "description": "用简单调味和稳定炭火突出牛肉本味。",
+      "cuisine_id": "lat",
+      "difficulty": 2
+    },
+    {
+      "id": "L10",
+      "name": "秘鲁海鲜酸橘汁",
+      "tier": 2,
+      "prerequisites": [
+        "L04"
+      ],
+      "cost": 1,
+      "ingredients": "鲜虾、贝类、青柠、香菜",
+      "flavor": "酸腌 / 海鲜",
+      "description": "把酸腌技法拓展到多种海鲜。",
+      "cuisine_id": "lat",
+      "difficulty": 2
+    },
+    {
+      "id": "L11",
+      "name": "墨西哥辣椒炖肉",
+      "tier": 3,
+      "prerequisites": [
+        "L02",
+        "L06"
+      ],
+      "cost": 2,
+      "ingredients": "牛肉、豆类、辣椒、番茄",
+      "flavor": "炖煮 / 辣椒",
+      "description": "以干辣椒、豆类和长时间炖煮建立厚重风味。",
+      "cuisine_id": "lat",
+      "difficulty": 3
+    },
+    {
+      "id": "L12",
+      "name": "墨西哥辣酱焖鸡",
+      "tier": 3,
+      "prerequisites": [
+        "L05",
+        "L11"
+      ],
+      "cost": 2,
+      "ingredients": "鸡肉、辣椒酱、番茄",
+      "flavor": "焖煮 / 辣酱",
+      "description": "将莎莎酱的鲜味与炖煮辣椒酱结合。",
+      "cuisine_id": "lat",
+      "difficulty": 3
+    },
+    {
+      "id": "L13",
+      "name": "巴西黑豆炖肉",
+      "tier": 3,
+      "prerequisites": [
+        "L02",
+        "L09"
+      ],
+      "cost": 2,
+      "ingredients": "黑豆、猪肉、香肠",
+      "flavor": "慢炖 / 豆类",
+      "description": "把豆类主食与肉类慢炖技法组合。",
+      "cuisine_id": "lat",
+      "difficulty": 3
+    },
+    {
+      "id": "L14",
+      "name": "秘鲁鸡肉辣酱饭",
+      "tier": 3,
+      "prerequisites": [
+        "L02",
+        "L10"
+      ],
+      "cost": 2,
+      "ingredients": "鸡肉、黄辣椒酱、米饭",
+      "flavor": "奶香辣酱 / 米饭",
+      "description": "以秘鲁黄辣椒酱构建浓郁鸡肉酱汁。",
+      "cuisine_id": "lat",
+      "difficulty": 3
+    },
+    {
+      "id": "L15",
+      "name": "墨西哥卷饼",
+      "tier": 4,
+      "prerequisites": [
+        "L06",
+        "L11"
+      ],
+      "cost": 2,
+      "ingredients": "大面饼、肉馅、豆类、米饭",
+      "flavor": "卷制 / 组合",
+      "description": "把塔可馅料扩展为更丰富的卷饼结构。",
+      "cuisine_id": "lat",
+      "difficulty": 4
+    },
+    {
+      "id": "L16",
+      "name": "墨西哥摩尔酱鸡",
+      "tier": 4,
+      "prerequisites": [
+        "L11",
+        "L12"
+      ],
+      "cost": 2,
+      "ingredients": "鸡肉、辣椒、可可、香料",
+      "flavor": "复合酱汁 / 慢炖",
+      "description": "通过辣椒、香料与少量可可构建复杂酱汁。",
+      "cuisine_id": "lat",
+      "difficulty": 4
+    },
+    {
+      "id": "L17",
+      "name": "巴西海鲜炖锅",
+      "tier": 4,
+      "prerequisites": [
+        "L10",
+        "L13"
+      ],
+      "cost": 2,
+      "ingredients": "鱼、虾、椰奶、番茄、香菜",
+      "flavor": "海鲜炖煮 / 椰香",
+      "description": "结合海鲜与巴西海岸炖锅风味。",
+      "cuisine_id": "lat",
+      "difficulty": 4
+    },
+    {
+      "id": "L18",
+      "name": "阿根廷炭烤拼盘",
+      "tier": 4,
+      "prerequisites": [
+        "L09",
+        "L13"
+      ],
+      "cost": 2,
+      "ingredients": "牛肉、香肠、内脏、炭火",
+      "flavor": "炭烤 / 拼盘",
+      "description": "组合不同肉类与火候，体现阿根廷烧烤文化。",
+      "cuisine_id": "lat",
+      "difficulty": 4
+    },
+    {
+      "id": "L19",
+      "name": "墨西哥辣酱千层玉米饼",
+      "tier": 5,
+      "prerequisites": [
+        "L12",
+        "L15",
+        "L16"
+      ],
+      "cost": 3,
+      "ingredients": "玉米饼、鸡肉、摩尔酱、奶酪",
+      "flavor": "分层烘烤 / 复合辣酱",
+      "description": "把卷饼、焖鸡和摩尔酱的风味层层叠合。",
+      "cuisine_id": "lat",
+      "difficulty": 5
+    },
+    {
+      "id": "L20",
+      "name": "拉丁美洲炭火盛宴",
+      "tier": 5,
+      "prerequisites": [
+        "L17",
+        "L18",
+        "L19"
+      ],
+      "cost": 4,
+      "ingredients": "炖海鲜、炭烤肉、玉米料理",
+      "flavor": "宴席 / 炭火",
+      "description": "整合海岸炖锅、阿根廷炭烤与墨西哥复合辣酱。",
+      "cuisine_id": "lat",
+      "difficulty": 5
+    }
+  ],
+  "unlock_rules": {
+    "requires_all_prerequisites": true,
+    "default_points": 3,
+    "initial_unlocked_ids": [
+      "C01",
+      "C02"
+    ]
+  },
+  "notes": [
+    "本版保留原 HTML 的菜谱名称、前置关系、研究成本、食材与说明，只调整布局与交互。",
+    "节点的竖向层级由前置关系计算；显示位置不改变原 tier 或解锁条件。",
+    "像素小图是程序绘制的界面示意，并非正式菜品美术。"
+  ],
+  "source": {
+    "file": "xiaozhen_recipe_skilltree_vertical.html",
+    "scope": "User supplied tree; D030 overrides unlock transaction and starter cuisines"
+  },
+  "settings": {
+    "pass_score": 80,
+    "good_quality": 0.65,
+    "perfect_sec": 0.06,
+    "good_sec": 0.12,
+    "error_weight": 0.25,
+    "attempt_hours": 1,
+    "input_offset_sec": 0
+  },
+  "runtime_mapping": {
+    "C01": "egg_fried_rice",
+    "C02": "tomato_egg",
+    "C03": "yangchun_noodles",
+    "C04": "steamed_egg",
+    "C09": "gongbaojiding",
+    "C14": "mapodoufu"
+  },
+  "charts": {
+    "C03": {
+      "id": "study.C03",
+      "kind": "kitchen",
+      "version": 2,
+      "recipe_id": "study.yangchun_noodles",
+      "primary": [
+        "wheat_noodles",
+        "water"
+      ]
+    },
+    "C04": {
+      "id": "study.C04",
+      "kind": "kitchen",
+      "version": 2,
+      "recipe_id": "study.steamed_egg",
+      "primary": [
+        "egg",
+        "water"
+      ]
+    }
+  }
+}

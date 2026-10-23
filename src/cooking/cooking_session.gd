@@ -44,6 +44,9 @@ func restore_portable(data: Variant) -> TDOutcome:
 func is_cold() -> bool:
 	return _version==3 and _full.is_cold()
 
+func module_scores() -> Dictionary:
+	return _full.module_scores().duplicate(true) if _version==3 else {}
+
 func _init(sid: String, generation: int, template: Variant, options: Dictionary = {}) -> void:
 	_id = sid
 	_generation = generation

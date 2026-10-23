@@ -10,6 +10,34 @@ var pantry := TDPantry.new()
 var floor := TDFloorBoard.new()
 var rng := TDBusinessRandom.new(20261011)
 var ready: bool = false
+var research: TDResearchSession
+
+func attach_research(value:TDResearchSession) -> void:
+	research=value
+	for dish:Dictionary in TDResearchRuntime.dishes():
+		catalog.dishes[dish.id]=dish.duplicate(true);prices[dish.id]=int(dish.price)
+	if not research.changed.is_connected(_sync_research): research.changed.connect(_sync_research)
+	_sync_research()
+
+func _sync_research() -> void:
+	if research==null: return
+	var previous:Array=recipes.ids()
+	recipes.unlocked.clear()
+	var progress:=research.snapshot()
+	for id:String in progress.unlocked:
+		var runtime:=research.catalog.runtime_id(id)
+		if catalog.dishes.has(runtime): recipes.grant(runtime)
+	for id:String in progress.legacy_ids:
+		if catalog.dishes.has(id): recipes.grant(id)
+	if ready and previous!=recipes.ids(): refresh_pool()
+
+func research_service_ids() -> Array:
+	var ids:Array=[]
+	if research==null: return ids
+	for id:String in recipes.ids():
+		var service_id:=catalog.kitchen_recipe_id(id)
+		if not service_id.is_empty(): ids.append(service_id)
+	return ids
 var day: int = 1
 var money: int = 300
 var town_id: String = "chengdu"
@@ -179,7 +207,7 @@ func learned_kitchen_dishes() -> Array:
 		if current.is_empty():
 			continue
 		var service_id := String(current.get("service_recipe", ""))
-		if service_id == "" or service_id == "service.qiguoji":
+		if research!=null or service_id == "" or service_id == "service.qiguoji":
 			result.append(current)
 	return result
 
@@ -413,9 +441,11 @@ func settle_visit(npc: Dictionary, dish_id: String, quality: float, player_decor
 	var dish := catalog.dish(dish_id)
 	var offer := _offer(npc, dish, price_of(dish_id), player_decor, good_count, bad_count)
 	var meal := TDEconomyMath.evaluate_meal(offer, quality, float(npc["quality_expect"]))
-	var learning := recipes.consider(dish_id, accepted, float(meal["overall"]))
+	var learning:Dictionary={"learned":false,"code":"RESEARCH_REQUIRED"} if research!=null else recipes.consider(dish_id, accepted, float(meal["overall"]))
+	if research!=null and accepted:
+		research.record_cooking(day,dish_id,clampf(quality,0,100))
 	var dark_name := ""
-	if accepted and TDSanRules.dark_triggered(float(san), quality, rng.unit()):
+	if research==null and accepted and TDSanRules.dark_triggered(float(san), quality, rng.unit()):
 		for item: Variant in catalog.dish_list():
 			var candidate: Dictionary = item
 			if String(candidate.get("dark_of", "")) != dish_id:

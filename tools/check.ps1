@@ -2,9 +2,9 @@
 [CmdletBinding()]
 param(
   [string]$GodotPath = $env:GODOT_BIN,
-  [ValidateSet('all','content','cooking','qte','platform','scoring','integration','business','service')]
+  [ValidateSet('all','content','cooking','qte','platform','scoring','integration','business','service','research')]
   [string]$Suite = 'all',
-  [int]$TimeoutSeconds = 300,
+  [int]$TimeoutSeconds = 600,
   [string]$ReportName = ''
 )
 $ErrorActionPreference = 'Stop'
@@ -66,6 +66,7 @@ try {
   if ($plugin -notmatch ('version="' + [regex]::Escape($lock.gut.version) + '"')) { throw 'GUT version mismatch' }
 
   $testMap = @{
+    research = @('tests/unit/test_research_rules.gd','tests/integration/test_kitchen_research.gd')
     business = @('tests/unit/test_shop_session.gd','tests/unit/test_shop_store.gd','tests/unit/test_kitchen_freedom.gd')
     service = @('tests/integration/test_shop_application.gd')
     content = @('tests/unit/test_content.gd','tests/unit/test_recipe_content.gd','tests/unit/test_full_catalog.gd')

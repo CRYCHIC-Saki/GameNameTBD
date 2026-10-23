@@ -6,6 +6,8 @@ const STEAM_CHART := "service.qiguoji"
 
 static func install(service: TDServiceCatalog, dishes: Array) -> Array[String]:
 	var ids: Array[String] = []
+	if dishes.any(func(item:Variant)->bool:return item is Dictionary and item.get("research_runtime",false)):
+		if not TDResearchRuntime.install(service).ok: return ids
 	for item: Variant in dishes:
 		if not item is Dictionary:
 			continue

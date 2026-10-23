@@ -21,7 +21,7 @@
 | AC-PHASE-3-009 学会的新菜进入原厨房逐拍表 | PASS | `test_learned_dish_joins_the_kitchen_sheet` |
 | AC-PHASE-3-010 租金、水电、工资从现金扣除，没钱不能雇 | PASS | `test_rent_utilities_and_wages_come_out_of_cash` |
 | AC-PHASE-3-011 按菜或点选备原料，设备延长保质期 | PASS | `test_raw_ingredients_can_be_prepped_by_dish_or_by_pick` |
-| AC-PHASE-3-012 六座小镇从中心长出四向道路，四个大区最长边至少 10 | PASS | `test_town_roads_grow_from_the_center_and_large_zones_fit`。D030 起改为餐厅建设区+8 原料厂空地，主店需点击建设，不再自动落店 |
+| AC-PHASE-3-012 六座小镇从中心长出四向道路，四个大区最长边至少 10 | PASS | `test_town_roads_grow_from_the_center_and_large_zones_fit`。D030-TOWN（远端原D030）起改为餐厅建设区+8 原料厂空地，主店需点击建设，不再自动落店 |
 | AC-PHASE-3-018 餐厅建设区空地可建主店；8 块原料厂空地点击建厂，不用 E | PENDING_RUN | 本机无锁定 Godot；用例已写入 `test_phase3_rules` / `test_phase4_branch` |
 | AC-PHASE-3-013 SAN 0–100，开局可改；窗口按大纲公式；评分 ≥ 80 且 SAN < 30 才可能解锁西红柿炒皮蛋 | PASS | `test_san_windows_dark_dish_hours_and_market_distance` |
 | AC-PHASE-3-014 备货、收拾、整理和休息按小时改 SAN；小市场锁住牛肉，大市场可以买 | PASS | 同上 |

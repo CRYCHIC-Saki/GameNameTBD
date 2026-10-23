@@ -16,6 +16,9 @@ var _content: Dictionary = {}
 var scorer: TDCustomerScorer
 var library_path: String = "user://recipe-library.json"
 var auto_advance: bool = true
+# A research host drives the same kitchen, while owning return/completion navigation.
+var lesson_mode: bool = false
+var before_input: Callable
 var world: TDKitchenWorld
 var lanes: Array[TDCookingLane] = []
 var day_san: float = -1.0
@@ -248,6 +251,8 @@ func _advance_guided(seconds: float) -> void:
 
 func _input(event: InputEvent) -> void:
 	if _closed: return
+	if before_input.is_valid(): before_input.call()
+	if event.is_action("recipe_book"): return
 	if auto_advance: _sync_time()
 	if event.is_action_pressed("pause") and not event.is_echo():
 		pause_requested.emit(); get_viewport().set_input_as_handled(); return
@@ -507,6 +512,7 @@ func _refresh_guided() -> void:
 	var current: TDCookingLane=prep if _on_board else lanes[active_lane]
 	var done: bool=current.sheet!=null and not current.sheet.running and current.qte==null and current.thermal_qte==null
 	if done:
+		if lesson_mode: return
 		if not _on_board:
 			for lane: TDCookingLane in lanes:
 				if lane.qte!=null or lane.thermal_qte!=null or (lane.sheet!=null and lane.sheet.running): _finished_at=-1; return
@@ -517,7 +523,9 @@ func _refresh_guided() -> void:
 
 func _input_guided(event: InputEvent) -> void:
 	if event.is_action_pressed("world_interact") and not event.is_echo():
-		close_bench(); get_viewport().set_input_as_handled(); return
+		if lesson_mode: back_requested.emit()
+		else: close_bench()
+		get_viewport().set_input_as_handled(); return
 	if not stage.feedback.is_empty(): return
 	var active: Array=_guided_lanes()
 	if event is InputEventMouseMotion or event is InputEventMouseButton:

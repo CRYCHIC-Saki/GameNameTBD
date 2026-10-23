@@ -1,0 +1,2407 @@
+{
+  "schema_version": 1,
+  "source": "D030 / AI-037; only C01,C03,C04 runtime additions; M5 boiling uses existing stove interaction",
+  "ingredients": [
+    {
+      "definition": {
+        "id": "rice",
+        "name": "熟米饭",
+        "scope": "PROTOTYPE",
+        "category": "starch",
+        "subcategory": "rice",
+        "quality": 0.8,
+        "base_tastes": [
+          0,
+          8,
+          0,
+          0,
+          0,
+          8,
+          0
+        ],
+        "slot_profile": [
+          0.65,
+          1,
+          0.5,
+          0.3
+        ],
+        "texture": {
+          "A": 0.2,
+          "B": 0.1,
+          "C": 0
+        },
+        "aroma": {},
+        "region": [
+          "service.market"
+        ],
+        "special": [
+          "starch"
+        ],
+        "temperature_c": 22,
+        "max_amount": 10,
+        "available": true,
+        "source": "AI-037 PROPOSED"
+      },
+      "cost_cents_per_unit": 80
+    },
+    {
+      "definition": {
+        "id": "wheat_noodles",
+        "name": "细面条",
+        "scope": "PROTOTYPE",
+        "category": "starch",
+        "subcategory": "wheat_noodles",
+        "quality": 0.8,
+        "base_tastes": [
+          0,
+          3,
+          0,
+          0,
+          0,
+          6,
+          0
+        ],
+        "slot_profile": [
+          0.65,
+          1,
+          0.5,
+          0.3
+        ],
+        "texture": {
+          "A": 0.2,
+          "B": 0.1,
+          "C": 0
+        },
+        "aroma": {},
+        "region": [
+          "service.market"
+        ],
+        "special": [
+          "starch"
+        ],
+        "temperature_c": 22,
+        "max_amount": 10,
+        "available": true,
+        "source": "AI-037 PROPOSED"
+      },
+      "cost_cents_per_unit": 100
+    },
+    {
+      "definition": {
+        "id": "water",
+        "name": "清水",
+        "scope": "PROTOTYPE",
+        "category": "liquid",
+        "subcategory": "water",
+        "quality": 0.8,
+        "base_tastes": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "slot_profile": [
+          0.65,
+          1,
+          0.5,
+          0.3
+        ],
+        "texture": {
+          "A": 0.2,
+          "B": 0.1,
+          "C": 0
+        },
+        "aroma": {},
+        "region": [
+          "service.market"
+        ],
+        "special": [],
+        "temperature_c": 22,
+        "max_amount": 10,
+        "available": true,
+        "source": "AI-037 PROPOSED"
+      },
+      "cost_cents_per_unit": 5
+    }
+  ],
+  "dishes": [
+    {
+      "atlas_id": "C01",
+      "world": {
+        "id": "egg_fried_rice",
+        "name": "蛋炒饭",
+        "town_id": "shanghai",
+        "culture": "chinese",
+        "ingredient_cost": 4,
+        "labor_factor": 1,
+        "value_offset": 0,
+        "price": 12,
+        "starter": false,
+        "service_recipe": "study.egg_fried_rice",
+        "source": "AI-037 PROPOSED",
+        "research_runtime": true
+      },
+      "recipe": {
+        "version": 1,
+        "is_custom": false,
+        "expects_aroma": false,
+        "expected_aroma": [],
+        "allowed_ingredients": [
+          "rice",
+          "egg",
+          "tomato",
+          "oil",
+          "starch",
+          "salt",
+          "sugar",
+          "vinegar",
+          "soy_sauce",
+          "wine",
+          "ginger",
+          "garlic",
+          "pepper",
+          "scallion"
+        ],
+        "required_steps": [
+          "heat"
+        ],
+        "recommended_steps": [
+          "preheat",
+          "season",
+          "stir",
+          "stir",
+          "stir",
+          "stir",
+          "heat",
+          "season",
+          "starch",
+          "plate"
+        ],
+        "ideal_flavor": [],
+        "ideal_temperature": [
+          55,
+          70
+        ],
+        "ideal_texture": {},
+        "san_cost": {
+          "event": "deliver",
+          "amount": 0
+        },
+        "variant_ids": [],
+        "id": "study.egg_fried_rice",
+        "name": "蛋炒饭",
+        "scope": "PROTOTYPE",
+        "required_ingredients": [
+          {
+            "id": "rice",
+            "min_amount": 1,
+            "min_fine": 0,
+            "max_fine": 1,
+            "min_heat_dose": 0.2
+          },
+          {
+            "id": "egg",
+            "min_amount": 1,
+            "min_fine": 0,
+            "max_fine": 1,
+            "min_heat_dose": 0.2
+          }
+        ],
+        "preparation_sheets": {},
+        "guided_profile": "study.egg_fried_rice",
+        "cooking_method": "stir",
+        "initially_unlocked": false,
+        "source": "AI-037 PROPOSED"
+      },
+      "sheet": {
+        "id": "study.egg_fried_rice",
+        "dish": "蛋炒饭",
+        "bpm": 120,
+        "groups": {
+          "ignite": {
+            "operation": "preheat",
+            "label": "热锅点火",
+            "parameters": {}
+          },
+          "oil": {
+            "operation": "season",
+            "label": "下油",
+            "parameters": {
+              "ingredient_id": "oil",
+              "amount": 0.1,
+              "mode": "common"
+            }
+          },
+          "load": {
+            "operation": "stir",
+            "label": "下料",
+            "parameters": {}
+          },
+          "stir-a": {
+            "operation": "stir",
+            "label": "翻炒 · 稳住火候",
+            "parameters": {}
+          },
+          "stir-b": {
+            "operation": "stir",
+            "label": "翻炒 · 均匀受热",
+            "parameters": {}
+          },
+          "stir-c": {
+            "operation": "stir",
+            "label": "翻炒 · 收拢食材",
+            "parameters": {}
+          },
+          "heat": {
+            "operation": "heat",
+            "label": "炒制控温",
+            "parameters": {}
+          },
+          "season": {
+            "operation": "season",
+            "label": "顺序调味",
+            "parameters": {
+              "ingredient_id": "salt",
+              "amount": 0.1,
+              "mode": "precise"
+            },
+            "pour_rate_per_sec": 0.2
+          },
+          "starch": {
+            "operation": "starch",
+            "label": "勾芡",
+            "parameters": {
+              "ingredient_id": "starch",
+              "amount": 0.1
+            }
+          },
+          "plate": {
+            "operation": "plate",
+            "label": "把握出锅",
+            "parameters": {}
+          }
+        },
+        "beats": [
+          {
+            "t": 1,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 2,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 3,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 4,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 5,
+            "lanes": {
+              "hand": {
+                "group": "ignite",
+                "op": "preheat",
+                "input": "primary",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 6,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 7,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 8,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 9,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 10,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 11,
+            "lanes": {
+              "hand": {
+                "group": "oil",
+                "op": "season",
+                "input": "left",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 12,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 13,
+            "lanes": {
+              "hand": {
+                "group": "oil",
+                "op": "season",
+                "input": "right",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 14,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 15,
+            "lanes": {
+              "hand": {
+                "group": "oil",
+                "op": "season",
+                "input": "primary",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 16,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 17,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 18,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 19,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 20,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 21,
+            "lanes": {
+              "hand": {
+                "group": "load",
+                "op": "stir",
+                "input": "up",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 22,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 23,
+            "lanes": {
+              "hand": {
+                "group": "load",
+                "op": "stir",
+                "input": "down",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 24,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 25,
+            "lanes": {
+              "hand": {
+                "group": "load",
+                "op": "stir",
+                "input": "primary",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 26,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 27,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 28,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 29,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 30,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 31,
+            "lanes": {
+              "hand": {
+                "group": "stir-a",
+                "op": "stir",
+                "input": "up",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 32,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 33,
+            "lanes": {
+              "hand": {
+                "group": "stir-a",
+                "op": "stir",
+                "input": "left",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 34,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 35,
+            "lanes": {
+              "hand": {
+                "group": "stir-a",
+                "op": "stir",
+                "input": "down",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 36,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 37,
+            "lanes": {
+              "hand": {
+                "group": "stir-a",
+                "op": "stir",
+                "input": "right",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 38,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 39,
+            "lanes": {
+              "hand": {
+                "group": "stir-a",
+                "op": "stir",
+                "input": "primary",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 40,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 41,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 42,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 43,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 44,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 45,
+            "lanes": {
+              "hand": {
+                "group": "stir-b",
+                "op": "stir",
+                "input": "left",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 46,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 47,
+            "lanes": {
+              "hand": {
+                "group": "stir-b",
+                "op": "stir",
+                "input": "up",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 48,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 49,
+            "lanes": {
+              "hand": {
+                "group": "stir-b",
+                "op": "stir",
+                "input": "right",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 50,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 51,
+            "lanes": {
+              "hand": {
+                "group": "stir-b",
+                "op": "stir",
+                "input": "down",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 52,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 53,
+            "lanes": {
+              "hand": {
+                "group": "stir-b",
+                "op": "stir",
+                "input": "primary",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 54,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 55,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 56,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 57,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 58,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 59,
+            "lanes": {
+              "hand": {
+                "group": "stir-c",
+                "op": "stir",
+                "input": "down",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 60,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 61,
+            "lanes": {
+              "hand": {
+                "group": "stir-c",
+                "op": "stir",
+                "input": "right",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 62,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 63,
+            "lanes": {
+              "hand": {
+                "group": "stir-c",
+                "op": "stir",
+                "input": "up",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 64,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 65,
+            "lanes": {
+              "hand": {
+                "group": "stir-c",
+                "op": "stir",
+                "input": "left",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 66,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 67,
+            "lanes": {
+              "hand": {
+                "group": "stir-c",
+                "op": "stir",
+                "input": "primary",
+                "form": "tap"
+              },
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 68,
+            "lanes": {
+              "mouse": {
+                "group": "heat",
+                "op": "heat",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 69,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 70,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 71,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 72,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 73,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 74,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 75,
+            "lanes": {
+              "mouse": {
+                "group": "season",
+                "op": "season",
+                "input": "spice:salt",
+                "form": "hold",
+                "hold_beats": 1
+              }
+            }
+          },
+          {
+            "t": 76,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 77,
+            "lanes": {
+              "mouse": {
+                "group": "season",
+                "op": "season",
+                "input": "spice:sugar",
+                "form": "hold",
+                "hold_beats": 1
+              }
+            }
+          },
+          {
+            "t": 78,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 79,
+            "lanes": {
+              "mouse": {
+                "group": "season",
+                "op": "season",
+                "input": "spice:oil",
+                "form": "hold",
+                "hold_beats": 1
+              }
+            }
+          },
+          {
+            "t": 80,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 81,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 82,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 83,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 84,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 85,
+            "lanes": {
+              "hand": {
+                "group": "starch",
+                "op": "starch",
+                "input": "left",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 86,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 87,
+            "lanes": {
+              "hand": {
+                "group": "starch",
+                "op": "starch",
+                "input": "right",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 88,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 89,
+            "lanes": {
+              "hand": {
+                "group": "starch",
+                "op": "starch",
+                "input": "primary",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 90,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 91,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 92,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 93,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 94,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 95,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 96,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 97,
+            "lanes": {
+              "hand": {
+                "group": "plate",
+                "op": "plate",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 98,
+            "lanes": {
+              "hand": {
+                "group": "plate",
+                "op": "plate",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 99,
+            "lanes": {
+              "hand": {
+                "group": "plate",
+                "op": "plate",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 100,
+            "lanes": {
+              "hand": {
+                "group": "plate",
+                "op": "plate",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 101,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 102,
+            "rest": true,
+            "lanes": {}
+          }
+        ],
+        "preview_beats": 4,
+        "charge_start_grace_beats": 4
+      },
+      "offer": {
+        "id": "study.egg_fried_rice",
+        "reference_cents": 1200,
+        "primary": [
+          "rice",
+          "egg"
+        ],
+        "stock": {
+          "oil": 400,
+          "salt": 400,
+          "sugar": 400,
+          "vinegar": 400,
+          "soy_sauce": 400,
+          "wine": 400,
+          "ginger": 400,
+          "garlic": 400,
+          "pepper": 400,
+          "scallion": 400,
+          "starch": 100,
+          "rice": 1000,
+          "egg": 1000
+        },
+        "source": "AI-037: HTML ingredients; provisional cooking parameters",
+        "parameter_status": "PROPOSED"
+      }
+    },
+    {
+      "atlas_id": "C03",
+      "world": {
+        "id": "yangchun_noodles",
+        "name": "阳春面",
+        "town_id": "shanghai",
+        "culture": "chinese",
+        "ingredient_cost": 4,
+        "labor_factor": 1,
+        "value_offset": 0,
+        "price": 10,
+        "starter": false,
+        "service_recipe": "study.yangchun_noodles",
+        "source": "AI-037 PROPOSED",
+        "research_runtime": true
+      },
+      "recipe": {
+        "version": 1,
+        "is_custom": false,
+        "expects_aroma": false,
+        "expected_aroma": [],
+        "allowed_ingredients": [
+          "wheat_noodles",
+          "water",
+          "tomato",
+          "egg",
+          "oil",
+          "starch",
+          "salt",
+          "sugar",
+          "vinegar",
+          "soy_sauce",
+          "wine",
+          "ginger",
+          "garlic",
+          "pepper",
+          "scallion"
+        ],
+        "required_steps": [
+          "boil"
+        ],
+        "recommended_steps": [
+          "preheat",
+          "boil",
+          "plate"
+        ],
+        "ideal_flavor": [],
+        "ideal_temperature": [
+          55,
+          70
+        ],
+        "ideal_texture": {},
+        "san_cost": {
+          "event": "deliver",
+          "amount": 0
+        },
+        "variant_ids": [],
+        "id": "study.yangchun_noodles",
+        "name": "阳春面",
+        "scope": "PROTOTYPE",
+        "required_ingredients": [
+          {
+            "id": "wheat_noodles",
+            "min_amount": 1,
+            "min_fine": 0,
+            "max_fine": 1,
+            "min_heat_dose": 0.2
+          },
+          {
+            "id": "water",
+            "min_amount": 1,
+            "min_fine": 0,
+            "max_fine": 1,
+            "min_heat_dose": 0.2
+          }
+        ],
+        "preparation_sheets": {},
+        "guided_profile": "study.yangchun_noodles",
+        "cooking_method": "stir",
+        "initially_unlocked": false,
+        "source": "AI-037 PROPOSED"
+      },
+      "sheet": {
+        "id": "study.yangchun_noodles",
+        "dish": "阳春面",
+        "bpm": 120,
+        "groups": {
+          "ignite": {
+            "operation": "preheat",
+            "label": "热锅点火",
+            "parameters": {}
+          },
+          "boil": {
+            "operation": "boil",
+            "label": "清汤煮面 · 稳定火候",
+            "parameters": {}
+          },
+          "plate": {
+            "operation": "plate",
+            "label": "把握出锅",
+            "parameters": {}
+          }
+        },
+        "beats": [
+          {
+            "t": 1,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 2,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 3,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 4,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 5,
+            "lanes": {
+              "hand": {
+                "group": "ignite",
+                "op": "preheat",
+                "input": "primary",
+                "form": "tap"
+              }
+            }
+          },
+          {
+            "t": 6,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 7,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 8,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 9,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 10,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 11,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 12,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 13,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 14,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 15,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 16,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 17,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 18,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 19,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 20,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 21,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 22,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 23,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 24,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 25,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 26,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 27,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 28,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 29,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 30,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 31,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 32,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 33,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 34,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 35,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 36,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 37,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 38,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 39,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 40,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 41,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 42,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 43,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 44,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 45,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 46,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 47,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 48,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 49,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 50,
+            "lanes": {
+              "mouse": {
+                "group": "boil",
+                "op": "boil",
+                "input": "Mouse",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 51,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 52,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 53,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 54,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 55,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 56,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 57,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 58,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 59,
+            "lanes": {
+              "hand": {
+                "group": "plate",
+                "op": "plate",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 60,
+            "lanes": {
+              "hand": {
+                "group": "plate",
+                "op": "plate",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 61,
+            "lanes": {
+              "hand": {
+                "group": "plate",
+                "op": "plate",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 62,
+            "lanes": {
+              "hand": {
+                "group": "plate",
+                "op": "plate",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 63,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 64,
+            "rest": true,
+            "lanes": {}
+          }
+        ],
+        "preview_beats": 4,
+        "charge_start_grace_beats": 4
+      },
+      "offer": {
+        "id": "study.yangchun_noodles",
+        "reference_cents": 1000,
+        "primary": [
+          "wheat_noodles",
+          "water"
+        ],
+        "stock": {
+          "oil": 400,
+          "salt": 400,
+          "sugar": 400,
+          "vinegar": 400,
+          "soy_sauce": 400,
+          "wine": 400,
+          "ginger": 400,
+          "garlic": 400,
+          "pepper": 400,
+          "scallion": 400,
+          "starch": 100,
+          "wheat_noodles": 1000,
+          "water": 1000
+        },
+        "source": "AI-037: HTML ingredients; provisional cooking parameters",
+        "parameter_status": "PROPOSED"
+      }
+    },
+    {
+      "atlas_id": "C04",
+      "world": {
+        "id": "steamed_egg",
+        "name": "蒸水蛋",
+        "town_id": "shanghai",
+        "culture": "chinese",
+        "ingredient_cost": 4,
+        "labor_factor": 1,
+        "value_offset": 0,
+        "price": 10,
+        "starter": false,
+        "service_recipe": "study.steamed_egg",
+        "source": "AI-037 PROPOSED",
+        "research_runtime": true
+      },
+      "recipe": {
+        "version": 1,
+        "is_custom": false,
+        "expects_aroma": false,
+        "expected_aroma": [],
+        "allowed_ingredients": [
+          "egg",
+          "water",
+          "tomato",
+          "oil",
+          "starch",
+          "salt",
+          "sugar",
+          "vinegar",
+          "soy_sauce",
+          "wine",
+          "ginger",
+          "garlic",
+          "pepper",
+          "scallion"
+        ],
+        "required_steps": [
+          "steam"
+        ],
+        "recommended_steps": [
+          "season",
+          "steam",
+          "plate"
+        ],
+        "ideal_flavor": [],
+        "ideal_temperature": [
+          55,
+          70
+        ],
+        "ideal_texture": {},
+        "san_cost": {
+          "event": "deliver",
+          "amount": 0
+        },
+        "variant_ids": [],
+        "id": "study.steamed_egg",
+        "name": "蒸水蛋",
+        "scope": "PROTOTYPE",
+        "required_ingredients": [
+          {
+            "id": "egg",
+            "min_amount": 1,
+            "min_fine": 0,
+            "max_fine": 1,
+            "min_heat_dose": 0.2
+          },
+          {
+            "id": "water",
+            "min_amount": 1,
+            "min_fine": 0,
+            "max_fine": 1,
+            "min_heat_dose": 0.2
+          }
+        ],
+        "preparation_sheets": {},
+        "guided_profile": "study.steamed_egg",
+        "cooking_method": "steam",
+        "initially_unlocked": false,
+        "source": "AI-037 PROPOSED"
+      },
+      "sheet": {
+        "id": "study.steamed_egg",
+        "dish": "蒸水蛋",
+        "bpm": 120,
+        "groups": {
+          "season": {
+            "operation": "season",
+            "label": "顺序调味",
+            "parameters": {
+              "ingredient_id": "salt",
+              "amount": 0.1,
+              "mode": "precise"
+            },
+            "pour_rate_per_sec": 0.2
+          },
+          "steam": {
+            "operation": "steam",
+            "label": "蒸水蛋 · 保持蒸汽",
+            "parameters": {}
+          },
+          "plate": {
+            "operation": "plate",
+            "label": "开笼出锅",
+            "parameters": {}
+          }
+        },
+        "beats": [
+          {
+            "t": 1,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 2,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 3,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 4,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 5,
+            "lanes": {
+              "mouse": {
+                "group": "season",
+                "op": "season",
+                "input": "spice:salt",
+                "form": "hold",
+                "hold_beats": 1
+              }
+            }
+          },
+          {
+            "t": 6,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 8,
+            "lanes": {
+              "mouse": {
+                "group": "season",
+                "op": "season",
+                "input": "spice:soy_sauce",
+                "form": "hold",
+                "hold_beats": 1
+              }
+            }
+          },
+          {
+            "t": 10,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 11,
+            "lanes": {
+              "mouse": {
+                "group": "season",
+                "op": "season",
+                "input": "spice:scallion",
+                "form": "hold",
+                "hold_beats": 1
+              }
+            }
+          },
+          {
+            "t": 12,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 13,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 14,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 15,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 16,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 17,
+            "lanes": {
+              "hand": {
+                "group": "steam",
+                "op": "steam",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 18,
+            "lanes": {
+              "hand": {
+                "group": "steam",
+                "op": "steam",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 19,
+            "lanes": {
+              "hand": {
+                "group": "steam",
+                "op": "steam",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 20,
+            "lanes": {
+              "hand": {
+                "group": "steam",
+                "op": "steam",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 21,
+            "lanes": {
+              "hand": {
+                "group": "steam",
+                "op": "steam",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 22,
+            "lanes": {
+              "hand": {
+                "group": "steam",
+                "op": "steam",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 23,
+            "lanes": {
+              "hand": {
+                "group": "steam",
+                "op": "steam",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 24,
+            "lanes": {
+              "hand": {
+                "group": "steam",
+                "op": "steam",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 25,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 26,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 27,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 28,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 29,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 30,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 31,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 32,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 33,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 34,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 35,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 36,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 37,
+            "lanes": {
+              "hand": {
+                "group": "plate",
+                "op": "plate",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 38,
+            "lanes": {
+              "hand": {
+                "group": "plate",
+                "op": "plate",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 39,
+            "lanes": {
+              "hand": {
+                "group": "plate",
+                "op": "plate",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 40,
+            "lanes": {
+              "hand": {
+                "group": "plate",
+                "op": "plate",
+                "input": "primary",
+                "form": "hold"
+              }
+            }
+          },
+          {
+            "t": 41,
+            "rest": true,
+            "lanes": {}
+          },
+          {
+            "t": 42,
+            "rest": true,
+            "lanes": {}
+          }
+        ],
+        "preview_beats": 4,
+        "charge_start_grace_beats": 4
+      },
+      "offer": {
+        "id": "study.steamed_egg",
+        "reference_cents": 1000,
+        "primary": [
+          "egg",
+          "water"
+        ],
+        "stock": {
+          "oil": 400,
+          "salt": 400,
+          "sugar": 400,
+          "vinegar": 400,
+          "soy_sauce": 400,
+          "wine": 400,
+          "ginger": 400,
+          "garlic": 400,
+          "pepper": 400,
+          "scallion": 400,
+          "starch": 100,
+          "egg": 1000,
+          "water": 1000
+        },
+        "source": "AI-037: HTML ingredients; provisional cooking parameters",
+        "parameter_status": "PROPOSED"
+      }
+    }
+  ]
+}

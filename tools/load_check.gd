@@ -16,6 +16,13 @@ func _initialize() -> void:
 	var service_result:=service.load_file()
 	if not service_result.ok:
 		printerr(service_result.message); failures+=1
+	var research:=TDResearchCatalog.new()
+	var research_result:=research.load_file()
+	if not research_result.ok:
+		printerr(research_result.code);failures+=1
+	var runtime_result:=TDResearchRuntime.install(service)
+	if not runtime_result.ok:
+		printerr(runtime_result.message);failures+=1
 	var full := TDCookingCatalog.new()
 	var full_result := full.load_file("res://content/cooking_system.json")
 	if not full_result.ok:
