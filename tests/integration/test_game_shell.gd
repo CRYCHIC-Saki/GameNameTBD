@@ -54,6 +54,8 @@ func test_title_new_slot_real_doors_and_repeated_entry_keep_same_session() -> vo
 func test_market_inventory_menu_open_and_real_kitchen_delivery_three_day_save_loop() -> void:
 	start()
 	for day: int in range(1,4):
+		for id: String in shell.profile.shop.snapshot().menu:
+			shell.profile.shop.set_menu(id,id=="service.tomato_egg",1300)
 		shell.show_market();await get_tree().process_frame
 		# Buy through the real market buttons, not an independent demonstration inventory.
 		for row: Node in shell._modal_box.get_children():
@@ -68,7 +70,11 @@ func test_market_inventory_menu_open_and_real_kitchen_delivery_three_day_save_lo
 		shell.travel("kitchen");driver.kitchen=shell.kitchen_view.kitchen;driver.sent={}
 		var view:=shell.kitchen_view;var kitchen:=view.kitchen
 		for lane: TDCookingLane in kitchen.lanes+[kitchen.prep]: lane.beat_offset_sec=0
-		kitchen.advance(1);assert_gt(view.shop.active_orders().size(),0)
+		# Demand is finite and probabilistic; wait for a real customer, never inject one.
+		for attempt: int in 180:
+			kitchen.advance(1)
+			if not view.shop.active_orders().is_empty(): break
+		assert_gt(view.shop.active_orders().size(),0)
 		if view.shop.active_orders().is_empty(): return
 		var order_id:String=view.shop.active_orders()[0].id
 		view.pick_ingredient("tomato");driver.station("kitchen.board");view.choose_cut("chunk")
@@ -78,10 +84,16 @@ func test_market_inventory_menu_open_and_real_kitchen_delivery_three_day_save_lo
 		assert_eq(kitchen.lanes[0].snapshot().state,"plated")
 		driver.station("kitchen.stove.left");driver.station("kitchen.serve")
 		assert_eq(view.shop.order(order_id).status,"SERVED")
+		var settled_order:=view.shop.order(order_id)
+		var hold: Dictionary=shell.profile.commerce.society.state.holds[settled_order.economic_intent.opportunity_id]
+		assert_eq(int(hold.paid_cents)-int(hold.refunded_cents),int(settled_order.prepaid_cents)+int(settled_order.tip_cents)-int(settled_order.refunded_cents))
+		assert_eq(int(shell.profile.commerce.cash_audit(int(view.shop.snapshot().money_cents)).difference_cents),0,"Real QTE delivery has a household payer.")
+		assert_gt(float(shell.profile.commerce.state.day_stats.cooking_seconds),0,"Actual kitchen work drives utilities")
 		var paid:=view.shop.snapshot();driver.station("kitchen.serve");assert_eq(view.shop.snapshot(),paid)
 		view.shop.close_early()
 		for remaining: Dictionary in view.shop.active_orders(): view.shop.cancel_order(remaining.id)
 		kitchen.advance(.01);assert_eq(view.shop.snapshot().phase,"SETTLED")
+		assert_eq(int(shell.profile.commerce.cash_audit(int(view.shop.snapshot().money_cents)).difference_cents),0,"Taxes, wages and refunds conserve total cash.")
 		assert_true(shell.save_game().ok)
 		var before:Dictionary=shell.profile.snapshot()
 		shell.go_title();assert_true(shell.load_game("slot-01").ok)
@@ -109,6 +121,38 @@ func test_book_uses_real_kitchen_unlocks_within_slot_and_never_in_other_slot() -
 	assert_has(shell.profile.research.snapshot().unlocked,"C03")
 	assert_true(shell.profile.shop.is_unlocked(shell.profile.world.catalog.kitchen_recipe_id(shell.profile.research.catalog.runtime_id("C03"))))
 
+func test_bank_world_interaction_and_buttons_use_the_profile_wallet() -> void:
+	start()
+	var banks:=shell.profile.world.town_map.plots.filter(func(p:Dictionary)->bool:return p.kind=="bank")
+	assert_eq(banks.size(),1)
+	if banks.is_empty(): return
+	var bank: Dictionary=banks[0]
+	shell.town._player.position=shell.town._origin()+Vector2(int(bank.approach_x)+.5,int(bank.approach_y)+.5)*TDTownWorld.CELL
+	driver.tap(KEY_E)
+	assert_not_null(shell._modal)
+	if shell._modal==null: return
+	assert_not_null(button("存入",shell._modal_box))
+	var deposit:=button("存入",shell._modal_box)
+	if deposit==null: return
+	deposit.pressed.emit()
+	assert_eq(int(shell.profile.commerce.society.bank.account("player").deposit_cents),10000)
+	assert_true(shell.save_game().ok)
+	shell.show_bank()
+	var stale_action: Callable=button("存入",shell._modal_box).pressed.get_connections()[0].callable
+	shell.go_title();assert_true(shell.create_game("slot-02").ok)
+	var unchanged:=shell.profile.snapshot()
+	stale_action.call()
+	assert_eq(shell.profile.snapshot(),unchanged)
+	shell.go_title();assert_true(shell.load_game("slot-01").ok)
+	assert_eq(int(shell.profile.shop.snapshot().money_cents),20000)
+	shell.show_bank()
+	button("借款",shell._modal_box).pressed.emit()
+	assert_eq(int(shell.profile.commerce.society.bank.account("player").principal_cents),10000)
+	assert_eq(int(shell.profile.shop.snapshot().money_cents),30000)
+	assert_true(shell.save_game().ok)
+	shell.go_title();assert_true(shell.load_game("slot-01").ok)
+	assert_eq(int(shell.profile.commerce.society.bank.account("player").deposit_cents),10000)
+
 func test_pause_console_and_modal_prevent_underlay_input_and_keep_business_clock() -> void:
 	start();shell.travel("restaurant");shell.start_day();shell.travel("kitchen")
 	var kitchen:=shell.kitchen_view.kitchen;driver.kitchen=kitchen
@@ -134,6 +178,10 @@ func test_slot_layout_round_trip_and_old_file_explicit_import_is_read_only() -> 
 	start();assert_true(shell.profile.layout.apply_venue_style("chinese","high").ok)
 	var layout:=shell.profile.layout.to_dict();assert_true(shell.save_game().ok)
 	var old_shop:=TDShopStore.new(shell.legacy_shop_path,shell.profile.shop)
+	for day: int in 3:
+		assert_true(shell.profile.shop.open_day().ok)
+		assert_true(shell.profile.shop.close_early().ok)
+		if day<2: assert_true(shell.profile.next_day().ok)
 	assert_true(old_shop.save_game(shell.profile.shop.snapshot()).ok)
 	var old_research:=TDResearchStore.new(shell.legacy_research_path,shell.profile.research.validate_save)
 	assert_true(old_research.save_game(shell.profile.research.snapshot()).ok)
@@ -141,6 +189,11 @@ func test_slot_layout_round_trip_and_old_file_explicit_import_is_read_only() -> 
 	var research_bytes:=FileAccess.get_file_as_bytes(shell.legacy_research_path)
 	shell.go_title();assert_true(shell.import_legacy().ok)
 	assert_true(shell.profile.imported_legacy)
+	assert_eq(int(shell.profile.commerce.state.day),3)
+	assert_eq(int(shell.profile.commerce.society.state.last_day),3)
+	assert_eq(int(shell.profile.commerce.state.tax_due_cents),0)
+	assert_eq(int(shell.profile.commerce.cash_audit(int(shell.profile.shop.snapshot().money_cents)).difference_cents),0)
+	assert_true(TDGameProfile.validate_save(shell.profile.snapshot()).ok)
 	assert_eq(FileAccess.get_file_as_bytes(shell.legacy_shop_path),shop_bytes)
 	assert_eq(FileAccess.get_file_as_bytes(shell.legacy_research_path),research_bytes)
 	assert_eq(shell.import_legacy().code,"ALREADY_IMPORTED")

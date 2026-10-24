@@ -6,6 +6,10 @@ signal pause_requested
 signal restaurant_requested
 signal place_requested(kind: String, id: String)
 var player_mode: bool = false
+var transaction_sink: Callable
+var external_factory_clock: bool = false
+var balance_reader: Callable
+var commercial_refresh: Callable
 
 const CELL := 48
 const BAR_HEIGHT := 92.0
@@ -104,7 +108,7 @@ func _process(delta: float) -> void:
 	if _closed:
 		return
 	if session != null and not get_tree().paused:
-		var finished := session.tick_factories(clampf(delta, 0.0, 0.25))
+		var finished: Array = [] if external_factory_clock else session.tick_factories(clampf(delta, 0.0, 0.25))
 		for item: Variant in finished:
 			var job: Dictionary = item
 			_set_status("%s做好了一份，已放入背包，现在有%d。" % [String(job.get("name", "")), int(job.get("stock", 0))])
@@ -117,6 +121,7 @@ func _process(delta: float) -> void:
 		_paint_backpack_count()
 	if session != null and session.map_revision != _seen_revision:
 		_seen_revision = session.map_revision
+		if commercial_refresh.is_valid(): commercial_refresh.call()
 		_build_blockers()
 		if _player != null:
 			_player.position = _origin() + Vector2((TDTownMap.CENTER + 0.5) * CELL, (TDTownMap.CENTER + 0.5) * CELL)
@@ -156,6 +161,7 @@ func _draw() -> void:
 		return
 	if player_mode:
 		TDTownArt.draw_world(self,session,_selected)
+		_draw_economic_places()
 		return
 	var origin := _origin()
 	for y in TDTownMap.SIZE:
@@ -193,6 +199,37 @@ func _draw() -> void:
 		if shade > 0.01:
 			draw_rect(Rect2(_origin(), Vector2(TDTownMap.SIZE * CELL, TDTownMap.SIZE * CELL)), Color(0, 0, 0, shade))
 
+func _draw_economic_places() -> void:
+	for plot: Dictionary in session.town_map.plots:
+		if not plot.get("economic_courtyard",false): continue
+		var floor_at:=_origin()+Vector2(plot.x,plot.y)*CELL
+		for y: int in int(plot.h):
+			for x: int in int(plot.w):
+				var tile:=Rect2(floor_at+Vector2(x,y)*CELL,Vector2.ONE*CELL)
+				draw_rect(tile,Color("a99d7c"));draw_rect(tile.grow(-2),Color("b4a789"))
+	for plot: Dictionary in session.town_map.plots:
+		if str(plot.kind)=="bank":
+			var bank_at:=_origin()+Vector2(plot.x,plot.y)*CELL
+			var bank_size:=Vector2(plot.w,plot.h)*CELL
+			draw_rect(Rect2(bank_at,bank_size),Color("a98f5e"))
+			draw_rect(Rect2(bank_at,Vector2(bank_size.x,14)),Color("514837"))
+			draw_rect(Rect2(bank_at+Vector2(bank_size.x*.5-9,bank_size.y-18),Vector2(18,16)),Color("483b2a"))
+			draw_rect(Rect2(bank_at+Vector2(0,16),Vector2(bank_size.x,20)),Color("483b2a"))
+			draw_string(ThemeDB.fallback_font,bank_at+Vector2(2,31),"钱庄",HORIZONTAL_ALIGNMENT_CENTER,bank_size.x-4,14,Color("f6d88a"))
+		if not plot.has("economic_parcel_id"): continue
+		var rect:=Rect2(_origin()+Vector2(plot.x,plot.y)*CELL,Vector2(plot.w,plot.h)*CELL).grow(-3)
+		var constructing: bool=plot.get("construction",false)
+		draw_rect(rect,Color("94744c") if constructing else Color("c5a57d"))
+		if constructing:
+			for x: int in range(4,int(rect.size.x),12): draw_rect(Rect2(rect.position+Vector2(x,4),Vector2(4,rect.size.y-8)),Color("564b39"))
+		else:
+			draw_rect(Rect2(rect.position,Vector2(rect.size.x,18)),Color("754937"))
+			var door_height:=minf(34,rect.size.y*.42)
+			draw_rect(Rect2(rect.position+Vector2(rect.size.x*.5-9,rect.size.y-door_height-2),Vector2(18,door_height)),Color("46392f"))
+		var plate:=Rect2(rect.position+Vector2(0,20),Vector2(rect.size.x,22))
+		draw_rect(plate,Color("443a2b"))
+		draw_string(ThemeDB.fallback_font,plate.position+Vector2(2,16),"施工中" if constructing else ("食堂" if plate.size.x<60 else "街坊食堂"),HORIZONTAL_ALIGNMENT_CENTER,plate.size.x-4,12,Color("f0d392"))
+
 func _unhandled_input(event: InputEvent) -> void:
 	if _closed or session == null:
 		return
@@ -226,10 +263,10 @@ func close() -> void:
 func _interact() -> void:
 	var cell := _player_cell()
 	var plot := session.town_map.plot_at(cell.x, cell.y)
-	if plot.is_empty():
+	if plot.is_empty() or plot.get("economic_courtyard",false):
 		for step: Vector2i in [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
 			var neighbor := session.town_map.plot_at(cell.x + step.x, cell.y + step.y)
-			if not neighbor.is_empty() and String(neighbor["kind"]) != "housing":
+			if not neighbor.is_empty() and String(neighbor["kind"]) != "housing" and not neighbor.get("economic_courtyard",false):
 				plot = neighbor
 				break
 	if plot.is_empty():
@@ -770,7 +807,7 @@ func _refresh_factory_panel() -> void:
 		return
 	var level := session.factory_level_of(_factory_plot)
 	_factory_level_label.text = "%d级 · %d条产线" % [level, session.factory_lines(_factory_plot)]
-	_factory_cash.text = "%d元" % session.money
+	_factory_cash.text = "¥%.2f" % (float(balance_reader.call())/100.0) if balance_reader.is_valid() else "%d元" % session.money
 	_paint_factory_pack()
 	_paint_factory_job()
 	if _factory_upgrade != null and is_instance_valid(_factory_upgrade):
@@ -977,7 +1014,7 @@ func _paint_qty_dialog() -> void:
 func _confirm_factory_qty() -> void:
 	if session == null:
 		return
-	var result := session.produce_factory(_factory_plot, _qty_item, _qty_count, _qty_line)
+	var result: TDOutcome = transaction_sink.call(session.produce_factory.bind(_factory_plot, _qty_item, _qty_count, _qty_line),"工厂生产") if transaction_sink.is_valid() else session.produce_factory(_factory_plot, _qty_item, _qty_count, _qty_line)
 	_set_status(result.message if result.message != "" else result.code)
 	_close_qty_dialog()
 	_refresh_factory_panel()
@@ -989,7 +1026,7 @@ func _close_qty_dialog() -> void:
 	_qty_summary = null
 
 func _upgrade_open_factory() -> void:
-	var result := session.upgrade_factory(_factory_plot)
+	var result: TDOutcome = transaction_sink.call(session.upgrade_factory.bind(_factory_plot),"工厂升级") if transaction_sink.is_valid() else session.upgrade_factory(_factory_plot)
 	_set_status(result.message if result.message != "" else result.code)
 	_refresh_factory_panel()
 

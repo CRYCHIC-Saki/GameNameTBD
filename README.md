@@ -2,6 +2,10 @@
 
 当前入口已更新为 **D033：单店游戏流程与六槽存档**。主菜单为“开始游戏 / 继续游戏 / 载入存档 / 设置 / 退出游戏”，新档从中式食堂门口开始。完整 Phase 4 未完成；本轮验收、失败记录与人工待测见 [game-shell.md](docs/phases/game-shell.md)。
 
+新增 **D036五镇社会经济**：成都、巴黎、东京、曼谷、墨西哥城对应菜谱树五菜系；新档只开本地商路，其余等剧情推荐接口。320家庭实际领薪、消费、储蓄，店铺收款有家庭付款方；正利润缴税，亏损不缴利润税。商业街的钱庄可按E办理存取/限额贷款，账本分开本金、利息和税费。NPC在商业街挂牌地块投资、施工、开分店，不拆住房或占玩家/工厂用地。旧13镇存档显式迁移，已付货运保留，旧日不追税。数值仍待人工试玩；范围与验证见 [world-economy.md](docs/phases/world-economy.md)。
+
+专项检查：`pwsh -File tools/check.ps1 -Suite commerce`；真实游戏流程：`pwsh -File tools/check.ps1 -Suite game`。长期模拟：锁定Godot运行 `--headless --path . --script res://tools/economy_simulate.gd`，结果写artifacts/society-simulation，不接触玩家档。
+
 ### 当前版本五步试玩
 
 1. 点“开始游戏”直接进最近存档；没有存档时自动新建。另开一档使用“载入存档→新建存档”，选空槽并命名。WASD移动，靠近食堂门口按E进入；餐厅后方门按E到厨房，厨房下方门按E返回。
@@ -11,6 +15,8 @@
 5. 营业牌可提前打烊；处理完余单，去“账本”查看日结/保存，去“休息处”进入次日。Esc暂停菜单也可在筹备/日结保存。退出营业会明确提示回退最近边界，不能恢复QTE现场。
 
 存档在 `%APPDATA%/TownDinerPhase0/profiles/slot-01.json` 至 `slot-06.json`：经营、研究、世界和装修写在同一校验包。新档互不继承；在新游戏存档页点“导入旧进度”才会只读导入旧 `shop-v1.json` / `research-v1.json`，源文件保留。坏档/未来版本不会被静默覆盖，可明确恢复已校验备份或临时档。
+
+钱庄在商业街内部，走到“钱庄”牌前按E；存取借还随当前槽保存。商业街的施工商铺和街坊食堂也可近前按E查看经营告示。五镇经济已相互联动，其他四镇当前只在后台模拟，不代表它们的旅行场景或剧情已经完成。
 
 反引号 **\`** 打开控制台，输入 `debug` 后可用 `help`、`status`、`san 0..100`、`tools`、`debug_off`。旧厨房/营业/员工/分店试验在独立调试入口，不与玩家槽混用。进入旧工具需先打烊并保存。
 
@@ -97,24 +103,24 @@ python tools/kenney_fetch.py download --query furniture --out artifacts/kenney -
 
 ## 三人协作
 
-正式规范见 `docs/collaboration/README.md`。三条固定工作线是做菜与研发、经济与供货、小镇与事件；每波由其中一人轮值集成，不增加第四人。
+正式规范见 [协作手册](docs/collaboration/README.md)。2026-10-24确认当前三条线为建筑（building）、原料厂商（supplier）、小镇经济（town-economy）；每波由其中一人轮值集成。手册第0节包含每日操作、共享文件重叠处理、状态归属和GitHub保护建议；旧cook/economy/town分支保留兼容。
 
 ```powershell
 # 校验三人目录所有权配置
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/collab.ps1 -Action Validate
 
-# 查看 Phase 4 第 0 波预期分支和现有工作树
-powershell -NoProfile -ExecutionPolicy Bypass -File tools/collab.ps1 -Action Status -Phase 4 -Wave 0
+# 查看示例波次next的三条新工作线（不会创建分支）
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/collab.ps1 -Action Status -Phase 4 -Wave next
 
 # 基线提交且工作区干净后，先预演创建四个工作树
-powershell -NoProfile -ExecutionPolicy Bypass -File tools/collab.ps1 -Action Init -Phase 4 -Wave 0 -BaseRef main -WhatIf
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/collab.ps1 -Action Init -Phase 4 -Wave next -BaseRef origin/main -WhatIf
 
 # 角色分支检查自己的未提交文件
-powershell -NoProfile -ExecutionPolicy Bypass -File tools/collab.ps1 -Action Check -Role cook `
-  -BaseRef integration/phase-4-wave-0 -IncludeWorkingTree
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/collab.ps1 -Action Check -Role supplier `
+  -BaseRef origin/integration/phase-4-wave-next -TargetBranch integration/phase-4-wave-next -IncludeWorkingTree
 ```
 
-协作工具兼容 Windows PowerShell 5.1；CI 仍使用 `pwsh`。当前 Phase 4 尚未开工，工作区也有未提交修改，因此现在不要实际运行 `-Action Init`。初始化脚本不会提交、推送或创建 PR。
+上方next是示例名称，新波次以CURRENT_WAVE登记的名称和active_roles为准。协作工具兼容Windows PowerShell 5.1，CI使用pwsh；`pwsh -File tools/test_collab.ps1`可在隔离Git仓库验证越界、共享文件和分支规则。当前D033 PR #2尚未合并，先审查确认共同基线再初始化新波次。Init只在干净工作区执行，不提交、推送或创建PR；其他开发者使用各自clone即可。
 
 ## 工程运行
 
@@ -166,4 +172,4 @@ CI配置在 `.github/workflows/check.yml`，推送和Pull Request调用同一 `t
 - `docs/ROADMAP.md`：当前检查点与后续里程碑。
 - `docs/SOURCES.md`：原始资料索引与指纹。原始文件保留在 `doc/source/`。
 
-工程与玩家验收分开：最新本地检查证据见docs/PROJECT_STATE.md；真实键鼠/耳机同步、反馈可理解性与好玩程度仍待人工试玩。本阶段交付后停止在Phase2，不自动进入Phase3。
+工程与玩家验收分开：最新本地检查证据见docs/PROJECT_STATE.md；真实键鼠/耳机同步、反馈可理解性与好玩程度仍待人工试玩。当前仅完成已授权的Phase4切片，协作配置不代表新功能阶段开工。

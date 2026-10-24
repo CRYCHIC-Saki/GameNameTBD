@@ -24,6 +24,9 @@ func _initialize() -> void:
 	if not runtime_result.ok:
 		printerr(runtime_result.message);failures+=1
 	var full := TDCookingCatalog.new()
+	var economy:=TDWorldEconomy.new(service.config.costs)
+	if not economy.error.ok:
+		printerr(economy.error.code);failures+=1
 	var full_result := full.load_file("res://content/cooking_system.json")
 	if not full_result.ok:
 		printerr(full_result.message)

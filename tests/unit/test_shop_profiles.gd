@@ -140,14 +140,18 @@ func test_world_spending_preserves_cents_and_failed_action_rolls_back() -> void:
 
 func test_remote_supply_arrives_next_day_once_across_save_reload() -> void:
 	var profile:=create_profile("slot-01")
+	assert_eq(profile.order_remote("egg").code,"NO_REMOTE_ROUTE")
+	assert_true(profile.recommend_route("paris","story:profile-test:paris").ok)
+	var quote:=profile.commerce.quote(profile.commerce.state.routes[1],{"egg":1000})
 	assert_true(profile.order_remote("egg").ok)
 	assert_eq(profile.shop.available("egg"),0)
-	assert_eq(profile.shop.snapshot().money_cents,29800)
-	assert_eq(profile.world.supply.incoming[0].arrive,2)
+	assert_eq(profile.shop.snapshot().money_cents,30000-int(quote.data.total_cents))
+	assert_eq(int(profile.commerce.state.shipments[0].arrival_day),int(quote.data.arrival_day))
 	assert_true(profile.save().ok)
 	assert_true(profile.restore(store.load_slot("slot-01").data).ok)
-	profile.shop.open_day();profile.shop.close_early()
-	assert_true(profile.next_day().ok)
+	while int(profile.shop.snapshot().day)<int(quote.data.arrival_day):
+		profile.shop.open_day();profile.shop.close_early()
+		assert_true(profile.next_day().ok)
 	assert_eq(profile.shop.available("egg"),1000)
 	var before:=profile.shop.snapshot()
 	assert_true(profile.receive_supplies().ok)

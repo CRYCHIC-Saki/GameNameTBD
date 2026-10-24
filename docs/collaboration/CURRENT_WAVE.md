@@ -1,5 +1,52 @@
 # 当前协作波次
 
+## 2026-10-25 经济集成上传
+
+- 用户授权上传D035/D036及修复；已核实origin/main=83888da，没有新远端改动。新集成候选为integration/phase-4-wave-commerce，PR目标main；不重写共同历史、不直接推main、不自动合并。
+- 本任务集成角色只负责整理已验证工作与交接记录。D034协作基础、G15视口修复、D035/D036经济实现分提交保留；角色核心与隔离副本一致。原始两份商业资料继续只读且不纳入上传。
+- 本地完整406/406及所有权检查通过，生产实现未变；远程CI结果须另核实。人类审查与试玩PENDING，未虚构团队成员批准。
+
+## 2026-10-24 五镇社会经济增量（D036）
+
+- GRILL_RESULT=RESOLVED：正利润税/自愿限额贷款/欠款继续；成都、巴黎、东京、曼谷、墨西哥城五镇，新档只本地商路；竞争者只交易明确商业地块，保护主店、厂地、住房及既有归属。详细见D036和world-economy新增验收。
+- 唯一写入者是本任务Agent，顺序承担town-economy、building最小适配、集成角色。三个事实代理只读且已结束。经济角色复用artifacts/commerce-work/town-economy，建筑角色artifacts/commerce-work/building；所有权23/1及集成70文件检查PASS，核心与角色副本哈希一致；证据artifacts/society-final-review，既有代码备份artifacts/society-baseline。
+- 经济独占src/town_economy/、content/town_economy/、test_town_economy_*；building仅town_map.gd商业地块/内部通道/远镇连通布局接口，不改厂商生产、主店和住房；集成者装配game_profile.gd、shop_session.gd、game_shell.gd、town_world.gd与检查/导出/文档。
+- 保留D034/G15/D035未提交内容；不推送、不合并、不操作真实玩家存档。状态DELIVERED_LOCAL_PLAYTEST_PENDING，本轮共享/角色写入锁释放，工作区保留供审阅。25/25专项、7/7真实游戏、406/406全量、5×360日模拟及实际导出检查通过；人工长期体验仍PENDING。
+
+## 2026-10-24 世界经济工作波次
+
+- 用户新授权：参考town_commerce_design_v0_1.md落实世界联动经济，包含NPC口味/用餐意向、逐格区位数据、人流相关水电。旧D034的“未授权经济玩法”仅属此前协作管理范围，本次范围以用户新要求为准。
+- Grill三个产品问题已由用户全部确认，见D035。现按批准范围实现并验证正式经济集成，不操作真实存档。
+- town-economy唯一写入者为本任务Agent：隔离工作区artifacts/commerce-work/town-economy，分支work/town-economy/phase-4-wave-commerce，基线83888da。范围src/town_economy/、content/town_economy/、tests/*/test_town_economy_*。建筑地图和厂商生产规则不改。
+- 集成角色唯一写入者同为本任务Agent，顺序承担：待契约明确后修改src/business/shop_session.gd、game_profile.gd、profile_store.gd、src/app/game_shell.gd、src/town/town_world.gd的交易/时钟调用适配，以及对应测试、检查/导出白名单和文档。不得把厂商核心重新实现到入口；新增NPC规则也不回写旧调试世界账。
+- 保留原D034和G15未提交修改；不提交/推送、不合并main。三项只读事实调查已完成，没有其他Agent取得代码写入权。状态：IMPLEMENTING / VERIFYING，产品答复已解决。
+- D035三项已全部回答采用推荐，当前IMPLEMENTING。本任务Agent顺序承担cook角色，增加full_kitchen.gd只读work_advanced信号（按已有逐事件调度计算活跃工位秒，不变更QTE）；已确认当前文件与既有cook工作区一致。ShopView由集成角色订阅，避免按帧数或结束后的状态估算水电。
+
+D035最终交接：ENGINEERING_READY / PLAYTEST_PENDING。最终全量396/396、8685断言，pre-export-20261024-202311；经济专项16/16；3×360天/13镇模拟PASS；406资源导出、独立EXE29项检查PASS；GPU经济7图PASS。经济角色16文件和集成者59文件检查通过，核心副本哈希一致。建筑地图/布局、supply_book无本轮改动；共享锁完成释放，保留隔离工作区供审查。未提交/推送、未改真实玩家档；停止本经济切片，不推进其他Phase4任务。
+## 2026-10-24 重新导出局部修复锁
+
+- 用户要求重新生成exe；仅修复阻塞导出的装修工具栏视口适配，不扩展工厂或经济玩法。
+- 唯一写入者：本任务Agent顺序承担town角色（restaurant_world.gd、test_restaurant_world.gd）和集成角色（验收/状态记录、导出）；先在既有town隔离工作区修改。已确认两个目标文件与当前83888da逐字一致，不覆盖其他历史工作。
+- 验收G15：装修工具栏在初始与调整后的视口底部，宽度跟随视口；真实点击可选中、放置、删除家具，原有阻挡父控件测试继续通过。使用隔离SubViewport验证尺寸变化。movement20/20、全量380/380、完整导出与393资源审计通过，实际程序headless/GPU各29/29。town19项、integrator20项所有权检查通过；两个核心目标文件与角色副本哈希一致。状态：DELIVERED_LOCAL_PLAYTEST_PENDING，锁已释放；没有提交或推送。
+
+最新同步（2026-10-24）：按用户要求将当前工作分支快进至origin/main@83888da（四类原料厂），D034本地改动恢复且没有冲突，备份/stash保留；下面main=a164b1c与PR #2状态是拉取前历史查询。此次movement为18/19，装修点击放置1项失败，导入/加载及232路径检查通过；未改远端功能、未推送、未重建导出，详见PROJECT_STATE最新同步。没有开放新的玩法开发锁。
+
+## 2026-10-24 当前协作管理
+
+- 范围：用户确认三位开发者分别负责建筑、原料厂商、小镇经济（已更正“贸易系统”）。仅整理协作边界和仓库工具，不授权或实现这三个系统的新玩法。
+- 集成角色完成协作配置、tools/collab.ps1、协作工具自检、协作模板/入口及状态文档；本轮共享锁释放，其他功能锁保持关闭。状态：LOCAL_CONFIG_READY / TEAM_BINDING_PENDING。
+- 远端实查：main=a164b1c，PR #2（288af1b）仍为未合并草稿；游戏检查与所有权检查均已成功。main没有分支保护，rulesets为空，仓库尚无CODEOWNERS。只读核查，未修改远端权限。
+- 实际成员GitHub账号及本波集成者尚未绑定；角色名不冒充团队成员。下一功能波次与任务范围待团队确认，不能直接复用旧工作区的未提交实现作为新基线。
+- 自动工具验证：PowerShell7与Windows PowerShell5.1各22/22、退出0，最终证据见PROJECT_STATE D034。新版协作CI未运行，尚未提交/推送；游戏代码未改，不把旧378项当作新工具的验收。
+
+下一功能波次由集成者填写此表后开工；当前没有人为虚构的占用锁：
+
+| 路径/函数或资源 | 唯一写入角色/账号 | 提供给谁/前置PR | 锁定提交与交接时间 | 状态 |
+|---|---|---|---|---|
+| 待任务确认后填写准确范围 | 待绑定 | 待约定 | 待登记 | NOT_STARTED |
+
+以下为已结束波次的历史记录，最新状态以上节为准。
+
 状态：`DELIVERED_LOCAL_PLAYTEST_PENDING`
 
 - Phase：4（仅D030研习切片）

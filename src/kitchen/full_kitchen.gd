@@ -4,6 +4,7 @@ signal back_requested
 signal pause_requested
 signal dish_delivered(dish: Dictionary)
 signal time_advanced(seconds: float)
+signal work_advanced(station_seconds: float)
 # Optional business composition. Legacy kitchens retain their established routes.
 var station_handler: Callable
 var action_handler: Callable
@@ -243,6 +244,10 @@ func _advance_guided(seconds: float) -> void:
 		for lane: TDCookingLane in active: span = minf(span,lane.next_boundary_sec())
 		if span <= .000000001:
 			push_error("Guided scheduler failed to advance"); return
+		var working: int=0
+		for lane: TDCookingLane in active:
+			if lane.qte!=null or lane.thermal_qte!=null: working+=1
+		if working>0: work_advanced.emit(span*working)
 		for lane: TDCookingLane in active: lane.advance(span)
 		if handling.hand != null and handling.hand_kind == "ingredient": handling.hand.advance_time(span)
 		shared_clock.advance(span); remaining -= span

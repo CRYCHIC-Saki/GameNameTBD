@@ -1,5 +1,37 @@
 # 公共契约：v3完整烹饪，兼容v1/v2历史入口
 
+## D036 五镇、家庭与产权契约（2026-10-24）
+
+- 升级补充：显式导入旧独立营业档也按其真实日期初始化社会账，只承接库存成本，不追结历史工资税息；旧文化熟悉度按别名复制到现行ID，原键保留。可选household_id出现时必须是非空字符串。钱庄窗口绑定打开时的档案，换槽后的旧按钮不准写入新槽。
+
+- Profile包仍schema2，economy升schema2；读取旧economy1先完整校验，再保留旧非活动市场/餐馆到legacy_archive，只五个代表镇继续推进。原home记original_home，地图/研究/钱不迁走；已付货运保留原ID/来源/目的地/到货日，历史来源不再接受新订单。旧档不追扣工资、税或利息。
+- 五菜系运行映射cn/chinese、eu/continental、jp/japanese、sea/southeast_asian、lat/latin_american，towns显式定义；新档routes仅home。recommend_route仍是幂等、边界、保存失败回滚的剧情接口，不附带故事正文或自动解锁菜谱。
+- TDCommunitySociety持有有限家庭现金、雇主与工资应付、消费预留、公共账户和对手部门。NPC画像可携带household_id；可用消费额排除已预留菜款。预留不收钱，交付同时扣家庭余额/收菜款；小费受余额上限约束。取消释放、退款回原家庭，同令牌不能重复支付或退款。外部工资及基本生活的外部净流入/流出明确记账。
+- TDCommunityBank：整数分，利率basis points/游戏日；现金中介型银行，借款从储备转出，存款为负债，不凭空发行。transact返回调用方cash_delta_cents，不直接改Shop钱包；额度、期限、逾期、流动性和重复请求先校验。玩家请求有永久幂等令牌；自动日结用每账户/动作日期游标，不逐日无限积累令牌。本金不是利润，利息分开，先息后本。
+- 正利润税按当日税前经营利润计提，税前利润扣当日应计利息、实耗料、工资和运营费用；借款、归还本金、存取款、采购库存不直接增减利润。税款只有实际付款才进入公共现金账户，未付税纳入已有费用欠账。贷款到期本金在日结尽力偿付，余额不足不透支，逾期停止新增贷款。
+- 建筑提供TDTownMap.commercial_parcels只读几何/挂牌范围：既有竞品商铺及商业街内三处可交易商铺。apply_commercial_occupancy先整体校验后呈现，不改住房、玩家建设区、工厂或分店。产权由economy.expansion按town/parcel稳定ID持有，version检测过时报价；重复买地不能重复扣款。
+- 商业单元必须有可到达的相邻交互格；仅已划定商业区的空余地面作为内部通道，商铺实体仍挡路，不改外部道路或住房。绘制通道与碰撞一致；E在通道优先选相邻商铺，不能把整条商业街当作钱庄入口。
+- 无已归属玩家地块的远镇初次经济布局用build_economic_layout按固定种子、有界32次重试排除断路商业区；同一输入重现同一几何，保存校验使用相同入口。现有主店地图不重新生成。
+- TDBusinessExpansion只消费建筑给出的商铺；现金覆盖地价/建设/周转金，人员由真实家庭就业分配，工期结束才加入有限客流竞争。每镇每周至多一次投资、同owner分店上限、连续盈利和保守回本条件外置。新分店不增加家庭数或用餐机会。地图入口由Profile装配，厂商核心不改。
+- money审计：家庭现金+银行储备+NPC现金+玩家现金+公共及对手部门现金，与期初余额+明确外部净流量相等；银行另验资产=存款负债+权益。营业、工资、税款、利息及日期幂等独立验证。人工连续经营仍PENDING。
+
+## D035 世界经济契约（2026-10-24，正式槽接入）
+
+- 独立实现位于src/town_economy，TDGameProfile装配并接入正式游戏。经济模块不直接修改建筑地图、厂商库存或Shop现金。旧独立调试世界保留原规则；不将两个世界账相加。
+- TDEconomicCustomer schema1：稳定id、group_id、home_town_id、origin_id；budget_cents与hard_budget_cents整数分；taste按sour/sweet/bitter/spicy/salty/umami/numbing各四槽front/main/after/finish（0..100）；familiarity按文化ID取0..1；declared_requirements使用既有评分字段。后者才进入食品评分，其他画像仅用于消费选择。
+- TDMealIntent schema1：opportunity_id、customer_id、town_id、origin_id、group_id、store_id、recipe_id、day、slot、quoted_cents、travel_minutes、expected_wait_minutes、patience_seconds、reasons。outside为显式选择，recipe_id为空，不创建虚假餐厅订单。游戏分钟与厨房秒禁止隐式混用，转换由唯一营业时间映射负责。
+- TDEconomicCell schema1：id=town_id:x:y、parcel_id、zone_id、整数坐标、land_value_cents、rent_quote_cents_per_day、visibility/attractiveness 0..1、reachable及各出发区travel_minutes。报价按每格定义；实际租约属于parcel，不能对每块渲染瓦片重复扣费。TileSet只提供静态默认值。
+- 三类构造复制输入；error返回明确失败原因；snapshot深拷贝，不导出活的可变模板。外部快照不授予经营交易权限。D035三项Grill已确认，费率与平衡值仍为AI-042建议。
+- `TDWorldEconomy`每槽一实例。`quote(town,cart)`只读，cart单位1000=1份，返回有版本日/序号的固定报价及逐项货款/运费。`commit_quote(quote,token)`重新校验完整报价；过期STALE_QUOTE、重复DUPLICATE、库存MARKET_SOLD_OUT、运力ROUTE_CAPACITY、未开放ROUTE_LOCKED；失败不写。Profile完成Shop付款/入库与行情扣量，失败回滚两者；到货仅按arrival:shipment_id入库一次。
+- `recommend_route(town_id,event_id)`为Profile剧情接口，边界调用并随当前槽保存；保存失败恢复经济快照。开放商路不解锁菜系/菜谱。`configure_cell(full_cell_snapshot)`校验完整单格记录，营业中拒绝；刷新按需缓存，不改共享地表或建筑本体。建筑线仍拥有地图，调用方在开门前重新attach_map，不直接写经济state。
+- `forecast(menu)`不推进时间/随机，返回预算排除比例、expected/min/max与逐菜预期。营业每片消费有限共享机会，先选店再选菜，outside不产生订单；同family克隆菜单的总选择权重不增加。NPC原料、现金、每日座席量有限，正式玩家食品评分仍由CustomerScorer计算；取消没有虚构Food评分。
+- 正式订单附带economic_profile/economic_intent和arrival_sec，耐心来自本次意向。价格锁在下单时；Food/Service/Value分别记录，未声明风味不加需求扣分；同order只记一次。人气按成交规模平滑派生，认知影响发现、声誉影响预期、品牌只作有限价格敏感度修正，不将多个指标重复相乘。
+- FullKitchen.work_advanced(station_seconds)为只读事件：逐事件时钟跨度×活跃工位数；同锅并行翻炒/控温只计一份，双锅可计两份。ShopView仅在营业且未暂停时转交；非厨房画面不停止营业时钟，后台工厂时钟由GameShell统一推进，Town不再重复推进。
+- Shop.settle_day先结费用/还债，随后标SETTLED。水电按开门基础+实际接待+工位秒，主店自有0租金；欠费由经济模块拥有，支付写Shop.operating_payment。收入先退菜再还债，后续手动退款资金不足则明确拒绝，不透支钱包。应急补助和正向世界收入也还欠费。
+- 成本按现有领料账的移动平均记录（不是逐份销售成本会计）：采购换库存不再次扣利润，领出投料记当日投入成本；冷藏返还保留加工状态，不退款或重复认领成本。跨镇货款+运费到货后入成本池；工厂预付成本随产物入库结转。旧档无可恢复原始成本的既有工厂存货保留0历史账面成本，不伪造旧采购。
+- Profile payload schema2新增economy(schema1)，存储外层校验包仍schema1。接受旧payload1并在内存显式迁移，保留现金/研究/世界/装修，不追扣过去费用、不读时覆写；未知版本拒绝。经济日期/成本游标与Shop账一致，六槽仍只允许PREPARE/SETTLED保存；临时文件/备份/校验/中断恢复复用原ProfileStore。
+- 本轮原料厂调用由Town.transaction_sink交给Profile.world_transaction，工厂生产/升级扣同一正式钱包。厂商生产时长、等级、种类及建筑核心未改；NPC批发市场为背景公共供应，不将玩家厂商库存重复注入两次。
+
 ## D030 研习初版（历史；四轨输入与评分已被文末D031修正覆盖）
 
 - ResearchCatalog拥有只读图谱、稳定HTML节点ID、菜系ID、独立chart_id/version及显式世界/营业映射；100节点并不表示100道可烹饪菜。前置为ALL，无环、重复、缺引用，未配置谱面不得扣灵感。

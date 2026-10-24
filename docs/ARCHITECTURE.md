@@ -1,5 +1,13 @@
 # 项目架构与接入边界
 
+## D036：五镇社会经济
+
+TDGameProfile继续持有唯一Shop钱包并装配TDWorldEconomy。后者组合TDCommunitySociety（320家庭、工资/生活/预留/公共部门）、TDCommunityBank（有限储备、存款负债、贷款/利息）及TDBusinessExpansion（产权/投资/工期）；均为无节点规则对象。没有新增Autoload或后台线程，远镇不实例化场景，每日集中推进。
+
+建筑线增加commercial_parcels/apply_commercial_occupancy：在已有商业街/竞品区分出明确单元、内部步道并显示产权，不重新生成玩家已有住房或侵入厂地。远镇新经济地图的build_economic_layout以固定种子有界排除断路布局；同入口用于初次创建与存档几何校验。经济规则只消费建筑快照，集成入口做存档与地图适配；厂商生产仍由既有实现负责。商路剧情仍只调用recommend_route，不实现新剧情。
+
+旧13镇经济schema1经校验迁移为schema2：活动市场仅成都/巴黎/东京/曼谷/墨西哥城，停用市场留只读档案，已付运输继续兑现；旧地图/主店/菜谱不搬迁。外部就业及基本生活按明确对手流量开放结算，不声称模拟所有产业的一般均衡。
+
 ## D030：菜谱研习切片
 
 主入口装配图谱视图、研习会话、独立存储和现有世界会话。D031中图谱用屏幕CanvasLayer覆盖原场景，逐节点保存/恢复处理模式并调用既有时钟暂停接口；不销毁订单或重建厨房。B/返回关闭覆盖层，当前筹备菜单增量接入新解锁。
@@ -10,7 +18,19 @@ TDResearchSession拥有资格和保存事务；D032暂不消耗游戏小时，�
 
 剧情通过稳定事件ID开放菜系/奖励。UI按钮和公开选择方法共同限制未开放菜系；选择高亮与真实掌握连线独立。未编写正式剧情或其余98关，旧四轨生产入口已移除，现有营业QTE默认行为保持。
 
-## D021：小镇客流（当前入口）
+## D035：正式单店与世界经济
+
+TDGameProfile是装配与交易边界：Shop拥有正式现金、厨房库存、订单；World保留建筑、原料厂和既有世界字段；WorldEconomy拥有公共市场、NPC商家/意向、区位、运输与费用。只保存同一个六槽包，不建立新Autoload或第二个玩家钱包。D021世界实验仍可独立调试，不参与正式店双重结算。
+
+经济选择由纯函数TDEconomicDemand计算；画像TDEconomicCustomer与本次TDMealIntent分开。TDEconomicGeography使用地块快照、单格稀疏覆盖、只读按需缓存，无每格Node。当前逻辑网格尚不是TileMap：未来TileSet custom data可提供静态地表默认，动态单格记录仍以town:x:y独立索引（同一tile资源不能承载所有放置位置的独立租金）。移动/真实寻路依然由地图线负责，目前经济路程是显式可替换的区域估计。
+
+TileSet默认数据的共享行为依据[Godot官方说明](https://docs.godotengine.org/en/stable/tutorials/2d/using_tilesets.html#assigning-custom-metadata-to-the-tileset-s-tiles)，实际API以dependencies.lock.json的引擎执行结果为准。
+
+世界市场13镇按日更新，当前店按12片分配有限用餐机会；只有来店顾客进入已有餐厅呈现。远端NPC用库存/现金/容量约束的聚合餐馆，不创建远端Godot场景。复用已有QTE和独立食品评分，新增活跃工位秒只读信号用于水电；研究与剧情商路分别开放。
+
+现有供应与建筑模块无需依赖WorldEconomy：集成层调用只读quote/cell/forecast及事务结果。具体字段、幂等和存档迁移见CONTRACTS的D035；经济模块不会直接改建筑或厂商库存。可执行独立检查为`tools/check.ps1 -Suite commerce`，长跑为`tools/economy_simulate.gd`，真实厨房联调另由game套件覆盖。
+
+## D021：小镇客流（历史实验入口，正式入口已被D033/D035覆盖）
 
 `TDApplication` 持有一份 `TDPhase3Session`，分给 `TDTownWorld` 和 `TDRestaurantWorld`。会话拥有目录、地图、供货、菜谱解锁、竞品、当天 NPC、迎宾/收银是否在岗，以及一份原料账。公式在 `TDEconomyMath`，保质期在 `TDPantry`，不放进界面。界面只发下一天、改价、开关功能区、接单、拒绝、上菜、雇用、按菜备料和点选食材。
 

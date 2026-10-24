@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "parameter_status": "PROPOSED_AI_043",
+  "source": "town_commerce_design_v0_1 sections 3-11,15-16; D035",
+  "active_towns": ["chengdu","paris","tokyo","bangkok","mexico_city"],
+  "initial_routes": [],
+  "towns": {
+    "chengdu":{"name":"火锅市 · 成都","cuisine_id":"cn","culture":"chinese","source_id":"tianfu"},
+    "paris":{"name":"可颂市 · 巴黎","cuisine_id":"eu","culture":"continental","source_id":"guangcheng"},
+    "tokyo":{"name":"江户 · 东京","cuisine_id":"jp","culture":"japanese","source_id":"edo"},
+    "bangkok":{"name":"天使城 · 曼谷","cuisine_id":"sea","culture":"southeast_asian","source_id":"tiansh"},
+    "mexico_city":{"name":"玉米城 · 墨西哥城","cuisine_id":"lat","culture":"latin_american","source_id":"yumicheng"}
+  },
+  "bank":{"reserve_cents":2000000,"reserve_floor_cents":100000,"loan_limit_cents":100000,"term_days":28,"loan_daily_bps":5,"deposit_daily_bps":1},
+  "society":{"families_per_group":16,"starting_cash_days":8,"wage_budget_bps":14000,"necessities_wage_bps":5000,"income_tax_bps":500,"daily_wage_allowance_cents":2000,"profit_tax_bps":1000,"savings_cash_days":4,"npc_wage_cents":1800},
+  "expansion":{"parcels_per_town":3,"max_stores_per_owner":2,"review_days":7,"profitable_reviews":2,"horizon_days":84,"construction_days":3,"construction_cents":20000,"working_cash_days":7,"store_capacity":12,"staff_per_store":1},
+  "opportunities_per_day": 44,
+  "slots_per_day": 12,
+  "game_minutes_per_day": 360,
+  "outside_utility": 1.0,
+  "menu_tau": 0.8,
+  "prior_strength": 12.0,
+  "prior_score": 0.68,
+  "market": {"initial_units":80000,"production_units":24000,"capacity_units":160000,"background_need_units":12000,"reversion":0.18,"gap_response":0.16,"max_daily_change":0.08,"max_premium":0.6,"freight_cents_per_portion":18,"route_capacity_units":16000,"max_lead_days":3},
+  "fees": {"opening_cents":120,"guest_cents":12,"cooking_second_cents":0.7},
+  "npc": {"stores_per_town":3,"initial_cash_cents":80000,"target_portions":12,"capacity_per_day":16,"daily_fixed_cents":300,"weekly_price_limit":0.05},
+  "groups": [
+    {"id":"value","name":"实惠家常客","share":0.35,"budget_cents":1500,"hard_budget_cents":2200,"price_weight":3.2,"food_weight":4.5,"travel_weight":0.05,"wait_weight":0.06,"culture_weight":0.3,"preferred_taste":"salty","customer_template":1,"patience_scale":1.2},
+    {"id":"commuter","name":"赶时间的街坊","share":0.30,"budget_cents":2200,"hard_budget_cents":3000,"price_weight":2.8,"food_weight":4.0,"travel_weight":0.08,"wait_weight":0.12,"culture_weight":0.2,"preferred_taste":"sweet","customer_template":0,"patience_scale":0.8},
+    {"id":"explorer","name":"喜欢尝鲜的客人","share":0.20,"budget_cents":3000,"hard_budget_cents":4500,"price_weight":2.4,"food_weight":4.5,"travel_weight":0.03,"wait_weight":0.06,"culture_weight":-0.7,"preferred_taste":"spicy","customer_template":1,"patience_scale":1.2},
+    {"id":"leisure","name":"慢慢品味的客人","share":0.15,"budget_cents":4000,"hard_budget_cents":6000,"price_weight":2.2,"food_weight":5.0,"travel_weight":0.04,"wait_weight":0.05,"culture_weight":0.5,"preferred_taste":"sweet","customer_template":0,"patience_scale":1.4}
+  ]
+}
