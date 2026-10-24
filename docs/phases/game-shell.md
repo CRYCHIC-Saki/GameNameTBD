@@ -122,3 +122,13 @@ economy/town/cook工作区在artifacts/game-shell-work/对应角色目录；cook
 - 最终实际Windows运行程序重检：movement-probe-pack-recheck.log、movement-native-headless.log、movement-native-gpu.log，均退出0、无脚本错误；两种运行模式各29/29，232条路径阻挡0。GPU使用Godot 4.7.2 stable official / Compatibility / NVIDIA RTX3050，9张截图在artifacts/movement-native-gpu/run-1763109，核对空功能区、桌边人物遮挡、通道与厨房。artifacts/export/summary.json记录组合验证及重跑来源。
 - G12/G13及G14自动部分PASS；人工手感PENDING、远程CI NOT_RUN。town19项所有权和integrator75项拓扑检查通过，核心文件与角色工作区哈希一致，共享锁释放。新旧数据文件、玩家档和原始美术未改，未提交推送，停止本次移动修复。
 - 复测：pwsh -File tools/check.ps1 -Suite movement；最新导出程序进店后沿收银台空地和餐桌四周行走，往返厨房三次，确认空地可走、家具仍挡人。无需新建或迁移存档；真人试玩结果待用户反馈。
+## 2026-10-24 重新导出与视口适配 G15
+
+- 来源：用户要求重新生成exe；上游83888da启用stretch/aspect=expand后，旧装修工具栏仍按1280×800定位，正方形视口下遮住家具放置点。隔离复现：视口1280×1280，目标点击(656,680)落在旧栏y=580..800内，原测试真实失败，未删减原断言。
+- AC-G15：装修栏随当前视口宽度和底边定位，窗口调整后继续成立；可通过真实输入选中/放置/删除家具。用独立SubViewport验证1280×800→1600×1000，保留原阻挡父控件输入测试。
+- 修复：仅restaurant_world.gd连接视口size_changed并按实际尺寸设置栏与内容宽度；新测试不写存档。两个目标文件修复前与town隔离工作区一致，角色内实现后逐段集成，修复后哈希一致。
+- Grill：已读C:/Users/Administrator/.codex/skills/grilling/SKILL.md与godot-gdscript-patterns/SKILL.md，均无版本元数据；GRILL_RESULT=NO_BLOCKING_PRODUCT_QUESTIONS。只修复打包阻塞，不变更既有产品规则。
+- movement检查artifacts/check/rebuild-83888da-movement：20/20、206断言、25.14秒；版本/导入/加载/测试退出0，无失败或跳过。town所有权19项通过；旧工作区schema1工具起初拒绝历史美术路径，改用当前schema2配置的legacy角色兼容视图后通过，未修改全局/原工作区配置。
+- 完整tools/export.ps1通过；pre-export-20261024-181028：41脚本、380/380测试、8377断言、444.939秒、0失败/0跳过，各阶段退出0。保留已有Float/Int比较warning及研习用例临时孤立节点提示，无引擎退出泄露错误。393资源白名单通过，exe/PCK于2026-10-24 18:18更新，包含上游83888da。
+- 实际导出程序headless/GPU各29/29、退出0，232条开放路径无阻挡。GPU为4.7.2.stable.official/Compatibility/NVIDIA RTX3050；日志artifacts/export/rebuild-native-gpu.log，9张截图artifacts/rebuild-native-gpu/run-1735674，已核对标题、小镇与餐厅。隔离验证PCK不写入交付包，真实玩家档未改。
+- AC-G15 PASS，ENGINEERING_READY / 人工PENDING / 远程CI NOT_RUN。共享锁释放，未提交推送，不扩展其他玩法；再次打包运行pwsh -File tools/export.ps1，日常检查仍使用tools/check.ps1。

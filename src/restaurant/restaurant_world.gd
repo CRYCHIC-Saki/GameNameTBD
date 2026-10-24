@@ -441,6 +441,7 @@ func _build_status_bar() -> void:
 	panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	_bar = panel
 	layer.add_child(panel)
+	get_viewport().size_changed.connect(_fit_bar)
 	_observe_banner = Label.new()
 	_observe_banner.text = "正在看餐厅 · 再按 V 回后厨 · 客人和灶台的时间都在走"
 	_observe_banner.position = Vector2(24, 12)
@@ -782,10 +783,13 @@ func _fit_bar() -> void:
 	if _bar == null:
 		return
 	var height := 220 if _editing else (68 if player_mode else 168)
-	_bar.size = Vector2(1280, height)
-	_bar.position = Vector2(0, 800 - height)
+	var view_size := get_viewport().get_visible_rect().size
+	_bar.size = Vector2(view_size.x, height)
+	_bar.position = Vector2(0, view_size.y - height)
 	if _bar_box != null:
-		_bar_box.size = Vector2(1260, height - 16)
+		_bar_box.size = Vector2(view_size.x - 20, height - 16)
+	if _status != null:
+		_status.custom_minimum_size.x = view_size.x - 40
 
 func _spawn_cell() -> Vector2i:
 	var door := layout.entrance()
