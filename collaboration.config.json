@@ -1,6 +1,47 @@
 {
-  "schema": 1,
+  "schema": 2,
+  "active_roles": ["building", "supplier", "town-economy"],
   "roles": [
+    {
+      "id": "building",
+      "name": "建筑系统",
+      "branch_template": "work/building/phase-{phase}-wave-{wave}",
+      "owned_patterns": [
+        "src/buildings/*", "content/buildings/*", "assets/buildings/*",
+        "src/town/town_map.gd", "src/town/town_map.gd.uid",
+        "src/town/restaurant_sizes.gd", "src/town/restaurant_sizes.gd.uid",
+        "src/restaurant/restaurant_layout.gd", "src/restaurant/restaurant_layout.gd.uid",
+        "tests/unit/test_building_*", "tests/integration/test_building_*",
+        "tests/unit/test_restaurant_layout.gd", "tests/unit/test_restaurant_layout.gd.uid",
+        "docs/collaboration/work-items/building/*"
+      ],
+      "required_suites": ["all"]
+    },
+    {
+      "id": "supplier",
+      "name": "原料厂商",
+      "branch_template": "work/supplier/phase-{phase}-wave-{wave}",
+      "owned_patterns": [
+        "src/suppliers/*", "content/suppliers/*", "assets/suppliers/*",
+        "src/economy/supply_book.gd", "src/economy/supply_book.gd.uid",
+        "tests/unit/test_supplier_*", "tests/integration/test_supplier_*",
+        "tests/unit/test_supply_*", "tests/integration/test_supply_*",
+        "docs/collaboration/work-items/supplier/*"
+      ],
+      "required_suites": ["all"]
+    },
+    {
+      "id": "town-economy",
+      "name": "小镇经济",
+      "branch_template": "work/town-economy/phase-{phase}-wave-{wave}",
+      "owned_patterns": [
+        "src/town_economy/*", "content/town_economy/*", "assets/town_economy/*",
+        "src/economy/economy_math.gd", "src/economy/economy_math.gd.uid",
+        "tests/unit/test_town_economy_*", "tests/integration/test_town_economy_*",
+        "docs/collaboration/work-items/town-economy/*"
+      ],
+      "required_suites": ["all"]
+    },
     {
       "id": "cook",
       "name": "做菜与研发",

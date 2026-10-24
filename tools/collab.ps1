@@ -4,7 +4,7 @@ param(
   [ValidateSet('Validate', 'Status', 'Check', 'Init')]
   [string]$Action = 'Status',
 
-  [ValidateSet('auto', 'cook', 'economy', 'town', 'integrator')]
+  [ValidateSet('auto', 'building', 'supplier', 'town-economy', 'cook', 'economy', 'town', 'integrator')]
   [string]$Role = 'auto',
 
   [ValidatePattern('^[A-Za-z0-9.-]+$')]
@@ -33,14 +33,29 @@ if (-not (Test-Path -LiteralPath $ConfigPath -PathType Leaf)) {
   throw "Collaboration config not found: $ConfigPath"
 }
 
-$config = Get-Content -LiteralPath $ConfigPath -Raw | ConvertFrom-Json
+$config = Get-Content -LiteralPath $ConfigPath -Raw -Encoding UTF8 | ConvertFrom-Json
 
 function Invoke-Git([string[]]$GitArgs) {
-  $output = @(& git -C $root @GitArgs 2>&1)
-  if ($LASTEXITCODE -ne 0) {
-    throw "git $($GitArgs -join ' ') failed:`n$($output -join [Environment]::NewLine)"
+  # Warnings are diagnostics, never changed-file names. Keep both streams separate.
+  $errorPath = [IO.Path]::GetTempFileName()
+  try {
+    # Windows PowerShell 5.1 treats native stderr warnings as ErrorRecords.
+    # The native exit code, checked below, determines command failure.
+    $previousPreference = $ErrorActionPreference
+    try {
+      $ErrorActionPreference = 'Continue'
+      $output = @(& git -c core.quotepath=false -C $root @GitArgs 2> $errorPath)
+      $code = $LASTEXITCODE
+    } finally { $ErrorActionPreference = $previousPreference }
+    $diagnostics = [IO.File]::ReadAllText($errorPath)
+    if ($code -ne 0) {
+      throw "git $($GitArgs -join ' ') failed:`n$($output -join [Environment]::NewLine)`n$diagnostics"
+    }
+    if ($diagnostics.Trim()) { Write-Warning $diagnostics.Trim() }
+    return $output
+  } finally {
+    Remove-Item -LiteralPath $errorPath
   }
-  return $output
 }
 
 function Test-GitRef([string]$Ref) {
@@ -69,7 +84,12 @@ function Test-PathPattern([string]$Path, [object[]]$Patterns) {
 }
 
 function Get-Role([string]$RoleId) {
-  return @($config.roles | Where-Object { [string]$_.id -eq $RoleId })[0]
+  return $config.roles | Where-Object { [string]$_.id -eq $RoleId } | Select-Object -First 1
+}
+
+function Get-ActiveRoles {
+  if ([int]$config.schema -eq 1) { return @($config.roles) }
+  foreach ($id in $config.active_roles) { Get-Role ([string]$id) }
 }
 
 function Get-CurrentBranch {
@@ -130,12 +150,12 @@ function Assert-BranchTopology([string]$ResolvedRole, [string]$Branch, [string]$
 }
 
 function Assert-Config {
-  if ([int]$config.schema -ne 1) {
+  if ([int]$config.schema -notin @(1, 2)) {
     throw "Unsupported collaboration schema: $($config.schema)"
   }
   $roles = @($config.roles)
   $expected = @('cook', 'economy', 'town')
-  if ($roles.Count -ne 3) {
+  if ([int]$config.schema -eq 1 -and $roles.Count -ne 3) {
     throw "Expected exactly three roles, found $($roles.Count)"
   }
   $ids = @($roles | ForEach-Object { [string]$_.id })
@@ -148,6 +168,9 @@ function Assert-Config {
     }
   }
   foreach ($roleConfig in $roles) {
+    if ([string]$roleConfig.id -notmatch '^[a-z][a-z0-9-]*$') {
+      throw "Invalid role id: $($roleConfig.id)"
+    }
     if (-not [string]$roleConfig.name) {
       throw "Role $($roleConfig.id) has no display name"
     }
@@ -169,7 +192,23 @@ function Assert-Config {
   if ($integration -notlike 'integration/*') {
     throw "Invalid integration branch template: $integration"
   }
-  Write-Host "VALID collaboration schema=1 roles=$($ids -join ',')"
+  if ([int]$config.schema -eq 2) {
+    $activeIds = @($config.active_roles)
+    if ($activeIds.Count -ne 3 -or @($activeIds | Sort-Object -Unique).Count -ne 3) {
+      throw 'This team requires exactly three distinct active_roles'
+    }
+    foreach ($id in $activeIds) {
+      if ($id -notin $ids) { throw "Unknown active role: $id" }
+    }
+    $patterns = @{}
+    foreach ($owner in @(Get-ActiveRoles)) {
+      foreach ($pattern in $owner.owned_patterns) {
+        if ($patterns.ContainsKey([string]$pattern)) { throw "Duplicate active ownership pattern: $pattern" }
+        $patterns[[string]$pattern] = [string]$owner.id
+      }
+    }
+  }
+  Write-Host "VALID collaboration schema=$($config.schema) active=$(@(Get-ActiveRoles | ForEach-Object { $_.id }) -join ',')"
 }
 
 function Get-ChangedPaths([string]$AgainstRef, [bool]$WithWorkingTree) {
@@ -211,7 +250,7 @@ function Show-Status {
   Write-Host "CURRENT branch=$branch"
   Write-Host "INTEGRATION branch=$integration"
   Write-Host "WORKTREE_ROOT=$WorktreeRoot"
-  foreach ($roleConfig in $config.roles) {
+  foreach ($roleConfig in @(Get-ActiveRoles)) {
     $roleId = [string]$roleConfig.id
     $roleBranch = Expand-Template ([string]$roleConfig.branch_template) $roleId
     $rolePath = Join-Path $WorktreeRoot "phase-$Phase-wave-$Wave/$roleId"
@@ -227,6 +266,7 @@ function Check-Ownership {
   $branch = Get-CurrentBranch
   $resolvedRole = Resolve-Role $Role $branch
   if (-not $resolvedRole) {
+    if ($TargetBranch) { throw "Unmanaged PR branch '$branch'; use a work/<role>/phase-<n>-wave-<name> or integration branch" }
     Write-Host "SKIP ownership: branch '$branch' is not a managed collaboration branch; pass -Role explicitly to enforce locally"
     return
   }
@@ -257,6 +297,10 @@ function Check-Ownership {
     }
     if (-not (Test-PathPattern $path @($roleConfig.owned_patterns))) {
       $violations.Add("$path :: outside role '$resolvedRole' ownership")
+    }
+    $owners = @(Get-ActiveRoles | Where-Object { Test-PathPattern $path @($_.owned_patterns) })
+    if ($owners.Count -gt 1) {
+      $violations.Add("$path :: ambiguous active ownership; assign one writer before implementation")
     }
   }
   if ($violations.Count -gt 0) {
@@ -306,7 +350,7 @@ function Initialize-Wave {
   $waveRoot = Join-Path $WorktreeRoot "phase-$Phase-wave-$Wave"
   $integrationBranch = Expand-Template ([string]$config.integration_branch_template)
   Add-CollaborationWorktree $integrationBranch $BaseRef (Join-Path $waveRoot 'integration')
-  foreach ($roleConfig in $config.roles) {
+  foreach ($roleConfig in @(Get-ActiveRoles)) {
     $roleId = [string]$roleConfig.id
     $roleBranch = Expand-Template ([string]$roleConfig.branch_template) $roleId
     Add-CollaborationWorktree $roleBranch $integrationBranch (Join-Path $waveRoot $roleId)
