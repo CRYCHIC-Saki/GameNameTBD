@@ -95,6 +95,7 @@ func _make_kitchen() -> void:
 	kitchen.z_index=2
 	kitchen.back_requested.connect(request_back); kitchen.pause_requested.connect(func()->void:pause_requested.emit())
 	kitchen.time_advanced.connect(_on_time); kitchen.dish_delivered.connect(_on_dish)
+	kitchen.work_advanced.connect(_on_work)
 	_holder.add_child(kitchen); kitchen.world.scale=Vector2(.71875,.71875)
 	kitchen.world.get_node("Background").z_index=-1
 	kitchen.world.set_return_visible(false)
@@ -184,7 +185,8 @@ func _summary_page(column: VBoxContainer, report: Dictionary) -> void:
 	if int(report.grant_cents) != 0:
 		money_line += "    应急补助 ¥%.2f" % (float(report.grant_cents) / 100.0)
 	column.add_child(TDUI.label(money_line, 16))
-	column.add_child(TDUI.label("开门 ¥%.2f → 打烊 ¥%.2f，营业盈亏 %+.2f 元。备货算在今日净收支里，不算进开门后的营业盈亏。" % [float(report.open_money_cents) / 100.0, float(report.money_cents) / 100.0, float(report.service_cents) / 100.0], 15, TDUI.MUTED))
+	var cash_caption: String="开门 ¥%.2f → 打烊 ¥%.2f，开门后现金变化 %+.2f 元。采购换成库存；投入成本与应付费用见下方经营利润。" if shop.commerce!=null else "开门 ¥%.2f → 打烊 ¥%.2f，营业盈亏 %+.2f 元。备货算在今日净收支里，不算进开门后的营业盈亏。"
+	column.add_child(TDUI.label(cash_caption % [float(report.open_money_cents) / 100.0, float(report.money_cents) / 100.0, float(report.service_cents) / 100.0], 15, TDUI.MUTED))
 	var pop_color := TDUI.MUTED
 	if int(report.popularity_delta) > 0:
 		pop_color = Color("9fc48f")
@@ -203,6 +205,7 @@ func _summary_page(column: VBoxContainer, report: Dictionary) -> void:
 		panel.add_child(body)
 		body.add_child(TDUI.label("%s · %s · %s" % [str(row.customer), str(row.name), _status_name(str(row.status))], 18, TDUI.ORANGE))
 		var effect := "本单 %+.2f 元（小费 ¥%.2f，退款 ¥%.2f）    人气 %+d" % [float(row.money_cents) / 100.0, float(row.tip_cents) / 100.0, float(row.refunded_cents) / 100.0, int(row.popularity_delta)]
+		if shop.commerce!=null: effect="本单 %+.2f 元（小费 ¥%.2f，退款 ¥%.2f）"%[float(row.money_cents)/100,float(row.tip_cents)/100,float(row.refunded_cents)/100]
 		if int(row.fame_delta) != 0:
 			effect += "    名气 %+d" % int(row.fame_delta)
 		body.add_child(TDUI.label(effect, 16))
@@ -244,13 +247,13 @@ func _orders_panel(state: Dictionary) -> void:
 		var wishes: Array[String]=[]
 		for requirement: Dictionary in item.customer.requirements: wishes.append(str(requirement.label))
 		column.add_child(TDUI.label("要求："+" / ".join(wishes),14,TDUI.MUTED))
-		var patience:=ProgressBar.new(); patience.max_value=float(service.config.settings.patience_sec); patience.value=maxf(0,float(item.deadline_sec)-float(state.elapsed_sec)); patience.show_percentage=false; patience.custom_minimum_size.y=13; column.add_child(patience)
+		var patience:=ProgressBar.new(); patience.max_value=float(item.deadline_sec)-float(item.get("arrival_sec",float(item.deadline_sec)-float(service.config.settings.patience_sec))); patience.value=maxf(0,float(item.deadline_sec)-float(state.elapsed_sec)); patience.show_percentage=false; patience.custom_minimum_size.y=13; column.add_child(patience)
 		column.add_child(TDUI.label("耐心 %d 秒 · %s" % [ceili(patience.value),_status_name(item.status)],15))
 	var done: Array=state.orders.filter(func(o:Dictionary)->bool:return o.status not in ["WAITING","COOKING"])
 	if not done.is_empty():
 		var last: Dictionary=done.back()
 		_sidebar.add_child(TDUI.label("最近一单 · "+_status_name(last.status),18,TDUI.ORANGE))
-		if last.has("feedback"): _sidebar.add_child(TDUI.label(str(last.feedback)+" 人气小幅下降。",15,TDUI.MUTED))
+		if last.has("feedback"): _sidebar.add_child(TDUI.label(str(last.feedback)+(" 评价已记入账本。" if shop.commerce!=null else " 人气小幅下降。"),15,TDUI.MUTED))
 		if not last.score.is_empty():
 			_sidebar.add_child(TDUI.label("%.1f 分  ·  小费 ¥%.2f" % [last.score.satisfaction,float(last.tip_cents)/100],17))
 			for reason: Dictionary in last.score.reasons.slice(0,3): _sidebar.add_child(TDUI.label(_feedback_text(str(reason.message)),14,TDUI.MUTED))
@@ -484,6 +487,10 @@ func _serve() -> void:
 func _on_dish(dish: Dictionary) -> void:
 	var item: Dictionary=shop.first_order_for(dish)
 	if not item.is_empty(): _show(shop.deliver(item.id,dish))
+
+func _on_work(seconds: float) -> void:
+	if not _closed and shop!=null and shop.commerce!=null and not get_tree().paused:
+		shop.commerce.cooking_time(seconds)
 
 func _on_time(seconds: float) -> void:
 	if _closed or shop==null: return

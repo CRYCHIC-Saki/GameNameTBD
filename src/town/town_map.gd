@@ -193,12 +193,85 @@ func _copy_catalog(catalog: TDTownCatalog) -> void:
 func is_road(x: int, y: int) -> bool:
 	return roads.has(Vector2i(x, y))
 
+func build_economic_layout(catalog: TDTownCatalog, seed_value: int) -> TDOutcome:
+	# Remote economic regions have no owned player geometry. Reject generated layouts
+	# whose commercial frontage is disconnected, instead of selling unreachable land.
+	for attempt: int in 32:
+		build(catalog,seed_value+attempt*7919)
+		var pending: Array[Vector2i]=[Vector2i(CENTER,CENTER)]
+		var reached: Dictionary={pending[0]:true}
+		var cursor: int=0
+		while cursor<pending.size():
+			var at:=pending[cursor];cursor+=1
+			for direction: Vector2i in [Vector2i.LEFT,Vector2i.RIGHT,Vector2i.UP,Vector2i.DOWN]:
+				var next:=at+direction
+				if not reached.has(next) and is_road(next.x,next.y): reached[next]=true;pending.append(next)
+		var valid: bool=true
+		for plot: Dictionary in plots:
+			if str(plot.id) not in ["competitor","commercial_street"]: continue
+			if not _touches(Vector2i(plot.x,plot.y),int(plot.w),int(plot.h)) or not reached.has(Vector2i(plot.approach_x,plot.approach_y)): valid=false
+		if valid: return TDOutcome.new(true,"CONNECTED_ECONOMIC_LAYOUT")
+	return TDOutcome.new(false,"NO_CONNECTED_ECONOMIC_LAYOUT")
+
+func commercial_parcels() -> Array:
+	# Carve shop units only inside already designated commercial property.
+	# Housing, diner/factory lots, roads and the player's existing branch are never candidates.
+	var result: Array=[]
+	for plot: Dictionary in plots:
+		if plot.has("economic_parcel_id") or str(plot.id) not in ["competitor","commercial_street"]: continue
+		var initial: bool=str(plot.id)=="competitor"
+		var vertical: bool=not initial and int(plot.h)>int(plot.w)
+		var width: int=1 if initial else 2
+		var height: int=1 if initial else 2
+		var parent_door:=_approach(int(plot.x),int(plot.y),int(plot.w),int(plot.h))
+		var horizontal_front: bool=parent_door.y<int(plot.y) or parent_door.y>=int(plot.y+plot.h)
+		for index: int in 3:
+			var x:=int(plot.x)+1+(0 if vertical else index*(width+1))
+			var y:=int(plot.y)+1+(index*(height+1) if vertical else 0)
+			if initial:
+				x=int(plot.x)+(index if horizontal_front else 1)
+				y=int(plot.y)+(1 if horizontal_front else index)
+			if x+width>int(plot.x+plot.w) or y+height>int(plot.y+plot.h): continue
+			var at:=Vector2i(x,y)
+			var door:=_approach(at.x,at.y,width,height)
+			if initial:
+				door=at+Vector2i(0,-1 if parent_door.y<int(plot.y) else 1) if horizontal_front else at+Vector2i(-1 if parent_door.x<int(plot.x) else 1,0)
+			else: door=at+(Vector2i(-1,0) if vertical else Vector2i(0,-1))
+			result.append({"id":"%s:shop:%d"%[plot.id,index],"parent_id":str(plot.id),"x":at.x,"y":at.y,"w":width,"h":height,"approach_x":door.x,"approach_y":door.y,"tradable":not initial,"initial_store_index":index if initial else -1,"capacity":12})
+	return result
+
+func apply_commercial_occupancy(ownership: Dictionary) -> TDOutcome:
+	var candidates:=commercial_parcels()
+	var approved: Dictionary={}
+	for parcel: Dictionary in candidates: approved[parcel.id]=parcel
+	for id: String in ownership:
+		if not approved.has(id) or not ownership[id] is Dictionary or not ownership[id].get("owner_id") is String or not ownership[id].get("store_id") is String: return TDOutcome.new(false,"PROTECTED_OR_UNKNOWN_PARCEL")
+	# Validate the complete set before replacing the presentation. Property authority stays in the save.
+	plots=plots.filter(func(p:Dictionary)->bool:return not p.has("economic_parcel_id"))
+	for parent: Dictionary in plots:
+		if str(parent.id) in ["competitor","commercial_street"]: parent.economic_courtyard=true
+	for id: String in ownership:
+		var record: Dictionary=ownership[id]
+		if str(record.owner_id).is_empty(): continue
+		var value: Dictionary=approved[id].duplicate(true)
+		value.merge({"id":id,"economic_parcel_id":id,"economic_owner":record.owner_id,"economic_store":record.store_id,"kind":"competitor","name":str(record.get("name","街坊餐馆")),"enabled":true,"walkable":false,"pool":0,"budget_shift":0,"foreign_scale":1.0,"construction":bool(record.get("construction",false))},true)
+		plots.push_front(value)
+	plots=plots.filter(func(p:Dictionary)->bool:return not p.has("economic_service_id"))
+	for parent: Dictionary in plots.duplicate():
+		if str(parent.id)!="commercial_street" or maxi(int(parent.w),int(parent.h))<11 or mini(int(parent.w),int(parent.h))<2: continue
+		var vertical: bool=int(parent.h)>int(parent.w)
+		var at:=Vector2i(int(parent.x)+(1 if vertical else 9),int(parent.y)+(9 if vertical else 1))
+		var door:=at+(Vector2i(-1,0) if vertical else Vector2i(0,-1))
+		plots.push_front({"id":"commercial_street:bank","economic_service_id":"bank","kind":"bank","name":"街坊钱庄","x":at.x,"y":at.y,"w":2 if vertical else 1,"h":1 if vertical else 2,"approach_x":door.x,"approach_y":door.y,"enabled":true,"walkable":false,"pool":0,"budget_shift":0,"foreign_scale":1.0})
+	return TDOutcome.new(true,"COMMERCIAL_MAP_UPDATED")
+
 func is_walkable(x: int, y: int) -> bool:
 	if x < 0 or y < 0 or x >= SIZE or y >= SIZE:
 		return false
 	if is_road(x, y):
 		return true
-	return String(plot_at(x, y).get("id", "")) == "player_diner"
+	var plot:=plot_at(x,y)
+	return String(plot.get("id", "")) == "player_diner" or bool(plot.get("economic_courtyard",false))
 
 func plot_at(x: int, y: int) -> Dictionary:
 	var lot := {}

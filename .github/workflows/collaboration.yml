@@ -19,7 +19,21 @@ jobs:
         shell: pwsh
         run: ./tools/collab.ps1 -Action Validate
 
+      - name: Test collaboration guards in isolated repositories
+        shell: pwsh
+        run: |
+          ./tools/test_collab.ps1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          ./tools/test_collab.ps1 -ShellPath powershell
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
       - name: Check role ownership
         if: github.event_name == 'pull_request'
         shell: pwsh
         run: ./tools/collab.ps1 -Action Check -Role auto -BaseRef "origin/${{ github.base_ref }}" -TargetBranch "${{ github.base_ref }}"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: collaboration-validation
+          path: artifacts/collaboration-tests/

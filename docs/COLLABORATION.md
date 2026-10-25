@@ -1,5 +1,9 @@
 # 分工与集成基线
 
+## 2026-10-24 当前分工入口
+
+用户确认三条工作线为建筑、原料厂商、小镇经济；具体目录、重叠文件处理、每日同步与提案格式见`docs/collaboration/README.md`第0节，机器权威为`collaboration.config.json`的active_roles。下文cook/economy/town和原阶段波次安排保留历史，不能替代当前分工；本次管理工作不自动开启玩法开发。
+
 正式三人规范和工具入口：
 
 - `docs/collaboration/README.md`：角色、分支、工作树、契约、交接、审查和 Definition of Done；

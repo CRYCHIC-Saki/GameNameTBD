@@ -79,6 +79,8 @@ func _build_title() -> void:
 
 func _process(_delta: float) -> void:
 	if profile==null: return
+	# Factory work follows the same paused active-game clock in every room.
+	if automatic_time and atlas==null and not get_tree().paused: profile.world.tick_factories(_delta)
 	var state:=profile.shop.snapshot()
 	_hud.text="%s  ·  第 %d 天    ¥ %.2f    %s"%[profile.title,state.day,float(state.money_cents)/100.0,{"PREPARE":"筹备中","OPEN":"营业中","DRAINING":"等待最后的客人","SETTLED":"今日已打烊"}.get(state.phase,state.phase)]
 	if Time.get_ticks_msec()<_toast_until: _hud.text+= "  ·  "+_toast
@@ -241,6 +243,9 @@ func _activate(next: TDGameProfile) -> void:
 	_close_dialog();_dispose_game();profile=next;_generation+=1
 	_title_screen.hide();_last_phase=str(profile.shop.snapshot().phase)
 	town=TDTownWorld.new();town.player_mode=true;town.session=profile.world
+	town.transaction_sink=profile.world_transaction;town.external_factory_clock=true
+	town.balance_reader=func()->int:return int(profile.shop.snapshot().money_cents)
+	town.commercial_refresh=profile.sync_commercial_map
 	town.restaurant_requested.connect(func()->void:travel("restaurant"));town.place_requested.connect(_place);town.pause_requested.connect(show_pause);add_child(town)
 	restaurant=TDRestaurantWorld.new();restaurant.player_mode=true;restaurant.session=profile.world;restaurant.layout=profile.layout;restaurant.business=profile.shop
 	restaurant.object_requested.connect(_object);restaurant.pause_requested.connect(show_pause);add_child(restaurant)
@@ -281,7 +286,9 @@ func _object(action: String) -> void:
 		"recipes": open_atlas()
 
 func _place(kind: String, id: String) -> void:
-	if kind=="market":
+	if kind in ["commercial_street","bank"]: show_bank()
+	elif kind=="competitor": show_competitor(id)
+	elif kind=="market":
 		profile.world.select_market(id);show_market()
 	elif kind=="supply_factory":
 		if town!=null:
@@ -292,6 +299,12 @@ func _place(kind: String, id: String) -> void:
 		show_supplier()
 	else:
 		var box:=_dialog("街坊告示")
+		var plot:Dictionary=profile.world._plot_by_id(id)
+		if not plot.is_empty():
+			profile.commerce.attach_map(profile.world.town_map.plots)
+			var site:=profile.commerce.geography.cell(Vector2i(int(plot.x),int(plot.y)))
+			var quote:=profile.commerce.geography.parcel_quote(id)
+			box.add_child(TDUI.label("地块参考总价 ¥%.2f · 日租报价 ¥%.2f\n可见度 %.0f%% · 区位吸引力 %.0f%%\n报价不是当前租约；自有主店免现金房租。"%[float(quote.land_value_cents)/100,float(quote.rent_quote_cents_per_day)/100,100*float(site.visibility),100*float(site.attractiveness)],18))
 		box.add_child(TDUI.label("这里是"+str(profile.world._plot_by_id(id).get("name","小镇街区"))+"。",22))
 		if kind in ["factory_lot","supply_factory","diner_lot"]:
 			box.add_child(TDUI.label("地块管理",20))
@@ -311,26 +324,51 @@ func show_market() -> void:
 	box.add_child(TDUI.label("今日预计 %d—%d 位客人 · 买好食材后回店挂牌营业"%[forecast.min_visitors,forecast.max_visitors],20,TDUI.ORANGE))
 	for id: String in profile.service.config.costs:
 		var row:=HBoxContainer.new();box.add_child(row)
-		var caption:=TDUI.label("%s · 库存 %.2f份 · ¥%.2f/份"%[_ingredient_name(id),float(profile.shop.available(id))/1000.0,float(profile.service.config.costs[id])/100.0],18)
+		var market:Dictionary=profile.commerce.state.markets[profile.commerce.state.home]
+		var caption:=TDUI.label("%s · 家中 %.1f份 · 市场 %.1f份 · ¥%.2f/份"%[_ingredient_name(id),float(profile.shop.available(id))/1000.0,float(market.stock[id])/1000.0,float(market.price[id])/100.0],18)
 		caption.size_flags_horizontal=Control.SIZE_EXPAND_FILL;row.add_child(caption)
 		var amount:=SpinBox.new();amount.min_value=1;amount.max_value=30;amount.step=1;amount.value=1;row.add_child(amount)
 		row.add_child(TDUI.button("购买",func()->void:
 			var result:=profile.buy({id:int(amount.value)*1000});_outcome(result)
-			if result.ok: caption.text="%s · 库存 %.2f份"%[_ingredient_name(id),float(profile.shop.available(id))/1000.0]))
+			if result.ok: caption.text="%s · 家中 %.1f份 · 市场 %.1f份 · ¥%.2f/份"%[_ingredient_name(id),float(profile.shop.available(id))/1000,float(market.stock[id])/1000,float(market.price[id])/100]))
 	box.add_child(TDUI.button("资金困难 · 申请应急补助",func()->void:_outcome(profile.shop.claim_grant())))
+	box.add_child(TDUI.button("查看跨镇商路与预订",show_supplier))
 
 func show_supplier() -> void:
 	if not profile.at_boundary(): return
-	var box:=_dialog("原料供货处")
-	box.add_child(TDUI.label("预订货物通常次日送到。即时现货请到菜摊购买。",20,TDUI.ORANGE))
-	for item: Dictionary in profile.world.catalog.supply_items:
-		if not profile.service.config.costs.has(item.id): continue
-		var row:=HBoxContainer.new();box.add_child(row)
-		var caption:=TDUI.label("%s · ¥%d / 份"%[item.name,item.cost],18);caption.size_flags_horizontal=Control.SIZE_EXPAND_FILL;row.add_child(caption)
-		row.add_child(TDUI.button("预订一份",func()->void:_outcome(profile.order_remote(item.id))))
-	for order: Dictionary in profile.world.supply.incoming:
-		box.add_child(TDUI.label("%s ×%d · 第%d天送到"%[_ingredient_name(order.item_id),order.amount,order.arrive],17,TDUI.MUTED))
+	var box:=_dialog("跨镇商路 · 原料预订")
+	box.add_child(TDUI.label("货款与运费下单时固定；有库存和运力限制，到货后进入厨房。",20,TDUI.ORANGE))
+	for route: Dictionary in profile.commerce.routes():
+		if route.town_id==profile.commerce.state.home: continue
+		var title:=_town_name(route.town_id)
+		if not route.open:
+			box.add_child(TDUI.label("🔒 "+title+" · 等待商路推荐",18,TDUI.MUTED));continue
+		box.add_child(TDUI.button("%s · %d天送达 · 运费¥%.2f/份"%[title,route.lead_days,float(route.freight_cents_per_portion)/100],func()->void:show_remote_market(route.town_id)))
+	for order: Dictionary in profile.commerce.state.shipments:
+		if not order.delivered: box.add_child(TDUI.label("来自%s · %.1f份 · 第%d天送到"%[_town_name(order.source),float(order.units)/1000,order.arrival_day],17,TDUI.MUTED))
 	box.add_child(TDUI.button("领取已到货物",func()->void:_outcome(profile.receive_supplies())))
+
+func _town_name(id: String) -> String:
+	if profile.commerce.config.towns.has(id): return str(profile.commerce.config.towns[id].name)
+	var town_data:Dictionary=profile.world.catalog.town(id)
+	return str(town_data.get("nickname",id))
+
+func show_remote_market(town_id: String) -> void:
+	if town_id not in profile.commerce.state.routes: _outcome(TDOutcome.new(false,"ROUTE_LOCKED","尚未收到这条商路的推荐。"));return
+	var box:=_dialog(_town_name(town_id)+" · 当日报价")
+	var market:Dictionary=profile.commerce.state.markets[town_id]
+	for id: String in profile.service.config.costs:
+		var row:=HBoxContainer.new();box.add_child(row)
+		var label:=TDUI.label("%s · 现货%.1f份 · 含运费¥%.2f/份"%[_ingredient_name(id),float(market.stock[id])/1000,float(int(market.price[id])+profile.commerce.freight(town_id))/100],18)
+		label.size_flags_horizontal=Control.SIZE_EXPAND_FILL;row.add_child(label)
+		var amount:=SpinBox.new();amount.min_value=1;amount.max_value=16;amount.value=1;row.add_child(amount)
+		var token: String="remote-ui:%s:%d:%s"%[profile.shop.snapshot().run_id,profile.shop.snapshot().serial+1,id]
+		var buy_button:=TDUI.button("预订",func()->void:
+			var outcome:=profile.order_remote(id,town_id,int(amount.value)*1000,token)
+			_outcome(outcome)
+			if outcome.ok: show_remote_market(town_id))
+		row.add_child(buy_button)
+	box.add_child(TDUI.button("返回商路",show_supplier))
 
 func _ingredient_name(id: String) -> String:
 	for food: Dictionary in profile.service.cooking.data().ingredients:
@@ -338,6 +376,7 @@ func _ingredient_name(id: String) -> String:
 	return id
 
 func show_menu() -> void:
+	profile.commerce.attach_map(profile.world.town_map.plots)
 	var state:=profile.shop.snapshot()
 	var box:=_dialog("今日菜单 · 营业牌")
 	if state.phase in ["OPEN","DRAINING"]:
@@ -355,6 +394,15 @@ func show_menu() -> void:
 		var stock:=TDUI.label("有料" if profile.shop.menu_available(id) else "缺料 / 售罄",17,TDUI.MUTED)
 		stock.custom_minimum_size.x=125;stock.autowrap_mode=TextServer.AUTOWRAP_OFF;row.add_child(stock)
 	box.add_child(TDUI.label("确认菜单和价格后开门。缺料菜自动停售，营业期间不能离店补货。",17,TDUI.MUTED))
+	var demand:=TDUI.label("",18,TDUI.ORANGE);box.add_child(demand)
+	var forecast_update:=func()->void:
+		var estimated:=profile.shop.visitor_forecast()
+		demand.text="备足材料时预计 %d—%d 位客人；预算、路程、排队和竞争会影响实际到店。"%[estimated.min_visitors,estimated.max_visitors]
+		if estimated.has("excluded_budget_share") and float(estimated.excluded_budget_share)>0:
+			demand.text+="\n目前没有约%.0f%%客群买得起的菜，可试着加入较低价菜品。"%(100*float(estimated.excluded_budget_share))
+	forecast_update.call()
+	for price_control: SpinBox in box.find_children("*","SpinBox",true,false): price_control.value_changed.connect(func(_v:float)->void:forecast_update.call())
+	for check_control: CheckBox in box.find_children("*","CheckBox",true,false): check_control.toggled.connect(func(_v:bool)->void:forecast_update.call())
 	box.add_child(TDUI.button("确认菜单，开门营业",start_day))
 
 func start_day() -> TDOutcome:
@@ -372,12 +420,59 @@ func show_ledger() -> void:
 	var state:=profile.shop.snapshot()
 	if state.phase=="SETTLED": kitchen_view._summary_page(box,profile.shop.day_summary())
 	else: box.add_child(TDUI.label("第%d天 · 余额 ¥%.2f · 人气%d"%[state.day,float(state.money_cents)/100.0,state.popularity],21))
+	var economy:Dictionary=profile.commerce.state
+	box.add_child(TDUI.label("未付费用 ¥%.2f · 店铺认知 %.0f%% · 品牌信任 %.0f%%"%[float(economy.debt_cents)/100,float(economy.awareness)*100,float(economy.brand)*100],19,TDUI.ORANGE))
+	if not economy.books.is_empty():
+		var report:Dictionary=economy.books.back()
+		box.add_child(TDUI.label("第%d天：耗料成本 ¥%.2f · 水电 ¥%.2f · 房租 ¥%.2f\n经营利润 ¥%.2f（采购是现金换库存，不再次扣利润）\n全镇用餐机会%d · 考虑本店%d · 接待%d · 完成%d · 离开%d"%[report.day,float(report.consumed_cost_cents)/100,float(report.utilities_cents)/100,float(report.rent_cents)/100,float(report.profit_cents)/100,report.funnel.opportunities,report.funnel.considered,report.funnel.admitted,report.funnel.completed,report.funnel.abandoned],18))
+	for group:Dictionary in profile.commerce.config.groups:
+		box.add_child(TDUI.label("%s：味道%.0f / 服务%.0f / 划算%.0f"%[group.name,100*profile.commerce.reputation(group.id,"food"),100*profile.commerce.reputation(group.id,"service"),100*profile.commerce.reputation(group.id,"value")],17,TDUI.MUTED))
 	for item: Dictionary in state.ledger.slice(maxi(0,state.ledger.size()-16)):
 		box.add_child(TDUI.label("第%d天 · %s · %+.2f元"%[item.day,_ledger_name(item.kind),float(item.cents)/100.0],16,TDUI.MUTED))
 	if profile.at_boundary(): box.add_child(TDUI.button("保存当前进度",func()->void:_outcome(save_game())))
+	var account:=profile.commerce.society.bank.account("player")
+	box.add_child(TDUI.label("钱庄存款 ¥%.2f · 贷款本金 ¥%.2f · 未付利息 ¥%.2f\n借还本金和存取款不计入经营利润。商业街钱庄可办理。"%[float(account.deposit_cents)/100,float(account.principal_cents)/100,float(account.interest_cents)/100],18))
+	if not economy.books.is_empty():
+		var last: Dictionary=economy.books.back()
+		box.add_child(TDUI.label("利润税 ¥%.2f · 本日利息 ¥%.2f · 税前利润 ¥%.2f"%[float(last.get("tax_cents",0))/100,float(last.get("interest_cents",0))/100,float(last.get("profit_before_tax_cents",last.profit_cents))/100],18))
+	var society: Dictionary=profile.commerce.society.state
+	if not society.daily.is_empty(): box.add_child(TDUI.label("五镇家庭：工资 ¥%.2f · 外食 ¥%.2f · 基本生活 ¥%.2f\n未满足基本生活支出 ¥%.2f（没有暗中补款）"%[float(society.daily.wages_cents)/100,float(society.daily.dining_cents)/100,float(society.daily.necessities_cents)/100,float(society.daily.unmet_needs_cents)/100],17,TDUI.MUTED))
+	box.add_child(TDUI.label("本镇公共账户 ¥%.2f · 工资税与利润税收入分别记账"%(float(society.public[economy.home])/100),17,TDUI.MUTED))
+
+func show_bank() -> void:
+	if profile==null or not profile.at_boundary(): return
+	var target:=profile
+	var box:=_dialog("商业街钱庄")
+	var bank:=profile.commerce.society.bank
+	var account:=bank.account("player")
+	box.add_child(TDUI.label("手头 ¥%.2f · 存款 ¥%.2f\n贷款本金 ¥%.2f · 应付利息 ¥%.2f"%[float(profile.shop.snapshot().money_cents)/100,float(account.deposit_cents)/100,float(account.principal_cents)/100,float(account.interest_cents)/100],22))
+	box.add_child(TDUI.label("授信上限 ¥%.2f · 借款日息 %.2f%% · 存款日息最高 %.2f%%\n期限%d天；到期日结尽力偿还，逾期停新增贷款，仍可继续经营。"%[float(bank.config.loan_limit_cents)/100,float(bank.config.loan_daily_bps)/100,float(bank.config.deposit_daily_bps)/100,bank.config.term_days],18,TDUI.MUTED))
+	if int(account.principal_cents)>0: box.add_child(TDUI.label("到期：第%d天%s"%[account.due_day," · 已逾期" if int(profile.shop.snapshot().day)>int(account.due_day) else ""],19,TDUI.ORANGE))
+	var amount:=SpinBox.new();amount.min_value=.01;amount.max_value=10000;amount.step=.01;amount.value=100;amount.prefix="¥ ";amount.name="BankAmount";box.add_child(amount)
+	for action: String in ["deposit","withdraw","borrow","repay"]:
+		var labels: Dictionary={"deposit":"存入","withdraw":"取出","borrow":"借款","repay":"还款（先息后本）"}
+		var token: String="bank:%s:%d:%s"%[profile.shop.snapshot().run_id,int(profile.shop.snapshot().serial)+1,action]
+		box.add_child(TDUI.button(labels[action],func()->void:
+			if profile!=target or not target._alive: return
+			var result:=target.bank_action(action,roundi(amount.value*100),token)
+			_outcome(result)
+			if result.ok: show_bank()))
+	box.add_child(TDUI.label("存取借还只在筹备或日结办理，随当前存档保存。利率是游戏内可调参数。",16,TDUI.MUTED))
+
+func show_competitor(parcel_id: String) -> void:
+	var box:=_dialog("街坊餐馆 · 经营告示")
+	var economy:=profile.commerce
+	var firms: Array=economy.state.competitors[economy.state.home]
+	var selected:=firms.filter(func(f:Dictionary)->bool:return f.parcel_id==parcel_id)
+	if selected.is_empty(): selected=firms
+	for firm: Dictionary in selected:
+		box.add_child(TDUI.label("%s · %s\n售价 ¥%.2f · 今日接待%d/%d · 在岗%d人\n最近经营利润 ¥%.2f · 现金 ¥%.2f"%[firm.name,"第%d天开业"%int(firm.open_day) if firm.status=="construction" else "营业中",float(firm.price_cents)/100,firm.served,firm.capacity,economy.society.staff(firm.id).size(),float(firm.last_profit_cents)/100,float(firm.cash_cents)/100],19))
+	box.add_child(TDUI.label("商业街可交易商铺剩余%d处。竞争者按盈利、人员和资金决定投资，不增加全镇用餐机会。"%economy.expansion.candidates(economy.state.home).size(),17,TDUI.MUTED))
+	for event: Dictionary in economy.expansion.state.events:
+		if event.town_id==economy.state.home: box.add_child(TDUI.label("第%d天买地建店 · 支出 ¥%.2f · 第%d天开业"%[event.day,float(event.cost_cents)/100,event.open_day],16,TDUI.MUTED))
 
 func _ledger_name(id: String) -> String:
-	return {"purchase":"采购","consumption":"食材消耗","prepayment":"菜款","tip":"小费","refund_cancel":"取消退款","refund_served":"退菜退款","settlement":"日结","emergency_grant":"应急补助","world_adjustment":"小镇支出 / 收入","supply_delivery":"预订原料到货"}.get(id,id)
+	return {"purchase":"采购","consumption":"食材消耗","prepayment":"菜款","tip":"小费","refund_cancel":"取消退款","refund_served":"退菜退款","settlement":"日结","emergency_grant":"应急补助","world_adjustment":"小镇支出 / 收入","supply_delivery":"预订原料到货","operating_payment":"水电税费 / 偿还欠费","bank_transfer":"钱庄存取 / 借还"}.get(id,id)
 
 func show_rest() -> void:
 	var box:=_dialog("收工休息")
@@ -551,6 +646,7 @@ func import_legacy() -> TDOutcome:
 			if not runtime.is_empty(): inherited.append(runtime)
 		next.research.inherit_legacy(inherited)
 	next.research.save_sink=next._research_candidate
+	if old_shop.ok: next.initialize_legacy_commerce()
 	next._sync_recipes();next.persistence=slots.save_slot
 	var result:=next.save()
 	if result.ok: _activate(next)
@@ -558,7 +654,7 @@ func import_legacy() -> TDOutcome:
 	return result
 
 func _outcome(result: TDOutcome) -> TDOutcome:
-	_message(result.message if not result.message.is_empty() else ({"SAVED":"进度已保存。","PURCHASED":"已购入，食材已放入厨房库存。","OPENED":"开门营业！"}.get(result.code,result.code)))
+	_message(result.message if not result.message.is_empty() else ({"SAVED":"进度已保存。","PURCHASED":"已购入，食材已放入厨房库存。","OPENED":"开门营业！","BANK_RECORDED":"已办理，金额记入当前存档的钱庄账户。","INSUFFICIENT_FUNDS":"手头现金不足，本次没有扣款。","INSUFFICIENT_DEPOSIT":"存款余额不足。","CREDIT_LIMIT":"超过当前贷款额度。","BANK_LIQUIDITY":"钱庄当前可用资金不足，请减少金额或之后再来。","EXCEEDS_LOAN":"还款金额超过本金和应付利息之和。","DUPLICATE":"这笔操作已经办理，不会重复扣款。","INVALID_BANK_REQUEST":"请输入有效金额。"}.get(result.code,result.code)))
 	return result
 
 func _exit_tree() -> void:

@@ -2,7 +2,7 @@
 
 - Phase：
 - 波次：
-- 角色：`cook | economy | town | integrator`
+- 角色：`building | supplier | town-economy | integrator`（历史波次：`cook | economy | town`）
 - 目标分支：
 - 工作单：
 
@@ -26,6 +26,8 @@
 
 ## 契约与数据
 
+- 前置接口/PR及已同步的集成基线：
+- 重叠路径/函数、唯一写入负责人及双方确认：
 - 公开入口：
 - 单位/错误码/幂等：
 - 存档迁移：

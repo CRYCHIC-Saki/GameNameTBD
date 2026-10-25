@@ -151,6 +151,24 @@ func test_edit_click_selects_places_and_removes_through_a_blocking_parent() -> v
 	_click_room(room, int(piece["x"]), int(piece["y"]), MOUSE_BUTTON_RIGHT)
 	assert_true(room.layout.piece(id).is_empty())
 
+func test_edit_bar_tracks_viewport_size_changes() -> void:
+	var viewport := SubViewport.new()
+	viewport.size = Vector2i(1280, 800)
+	add_child_autofree(viewport)
+	var room := TDRestaurantWorld.new()
+	viewport.add_child(room)
+	await get_tree().process_frame
+	room._toggle_edit()
+	assert_eq(room._bar.position.y + room._bar.size.y, 800.0)
+	assert_eq(room._bar.size.x, 1280.0)
+	viewport.size = Vector2i(1600, 1000)
+	await get_tree().process_frame
+	assert_eq(room._bar.position.y + room._bar.size.y, 1000.0)
+	assert_eq(room._bar.size.x, 1600.0)
+	var spot := _open_dining_cell(room)
+	var local := TDRestaurantIsoView.project(spot.x + 0.5, spot.y + 0.5)
+	assert_false(room._pointer_on_chrome(room._iso.get_global_transform_with_canvas() * local))
+
 func _open_dining_cell(room: TDRestaurantWorld) -> Vector2i:
 	for y in room.layout.rows - 1:
 		for x in room.layout.columns:

@@ -1,12 +1,78 @@
 # 三人合作开发规范
 
-版本：2026-10-13 v1。
+版本：2026-10-24 v2；本轮三条工作线为建筑、原料厂商、小镇经济。历史cook/economy/town分支仍可检查，不作为本轮分工。
 
 本规范适用于最多三名程序成员。它规定目录所有权、分支、工作树、工作单、契约、测试、交接和合并方式。Phase 4 的具体任务仍以 `doc/agent_prompts/Phase_4.md` 为准；本文件不构成开工授权。
 
 机器可读所有权在根目录 `collaboration.config.json`，自动检查入口是 `tools/collab.ps1`。两者与本文件冲突时，先停止合并，由当波集成者统一修订三处，不能私自选择有利版本。
 
-## 1. 固定三条工作线
+## 0. 本轮如何直接执行
+
+用户确认三人分别做建筑、原料厂商、小镇经济，最后一项不是贸易系统。下面是仓库协作分工，不是三个功能的实现授权，也不自动采纳未确认的经济公式。
+
+| 工作线/分支角色 | 独占改动范围 | 交给其他线的结果 | 不能直接改 |
+|---|---|---|---|
+| 建筑 `building` | `src/buildings/`、`content/buildings/`、`assets/buildings/`；既有town_map、restaurant_sizes、restaurant_layout及明确测试 | 建筑/地块身份、位置、用途、容量的只读结果；具体字段另约定 | 厂商库存、全镇物价、玩家现金、存档装配 |
+| 原料厂商 `supplier` | `src/suppliers/`、`content/suppliers/`、`assets/suppliers/`；既有supply_book及明确测试 | 厂商可售量、订单/预留/交货结果；具体报价接口另约定 | 全镇需求公式、玩家库存与现金的直接写入、建筑地图 |
+| 小镇经济 `town-economy` | `src/town_economy/`、`content/town_economy/`、`assets/town_economy/`；既有economy_math及明确测试 | 行情/需求的只读快照与经济规则结果；具体公式另约定 | 厂商库存的直接写入、建筑实例、营业账直接操作 |
+| 轮值集成者（以上三人之一） | 主入口、共享契约、存档接入、现有共享UI/场景、项目设置及工具 | 真实游戏内完整流程 | 替另外两人重写其核心模块 |
+
+上述新目录是可修改范围，不代表要求创建空模块或迁移所有旧代码。可复用的已有文件已经明确分给一个工作线；其余旧文件先读，在工作单提出所需改动，由集成者登记准确路径后调整配置。不要复制既有供货、金钱或地图逻辑。目录与`.gd.uid`以`collaboration.config.json`为机器权威。
+
+分支仍用现有结构：
+
+```text
+main（可运行基线）
+  └─ integration/phase-4-wave-<本轮名称>（唯一集成目标）
+       ├─ work/building/phase-4-wave-<同名>
+       ├─ work/supplier/phase-4-wave-<同名>
+       └─ work/town-economy/phase-4-wave-<同名>
+```
+
+角色PR进同波集成分支；集成PR经审查和检查后进main。每个角色本轮一名写入负责人，一个PR只解决一个可验收任务；同分支可顺序交多个小PR，不积累几周才合并。每人独立clone即可，不必每个人建四份工程；同机器同时跑多个Agent时才用不同worktree。现有Init是集成者的可选本地预演/建树工具，不替代其他人的clone。
+
+### 重叠代码怎么处理
+
+1. 开工前在各自工作单列准确文件和对外接口；集成者汇总到CURRENT_WAVE的写入表。只锁需要修改的具体文件/函数，不锁整个模块。
+2. 同文件不同函数也可能在语义上冲突。共享文件如`game_shell.gd`、`phase3_session.gd`、`game_profile.gd`、`profile_store.gd`、`project.godot`只由集成者写。两条线提交接口/补丁提案，不各自修改整份入口。
+3. 如果双方确实需要改同一业务函数，指定一位实现者，另一位写需求和契约测试；共同确定输入、输出、版本、单位、失败/重复调用语义。不要同时实现两个版本再挑一个。
+4. 按依赖顺序先合公共契约或提供方的最小兼容改动，再由调用方同步后开发。只在集成窗口冻结候选提交/共享文件；其他无关工作可以继续，但不能混入正在验收的候选。
+5. 合并冲突逐段保留双方有效意图，由相关两条线确认。禁止整文件覆盖或一键ours/theirs；没有文本冲突也要检查重复扣款、重复入库、价格被计算两次和日期推进两次。
+6. PNG/音频等二进制无法正常逐行合并：同一资源一个写入者，其他人用独立文件名；`.tscn`拆独立子场景，由集成者挂接，`.uid`和`.import`随资源入库。频繁发生同一文件抢改，再按功能抽出对象；不为避免冲突预建框架。
+
+### 三条线需要先对齐的最小边界（PROPOSED，玩法接口待确认）
+
+- 建筑提供“是什么、在哪里、能容纳什么”，厂商决定“有多少原料、能交多少”，小镇经济决定“采用什么需求与市场价格规则”。其中产能是否由建筑等级提供、报价如何叠加，是下一功能波次入口的具体产品问题，本轮不替用户决定。
+- 原料用已有ingredient_id，地块/建筑/厂商各用稳定ID，不能用显示名称关联。传只读快照/请求/结果，不传让对方随便改的内部字典。
+- 玩家钱和厨房库存仍只有TDShopSession这套正式权威；厂商库存是另一主体，不能等同玩家库存。购买由集成事务协调报价、校验、厂商预留、付款与入库，失败完整回滚，重复transaction_id不再扣款/入库；具体方法在CONTRACTS登记后实施。
+- TDGameProfile统一装配存档，TDProfileStore落盘；模块提供可校验快照，不各写一个独立user://存档。旧D033保存时点、暂停、原库存单位与整数分钱保持；未经决定不改schema或做两套日历。
+- `doc/source/town_commerce_design_v0_1.md`目前标记PROPOSED，且未跟踪。团队确认资料版本和规则后再作为共同实现依据；本次不发布或改写它。
+
+### 每天的操作
+
+先确认在自己的角色分支；未提交工作先做本地检查和有意义的提交，不用pull覆盖。再执行：
+
+```powershell
+git fetch origin
+# 将下面的名称替换为CURRENT_WAVE记录的真实分支。
+git merge origin/integration/phase-4-wave-本轮名称
+pwsh -File tools/collab.ps1 -Action Check -Role auto -BaseRef origin/integration/phase-4-wave-本轮名称 -TargetBranch integration/phase-4-wave-本轮名称 -IncludeWorkingTree
+pwsh -File tools/check.ps1
+```
+
+同步集成分支采用merge，不重写已推送的共同历史。发现冲突先解决并验收，再继续开发。提交前重复所有权检查和受影响测试；开PR前至少跑统一检查。本轮三个新角色暂时要求all，避免新测试未加入旧专项清单而漏跑；以后按真实测试目录补独立套件。共享PR每次合入后，依赖它的开发者立即同步；其他人至少每日同步一次。
+
+### GitHub管理建议（PROPOSED，尚未开启远端设置）
+
+- main和当前integration分支要求PR、至少一名非作者批准、对话解决、检查成功；新提交使旧批准失效。禁止强推和删除受保护分支；集成者轮值不是绕过检查的权限。
+- main合并前要求跟上最新基线；检查使用GitHub上实际出现的`check`和`ownership`作业，不能随意填一个没有运行的名字。集成PR保持merge commit，角色分支同步集成分支时不重复引入已squash的提交历史。
+- CODEOWNERS用于自动请求审查，结合保护规则才会强制审批，不是文件写锁；多位owner同一规则并不表示必须全部批准。跨模块接口/存档仍按工作单要求相关双方确认。
+- 真实GitHub账号与本轮集成者未提供，暂不编造CODEOWNERS，不改协作者权限。只有本地所有权检查不能阻止直接push main；当前远端main无保护是尚需落实的管理缺口。
+- 当前脚本可识别旧角色和新角色；新波次只使用active_roles中的三条线。不认识的PR分支会失败，不能换一个任意分支名绕过检查。检查是协作护栏，不替代GitHub权限与审查，尤其不能把修改检查脚本的PR自行批准。
+
+依据：[GitHub分支保护](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches)、[CODEOWNERS](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners)。
+
+## 1. 历史三条工作线（保留旧波次兼容）
 
 ### 做菜与研发 `cook`
 
@@ -83,7 +149,7 @@ Phase 4 轮值沿用 `docs/COLLABORATION.md`：4-0/4-1 为 town，4-2 为 econom
 
 ## 4. 分支和工作树
 
-每波有四个分支、四个工作树，但仍是三个人：
+历史波次有四个分支、可用四个工作树，但仍是三个人；本轮使用第0节的新角色名称：
 
 - 集成：`integration/phase-{phase}-wave-{wave}`；
 - 做菜：`work/cook/phase-{phase}-wave-{wave}`；
@@ -185,7 +251,7 @@ Phase 4 轮值沿用 `docs/COLLABORATION.md`：4-0/4-1 为 town，4-2 为 econom
 
 合并日：
 
-1. 三个角色分支停止写入；
+1. 冻结本次待合入的候选提交和共享文件；未纳入本次候选的独立任务可以继续；
 2. 集成者按依赖顺序合入提供方，再合入调用方；
 3. 冲突在集成分支处理，不回到共享主工作区抢改；
 4. 集成者实现共享装配，不重写角色核心；
@@ -228,7 +294,7 @@ PR 必须使用 `.github/PULL_REQUEST_TEMPLATE.md`，并满足：
 
 - 标题包含 Phase、波次、角色和结果；
 - 正文引用 AC、来源/AI 编号和工作单；
-- 只包含一个角色所有权范围；
+- 角色PR只包含一个角色所有权范围；集成PR包含已经交接的各线及共享装配；
 - 说明是否有共享改动提案；
 - 粘贴真实测试摘要，不只写命令；
 - 标记人工试玩状态；
@@ -300,4 +366,4 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/collab.ps1 -Action Che
 
 D033入口修正：content/ingredient_index.json归economy，工具/导出与tests/integration/test_title_entry.gd归轮值集成者；职责为保留原始食材身份的运行索引，不修改原资料或玩法。
 
-当前仓库还没有启动 Phase 4，`CURRENT_WAVE.md` 为 `IDLE`。现有工作区包含未提交改动，因此不应立即运行 `-Action Init`。先由用户决定提交边界，再从明确提交创建工作树。
+2026-10-24：D033已提交288af1b，PR #2仍是草稿未合并，远程游戏/所有权检查均通过；人工试玩仍PENDING。建议先审查并合入该PR，再从明确main基线开启新功能波次；本次不自动合并。新分工已配置为building/supplier/town-economy，旧角色仅保留兼容。两份未跟踪原始资料和旧角色工作区保留，不能盲目运行Init、清理或丢弃。

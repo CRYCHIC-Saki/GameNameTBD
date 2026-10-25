@@ -1,5 +1,11 @@
 # 小镇食堂开发入口
 
+- D036（2026-10-24）本轮继续五镇社会经济与竞争扩张，覆盖D035的13镇/两中式商路/禁止扩店。五镇对应cn中式、eu欧陆、jp日本、sea东南亚、lat拉丁美洲；新档仅本地商路，剧情只留接口。正利润税、自愿限额贷款、逾期欠款可继续；NPC只买挂牌商业单元，不拆住房/侵占玩家或厂地。经济schema2显式迁移旧档、已付货运兑现；工程验收见world-economy，人工长期平衡仍待验收。
+
+- D035（2026-10-24）本次授权世界经济增量，见docs/phases/world-economy.md，覆盖D034当时的“未授权经济玩法”。正式槽由TDGameProfile装配TDWorldEconomy，Shop仍是唯一玩家分钱账。有限共享客流、预算/区位/体验选店，允许零客；自有主店免租、水电行为计费、欠费继续；13镇聚合市场联动，本地加两条中式商路起步。新参数AI-042可调，食品评分/厨房规则不变。配置及独立经济规则归town-economy；地图和厂商核心仍归各工作线。存档包schema2兼容读取v1，不追扣历史费用。未完成整阶段Phase4。
+
+- D034（2026-10-24）当前并行工作线是建筑building、原料厂商supplier、小镇经济town-economy，不是贸易系统。配置schema2的active_roles定义本轮分工；历史cook/economy/town仍兼容。先读docs/collaboration/README.md第0节；重叠文件登记唯一写入者，入口/存档/项目设置由集成者修改。原商业设计仍PROPOSED，此项仅授权协作管理，不授权实现新经济玩法或合并main。
+
 - D033（2026-10-23）当前统一游戏入口：见`docs/phases/game-shell.md`。TDGameProfile按六槽绑定Shop/World/Research/Layout；新档不读取全局研究，旧进度显式只读导入。Shop分钱账是正式单店权威。现货采购在筹备期即时入库，OPEN/DRAINING禁止离店采购；只在筹备/日结保存。主菜单只开始/继续/载入/设置/退出；门、摊贩、营业牌、账本、装修桌、菜谱架、休息处负责游戏交互。反引号控制台输入debug开启独立旧试验入口，不能重曝常驻调试按钮或将其数据写入当前槽。整个Phase4未完成。
 
 - 每阶段先读 `docs/DEVELOPMENT_PROTOCOL.md`、`docs/PROJECT_STATE.md`、`docs/DECISIONS.md`、`docs/FULL_IMPLEMENTATION_FLOW.md`、`docs/AI_FILLED_DETAILS.md`、对应阶段报告和用户最新范围。原始资料在 `doc/source/`，只读。
