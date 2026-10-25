@@ -107,7 +107,7 @@ func _make_kitchen() -> void:
 	for lane: TDCookingLane in kitchen.lanes:
 		lane.session_namespace=shop.day_namespace().trim_suffix(":")
 		lane.new_session("service.tomato_egg")
-		lane.session.set_material_sink(shop.consume_materials)
+		lane.session.set_material_sink(shop.consume_materials,shop.available)
 
 func refresh(force: bool = false) -> void:
 	if shop==null or _closed: return
@@ -171,6 +171,8 @@ func _planning_page(state: Dictionary) -> void:
 	column.add_child(TDUI.label("声望：本阶段未启用。菜品名气分别累计；店名气只统计当前上架菜。",15,TDUI.MUTED))
 
 func _summary_page(column: VBoxContainer, report: Dictionary) -> void:
+	for id: String in report.get("spoiled_units",{}):
+		column.add_child(TDUI.label("到期损耗：%s %.2f%s"%[_ingredient(id).name,float(report.spoiled_units[id])/1000,shop.stock_info(id).unit],16,TDUI.ORANGE))
 	var reason := "今日已结算"
 	if str(report.reason) == "early":
 		reason = "提前打烊"
@@ -347,9 +349,31 @@ func _station_action(id: String, action: String) -> void:
 	var selected:=_recognize(lane,"steam" if id=="kitchen.steamer" else "stir",true)
 	if not selected.ok: _station_done(selected); return
 	lane.document_rules=true; lane.dual=true
+	if shop.mastery(lane.base_recipe_id).automatic_available:
+		var column:=_dialog(shop.recipe_name(lane.base_recipe_id)+" · 已熟练")
+		column.add_child(TDUI.label("自动制作占用这口锅，按固定程序消耗食材、调味料和时间；完成后按 E 端盘。",18))
+		column.add_child(TDUI.button("自动制作",func()->void:_close_popup();_station_done(start_automatic(lane.lane_index))))
+		column.add_child(TDUI.button("亲手制作",func()->void:_close_popup();_begin_manual(lane,id)))
+		column.add_child(TDUI.button("返回厨房",_close_popup));return
+	_begin_manual(lane,id)
+
+func _begin_manual(lane: TDCookingLane, station_id: String) -> void:
 	var result:=lane.start_sheet(str(lane.catalog.for_recipe(lane.base_recipe_id).recipe.guided_profile))
-	if result.ok: kitchen.open_station_view(id)
+	if result.ok: kitchen.open_station_view(station_id)
 	else: _station_done(result)
+
+func start_automatic(index: int) -> TDOutcome:
+	if index<0 or index>=kitchen.lanes.size() or get_tree().paused or shop.snapshot().phase not in ["OPEN","DRAINING"]: return TDOutcome.new(false,"NOT_OPEN")
+	var lane: TDCookingLane=kitchen.lanes[index]
+	if not shop.mastery(lane.base_recipe_id).automatic_available: return TDOutcome.new(false,"NOT_MASTERED","手工制作评分80以上可积累手艺，满400后开放。")
+	var dish:=lane.snapshot();var required: Dictionary=service.material_needs(lane.catalog,lane.base_recipe_id,dish.steps)
+	for food: Dictionary in dish.ingredients.values():
+		if food.ingredient_id in service.offer(lane.base_recipe_id).primary: required[food.ingredient_id]=maxi(0,int(required.get(food.ingredient_id,0))-roundi(float(food.amount)*1000))
+	for id: String in required:
+		if int(required[id])>shop.available(id): return TDOutcome.new(false,"INSUFFICIENT_STOCK","自动制作需要的"+str(_ingredient(id).name)+"不足。")
+	var started:=lane.start_automatic()
+	if started.ok: started.message="已开始熟练制作，完成后回来端盘。"
+	return started
 
 func _recognize(lane: TDCookingLane, method: String, complete: bool) -> TDOutcome:
 	var ids: Array=lane.snapshot().ingredients.values().map(func(x:Dictionary)->String:return x.ingredient_id)
@@ -408,7 +432,7 @@ func take_pot_ingredient(index: int, id: String) -> TDOutcome:
 	_station_done(result); return result
 
 func _reset_pot(lane: TDCookingLane) -> void:
-	lane.cancel_operation(); lane.catalog=kitchen.catalog; lane.customer_override=[]; lane.new_session("service.tomato_egg"); lane.session.set_material_sink(shop.consume_materials)
+	lane.cancel_operation(); lane.catalog=kitchen.catalog; lane.customer_override=[]; lane.new_session("service.tomato_egg"); lane.session.set_material_sink(shop.consume_materials,shop.available)
 
 func _trash() -> void:
 	if kitchen.handling.hand!=null:
@@ -425,18 +449,37 @@ func _trash() -> void:
 
 func _show_pantry() -> void:
 	var column:=_dialog("大冰箱 · 每次携带一份食材")
-	column.add_child(TDUI.label("可自由取料；主料每次1份，调料每次0.1份。灶台调味会直接消耗冰箱余量。",16,TDUI.MUTED))
-	var scroll:=ScrollContainer.new(); scroll.custom_minimum_size=Vector2(710,290); scroll.size_flags_vertical=Control.SIZE_EXPAND_FILL; column.add_child(scroll)
-	var grid:=GridContainer.new(); grid.columns=3; grid.size_flags_horizontal=Control.SIZE_EXPAND_FILL; grid.add_theme_constant_override("h_separation",10); grid.add_theme_constant_override("v_separation",10); scroll.add_child(grid)
-	for food: Dictionary in shop.snapshot().cold_foods:
-		var held_food: Dictionary=food
-		var button:=TDUI.button("冷藏 · "+str(_ingredient(food.ingredient_id).name)+("（已切配）" if not food.cuts.is_empty() else "（原料）"),func()->void:pick_stored(held_food.id);_close_popup())
-		button.custom_minimum_size=Vector2(224,55); button.disabled=kitchen.handling.hand!=null; grid.add_child(button)
-	for id: String in service.config.costs:
-		var amount: int=1000 if service.is_primary(id) else 100
-		var button:=TDUI.button("%s · 余 %.2f份" % [_ingredient(id).name,float(shop.available(id))/1000],func()->void:pick_ingredient(id);_close_popup())
-		button.custom_minimum_size=Vector2(224,55); button.disabled=shop.available(id)<amount or kitchen.handling.hand!=null; grid.add_child(button)
+	column.add_child(TDUI.label("先用快到期的原料；取出再放回不会刷新保质期。调味时直接使用剩余瓶/袋。",16,TDUI.MUTED))
+	var tabs:=TabContainer.new();tabs.custom_minimum_size=Vector2(730,340);column.add_child(tabs)
+	for group: String in ["vegetable","meat","seasoning","fruit"]:
+		var scroll:=ScrollContainer.new();scroll.name={"vegetable":"蔬菜","meat":"肉类","seasoning":"调料","fruit":"水果"}[group];tabs.add_child(scroll)
+		var grid:=GridContainer.new();grid.columns=2;grid.add_theme_constant_override("h_separation",12);grid.add_theme_constant_override("v_separation",10);scroll.add_child(grid)
+		var entries:=pantry_entries(group)
+		if entries.is_empty(): grid.add_child(TDUI.label("这一类暂时没有库存。",18,TDUI.MUTED))
+		for entry: Dictionary in entries:
+			var row:=HBoxContainer.new();grid.add_child(row);row.add_child(TDIngredientIcon.make(entry.ingredient_id,40))
+			var text: String="%s%s\n余 %.2f%s · 剩%d天"%[_ingredient(entry.ingredient_id).name,entry.label,float(entry.units)/1000,entry.unit,entry.remaining_days]
+			var button:=TDUI.button(text,func()->void:
+				if entry.cold_id.is_empty(): pick_ingredient(entry.ingredient_id)
+				else: pick_stored(entry.cold_id)
+				_close_popup())
+			button.custom_minimum_size=Vector2(290,70);button.disabled=kitchen.handling.hand!=null or entry.units<(1000 if service.is_primary(entry.ingredient_id) else 100)
+			button.tooltip_text="第%d天到期；同类先用快到期批次。"%entry.expires_on;row.add_child(button)
 	column.add_child(TDUI.button("返回厨房",_close_popup))
+
+func pantry_entries(group: String) -> Array:
+	var entries: Array=[];var day: int=int(shop.snapshot().day)
+	for id: String in service.config.costs:
+		var item:=shop.stock_info(id)
+		if item.group==group and int(item.units)>0:
+			item.ingredient_id=id;item.label="";item.cold_id="";entries.append(item)
+	for food: Dictionary in shop.snapshot().cold_foods:
+		var item:=shop.stock_info(food.ingredient_id)
+		if item.group!=group: continue
+		item.ingredient_id=food.ingredient_id;item.cold_id=food.id;item.units=roundi(float(food.amount)*1000)
+		item.expires_on=int(food.get("expires_on",day+1));item.remaining_days=maxi(0,int(item.expires_on)-day)
+		item.label="（已切配）" if not food.cuts.is_empty() else "（已取出原料）";entries.append(item)
+	return entries
 
 func pick_ingredient(id: String) -> TDOutcome:
 	if get_tree().paused: return TDOutcome.new(false,"PAUSED")
@@ -455,11 +498,18 @@ func _sync_usage() -> void:
 		var names: Array[String]=[]
 		for food: Dictionary in dish.ingredients.values():
 			if str(food.name) not in names: names.append(str(food.name))
-		contents.append({"title":("左锅 · " if lane.lane_index==0 else "右锅 / 蒸笼 · ")+(str(dish.recipe_name) if not names.is_empty() else "空"),"materials":" ＋ ".join(names) if not names.is_empty() else "E 放入 · F 开始 · Q 取回"})
+		var status: String=" ＋ ".join(names) if not names.is_empty() else "E 放入 · F 开始 · Q 取回"
+		if not names.is_empty() and shop.is_unlocked(lane.base_recipe_id):
+			status+=" · 手艺 %.0f/400"%float(shop.mastery(lane.base_recipe_id).points)
+		if lane.automatic: status="自动制作 · "+("已做好，E 端盘" if dish.state=="plated" else lane.stage_label)
+		contents.append({"title":("左锅 · " if lane.lane_index==0 else "右锅 / 蒸笼 · ")+(str(dish.recipe_name) if not names.is_empty() else "空"),"materials":status})
 		if dish.state=="plated":
 			var unlocked:=shop.observe_finished(dish)
-			if unlocked.code=="RECIPE_UNLOCKED": _show(unlocked)
-		snapshots.append({"location":"pot","dish":dish,"future_materials":service.material_needs(lane.catalog,lane.base_recipe_id,dish.steps)})
+			if unlocked.code in ["RECIPE_UNLOCKED","MASTERY_GAINED"]: _show(unlocked)
+		var needs: Dictionary=service.material_needs(lane.catalog,lane.base_recipe_id,dish.steps)
+		var poured:=lane.session.inflight_materials()
+		for id: String in poured: needs[id]=maxi(0,int(needs.get(id,0))-int(poured[id]))
+		snapshots.append({"location":"pot","dish":dish,"future_materials":needs})
 	for source: TDCookingSession in [kitchen.handling.hand,kitchen.handling.board]:
 		if source!=null: snapshots.append({"location":"loose","dish":source.snapshot().to_dict()})
 	shop.sync_kitchen(snapshots)
@@ -478,7 +528,7 @@ func _serve() -> void:
 		result=lane.perform("deliver")
 		if result.ok:
 			kitchen.handling.clear_dish(); kitchen.close_bench()
-			lane.catalog=kitchen.catalog; lane.customer_override=[]; lane.new_session("service.tomato_egg"); lane.session.set_material_sink(shop.consume_materials)
+			lane.catalog=kitchen.catalog; lane.customer_override=[]; lane.new_session("service.tomato_egg"); lane.session.set_material_sink(shop.consume_materials,shop.available)
 			var served: Dictionary=shop.order(item.id)
 			_message.text="已送达 %s · %.1f分。" % [shop.recipe_name(served.recipe_id),served.score.satisfaction]
 		else: _station_done(result)

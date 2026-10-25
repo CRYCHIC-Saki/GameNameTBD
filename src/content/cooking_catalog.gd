@@ -327,6 +327,10 @@ func _check_pc(pc: Variant, operations: Dictionary, ingredients: Dictionary, rec
 	if pc.has("document_sheets"):
 		if not pc.document_sheets is Dictionary or not pc.get("document_weights") is Dictionary: return _bad("pc_operations.document_sheets","typed sheets and weights required")
 		if not pc.get("document_rules") is Dictionary or not pc.document_rules.get("preparation_recipes") is Dictionary or not _range(pc.document_rules.get("feedback_sec"),.5,3): return _bad("document_rules","preparation map and bounded feedback lifetime required")
+		if not pc.document_rules.get("assistance",{}) is Dictionary: return _bad("document_rules.assistance","object required")
+		var assistance: Dictionary=pc.document_rules.get("assistance",{})
+		if not assistance.is_empty():
+			if not _range(assistance.get("perfect_sec"),.01,.15) or not _range(assistance.get("good_sec"),float(assistance.perfect_sec),.24) or not _range(assistance.get("good_quality"),.5,1) or not _range(assistance.get("automatic_quality",.85),0,1) or not assistance.get("aggregate_score") is bool or not assistance.get("smooth_maintain") is bool: return _bad("document_rules.assistance","bounded playability values required")
 		for ingredient: String in pc.document_rules.preparation_recipes:
 			var target: Variant=pc.document_rules.preparation_recipes[ingredient]
 			if not ingredients.has(ingredient) or not target is String or not recipes.has(target): return _bad("document_rules.preparation_recipes","unknown ingredient/recipe","MISSING_REFERENCE")
@@ -334,10 +338,11 @@ func _check_pc(pc: Variant, operations: Dictionary, ingredients: Dictionary, rec
 			if not _range(pc.document_weights.get(module),0,100): return _bad("document_weights","invalid module weight")
 		for id: String in pc.document_sheets:
 			var sheet := TDBeatSheet.new()
-			if not pc.document_sheets[id] is Dictionary or pc.document_sheets[id].get("id") != id or pc.document_sheets[id].get("bpm") != pc.bpm or not sheet.configure(pc.document_sheets[id],operations).ok: return _bad("document_sheets."+id,"invalid beat/track/reference/overlap")
+			if not pc.document_sheets[id] is Dictionary or pc.document_sheets[id].get("id") != id or pc.document_sheets[id].get("bpm") != pc.bpm or not sheet.configure(pc.document_sheets[id],operations,assistance).ok: return _bad("document_sheets."+id,"invalid beat/track/reference/overlap")
 			for event: Dictionary in sheet.snapshot().events:
 				var base: String="oil" if event.operation=="season" and event.parameters.get("mode")=="common" else event.operation
 				var settings: Dictionary=pc.modules[base].duplicate(true); settings.merge(event.settings,true)
+				settings.merge(assistance,true)
 				var request:=TDRequest.new("validation",0,event.group,event.operation,0); request.schema_version=3
 				if not TDCookingQTE.new(request,settings,TDClock.new(),TDBusinessRandom.new(1)).start().ok: return _bad("document_sheets."+id+"."+event.group,"compiled QTE or material reference invalid")
 	return TDOutcome.new(true)

@@ -3981,7 +3981,8 @@
         "cucumber": "test.cold_salad",
         "beef": "beef_stew"
       },
-      "feedback_sec": 0.9
+      "feedback_sec": 1.2,
+      "assistance": {"status":"PROPOSED_AI_045","perfect_sec":0.1,"good_sec":0.2,"good_quality":0.85,"aggregate_score":true,"smooth_maintain":true,"automatic_quality":0.85}
     }
   }
 }

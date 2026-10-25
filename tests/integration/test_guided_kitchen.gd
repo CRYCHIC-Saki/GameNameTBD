@@ -162,7 +162,7 @@ func test_real_recipe_notes_make_chunks_and_feedback_survives_release_pause_and_
 	app.toggle_pause(); kitchen.advance(15); assert_eq(lane.feedback_remaining(),life); app.toggle_pause()
 	kitchen.advance(.1); assert_eq(lane.judgement_feedback,event)
 	kitchen.advance(.9); tap(KEY_D); assert_eq(int(lane.progress.cut_hits),1)
-	kitchen.advance(1); tap(KEY_SPACE); kitchen.advance(.15)
+	kitchen.advance(1); tap(KEY_SPACE); kitchen.advance(.25) # Production Good window is now inclusive through +200ms.
 	assert_null(lane.qte); assert_gt(lane.feedback_remaining(),.6)
 	var ingredient: Dictionary=lane.snapshot().ingredients.values()[0]
 	assert_eq(ingredient.shape,"chunk"); assert_eq(float(ingredient.fine),.25)

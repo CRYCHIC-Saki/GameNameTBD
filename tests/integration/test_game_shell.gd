@@ -58,9 +58,8 @@ func test_market_inventory_menu_open_and_real_kitchen_delivery_three_day_save_lo
 			shell.profile.shop.set_menu(id,id=="service.tomato_egg",1300)
 		shell.show_market();await get_tree().process_frame
 		# Buy through the real market buttons, not an independent demonstration inventory.
-		for row: Node in shell._modal_box.get_children():
-			if row is HBoxContainer and row.get_child_count()==3 and row.get_child(2) is Button:
-				row.get_child(2).pressed.emit()
+		for buy: Button in shell._modal_box.find_children("*","Button",true,false):
+			if buy.text=="购买": buy.pressed.emit()
 		assert_gt(shell.profile.shop.available("tomato"),0)
 		shell._close_dialog();shell.travel("restaurant");shell.show_menu()
 		var open:=button("确认菜单，开门营业",shell._modal_box);assert_not_null(open);open.pressed.emit()

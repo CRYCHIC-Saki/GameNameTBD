@@ -40,6 +40,31 @@ var _jobs: Dictionary = {}
 var _transfers: Dictionary = {}
 var _document_rules: bool = false
 var material_sink: Callable
+var material_available: Callable
+var production_mode: String = "manual"
+var _pours: Dictionary = {}
+
+func inflight_materials() -> Dictionary:
+	var totals: Dictionary={}
+	for operation: String in _pours:
+		if not _jobs.has(operation): continue
+		for value: Dictionary in _pours[operation].values():
+			totals[value.ingredient_id]=int(totals.get(value.ingredient_id,0))+int(value.units)
+	return totals
+
+func pour_material(operation: String, hold: int, ingredient: String, cumulative_units: int) -> TDOutcome:
+	if not _jobs.has(operation) or _state in ["cancelled","discarded","delivered"]: return _error("STALE_OPERATION")
+	if _jobs[operation].operation!="season" or not _definitions.has(ingredient) or _definitions[ingredient].category!="seasoning" or cumulative_units<0 or cumulative_units>100000: return _error("INVALID_POUR")
+	if not _pours.has(operation): _pours[operation]={}
+	var key: String="%d:%s"%[hold,ingredient]
+	var used: int=int(_pours[operation].get(key,{}).get("units",0))
+	var stock: int=int(material_available.call(ingredient)) if material_available.is_valid() else 100000
+	var addition: int=mini(maxi(0,cumulative_units-used),stock)
+	if addition>0:
+		var result:=_take_materials("%s:pour:%s:%d"%[operation,key,used+addition],{ingredient:addition})
+		if not result.ok: return result
+	_pours[operation][key]={"ingredient_id":ingredient,"units":used+addition}
+	return TDOutcome.new(true,"POURED","",{"units":used+addition,"remaining_units":stock-addition})
 
 func select_recipe(config: Dictionary) -> TDOutcome:
 	if _state != "preparing" or not _jobs.is_empty() or _steps.any(func(s:Dictionary)->bool:return s.operation != "cut"):
@@ -119,6 +144,7 @@ func begin(request: TDRequest) -> TDOutcome:
 	if kind == "add":
 		var stock := _take_materials(request.operation_id,{str(args.ingredient_id):roundi(float(args.get("amount",1))*1000)})
 		if not stock.ok: return stock
+		if stock.data.get("expires_on") is Dictionary: args.expires_on=int(stock.data.expires_on.get(str(args.ingredient_id),0))
 	_operation_id = request.operation_id
 	var before: Dictionary = _derive().attributes
 	_revision += 1
@@ -268,7 +294,14 @@ func complete_operation(result: TDOutcome) -> TDOutcome:
 			needed[material] = int(needed.get(material,0))+roundi(float(actual.get("amount",args.get("amount",.1)))*1000)
 	elif kind == "season" or (_document_rules and kind == "starch" and args.has("ingredient_id")):
 		needed[str(args.ingredient_id)] = roundi(float(args.get("amount",1))*1000)
-	var stocked := _take_materials(str(identity),needed)
+	var streamed: Dictionary={}
+	if _pours.has(identity):
+		for poured: Dictionary in _pours[identity].values(): streamed[poured.ingredient_id]=int(streamed.get(poured.ingredient_id,0))+int(poured.units)
+		for id: String in needed:
+			if int(needed[id])!=int(streamed.get(id,0)): return _error("POUR_MISMATCH")
+		for id: String in streamed:
+			if int(streamed[id])!=int(needed.get(id,0)): return _error("POUR_MISMATCH")
+	var stocked := TDOutcome.new(true) if _pours.has(identity) else _take_materials(str(identity),needed)
 	if not stocked.ok: return stocked
 	_operation_id = str(identity)
 	var before: Dictionary = job.before
@@ -412,6 +445,7 @@ func _add(args: Dictionary) -> String:
 	_ingredients[id] = {"id": id, "ingredient_id": definition.id, "name": definition.name, "category": definition.category, "subcategory": definition.subcategory, "quality": definition.quality,
 		"amount": float(args.get("amount", 1)), "batch_id": batch, "shape": "whole", "fine": 0.0, "temperature_c": float(definition.temperature_c), "texture": definition.texture.duplicate(true), "flavor": flavor, "aroma": definition.aroma.duplicate(true), "special": definition.special.duplicate(), "region": definition.region.duplicate(), "history": [], "heat_dose": 0.0, "exposure_sec": 0.0, "reaction_exposure": {}, "reactions": []}
 	_ingredients[id].local_id = "ingredient_%d" % _instance_counter
+	_ingredients[id].expires_on = int(args.get("expires_on",0))
 	var pot: float = _batches[batch].temperature_c
 	if pot > float(_config.rules.room_temperature_c):
 		_ingredients[id].temperature_c = maxf(float(definition.temperature_c), float(definition.temperature_c) + (pot - float(definition.temperature_c)) * float(_config.rules.preheat_transfer))
@@ -716,6 +750,8 @@ func _derive() -> Dictionary:
 
 func snapshot() -> Dictionary:
 	var derived: Dictionary = _derive()
+	var modules: Dictionary=module_scores(); var weighted: float=0; var weights: float=0
+	for value: Dictionary in modules.values(): weighted+=float(value.quality)*float(value.weight); weights+=float(value.weight)
 	var plan_ingredients: Array = []
 	for item: Dictionary in _consumed:
 		plan_ingredients.append({"local_id": item.local_id, "ingredient_id": item.ingredient_id, "amount": item.amount, "batch_id": item.batch_id})
@@ -726,7 +762,7 @@ func snapshot() -> Dictionary:
 		"steps": _steps.duplicate(true), "history": _history.duplicate(true), "plating": _plating.duplicate(true), "events": _events.duplicate(true),
 		"dish_attributes": derived.attributes, "missing_required": derived.missing, "base_reasons": derived.reasons, "scoring_rules": _config.scoring_rules.duplicate(true),
 		"container": _container, "san_context": {"current": _san, "window_multiplier": _san_multiplier()}, "san_spent": _san_spent, "variant_id": _variant_id,
-		"recovery_sec": _recovery_sec,
+		"recovery_sec": _recovery_sec, "production_mode":production_mode, "performance_score":100.0*weighted/weights if weights>0 else 0.0,
 		"plating_dragging": not _dragged_piece.is_empty(), "fermentations": _fermenting.values().duplicate(true), "initialization_error": _initial_error,
 		"consumed_ingredients": _consumed.duplicate(true), "dish_id": _dish_id(), "custom_plan": {"schema_version": (3 if _plan.any(func(step:Dictionary)->bool:return step.parameters.has("amounts")) else 2) if _pc_controls else 1, "recipe_id": _recipe.id, "ingredients": plan_ingredients, "operations": _plan.duplicate(true)}}
 
@@ -953,7 +989,7 @@ func portable_data() -> TDOutcome:
 		cuts.append({"directions":history[index].get("successful_directions",[]).duplicate(),"quality":step.quality,"elapsed_sec":step.elapsed_sec,"operation_id":step.operation_id})
 	var attributes: Dictionary={}
 	for field: String in ["temperature_c","exposure_sec","reaction_exposure","reactions","flavor","texture","aroma","history"]: attributes[field]=item[field]
-	return TDOutcome.new(true,"PORTABLE","",{"schema_version":1,"id":item.id,"ingredient_id":item.ingredient_id,"amount":item.amount,"cuts":cuts,"cut_san_spent":float(item.get("cut_san_spent",0)),"reaction_harmony":float(item.get("reaction_harmony_contribution",0)),"processing_state":attributes.duplicate(true)})
+	return TDOutcome.new(true,"PORTABLE","",{"schema_version":1,"id":item.id,"ingredient_id":item.ingredient_id,"amount":item.amount,"expires_on":int(item.get("expires_on",0)),"cuts":cuts,"cut_san_spent":float(item.get("cut_san_spent",0)),"reaction_harmony":float(item.get("reaction_harmony_contribution",0)),"processing_state":attributes.duplicate(true)})
 
 func restore_portable(raw: Variant) -> TDOutcome:
 	if not is_cold() or not _ingredients.is_empty(): return _error("BUSY")
@@ -967,9 +1003,11 @@ func restore_portable(raw: Variant) -> TDOutcome:
 		for direction: Variant in cut.directions:
 			if not _finite(direction,0,2) or int(direction)!=direction: return _error("INVALID_PORTABLE")
 	if raw.has("processing_state") and not _valid_cold_state(raw.processing_state,raw.cuts): return _error("INVALID_PORTABLE")
+	if raw.has("expires_on") and (not _finite(raw.expires_on,0,1000001000) or float(raw.expires_on)!=floorf(float(raw.expires_on))): return _error("INVALID_PORTABLE")
 	# Restore only validated raw identity and actual cut inputs, never arbitrary saved attributes.
 	var generated: String=_add({"ingredient_id":raw.ingredient_id,"amount":raw.amount,"batch_id":"main"})
 	var item: Dictionary=_ingredients[generated]; _ingredients.erase(generated); item.id=raw.id; _ingredients[raw.id]=item
+	item.expires_on=int(raw.get("expires_on",0))
 	_consumed[0].instance_id=raw.id
 	_plan.append({"operation":"add","parameters":{"ingredient_id":raw.ingredient_id,"amount":raw.amount,"batch_id":"main","local_id":item.local_id}})
 	var random_before: float=_prepared_random; _prepared_random=1.0

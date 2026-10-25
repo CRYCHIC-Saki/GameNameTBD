@@ -1,5 +1,6 @@
 {
   "schema_version": 1,
+  "playability": {"status":"PROPOSED_AI_045","deviation_grace":8.0,"deviation_factor":0.75,"harmony_scores":[40,55,70,80,90]},
   "scope": "SINGLE_STORE",
   "parameter_status": "PROPOSED",
   "base": "res://content/cooking_system.json",

@@ -33,6 +33,16 @@ func test_hand_calculated_score_and_distinct_customers() -> void:
 	assert_eq(mild.data["reasons"][-1]["source"], "requirements")
 	assert_almost_eq(mild.data["reasons"][-1]["penalty"], 20.0, 0.00001)
 
+func test_playability_grace_reduces_small_errors_but_preserves_preferences() -> void:
+	var dish:=_dish();dish.scoring_rules["deviation_grace"]=8.0;dish.scoring_rules["deviation_factor"]=.75
+	var before:=dish.duplicate(true);var scorer:=Scorer.new()
+	assert_almost_eq(float(scorer.evaluate(dish,{"requirements":[_sweet(0,52)]}).data.satisfaction),86.2,.00001)
+	var strong:=scorer.evaluate(dish,{"requirements":[_sweet(0,10)]})
+	assert_almost_eq(float(strong.data.satisfaction),73.6,.00001)
+	assert_almost_eq(float(strong.data.requirements[0].raw_deviation),50.0,.00001)
+	assert_almost_eq(float(scorer.evaluate(dish,{"requirements":[]}).data.satisfaction),86.2,.00001)
+	assert_eq(dish,before)
+
 func test_only_declared_dimensions_contribute() -> void:
 	var scorer := Scorer.new()
 	var first: Dictionary = _dish()

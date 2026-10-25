@@ -24,6 +24,13 @@ func load_data(raw: Variant) -> TDOutcome:
 	var loaded := base.load_file(raw.base)
 	if not loaded.ok: return loaded
 	var data: Dictionary = base.data()
+	if raw.has("playability"):
+		var tuning: Variant=raw.playability
+		if not tuning is Dictionary or not _number(tuning.get("deviation_grace"),0,20) or not _number(tuning.get("deviation_factor"),.25,1) or not tuning.get("harmony_scores") is Array or tuning.harmony_scores.size()!=5: return TDOutcome.new(false,"INVALID_PLAYABILITY")
+		for i: int in 5:
+			if not _number(tuning.harmony_scores[i],0,100): return TDOutcome.new(false,"INVALID_PLAYABILITY")
+			data.rules.harmony_levels[i].score=tuning.harmony_scores[i]
+		data.scoring_rules["deviation_grace"]=tuning.deviation_grace;data.scoring_rules["deviation_factor"]=tuning.deviation_factor
 	for replacement: Variant in raw.ingredient_overrides:
 		if not replacement is Dictionary or replacement.get("scope") != "PROTOTYPE": return TDOutcome.new(false,"INVALID_OVERRIDE")
 		var found: bool = false
@@ -77,6 +84,9 @@ func load_data(raw: Variant) -> TDOutcome:
 			if not target is Dictionary or not integer(target.get("taste"),0,6) or tastes.has(int(target.taste)) or not raw.costs.has(target.get("ingredient_id")) or names[target.ingredient_id].category!="seasoning" or not _number(target.get("amount"),.01,.4): return TDOutcome.new(false,"INVALID_REQUEST_RULES")
 			tastes[int(target.taste)]=true
 	config = raw.duplicate(true)
+	var stock: Dictionary=TDFoodStock.load_rules()
+	for id: String in config.costs:
+		if not stock.has(id): return TDOutcome.new(false,"MISSING_STOCK_DEFINITION",id)
 	return TDOutcome.new(true,"LOADED")
 
 static func integer(value: Variant, low: int, high: int) -> bool:

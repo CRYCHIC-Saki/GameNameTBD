@@ -40,10 +40,13 @@ try {
   try {
     $names = @($archive.Entries | ForEach-Object { $_.FullName })
     foreach ($name in $names) {
-      if ($name -notmatch '^(src/|\.godot/|assets/(kitchen/(recipe-icons/)?|town/)[^/]+\.png(\.import)?$|content/(dev_samples|cooking_prototype|cooking_system|service_content|restaurant|phase3_world|pantry|ingredient_index|research/recipe_atlas|research/runtime_recipes|town_economy/economy)\.json$|project\.binary$)') { throw "Non-runtime resource exported: $name" }
+      if ($name -notmatch '^(src/|\.godot/|assets/(kitchen/(recipe-icons/)?|town/)[^/]+\.png(\.import)?$|content/(dev_samples|cooking_prototype|cooking_system|service_content|restaurant|phase3_world|pantry|ingredient_index|research/recipe_atlas|research/runtime_recipes|town_economy/economy|markets/kitchen_stock)\.json$|project\.binary$)') { throw "Non-runtime resource exported: $name" }
     }
     $names | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'runtime-manifest.json') -Encoding utf8
 	if ('content/town_economy/economy.json' -notin $names) { throw 'Missing exported economy configuration' }
+	foreach ($resource in @('content/markets/kitchen_stock.json','src/business/food_stock.gd','src/ui/ingredient_icon.gd')) {
+	  if ($resource -notin $names -and ($resource + '.remap') -notin $names) { throw "Missing exported stock resource: $resource" }
+	}
 	foreach ($script in Get-ChildItem -LiteralPath (Join-Path $root 'src/town_economy') -Filter '*.gd' -File) {
 	  $resource = 'src/town_economy/' + $script.Name
 	  if ($resource -notin $names -and ($resource + '.remap') -notin $names) { throw "Missing exported economy script: $resource" }

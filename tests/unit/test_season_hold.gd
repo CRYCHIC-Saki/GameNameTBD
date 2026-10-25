@@ -84,3 +84,60 @@ func test_actual_amount_changes_real_flavor_and_plan_is_read_only() -> void:
 		assert_eq(session.complete_operation(result).code,"ALREADY_FINISHED")
 		assert_eq(session.snapshot().to_dict(),snapshot)
 	assert_gt(float(samples[1].dish_attributes.flavor[4][1]),float(samples[0].dish_attributes.flavor[4][1]))
+
+func stocked_hold(units: int) -> Dictionary:
+	var catalog:=TDServiceCatalog.new();assert_true(catalog.load_file().ok)
+	var shop:=TDShopSession.new(catalog,"stream",42,["service.tomato_egg"])
+	assert_true(shop.buy({"tomato":1000,"salt":units},"buy").ok);assert_true(shop.open_day().ok)
+	var session:=TDCookingSession.new("hold",1,catalog.cooking.for_recipe("service.tomato_egg"),{"pc_controls":true,"document_rules":true})
+	session.set_material_sink(func(token:String,amounts:Dictionary)->TDOutcome:return shop.consume_materials(shop.day_namespace()+token,amounts),shop.available)
+	var request:=TDRequest.new("hold",1,"add","add",0,{"ingredient_id":"tomato","amount":1});request.schema_version=3
+	assert_true(session.begin(request).ok)
+	request=TDRequest.new("hold",1,"season-1","season",session.snapshot().to_dict().revision,{"ingredient_id":"salt","amount":.1,"mode":"precise"});request.schema_version=3
+	assert_true(session.begin(request).ok)
+	var clock:=TDClock.new();var qte:=controller(clock)
+	qte.material_pour=session.pour_material;qte.material_available=session.material_units
+	return {"shop":shop,"session":session,"clock":clock,"qte":qte}
+
+func test_real_inventory_streaming_stops_at_empty_and_never_charges_twice() -> void:
+	var run:=stocked_hold(30)
+	run.clock.advance(1);run.qte.input(1,run.clock.qte_sec,"spice:salt",true)
+	run.clock.advance(.1);run.qte.update();assert_eq(run.shop.available("salt"),10)
+	run.clock.advance(.4);run.qte.update();assert_eq(run.shop.available("salt"),0)
+	var result: TDOutcome=run.qte.finish();assert_true(result.ok)
+	assert_eq(result.data.last_judgement.reason,"SPICE_EMPTY")
+	assert_almost_eq(float(result.data.actual_actions[0].amount),.03,.000001)
+	assert_true(run.session.complete_operation(result).ok)
+	var state: Dictionary=run.shop.snapshot()
+	assert_eq(run.session.complete_operation(result).code,"ALREADY_FINISHED");assert_eq(run.shop.snapshot(),state)
+	var salt: Dictionary=run.session.snapshot().to_dict().ingredients.values().filter(func(f:Dictionary)->bool:return f.ingredient_id=="salt")[0]
+	assert_almost_eq(float(salt.amount),.03,.000001)
+	assert_eq(run.session.pour_material("season-1",0,"salt",200).code,"STALE_OPERATION")
+
+func test_stream_pause_cancel_and_split_time_keep_actual_paid_amount() -> void:
+	var results: Array=[]
+	for slices: int in [1,100]:
+		var run:=stocked_hold(70);run.clock.advance(1);run.qte.input(1,run.clock.qte_sec,"spice:salt",true)
+		for i: int in slices: run.clock.advance(.5/slices);run.qte.update()
+		results.append(run.qte.finish().data.actual_actions);assert_eq(run.shop.available("salt"),0)
+	assert_eq(results[0],results[1])
+	var run:=stocked_hold(200);run.clock.advance(1);run.qte.input(1,run.clock.qte_sec,"spice:salt",true)
+	run.clock.advance(.2);run.qte.release_input();run.clock.paused=true;run.clock.advance(10);run.qte.update()
+	assert_eq(run.shop.available("salt"),160)
+	run.qte.cancel();run.session.cancel();assert_eq(run.session.pour_material("season-1",0,"salt",100).code,"STALE_OPERATION")
+	assert_eq(run.shop.available("salt"),160,"already poured material remains waste after cancellation")
+
+func test_production_tolerance_inclusive_and_partial_performance_not_zeroed() -> void:
+	var raw: Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://content/cooking_system.json"))
+	var assistance: Dictionary=raw.pc_operations.document_rules.assistance
+	for error: float in [.1,.2,.20001]:
+		var clock:=TDClock.new();var qte:=controller(clock,assistance)
+		clock.advance(1+error);qte.input(1,clock.qte_sec,"spice:salt",true)
+		clock.advance(.5);qte.input(2,clock.qte_sec,"spice:salt",false)
+		clock.advance(3);qte.update();var done:=qte.finish()
+		assert_almost_eq(float(done.data.quality),1.0 if error==.1 else (.85 if error==.2 else 0.0),.000001)
+	var clock:=TDClock.new();var settings: Dictionary=assistance.duplicate(true)
+	settings.merge({"sequence":["spice:salt","spice:sugar"],"beat_times_sec":[1.0,3.0],"hold_durations_sec":[.5,.5]},true)
+	var qte:=controller(clock,settings)
+	clock.advance(1);qte.input(1,clock.qte_sec,"spice:salt",true);clock.advance(.5);qte.input(2,clock.qte_sec,"spice:salt",false)
+	clock.advance(5);qte.update();assert_almost_eq(float(qte.finish().data.quality),.5,.000001)

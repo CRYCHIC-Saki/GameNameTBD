@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "status": "PROPOSED_AI_044",
+  "note": "Shelf days reuse pantry refrigerated/dry category defaults. 1000 internal units per bottle/bag; no unverified grams/ml conversion. Vegetable includes staple and soy ingredients under the existing four factory groups.",
+  "items": {
+    "tomato": {"group":"vegetable","shelf_days":9,"pack_units":1000,"unit":"份","condiment":false},
+    "egg": {"group":"meat","shelf_days":15,"pack_units":1000,"unit":"份","condiment":false},
+    "beef": {"group":"meat","shelf_days":6,"pack_units":1000,"unit":"份","condiment":false},
+    "pork": {"group":"meat","shelf_days":6,"pack_units":1000,"unit":"份","condiment":false},
+    "chicken": {"group":"meat","shelf_days":6,"pack_units":1000,"unit":"份","condiment":false},
+    "mushroom": {"group":"vegetable","shelf_days":9,"pack_units":1000,"unit":"份","condiment":false},
+    "noodles": {"group":"vegetable","shelf_days":30,"pack_units":1000,"unit":"份","condiment":false},
+    "rice": {"group":"vegetable","shelf_days":30,"pack_units":1000,"unit":"份","condiment":false},
+    "tofu": {"group":"vegetable","shelf_days":8,"pack_units":1000,"unit":"份","condiment":false},
+    "peanut": {"group":"vegetable","shelf_days":60,"pack_units":1000,"unit":"份","condiment":false},
+    "chili": {"group":"vegetable","shelf_days":9,"pack_units":1000,"unit":"份","condiment":false},
+    "oil": {"group":"seasoning","shelf_days":120,"pack_units":1000,"unit":"瓶","condiment":true},
+    "starch": {"group":"seasoning","shelf_days":180,"pack_units":1000,"unit":"袋","condiment":true},
+    "salt": {"group":"seasoning","shelf_days":135,"pack_units":1000,"unit":"袋","condiment":true},
+    "sugar": {"group":"seasoning","shelf_days":135,"pack_units":1000,"unit":"袋","condiment":true},
+    "vinegar": {"group":"seasoning","shelf_days":135,"pack_units":1000,"unit":"瓶","condiment":true},
+    "soy_sauce": {"group":"seasoning","shelf_days":135,"pack_units":1000,"unit":"瓶","condiment":true},
+    "wine": {"group":"seasoning","shelf_days":135,"pack_units":1000,"unit":"瓶","condiment":true},
+    "ginger": {"group":"seasoning","shelf_days":9,"pack_units":1000,"unit":"袋","condiment":true},
+    "garlic": {"group":"seasoning","shelf_days":9,"pack_units":1000,"unit":"袋","condiment":true},
+    "pepper": {"group":"seasoning","shelf_days":180,"pack_units":1000,"unit":"袋","condiment":true},
+    "scallion": {"group":"seasoning","shelf_days":9,"pack_units":1000,"unit":"袋","condiment":true},
+    "bean_paste": {"group":"seasoning","shelf_days":60,"pack_units":1000,"unit":"瓶","condiment":true}
+  }
+}

@@ -30,6 +30,8 @@ func _init() -> void:
 	world.attach_research(research)
 	shop=TDShopSession.new(service,"",101,world.research_service_ids())
 	shop.cooking_reward=_reward_cooking
+	world.factory_products_provider=_factory_products
+	world.factory_item_provider=_factory_item
 	world.build_home("chinese")
 	world.scaled_interior=false # The supplied persistent layout has priority.
 	var furniture:=TDRestaurantCatalog.new()
@@ -48,6 +50,7 @@ func _init() -> void:
 
 func _wire_commerce() -> void:
 	shop.commerce=commerce
+	world.factory_products_provider=_factory_products;world.factory_item_provider=_factory_item
 	commerce.attach_cash_baseline(int(shop.snapshot().money_cents))
 	for town_id: String in commerce.config.active_towns:
 		var map:=world.town_map if town_id==commerce.state.home else TDTownMap.new()
@@ -61,6 +64,18 @@ func _wire_commerce() -> void:
 		var runtime:=research.catalog.runtime_id(id)
 		var recipe:=world.catalog.kitchen_recipe_id(runtime)
 		if not recipe.is_empty(): shop.recipe_cultures[recipe]={"cn":"chinese","eu":"continental","jp":"japanese","sea":"southeast_asian","lat":"latin_american"}.get(research.catalog.node(id).cuisine_id,research.catalog.node(id).cuisine_id)
+
+func _factory_products(group: String) -> Array:
+	var rows: Array=[]
+	for id: String in shop.purchase_ids():
+		if shop.stock_info(id).group==group: rows.append({"id":id,"hours":1.0 if group=="meat" else .5})
+	return rows
+
+func _factory_item(id: String) -> Dictionary:
+	if not service.config.costs.has(id): return {}
+	for food: Dictionary in service.cooking.data().ingredients:
+		if food.id==id: return {"id":id,"name":food.name,"cost":maxi(1,ceili(float(service.config.costs[id])/100)),"unit":shop.stock_info(id).unit}
+	return {}
 
 func sync_commercial_map() -> TDOutcome:
 	return world.town_map.apply_commercial_occupancy(commerce.expansion.presentation(commerce.state.home,commerce.state.competitors[commerce.state.home],int(commerce.state.day)))
@@ -153,6 +168,7 @@ func next_day() -> TDOutcome:
 
 func order_remote(id: String, town_id: String = "", units: int = 1000, request_id: String = "") -> TDOutcome:
 	if not service.config.costs.has(id): return TDOutcome.new(false,"UNSUPPORTED_MATERIAL")
+	if not shop.purchasable(id): return TDOutcome.new(false,"INGREDIENT_LOCKED","该原料尚未用于已解锁菜谱。")
 	if not at_boundary() or shop.snapshot().phase!="PREPARE": return TDOutcome.new(false,"NOT_PREPARING")
 	if town_id.is_empty():
 		if commerce.state.routes.size()<2: return TDOutcome.new(false,"NO_REMOTE_ROUTE","目前只有本地商路，等待剧情推荐后再预订。")

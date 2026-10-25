@@ -1,5 +1,13 @@
 # 项目架构与接入边界
 
+## D037：批次库存与熟练制作
+
+TDFoodStock为无节点批次函数，Shop.inventory数量仍是权威账，inventory_lots逐项校验和其一致；原料出库把到期日传给CookingModel，portable_data跨砧板/锅/冰箱带回，不更改模板。GameProfile给旧工厂装配公开的可供货清单与商品信息，正式和调试世界不混账；图标抽取为TDIngredientIcon供工厂/集市/冰箱/M6复用。
+
+CookingQTE只提出累计倒入请求，CookingModel按operation+hold身份计量并调用Shop.consume_materials，实际返回量决定风味；结束时核对已扣量，不重复扣。inflight_materials是只读当前工序在途消耗，ShopView计算订单余料时扣除，避免流式扣料导致误售罄。所有时间仍来自TDClock。
+
+Shop按合法手工成品的模块performance_score累积mastery，顾客满意度保持独立。CookingLane自动模式驱动同一BeatSheet/Controller/Model执行切配与烹调，按配方流式倒料、生成可交付成品；节点不直接制造高分，也不跳过真实耗时。模板、批次、手艺与配置通过正式槽保存；只在既有日边界写盘。
+
 ## D036：五镇社会经济
 
 TDGameProfile继续持有唯一Shop钱包并装配TDWorldEconomy。后者组合TDCommunitySociety（320家庭、工资/生活/预留/公共部门）、TDCommunityBank（有限储备、存款负债、贷款/利息）及TDBusinessExpansion（产权/投资/工期）；均为无节点规则对象。没有新增Autoload或后台线程，远镇不实例化场景，每日集中推进。
