@@ -1,5 +1,20 @@
 # 当前协作波次
 
+## 2026-10-25 库存与熟练制作上传交接
+
+- 用户已明确授权推送D037。fetch后origin/main仍为83888da，origin/integration/phase-4-wave-commerce仍为3d1f138，无远端新增提交；无需冲突合并。
+- PR #3仍为开放草稿，经济前置的check/ownership均成功。本轮integration/phase-4-wave-kitchen-stock保留其完整祖先，新增集成PR目标main并明确依赖#3；不改写共同历史，不直接推main或自动合并。
+- 唯一集成者为本任务Agent；本轮仅整理提交与上传。已备份工作区，排除两份原始未跟踪商业资料、构建产物和测试缓存。相对于origin/main的集成所有权检查通过。
+- 复用生产代码未变的422/422全量、14/14最终边界、导出和GPU证据；本轮远程CI待上传后实际运行，人类审查与试玩仍PENDING。此前“未推送”条目为本次授权前的历史状态。
+
+## 2026-10-25 库存与熟练制作（D037）
+
+- 用户授权六项改进，两题已答。基线3d1f138；本地integration/phase-4-wave-kitchen-stock，不自动推送或合并PR #3。
+- 唯一写入者为本任务Agent，按角色顺序工作；三位调查代理只读，均未取得写权。cook在artifacts/kitchen-stock-work/cook负责cooking/qte/kitchen/scoring及相应测试；economy在artifacts/kitchen-stock-work/economy负责business规则/界面与相应测试。两个角色入口所有权检查0变动PASS。
+- 集成角色负责AGENTS/公共契约/阶段记录、game_profile、game_shell、phase3_session工厂过滤接入、town_world共享图标适配、src/ui共享展示、content/service_content与运行工具白名单。厂商生产/建筑核心不重写；供货品类从已有四类复用。所有修改须记录准确路径并验证后整合，不覆盖其他未提交工作。
+- 状态DELIVERED_LOCAL_PLAYTEST_PENDING。原始两份未跟踪资料保持不动；玩家存档不用于测试。全量422/422、导出417资源/29入口检查、GPU8图通过；人工仍PENDING。本轮写入锁完成释放，保留三个角色工作树供审阅，未推送或合并。
+- 回归适配：本任务Agent顺序承担town-economy，只改tests/integration/test_town_economy_integration.gd的旧档断言，要求历史全部字段保留并允许新增D037批次/手艺元数据；不改经济核心或旧fixture。使用本波独立town-economy工作树，唯一写入者不变。
+
 ## 2026-10-25 经济集成上传
 
 - 用户授权上传D035/D036及修复；已核实origin/main=83888da，没有新远端改动。新集成候选为integration/phase-4-wave-commerce，PR目标main；不重写共同历史、不直接推main、不自动合并。

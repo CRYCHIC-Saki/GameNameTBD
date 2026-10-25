@@ -29,8 +29,20 @@ var _base_reasons: Array = []
 var _temperature_c: float = 22.0
 var _full: RefCounted
 
-func set_material_sink(sink: Callable) -> void:
-	if _version == 3: _full.material_sink = sink
+func set_material_sink(sink: Callable, availability: Callable = Callable()) -> void:
+	if _version == 3: _full.material_sink = sink; _full.material_available=availability
+
+func material_units(id: String) -> int:
+	return int(_full.material_available.call(id)) if _version==3 and _full.material_available.is_valid() else 100000
+
+func inflight_materials() -> Dictionary:
+	return _full.inflight_materials() if _version==3 else {}
+
+func pour_material(operation: String, hold: int, ingredient: String, cumulative: int) -> TDOutcome:
+	return _full.pour_material(operation,hold,ingredient,cumulative) if _version==3 else TDOutcome.new(false,"UNSUPPORTED_VERSION")
+
+func set_production_mode(mode: String) -> void:
+	if _version==3 and mode in ["manual","automatic"]: _full.production_mode=mode
 
 func select_recipe(config: Dictionary) -> TDOutcome:
 	return _full.select_recipe(config) if _version == 3 else TDOutcome.new(false,"UNSUPPORTED_VERSION")

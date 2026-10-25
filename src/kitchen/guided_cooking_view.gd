@@ -41,6 +41,8 @@ func _gui_input(event: InputEvent) -> void:
 		if lane.qte==null or lane.progress.get("pc_module")!="M6": continue
 		for id: String in SPICES:
 			if spice_rect(lane.lane_index,id).has_point(event.position+global_position):
+				if lane.session.material_units(id)<=0:
+					feedback=SPICE_NAMES[SPICES.find(id)]+"已用完，请在下次开门前补货。"; accept_event(); queue_redraw(); return
 				if lane.progress.has("hold_durations_sec") or lane.progress.get("free_seasoning",false):
 					_held_lane=lane.lane_index; _held_spice=id; spice_input.emit(_held_lane,id,true)
 				else: spice_clicked.emit(lane.lane_index,id)
@@ -95,7 +97,7 @@ func _draw() -> void:
 	_draw_beat()
 	if show_san and not lanes.is_empty() and lanes[0].day_san>=0.0:
 		draw_rect(Rect2(0,0,1280,800),Color(0,0,0,TDSanRules.vignette_alpha(lanes[0].day_san)))
-		_text("SAN %d"%int(lanes[0].day_san),Vector2(32,78),18,GOLD)
+		_text("SAN %d"%int(lanes[0].day_san),Vector2(820,34),18,GOLD)
 
 func _draw_feedback() -> void:
 	_text("已送达 · 客人反馈",Vector2(32,85),26,GOLD)
@@ -170,6 +172,10 @@ func _draw_lane(lane: TDCookingLane, area: Rect2, slot: int) -> void:
 	var s: float=.78 if lanes.size()>1 else 1.0
 	if module=="M6": s *= .68
 	_draw_food_action(center,s,lane,p,module)
+	if lane.automatic:
+		_text("熟练制作 · "+("已完成，返回后按 E 端盘" if dish.state=="plated" else "正在"+label),area.position+Vector2(26,area.size.y-54),21,GOLD)
+		_text("无需操作 · 可返回厨房处理其他订单 · 暂停时一起停止",area.position+Vector2(26,area.size.y-23),17,Color("c7cfb5"))
+		return
 	if module=="M6": _cabinet(lane,area,p)
 	else: _symbols(lane,area,p)
 	if module=="M1":
@@ -313,12 +319,13 @@ func _cabinet(lane: TDCookingLane,area: Rect2,p: Dictionary) -> void:
 	if status.phase=="late": color=RED
 	for i: int in SPICES.size():
 		var r: Rect2=_spice_box(area,i)
+		var empty: bool=lane.session.material_units(SPICES[i])<=0
 		var active: bool=SPICES[i]==next
-		_panel(r,Color("54834b") if active else Color("344536"))
+		_panel(r,Color("424642") if empty else (Color("54834b") if active else Color("344536")))
 		if active: draw_rect(r.grow(4),color,false,4)
-		_rect(r.position+Vector2(12,16),Vector2(15,22),[INK,GOLD,Color("a77550"),Color("79553b"),Color("c5b36b"),Color("b6c59f"),GOLD,INK,RED,GREEN][i])
-		_rect(r.position+Vector2(11,12),Vector2(17,5),Color("917350"))
-		_text(SPICE_NAMES[i],r.position+Vector2(32,31),16,INK)
+		TDIngredientIcon.draw_on(self,SPICES[i],Rect2(r.position+Vector2(1,7),Vector2(30,35)),empty)
+		_text(SPICE_NAMES[i],r.position+Vector2(32,25),16,Color("888e88") if empty else INK)
+		_text("已用完" if empty else "余%.2f"%(float(lane.session.material_units(SPICES[i]))/1000),r.position+Vector2(30,43),12,Color("929992") if empty else GOLD)
 		if active and bool(p.get("hold_pressed",false)):
 			draw_circle(r.end-Vector2(9,9),6,GREEN)
 		_boxes.append({"rect":r,"lane":lane.lane_index,"id":SPICES[i]})
@@ -444,6 +451,7 @@ func _draw_judgement(lane: TDCookingLane,area: Rect2) -> void:
 		return
 	var detail: String={"WRONG_KEY":"按键不对","WRONG_DIRECTION":"漏了转向，切面不对","MISSED_NOTE":"漏拍","OUTSIDE_WINDOW":"没有到落点","TIMEOUT":"未完成操作","EARLY_RELEASE":"松手早了","OVERCHARGED":"松手晚了"}.get(reason,"")
 	if reason=="THERMAL_RESULT": detail="控温阶段完成"
+	if reason=="SPICE_EMPTY": detail="这份调料已用完，已自动停止添加"
 	if reason=="HOLD_DURATION":
 		var deviation: float=float(event.get("error_sec",0))
 		detail="用量正好" if absf(deviation)<.001 else (("少倒 %.2f 秒" if deviation<0 else "多倒 %.2f 秒")%absf(deviation))

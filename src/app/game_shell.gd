@@ -322,17 +322,27 @@ func show_market() -> void:
 		box.add_child(TDUI.label("今天已经打烊。回店休息后，明早再来挑新鲜食材。",20));return
 	var forecast:=profile.shop.visitor_forecast()
 	box.add_child(TDUI.label("今日预计 %d—%d 位客人 · 买好食材后回店挂牌营业"%[forecast.min_visitors,forecast.max_visitors],20,TDUI.ORANGE))
-	for id: String in profile.service.config.costs:
+	for id: String in profile.shop.spoiled_today():
+		box.add_child(TDUI.label("今日过期：%s %.2f%s，已清理。"%[_ingredient_name(id),float(profile.shop.spoiled_today()[id])/1000,profile.shop.stock_info(id).unit],17,TDUI.ORANGE))
+	for id: String in profile.shop.purchase_ids():
 		var row:=HBoxContainer.new();box.add_child(row)
+		row.add_child(TDIngredientIcon.make(id))
 		var market:Dictionary=profile.commerce.state.markets[profile.commerce.state.home]
-		var caption:=TDUI.label("%s · 家中 %.1f份 · 市场 %.1f份 · ¥%.2f/份"%[_ingredient_name(id),float(profile.shop.available(id))/1000.0,float(market.stock[id])/1000.0,float(market.price[id])/100.0],18)
+		var info:=profile.shop.stock_info(id)
+		var caption:=TDUI.label(_market_caption(id),18)
 		caption.size_flags_horizontal=Control.SIZE_EXPAND_FILL;row.add_child(caption)
 		var amount:=SpinBox.new();amount.min_value=1;amount.max_value=30;amount.step=1;amount.value=1;row.add_child(amount)
 		row.add_child(TDUI.button("购买",func()->void:
 			var result:=profile.buy({id:int(amount.value)*1000});_outcome(result)
-			if result.ok: caption.text="%s · 家中 %.1f份 · 市场 %.1f份 · ¥%.2f/份"%[_ingredient_name(id),float(profile.shop.available(id))/1000,float(market.stock[id])/1000,float(market.price[id])/100]))
+			if result.ok: caption.text=_market_caption(id)))
+		row.tooltip_text="按%s购买，入库起保质%d天；冰箱显示余量和剩余天数。"%[info.unit,info.shelf_days]
 	box.add_child(TDUI.button("资金困难 · 申请应急补助",func()->void:_outcome(profile.shop.claim_grant())))
 	box.add_child(TDUI.button("查看跨镇商路与预订",show_supplier))
+
+func _market_caption(id: String) -> String:
+	var info:=profile.shop.stock_info(id)
+	var market:Dictionary=profile.commerce.state.markets[profile.commerce.state.home]
+	return "%s · 家中 %.2f%s · ¥%.2f/%s · 保质%d天"%[_ingredient_name(id),float(profile.shop.available(id))/1000,info.unit,float(market.price[id])/100,info.unit,info.shelf_days]
 
 func show_supplier() -> void:
 	if not profile.at_boundary(): return
@@ -357,9 +367,11 @@ func show_remote_market(town_id: String) -> void:
 	if town_id not in profile.commerce.state.routes: _outcome(TDOutcome.new(false,"ROUTE_LOCKED","尚未收到这条商路的推荐。"));return
 	var box:=_dialog(_town_name(town_id)+" · 当日报价")
 	var market:Dictionary=profile.commerce.state.markets[town_id]
-	for id: String in profile.service.config.costs:
+	for id: String in profile.shop.purchase_ids():
 		var row:=HBoxContainer.new();box.add_child(row)
-		var label:=TDUI.label("%s · 现货%.1f份 · 含运费¥%.2f/份"%[_ingredient_name(id),float(market.stock[id])/1000,float(int(market.price[id])+profile.commerce.freight(town_id))/100],18)
+		row.add_child(TDIngredientIcon.make(id))
+		var info:=profile.shop.stock_info(id)
+		var label:=TDUI.label("%s · 现货%.1f%s · 含运费¥%.2f/%s"%[_ingredient_name(id),float(market.stock[id])/1000,info.unit,float(int(market.price[id])+profile.commerce.freight(town_id))/100,info.unit],18)
 		label.size_flags_horizontal=Control.SIZE_EXPAND_FILL;row.add_child(label)
 		var amount:=SpinBox.new();amount.min_value=1;amount.max_value=16;amount.value=1;row.add_child(amount)
 		var token: String="remote-ui:%s:%d:%s"%[profile.shop.snapshot().run_id,profile.shop.snapshot().serial+1,id]

@@ -56,6 +56,64 @@ var _hold_index: int = -1
 var _hold_action: String = ""
 var _hold_error: float = 0.0
 var _note_held: float = 0.0
+var material_pour: Callable
+var material_available: Callable
+var _note_units: int = 0
+var automatic: bool = false
+var _auto_amounts: Dictionary = {}
+
+func enable_automatic() -> void:
+	if _state!="ready": return
+	automatic=true
+	if _kind=="charge": _duration_sec=float(_config.get("charge_preview_sec",0))+(float(_config.target_min_sec)+float(_config.target_max_sec))*.5
+	elif _kind=="window": _duration_sec=float(_config.target_sec)
+
+func _advance_automatic(next_sec: float) -> void:
+	var delta: float=maxf(0,next_sec-_elapsed_sec)
+	if _kind=="maintain":
+		_cursor=(float(_config.target_min)+float(_config.target_max))*.5
+		_heat_dose+=_cursor*delta;_inside_sec+=delta*float(_config.get("automatic_quality",.85))
+	elif _kind=="charge":
+		_held_sec=maxf(0,next_sec-float(_config.get("charge_preview_sec",0)))
+		_charge_started=_held_sec>0
+	for index: int in _beats.size():
+		if _judgements[index]!="pending": continue
+		var at: float=_beats[index]
+		if _config.has("hold_durations_sec"):
+			var held: float=clampf(next_sec-at,0,float(_config.hold_durations_sec[index]))
+			var units: int=roundi(held*float(_config.pour_rate_per_sec)*1000)
+			if held>0:
+				if material_pour.is_valid():
+					var poured: TDOutcome=material_pour.call(str(_identity.operation_id),index,_steps[index].trim_prefix("spice:"),units)
+					if poured.ok: _auto_amounts[index]=int(poured.data.units)
+				else: _auto_amounts[index]=units
+			if next_sec+EPSILON<at+float(_config.hold_durations_sec[index]): continue
+			var actual: int=int(_auto_amounts.get(index,0))
+			if actual>0: _actual_actions.append({"action":_steps[index],"beat_index":index,"error_sec":0.0,"held_sec":float(actual)/1000/float(_config.pour_rate_per_sec),"amount":float(actual)/1000})
+			if actual<units: _judgements[index]="miss";_miss+=1
+			else: _judgements[index]="good";_good+=1
+		elif next_sec+EPSILON>=at:
+			_judgements[index]="good";_good+=1
+			if _kind=="rhythm" and (_cut_actions.is_empty() or _cut_actions[index]=="primary"): _cut_directions.append(_cut_targets[index] if not _cut_targets.is_empty() else 0)
+	_step_index=_good+_miss;_elapsed_sec=next_sec
+	if next_sec>=_duration_sec-EPSILON: _resolved=true;_reason="AUTOMATIC_COOKING"
+
+func _flow_hold(delta: float) -> void:
+	if _hold_index<0 or delta<=0: return
+	_note_held+=delta
+	var rate: float=float(_config.pour_rate_per_sec)
+	var paid: int=_note_units
+	_note_units=roundi(_note_held*rate*1000)
+	if not material_pour.is_valid(): return
+	var result: TDOutcome=material_pour.call(str(_identity.operation_id),_hold_index,_hold_action.trim_prefix("spice:"),_note_units)
+	if result.ok: _note_units=int(result.data.units)
+	else: _note_units=paid
+	if not result.ok or int(result.data.remaining_units)<=0:
+		_note_held=float(_note_units)/1000.0/rate
+		var action: String=_hold_action
+		if _config.get("free_seasoning",false): _finish_free_hold()
+		else: _finish_season_hold()
+		_judge("miss","SPICE_EMPTY",action)
 
 func _init(request: TDRequest, config: Dictionary, clock: TDClock, random_source: RefCounted) -> void:
 	reset(request, config, clock, random_source)
@@ -104,6 +162,8 @@ func reset(request: TDRequest, config: Dictionary, clock: TDClock, random_source
 	_cut_actions.clear(); _cut_targets.clear(); _last_judgement.clear()
 	_judgement_serial = 0; _control_suspended = false; _suspended_sec = 0.0
 	_hold_index = -1; _hold_action = ""; _hold_error = 0.0; _note_held = 0.0
+	_note_units=0; material_pour=Callable(); material_available=Callable()
+	automatic=false;_auto_amounts.clear()
 	_valid = _valid_config()
 	if not _valid:
 		return _outcome(false, "INVALID_CONFIG")
@@ -190,6 +250,7 @@ func start() -> TDOutcome:
 	return _outcome(true, "STARTED")
 
 func input(sequence: int, timestamp_sec: float, action: String, pressed: bool, value: float = 1.0) -> TDOutcome:
+	if automatic: return _outcome(false,"AUTOMATIC_COOKING")
 	var gate := _running_gate()
 	if gate != "":
 		return _outcome(false, gate)
@@ -207,6 +268,9 @@ func input(sequence: int, timestamp_sec: float, action: String, pressed: bool, v
 	_sequence = sequence
 	_advance_to(timestamp_sec)
 	_last_sec = timestamp_sec
+	if pressed and action.begins_with("spice:") and material_available.is_valid() and int(material_available.call(action.trim_prefix("spice:")))<=0:
+		_judge("miss","SPICE_EMPTY",action)
+		return _outcome(false,"SPICE_EMPTY")
 	if _config.get("free_seasoning",false):
 		if not pressed:
 			if _hold_index>=0 and action==_hold_action: _finish_free_hold()
@@ -216,7 +280,7 @@ func input(sequence: int, timestamp_sec: float, action: String, pressed: bool, v
 			if _pressed.get(action,false): return _outcome(false,"HELD_INPUT")
 			_pressed[action]=true; return _outcome(true,"HOLD_RESUMED")
 		if _actual_actions.size()>=32: return _outcome(false,"INSTANCE_LIMIT")
-		_hold_index=_actual_actions.size(); _hold_action=action; _note_held=0; _pressed[action]=true
+		_hold_index=_actual_actions.size(); _hold_action=action; _note_held=0; _note_units=0; _pressed[action]=true
 		_judge("good","HOLD_STARTED",action); return _outcome(true,"HOLD_STARTED")
 	if action == "wrong":
 		if pressed:
@@ -348,8 +412,9 @@ func _advance_to(timestamp_sec: float) -> void:
 		return
 	var next_sec := clampf(timestamp_sec - _start_sec, 0.0, _duration_sec)
 	var delta_sec := maxf(0.0, next_sec - _elapsed_sec)
+	if automatic: _advance_automatic(next_sec);return
 	if _config.get("free_seasoning",false):
-		if _hold_index>=0 and _pressed.get(_hold_action,false): _note_held+=delta_sec
+		if _hold_index>=0 and _pressed.get(_hold_action,false): _flow_hold(delta_sec)
 		_elapsed_sec=maxf(_elapsed_sec,next_sec)
 		if next_sec>=_duration_sec-EPSILON:
 			if _hold_index>=0: _finish_free_hold()
@@ -357,8 +422,8 @@ func _advance_to(timestamp_sec: float) -> void:
 		return
 	if _hold_index >= 0:
 		var limit: float = _beats[_hold_index]+float(_config.hold_durations_sec[_hold_index])*1.5+float(_config.good_sec)+_offset()
-		if bool(_pressed.get(_hold_action,false)): _note_held += maxf(0,minf(next_sec,limit)-_elapsed_sec)
-		if next_sec >= limit-EPSILON: _finish_season_hold()
+		if bool(_pressed.get(_hold_action,false)): _flow_hold(maxf(0,minf(next_sec,limit)-_elapsed_sec))
+		if _hold_index>=0 and next_sec >= limit-EPSILON: _finish_season_hold()
 	if _kind == "charge" and bool(_pressed.get("primary", false)):
 		_held_sec += delta_sec
 	if _kind == "maintain":
@@ -500,6 +565,7 @@ func _ready() -> bool:
 func _current_quality() -> float:
 	if not _valid:
 		return 0.0
+	if automatic: return float(_config.get("automatic_quality",.85))*(float(_good)/maxi(1,_beats.size()) if not _beats.is_empty() else 1.0)
 	var error_weight := float(_config.get("error_weight", 1.0))
 	match _kind:
 		"rhythm":
@@ -507,6 +573,7 @@ func _current_quality() -> float:
 		"maintain":
 			var assessed: float = _duration_sec - _suspended_sec
 			var ratio: float = clampf(_inside_sec / assessed, 0.0, 1.0) if assessed > EPSILON else 0.0
+			if _config.get("smooth_maintain",false): return clampf(ratio/.8,0,1)
 			if _config.get("document_rules",false): return 1.0 if ratio > .8+EPSILON else (.6 if ratio >= .5-EPSILON else 0.0)
 			return ratio
 		"sequence":
@@ -521,6 +588,7 @@ func _current_quality() -> float:
 	return _quality
 
 func _grade(quality: float) -> String:
+	if automatic: return "good" if quality>=.6 else "miss"
 	if not _valid:
 		return "miss"
 	if _kind == "maintain" and _config.get("attraction", false):
@@ -610,7 +678,7 @@ func _progress() -> Dictionary:
 	return data
 
 func _finish_free_hold() -> void:
-	var amount: float=roundi(_note_held*float(_config.pour_rate_per_sec)*1000)/1000.0
+	var amount: float=float(_note_units)/1000.0
 	if amount>0: _actual_actions.append({"action":_hold_action,"beat_index":_actual_actions.size(),"error_sec":0.0,"held_sec":_note_held,"amount":amount})
 	_pressed[_hold_action]=false; _hold_index=-1
 	_judge("good","FREE_POUR",_hold_action)
@@ -623,7 +691,7 @@ func _start_season_hold(action: String, timestamp: float) -> TDOutcome:
 	var adjusted: float = timestamp-_start_sec-_offset()
 	for index: int in _beats.size():
 		if _judgements[index] != "pending" or absf(adjusted-_beats[index]) > float(_config.good_sec)+EPSILON: continue
-		_hold_index = index; _hold_action = action; _hold_error = adjusted-_beats[index]; _note_held = 0
+		_hold_index = index; _hold_action = action; _hold_error = adjusted-_beats[index]; _note_held = 0; _note_units=0
 		_judgements[index] = "holding"
 		_judge("good","HOLD_STARTED",action,index,_hold_error)
 		return _outcome(true,"HOLD_STARTED")
@@ -639,7 +707,7 @@ func _finish_season_hold() -> void:
 	if _hold_action == _steps[index] and error <= float(_config.perfect_sec)+EPSILON: grade = "perfect"; _perfect += 1
 	elif _hold_action == _steps[index] and error <= float(_config.good_sec)+EPSILON: grade = "good"; _good += 1
 	else: _miss += 1
-	var amount: float = roundi(_note_held*float(_config.pour_rate_per_sec)*1000)/1000.0
+	var amount: float = float(_note_units)/1000.0
 	if amount > 0: _actual_actions.append({"action":_hold_action,"beat_index":index,"error_sec":_hold_error,"held_sec":_note_held,"amount":amount})
 	_judgements[index] = grade; _step_index += 1
 	_combo = _combo+1 if grade != "miss" else 0; _max_combo = maxi(_max_combo,_combo)

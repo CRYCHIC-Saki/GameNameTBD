@@ -94,7 +94,7 @@ func test_locked_recipe_method_and_corrupt_progress_are_explicit() -> void:
 func test_old_boundary_migrates_five_unlocked_without_touching_old_input() -> void:
 	var shop:=TDShopSession.new(catalog,"legacy")
 	var old: Dictionary=shop.snapshot()
-	for key: String in ["progress_version","cold_foods","unlocked"]: old.erase(key)
+	for key: String in ["progress_version","cold_foods","unlocked","stock_version","inventory_lots","mastery_version","mastery","mastery_dishes"]: old.erase(key)
 	old.inventory.erase("mushroom"); old.menu.erase("service.qiguoji"); old.fame.erase("service.qiguoji")
 	var before: Dictionary=old.duplicate(true)
 	assert_true(shop.restore(old).ok)

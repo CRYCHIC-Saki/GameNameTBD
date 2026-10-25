@@ -9,9 +9,11 @@ var running: bool = false
 var cells: Array = []
 var duration_sec: float = 0.0
 var pre_roll_beats: float = 0.0
+var _tolerance: Dictionary = {}
 
-func configure(sheet: Dictionary, operations: Dictionary) -> TDOutcome:
+func configure(sheet: Dictionary, operations: Dictionary, tolerance: Dictionary = {}) -> TDOutcome:
 	running = false
+	_tolerance=tolerance.duplicate(true)
 	_events.clear()
 	cells.clear()
 	pre_roll_beats=0
@@ -61,6 +63,9 @@ func _configure_beats(sheet: Dictionary, operations: Dictionary) -> TDOutcome:
 	if not _number(sheet.get("preview_beats",1.0)) or not _number(sheet.get("charge_start_grace_beats",4.0)): return TDOutcome.new(false,"INVALID_BEAT_SHEET")
 	var preview: float = float(sheet.get("preview_beats",1.0))
 	var start_grace: float = float(sheet.get("charge_start_grace_beats",4.0)) * _interval
+	var good: float=float(_tolerance.get("good_sec",.1))
+	var perfect: float=float(_tolerance.get("perfect_sec",.05))
+	if not is_finite(good) or not is_finite(perfect) or perfect<=0 or good<perfect or good>=_interval*.5: return TDOutcome.new(false,"INVALID_TIMING")
 	if preview < 1 or preview > 16 or start_grace <= 0 or start_grace > 10: return TDOutcome.new(false,"INVALID_BEAT_SHEET")
 	var previous: float = 0
 	for row: Variant in sheet.beats:
@@ -118,15 +123,15 @@ func _configure_beats(sheet: Dictionary, operations: Dictionary) -> TDOutcome:
 			settings.duration_sec = (float(g.last)-float(g.first)+1)*_interval
 		elif definition.operation in ["plate","steam"]:
 			var hold: float = g.times.size()*_interval
-			settings.target_min_sec = hold-.1; settings.target_max_sec = hold+.1
-			settings.perfect_center_sec = hold; settings.perfect_sec = .05
+			settings.target_min_sec = hold-good; settings.target_max_sec = hold+good
+			settings.perfect_center_sec = hold; settings.perfect_sec = perfect
 			settings.charge_preview_sec = preview * _interval
 			settings.start_grace_sec = start_grace
 			settings.timeout_sec = settings.charge_preview_sec + start_grace + hold + .3
 		elif definition.operation == "preheat":
 			origin_beat = float(g.first)-5
 			settings.target_sec = (float(g.first)-1-origin_beat)*_interval
-			settings.sweep_period_sec = settings.target_sec*4; settings.timeout_sec = settings.target_sec+.101
+			settings.sweep_period_sec = settings.target_sec*4; settings.timeout_sec = settings.target_sec+good+.001
 		else:
 			# One extra beat between seasoning holds, so each pour can finish before the next prompt.
 			if definition.operation == "season" and g.form == "hold":
@@ -162,10 +167,10 @@ func _configure_beats(sheet: Dictionary, operations: Dictionary) -> TDOutcome:
 		if overlap>.000001:
 			var settings: Dictionary=event.settings
 			if settings.has("beat_times_sec"):
-				if float(settings.beat_times_sec[0])-overlap<.101: return TDOutcome.new(false,"OVERLAPPING_GROUP")
+				if float(settings.beat_times_sec[0])-overlap<good+.001: return TDOutcome.new(false,"OVERLAPPING_GROUP")
 				for index: int in settings.beat_times_sec.size(): settings.beat_times_sec[index]-=overlap
 			elif event.operation=="preheat":
-				if float(settings.target_sec)-overlap<.101: return TDOutcome.new(false,"OVERLAPPING_GROUP")
+				if float(settings.target_sec)-overlap<good+.001: return TDOutcome.new(false,"OVERLAPPING_GROUP")
 				settings.target_sec-=overlap; settings.timeout_sec-=overlap
 				settings.sweep_period_sec=settings.target_sec*4
 			elif event.operation in ["plate","steam"] and overlap<=slack+.000001:
@@ -173,8 +178,8 @@ func _configure_beats(sheet: Dictionary, operations: Dictionary) -> TDOutcome:
 			else: return TDOutcome.new(false,"OVERLAPPING_GROUP")
 			event.beat=float(ends[track])/_interval
 		var pad: float = _interval*float(maxi(0,g.times.size()-1)) if event.operation=="season" and g.form=="hold" else 0.0
-		ends[track] = (float(g.last)-1+pre_roll_beats)*_interval + (.101 if g.form == "tap" else _interval) + moved
-		if pad>0: ends[track] = (float(g.last)-1+pre_roll_beats)*_interval+float(g.durations.back())*1.5+.101+pad+moved
+		ends[track] = (float(g.last)-1+pre_roll_beats)*_interval + (good+.001 if g.form == "tap" else _interval) + moved
+		if pad>0: ends[track] = (float(g.last)-1+pre_roll_beats)*_interval+float(g.durations.back())*1.5+good+.001+pad+moved
 		if event.settings.get("free_seasoning",false): ends[track]=float(event.beat)*_interval+float(event.settings.free_duration_sec)
 		if event.operation in ["plate","steam"]: ends[track] += start_grace + .201
 		slack = pad+moved

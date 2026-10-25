@@ -123,6 +123,71 @@ func test_real_tomato_egg_inventory_cooking_and_customer_delivery() -> void:
 	var before: Dictionary=view.shop.snapshot()
 	station("kitchen.serve"); assert_eq(view.shop.snapshot(),before)
 
+func mastered_fixture(recipe_id: String) -> void:
+	# Explicit precondition: historical four 100-point handmade dishes, not QTE evidence.
+	for i: int in 4:
+		assert_true(view.shop.observe_mastery({"session_id":view.shop.day_namespace()+"history","recipe_id":recipe_id,"dish_id":"history-%d"%i,"state":"plated","missing_required":[],"performance_score":100.0}).ok)
+
+func load_raw_pot(index: int) -> void:
+	for ingredient: String in ["tomato","egg"]:
+		assert_true(view.pick_ingredient(ingredient).ok)
+		station("kitchen.stove.left" if index==0 else "kitchen.stove.right")
+
+func test_automatic_real_workflow_pause_delivery_and_no_mastery_farming() -> void:
+	var id:=prepare_order("service.tomato_egg");mastered_fixture("service.tomato_egg")
+	load_raw_pot(0)
+	var before: Dictionary=view.shop.snapshot().inventory
+	assert_true(view.start_automatic(0).ok)
+	assert_ne(kitchen.lanes[0].snapshot().state,"plated")
+	assert_eq(view.start_automatic(0).code,"BUSY")
+	kitchen.advance(3);app.toggle_pause();var paused:=kitchen.lanes[0].snapshot()
+	kitchen.advance(100);assert_eq(kitchen.lanes[0].snapshot(),paused);app.toggle_pause()
+	play(100,false)
+	var dish:=kitchen.lanes[0].snapshot()
+	assert_eq(dish.state,"plated",str(kitchen.lanes[0].last_result.code));assert_false(dish.failed_dish)
+	assert_eq(dish.production_mode,"automatic");assert_lte(float(dish.performance_score),85.00001)
+	assert_eq(view.shop.mastery("service.tomato_egg").points,400.0)
+	assert_lt(view.shop.available("oil"),int(before.oil));assert_lt(view.shop.available("salt"),int(before.salt))
+	station("kitchen.stove.left");station("kitchen.serve");assert_eq(view.shop.order(id).status,"SERVED")
+
+func test_automatic_two_real_pots_keep_state_and_consumption_independent() -> void:
+	view.buy_kit("service.tomato_egg");view.buy_kit("service.tomato_egg",false)
+	view.open_day();kitchen=view.kitchen;kitchen.auto_advance=false;mastered_fixture("service.tomato_egg")
+	for lane: TDCookingLane in kitchen.lanes: lane.beat_offset_sec=0
+	load_raw_pot(0);load_raw_pot(1)
+	assert_true(view.start_automatic(0).ok);assert_true(view.start_automatic(1).ok)
+	play(100,false)
+	assert_eq(kitchen.lanes[0].snapshot().state,"plated");assert_eq(kitchen.lanes[1].snapshot().state,"plated")
+	assert_ne(kitchen.lanes[0].snapshot().session_id,kitchen.lanes[1].snapshot().session_id)
+	assert_eq(view.shop.mastery("service.tomato_egg").points,400.0)
+	for amount: int in view.shop.snapshot().inventory.values(): assert_gte(amount,0)
+
+func test_fridge_shows_only_owned_categories_and_preserves_return_expiry() -> void:
+	view.buy_kit("service.tomato_egg");view.open_day();kitchen=view.kitchen;kitchen.auto_advance=false
+	assert_eq(view.pantry_entries("fruit"),[])
+	assert_false(view.pantry_entries("meat").any(func(e:Dictionary)->bool:return e.ingredient_id=="beef"))
+	var expiry: int=view.shop.stock_info("tomato").expires_on
+	assert_true(view.pick_ingredient("tomato").ok);station("kitchen.board");view.choose_cut("chunk");play(12)
+	station("kitchen.board");assert_true(view.return_ingredient().ok)
+	var foods: Array=view.pantry_entries("vegetable")
+	assert_eq(foods.size(),1);assert_eq(int(foods[0].expires_on),expiry)
+	station("kitchen.fridge");assert_eq(view._popup.find_children("*","TabContainer",true,false).size(),1)
+
+func test_automatic_missing_stock_rejects_atomically() -> void:
+	prepare_order("service.tomato_egg");mastered_fixture("service.tomato_egg");load_raw_pot(0)
+	assert_true(view.shop.consume_materials(view.shop.day_namespace()+"waste-oil",{"oil":view.shop.available("oil")}).ok)
+	var before:=kitchen.lanes[0].snapshot();var stock:=view.shop.snapshot()
+	assert_eq(view.start_automatic(0).code,"INSUFFICIENT_STOCK")
+	assert_eq(kitchen.lanes[0].snapshot(),before);assert_eq(view.shop.snapshot(),stock)
+
+func test_automatic_cancel_clears_schedule_without_refunding_used_material() -> void:
+	prepare_order("service.tomato_egg");mastered_fixture("service.tomato_egg");load_raw_pot(0)
+	assert_true(view.start_automatic(0).ok);kitchen.advance(3)
+	kitchen.lanes[0].cancel_operation();var left: Dictionary=view.shop.snapshot().inventory
+	play(60,false);assert_eq(view.shop.snapshot().inventory,left)
+	assert_null(kitchen.lanes[0].qte);assert_true(kitchen.lanes[0].sheet==null or not kitchen.lanes[0].sheet.running)
+	assert_eq(view.shop.mastery("service.tomato_egg").points,400.0)
+
 func test_research_starters_and_unlocked_examples_use_real_cooking_and_delivery() -> void:
 	for id:String in ["C03","C04"]:
 		var begun:=app._begin_study(id);assert_true(begun.ok)
@@ -336,8 +401,8 @@ func test_one_fridge_all_materials_and_only_one_held_item() -> void:
 	station("kitchen.fridge"); await get_tree().process_frame
 	var material_buttons: int=0
 	for button: Button in view._popup.find_children("*","Button",true,false):
-		if button.text.contains(" · 余 "): material_buttons+=1
-	assert_eq(material_buttons,view.service.config.costs.size())
+		if button.text.contains("\n余 "): material_buttons+=1
+	assert_eq(material_buttons,view.shop.snapshot().inventory.values().filter(func(n:int)->bool:return n>0).size())
 	assert_true(view.pick_ingredient("beef").ok,"非当前订单的食材也可取")
 	view._close_popup()
 	var state: Dictionary=view.shop.snapshot()
@@ -441,7 +506,8 @@ func test_failed_dish_serves_first_customer_once_and_lowers_popularity() -> void
 	var after: Dictionary=view.shop.snapshot(); station("kitchen.serve"); assert_eq(view.shop.snapshot(),after)
 
 func test_actual_perfect_steam_requires_research_but_historical_unlock_survives_restart() -> void:
-	view.buy_kit("service.qiguoji")
+	# Historical stock / paid supply still allows cooking a locked recipe after D037.
+	assert_true(view.shop.receive_supply(view.shop.offer("service.qiguoji").stock,"historical-steam").ok)
 	view.open_day(); kitchen=view.kitchen; kitchen.auto_advance=false
 	assert_false(view.shop.is_unlocked("service.qiguoji"))
 	for food: String in ["chicken","mushroom"]: assert_true(view.pick_ingredient(food).ok); station("kitchen.steamer")
@@ -462,7 +528,8 @@ func test_actual_perfect_steam_requires_research_but_historical_unlock_survives_
 	assert_true(view.shop.set_menu("service.qiguoji",true,2200).ok)
 
 func test_missed_steam_and_cooking_started_retrieval_are_rejected() -> void:
-	view.buy_kit("service.qiguoji"); view.open_day(); kitchen=view.kitchen; kitchen.auto_advance=false
+	# Historical stock / paid supply still allows cooking a locked recipe after D037.
+	assert_true(view.shop.receive_supply(view.shop.offer("service.qiguoji").stock,"historical-steam").ok); view.open_day(); kitchen=view.kitchen; kitchen.auto_advance=false
 	for food: String in ["chicken","mushroom"]: view.pick_ingredient(food); station("kitchen.steamer")
 	station("kitchen.steamer",KEY_F); kitchen.advance(3)
 	var id: String=kitchen.lanes[1].snapshot().ingredients.keys()[0]

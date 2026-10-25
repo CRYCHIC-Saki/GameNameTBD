@@ -37,6 +37,40 @@ func test_two_slots_keep_research_stock_and_layout_independent() -> void:
 	assert_eq(saved_b.data.research.unlocked,["C01","C02"])
 	assert_eq(store.latest(),"slot-02")
 
+func test_official_factory_market_filter_and_stock_mastery_survive_profile_roundtrip() -> void:
+	var profile:=create_profile("slot-01")
+	assert_eq(profile.buy({"chicken":1000}).code,"INGREDIENT_LOCKED")
+	assert_eq(profile.order_remote("chicken").code,"INGREDIENT_LOCKED")
+	assert_true(profile.world.factory_products("meat").all(func(item:Dictionary)->bool:return item.id=="egg"))
+	assert_true(profile.world.factory_products("seasoning").any(func(item:Dictionary)->bool:return item.id=="bean_paste"))
+	assert_true(profile.world.factory_products("fruit").is_empty())
+	assert_true(profile.buy({"tomato":2000,"egg":2000,"salt":1000}).ok)
+	assert_true(profile.shop.open_day().ok)
+	for i: int in 5:
+		assert_true(profile.shop.observe_mastery({"session_id":profile.shop.day_namespace()+"fixture","recipe_id":"service.tomato_egg","dish_id":"d-%d"%i,"state":"plated","missing_required":[],"performance_score":80.0}).ok)
+	assert_true(profile.shop.close_early().ok);assert_true(profile.save().ok)
+	var raw:=store.load_slot("slot-01");assert_true(raw.ok)
+	var restored:=create_profile("slot-02");assert_true(restored.restore(raw.data).ok)
+	assert_eq(restored.shop.snapshot().inventory_lots,profile.shop.snapshot().inventory_lots)
+	assert_eq(restored.shop.mastery("service.tomato_egg").points,400.0)
+	assert_eq(restored.world.factory_products("meat"),profile.world.factory_products("meat"))
+	assert_eq(create_profile("slot-03").shop.mastery("service.tomato_egg").points,0.0)
+
+func test_factory_uses_formal_ingredients_rejects_locked_and_delivers_once_after_reload() -> void:
+	var profile:=create_profile("slot-01")
+	var plot: Dictionary=profile.world.town_map.plots.filter(func(p:Dictionary)->bool:return p.get("supply")=="vegetable")[0]
+	assert_true(profile.world_transaction(profile.world.build_factory.bind(plot.id),"建厂").ok)
+	var before:=profile.shop.snapshot()
+	assert_eq(profile.world_transaction(profile.world.produce_factory.bind(plot.id,"mushroom",1),"工厂生产").code,"WRONG")
+	assert_eq(profile.shop.snapshot(),before)
+	assert_true(profile.world_transaction(profile.world.produce_factory.bind(plot.id,"rice",1),"工厂生产").ok)
+	assert_true(profile.save().ok)
+	var loaded:=create_profile("slot-02");assert_true(loaded.restore(store.load_slot("slot-01").data).ok)
+	loaded.world.tick_factories(3600)
+	assert_true(loaded.receive_supplies().ok);assert_eq(loaded.shop.available("rice"),1000)
+	var stock:=loaded.shop.snapshot();assert_true(loaded.receive_supplies().ok);assert_eq(loaded.shop.snapshot(),stock)
+	assert_eq(loaded.shop.stock_info("rice").remaining_days,30)
+
 func test_research_candidate_is_persisted_in_same_profile_transaction() -> void:
 	var profile:=create_profile("slot-01")
 	assert_true(profile.save().ok)

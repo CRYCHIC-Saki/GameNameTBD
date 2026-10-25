@@ -45,6 +45,8 @@ func evaluate(dish_snapshot: Dictionary, customer: Dictionary) -> TDOutcome:
 			"details": base.duplicate(true)
 		})
 	for requirement: Dictionary in checked:
+		requirement.raw_deviation=requirement.deviation
+		requirement.deviation=maxf(0,float(requirement.deviation)-float(rules.get("deviation_grace",0)))*float(rules.get("deviation_factor",1))
 		var normalized: float = float(requirement["weight"]) / total_weight if total_weight > 0.0 else 0.0
 		var contribution: float = float(requirement["deviation"]) * normalized
 		deviation += contribution
@@ -107,6 +109,7 @@ func _validate_dish(dish: Dictionary) -> String:
 		if not _number_in(ingredient.get("fine"), 0.0, 1.0) or not _valid_texture(ingredient.get("texture")):
 			return "食材细碎度范围为 0–1，口感需保留三轴。"
 	var rules: Dictionary = dish["scoring_rules"]
+	if not _number_in(rules.get("deviation_grace",0),0,20) or not _number_in(rules.get("deviation_factor",1),.25,1): return "偏好容差参数无效。"
 	var sum: float = 0.0
 	for field: String in ["quality_weight", "harmony_weight", "requirements_weight"]:
 		if not _number_in(rules.get(field), 0.0, 1.0):

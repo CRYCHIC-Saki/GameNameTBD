@@ -11,6 +11,16 @@ var floor := TDFloorBoard.new()
 var rng := TDBusinessRandom.new(20261011)
 var ready: bool = false
 var research: TDResearchSession
+var factory_products_provider: Callable
+var factory_item_provider: Callable
+
+func factory_products(supply_id: String) -> Array:
+	return factory_products_provider.call(supply_id) if factory_products_provider.is_valid() else TDTownMap.products_of(supply_id)
+
+func factory_product(supply_id: String, item_id: String) -> Dictionary:
+	for item: Dictionary in factory_products(supply_id):
+		if item.id==item_id: return item.duplicate(true)
+	return {}
 
 func attach_research(value:TDResearchSession) -> void:
 	research=value
@@ -722,6 +732,9 @@ func _meal_for(index: int) -> Dictionary:
 	return (rows[posmod(index, rows.size())] as Dictionary).duplicate(true)
 
 func _supply_item(item_id: String) -> Dictionary:
+	if factory_item_provider.is_valid():
+		var item: Dictionary=factory_item_provider.call(item_id)
+		if not item.is_empty(): return item
 	for item: Variant in catalog.supply_items:
 		if String((item as Dictionary)["id"]) == item_id:
 			return (item as Dictionary).duplicate(true)
@@ -997,7 +1010,7 @@ func factory_quote(item_id: String) -> int:
 
 func factory_hours(plot_id: String, item_id: String, qty: int) -> float:
 	var plot := _plot_by_id(plot_id)
-	var product := TDTownMap.product_of(String(plot.get("supply", "")), item_id)
+	var product := factory_product(String(plot.get("supply", "")), item_id)
 	if product.is_empty():
 		return 0.0
 	return float(product["hours"]) * float(maxi(qty, 0)) * TDTownMap.time_scale(factory_level_of(plot_id))
@@ -1046,7 +1059,7 @@ func _factory_job_list(plot_id: String) -> Array:
 func factory_goods() -> Array:
 	var rows: Array = []
 	for supply_id: String in ["seasoning", "vegetable", "meat", "fruit"]:
-		for item: Variant in TDTownMap.products_of(supply_id):
+		for item: Variant in factory_products(supply_id):
 			var item_id := String((item as Dictionary).get("id", ""))
 			var qty := supply.count(item_id)
 			if qty <= 0:
@@ -1065,7 +1078,7 @@ func produce_factory(plot_id: String, item_id: String, qty: int, line_no: int = 
 		return TDOutcome.new(false, "MISSING", "先建成这家原料厂。")
 	if qty < TDTownMap.FACTORY_QTY_MIN or qty > TDTownMap.FACTORY_QTY_MAX:
 		return TDOutcome.new(false, "RANGE", "数量要在%d到%d之间。" % [TDTownMap.FACTORY_QTY_MIN, TDTownMap.FACTORY_QTY_MAX])
-	var product := TDTownMap.product_of(String(plot.get("supply", "")), item_id)
+	var product := factory_product(String(plot.get("supply", "")), item_id)
 	if product.is_empty():
 		return TDOutcome.new(false, "WRONG", "这家厂不生产这种原料。")
 	var key := _factory_key(plot_id)

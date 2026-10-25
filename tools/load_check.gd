@@ -6,6 +6,9 @@ var failures: int = 0
 func _initialize() -> void:
 	for directory: String in ["res://src", "res://dev"]:
 		visit(directory)
+	if failures > 0:
+		finish()
+		return
 	var catalog := TDCatalog.new()
 	var outcome := catalog.load_file("res://content/dev_samples.json")
 	if not outcome.ok:
@@ -16,6 +19,8 @@ func _initialize() -> void:
 	var service_result:=service.load_file()
 	if not service_result.ok:
 		printerr(service_result.message); failures+=1
+		finish()
+		return
 	var research:=TDResearchCatalog.new()
 	var research_result:=research.load_file()
 	if not research_result.ok:
@@ -23,6 +28,8 @@ func _initialize() -> void:
 	var runtime_result:=TDResearchRuntime.install(service)
 	if not runtime_result.ok:
 		printerr(runtime_result.message);failures+=1
+		finish()
+		return
 	var full := TDCookingCatalog.new()
 	var economy:=TDWorldEconomy.new(service.config.costs)
 	if not economy.error.ok:
@@ -45,6 +52,9 @@ func _initialize() -> void:
 	if not recipe_result.ok:
 		printerr(recipe_result.message)
 		failures += 1
+	finish()
+
+func finish() -> void:
 	print("LOAD_CHECK resources=%d failures=%d" % [checked, failures])
 	quit(1 if failures > 0 or checked == 0 else 0)
 

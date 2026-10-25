@@ -75,6 +75,28 @@ var active_sheet_id: String = ""
 var _customer_feedback: Array=[]
 var judgement_feedback: Dictionary = {}
 var _feedback_token: String = ""
+var automatic: bool = false
+var _automatic_preparation: Array = []
+var _automatic_target: String = ""
+
+func start_automatic() -> TDOutcome:
+	if qte!=null or thermal_qte!=null or (sheet!=null and sheet.running) or not session.is_cold(): return TDOutcome.new(false,"BUSY")
+	var dish:=snapshot()
+	if dish.get("failed_dish",false) or dish.ingredients.is_empty(): return TDOutcome.new(false,"UNKNOWN_RECIPE")
+	automatic=true;session.set_production_mode("automatic");_automatic_preparation=[]
+	var recipe: Dictionary=catalog.for_recipe(base_recipe_id).recipe
+	for food: Dictionary in dish.ingredients.values():
+		if food.history.any(func(h:Dictionary)->bool:return h.get("operation")=="cut"): continue
+		var chart: String=str(recipe.get("preparation_sheets",{}).get(food.ingredient_id,""))
+		if not chart.is_empty(): _automatic_preparation.append({"target":food.id,"sheet":chart})
+	return _next_automatic_sheet()
+
+func _next_automatic_sheet() -> TDOutcome:
+	_automatic_target=""
+	if not _automatic_preparation.is_empty():
+		var entry: Dictionary=_automatic_preparation.pop_front();_automatic_target=entry.target
+		return start_sheet(entry.sheet)
+	return start_sheet(str(catalog.for_recipe(base_recipe_id).recipe.guided_profile))
 
 func _ready() -> void:
 	_content = catalog.data()
@@ -88,6 +110,7 @@ func _ready() -> void:
 	refresh_library()
 
 func new_session(recipe_id: String, entry: Dictionary = {}) -> void:
+	automatic=false;_automatic_preparation.clear();_automatic_target=""
 	_content = catalog.data()
 	if restart_allowed.is_valid() and not restart_allowed.call():
 		_status.text = "先把手上的成品送到出餐台，再重新做。"
@@ -161,6 +184,10 @@ func perform(kind: String, args: Dictionary = {}) -> TDOutcome:
 		if pc_controls:
 			if _scheduled_settings.is_empty(): settings = _align_pc(settings)
 			else: settings.merge(_scheduled_settings,true)
+			if document_rules:
+				var assistance: Dictionary=_content.pc_operations.document_rules.get("assistance",{})
+				for key: String in ["perfect_sec","good_sec","good_quality","aggregate_score","smooth_maintain","automatic_quality"]:
+					if assistance.has(key): settings[key]=assistance[key]
 			_apply_day_san(settings)
 			settings.document_rules = document_rules
 			if document_rules and dual and settings.kind == "maintain":
@@ -171,6 +198,10 @@ func perform(kind: String, args: Dictionary = {}) -> TDOutcome:
 			_audio.prepare(settings)
 			settings.lead_in_sec = float(settings.lead_in_sec) + _audio.begin()
 		var controller := TDCookingQTE.new(request, settings, clock, _qte_random)
+		if automatic: controller.enable_automatic()
+		if kind=="season" and (settings.has("hold_durations_sec") or settings.get("free_seasoning",false)):
+			controller.material_pour=session.pour_material
+			controller.material_available=session.material_units
 		var started := controller.start()
 		if not started.ok:
 			session.cancel_operation()
@@ -257,6 +288,7 @@ func _finish() -> void:
 	_refresh_targets()
 
 func cancel_operation() -> void:
+	automatic=false;_automatic_preparation.clear();_automatic_target=""
 	if qte != null: qte.cancel()
 	if thermal_qte != null: thermal_qte.cancel()
 	thermal_qte = null
@@ -593,6 +625,9 @@ func _capture_feedback(data: Dictionary) -> void:
 
 func next_boundary_sec() -> float:
 	var boundary: float = sheet.next_in(clock.qte_sec) if sheet != null else INF
+	if automatic and not _automatic_target.is_empty() and qte==null and thermal_qte==null:
+		var recovery: float=float(snapshot().recovery_sec)
+		if recovery>0: boundary=minf(boundary,recovery)
 	for controller: TDCookingQTE in [qte,thermal_qte]:
 		if controller != null: boundary = minf(boundary,float(controller.update().data.remaining_sec))
 	return boundary
@@ -630,7 +665,7 @@ func start_sheet(id: String) -> TDOutcome:
 	var configured: Dictionary = _content.pc_operations.document_sheets if document_rules else _content.pc_operations.sheets
 	if not configured.has(id): return TDOutcome.new(false, "UNKNOWN_SHEET")
 	sheet = TDBeatSheet.new()
-	var check := sheet.configure(configured[id], _content.operations)
+	var check := sheet.configure(configured[id], _content.operations,_content.pc_operations.document_rules.get("assistance",{}) if document_rules else {})
 	if not check.ok: return check
 	active_sheet_id = id
 	var bar: float = 240.0 / float(configured[id].bpm)
@@ -646,13 +681,15 @@ func _advance_pc(delta: float) -> void:
 		if iterations > 512:
 			push_error("PC operation scheduler exceeded bounded event count")
 			break
+		if automatic and not _automatic_target.is_empty() and qte==null and thermal_qte==null and sheet!=null and not sheet.running and float(snapshot().recovery_sec)<=.000001:
+			_next_automatic_sheet()
 		if sheet != null:
 			for event: Dictionary in sheet.due(clock.qte_sec):
 				_scheduled_settings = event.get("settings",{}).duplicate(true)
 				var args: Dictionary = event.parameters.duplicate(true)
 				if document_rules and event.operation == "cut":
 					if snapshot().ingredients.is_empty(): sheet.cancel(); break
-					args.instance_id = snapshot().ingredients.keys()[0]; args.beats = _scheduled_settings.beats
+					args.instance_id = _automatic_target if not _automatic_target.is_empty() else snapshot().ingredients.keys()[0]; args.beats = _scheduled_settings.beats
 				if event.operation not in ["heat","boil"] or qte==null: stage_label = event.get("label","")
 				var result := perform(event.operation, args)
 				_scheduled_settings.clear()
@@ -662,6 +699,7 @@ func _advance_pc(delta: float) -> void:
 			_sequence += 1
 			thermal_qte.input(_sequence, clock.qte_sec, "drag", true, (float(thermal_progress.target_min) + float(thermal_progress.target_max)) * .5)
 		var span: float = remaining
+		if automatic and not _automatic_target.is_empty() and qte==null and thermal_qte==null and float(snapshot().recovery_sec)>0: span=minf(span,float(snapshot().recovery_sec))
 		if sheet != null: span = minf(span, sheet.next_in(clock.qte_sec))
 		for controller: TDCookingQTE in [qte, thermal_qte]:
 			if controller != null: span = minf(span, float(controller.update().data.remaining_sec))
