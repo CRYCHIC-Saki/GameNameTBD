@@ -86,6 +86,30 @@ func test_disabled_controls_and_paused_world_cannot_move_or_interact() -> void:
 	get_tree().paused = false
 	assert_true(world.interaction_available())
 
+func test_hired_cooks_stay_at_the_stoves() -> void:
+	var crew := TDRestaurantCrew.new()
+	assert_true(crew.hire("cook-he").ok)
+	assert_true(crew.hire("cook-zhou").ok)
+	world.crew = crew
+	world._crew_time = 0.0
+	world._sync_staff()
+	var cook := world.get_node("Cook0") as Node2D
+	var start := cook.position
+	assert_gt(start.distance_to((world.get_node("Cook1") as Node2D).position), 40.0)
+	world._crew_time = 2.0
+	world._sync_staff()
+	assert_eq(cook.position, start)
+	assert_eq((world.get_node("Cook0/Body") as Sprite2D).position.y, -47.0)
+	var counter := Rect2(Vector2(924.0, 514.0), Vector2(232.0, 102.0))
+	for index: int in 2:
+		var point := TDKitchenWorld.cook_point(index, 3.0)
+		assert_gt(point.x, 108.0)
+		assert_lt(point.x, 1172.0)
+		assert_gt(point.y, 264.0)
+		assert_lt(point.y, 700.0)
+		assert_false(counter.has_point(point))
+		assert_eq(point, TDKitchenWorld.cook_point(index, 0.0))
+
 func test_close_disables_world_and_reentry_starts_fresh() -> void:
 	(world.get_node("Player") as TDKitchenPlayer).position = Vector2(588.0, 310.0)
 	world.close()

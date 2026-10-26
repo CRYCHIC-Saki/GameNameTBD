@@ -16,6 +16,7 @@ var _zones: PackedStringArray = PackedStringArray()
 var _entrances: Array[Vector2i] = []
 var _pieces: Array = []
 var _staff: Dictionary = {}
+var crew := TDRestaurantCrew.new()
 var _serial: int = 100
 
 static var floor_error: String = ""
@@ -142,6 +143,14 @@ func is_walkable(x: int, y: int) -> bool:
 	for item: Dictionary in _pieces:
 		if bool(item.blocks) and _contains(item,x,y): return false
 	return true
+
+func feet_inside(point: Vector2) -> bool:
+	var cell := Vector2i(floori(point.x / float(cell_px)), floori(point.y / float(cell_px)))
+	if not is_walkable(cell.x, cell.y):
+		return false
+	var inset := 16.0
+	var room := Rect2(inset, inset, float(columns * cell_px) - inset * 2.0, float(rows * cell_px) - inset * 2.0)
+	return room.has_point(point)
 
 func is_entrance(x: int, y: int) -> bool:
 	return _entrances.has(Vector2i(x, y))
@@ -342,11 +351,14 @@ func to_dict() -> Dictionary:
 			"id": current["id"], "kind": current["kind"], "x": current["x"], "y": current["y"],
 			"rotation": current["rotation"], "style_id": current["style_id"],
 		})
-	return {
+	var data := {
 		"schema_version": 1, "columns": columns, "cell_px": cell_px,
 		"culture": culture, "tier": tier, "staff": _staff.duplicate(true),
 		"rows": lines, "pieces": exported,
 	}
+	if not crew.export_state().is_empty():
+		data["crew"] = crew.export_state()
+	return data
 
 func _load(data: Dictionary, catalog: TDRestaurantCatalog) -> TDOutcome:
 	_catalog = catalog
@@ -367,6 +379,10 @@ func _load(data: Dictionary, catalog: TDRestaurantCatalog) -> TDOutcome:
 		if not (staff as Dictionary).get(role) is bool:
 			return _fail("INVALID_ROLE", "缺少迎宾或收银到岗记录")
 		_staff[role] = (staff as Dictionary)[role]
+	if data.has("crew"):
+		var accepted := crew.restore(data["crew"])
+		if not accepted.ok:
+			return accepted
 	var lines: Variant = data.get("rows")
 	if not lines is Array or (lines as Array).size() != rows:
 		return _fail("BAD_GRID", "区域行数不正确")

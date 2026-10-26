@@ -123,6 +123,18 @@ func test_save_roundtrip_refuses_to_replace_an_unknown_version() -> void:
 	assert_null(TDRestaurantLayout.import_dict(duplicate, catalog))
 	assert_eq(TDRestaurantLayout.import_code, "OVERLAP")
 
+func test_feet_cannot_leave_the_room_or_stand_on_furniture() -> void:
+	var aisle := layout.cell_center(Vector2i(2, 1))
+	assert_true(layout.feet_inside(aisle))
+	var door := layout.cell_center(layout.entrance())
+	assert_true(layout.feet_inside(door))
+	assert_false(layout.feet_inside(Vector2(door.x, -1.0)))
+	assert_false(layout.feet_inside(Vector2(-1.0, door.y)))
+	assert_false(layout.feet_inside(Vector2(float(layout.columns * layout.cell_px) + 4.0, door.y)))
+	assert_false(layout.feet_inside(Vector2(door.x, float(layout.rows * layout.cell_px) + 4.0)))
+	var desk := layout.piece_by_kind("welcome_desk")
+	assert_false(layout.feet_inside(layout.cell_center(Vector2i(int(desk["x"]), int(desk["y"])))))
+
 func _assert_walk(cells: Variant) -> void:
 	var path: Array = cells
 	assert_gt(path.size(), 1)

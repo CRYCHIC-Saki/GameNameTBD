@@ -283,6 +283,7 @@ func _object(action: String) -> void:
 			if not profile.at_boundary(): _outcome(TDOutcome.new(false,"SHOP_OPEN","打烊后才能布置餐厅。"));return
 			restaurant._toggle_edit()
 		"rest": show_rest()
+		"hire": show_crew()
 		"recipes": open_atlas()
 
 func _place(kind: String, id: String) -> void:
@@ -484,7 +485,56 @@ func show_competitor(parcel_id: String) -> void:
 		if event.town_id==economy.state.home: box.add_child(TDUI.label("第%d天买地建店 · 支出 ¥%.2f · 第%d天开业"%[event.day,float(event.cost_cents)/100,event.open_day],16,TDUI.MUTED))
 
 func _ledger_name(id: String) -> String:
-	return {"purchase":"采购","consumption":"食材消耗","prepayment":"菜款","tip":"小费","refund_cancel":"取消退款","refund_served":"退菜退款","settlement":"日结","emergency_grant":"应急补助","world_adjustment":"小镇支出 / 收入","supply_delivery":"预订原料到货","operating_payment":"水电税费 / 偿还欠费","bank_transfer":"钱庄存取 / 借还"}.get(id,id)
+	return {"purchase":"采购","consumption":"食材消耗","prepayment":"菜款","tip":"小费","refund_cancel":"取消退款","refund_served":"退菜退款","settlement":"日结","emergency_grant":"应急补助","world_adjustment":"小镇支出 / 收入","supply_delivery":"预订原料到货","operating_payment":"水电税费 / 偿还欠费","bank_transfer":"钱庄存取 / 借还","wage":"雇员工资"}.get(id,id)
+
+func show_crew() -> void:
+	var crew := profile.layout.crew
+	var box := _dialog("招工处")
+	box.add_child(TDUI.label("厨师在后厨做菜，服务员在店里端菜。每类最多两人，同一种加成不叠加，按在岗者里较高的等级计算。完成一单，在岗的人各得1点经验，每4点升1级，最高5级。入职数值较低，升级后才提高。辞退后经验还在。日薪当场扣除，打烊后才能办理。",18,TDUI.MUTED))
+	if not crew.duty_line().is_empty():
+		box.add_child(TDUI.label(crew.duty_line(),20,TDUI.ORANGE))
+	for person: Dictionary in crew.roster():
+		var row := HBoxContainer.new()
+		box.add_child(row)
+		var caption := TDUI.label("%s · %s · 日薪%d元\n%s" % [person.name, "厨师" if person.role=="cook" else "服务员", int(person.wage_yuan), person.blurb], 18)
+		caption.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		caption.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		row.add_child(caption)
+		var person_id := String(person.id)
+		if bool(person.hired):
+			row.add_child(TDUI.button("辞退", _dismiss_crew.bind(person_id)))
+		else:
+			var button := TDUI.button("雇佣", _hire_crew.bind(person_id))
+			button.disabled = not profile.at_boundary()
+			row.add_child(button)
+
+func _hire_crew(id: String) -> void:
+	if profile == null or not profile.at_boundary():
+		_outcome(TDOutcome.new(false, "SHOP_OPEN", "打烊后才能雇人。"))
+		return
+	var check := profile.layout.crew.can_hire(id)
+	if not check.ok:
+		_outcome(check)
+		return
+	var wage := int(profile.layout.crew.person(id).wage_yuan) * 100
+	var paid := profile.shop.pay_wage(wage, "crew:%s:%d" % [id, int(profile.shop.snapshot().day)])
+	if not paid.ok:
+		_outcome(paid)
+		show_crew()
+		return
+	var hired := profile.layout.crew.hire(id)
+	var saved := save_game()
+	_outcome(hired if saved.ok else saved)
+	show_crew()
+
+func _dismiss_crew(id: String) -> void:
+	if profile == null or not profile.at_boundary():
+		_outcome(TDOutcome.new(false, "SHOP_OPEN", "打烊后才能辞退。"))
+		return
+	var result := profile.layout.crew.dismiss(id)
+	var saved := save_game()
+	_outcome(result if saved.ok else saved)
+	show_crew()
 
 func show_rest() -> void:
 	var box:=_dialog("收工休息")

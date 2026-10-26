@@ -20,8 +20,17 @@ var runner_label: String = ""
 var pass_point := Vector2(-1, -1)
 var held_label: String = ""
 var interaction_markers: Array[Dictionary] = []
+var crew_people: Array = []
 var _camera: Camera2D
 var _chef_foot_ratio: float=1.0
+var _name_font: Font
+
+func _staff_font() -> Font:
+	if _name_font == null:
+		var font := SystemFont.new()
+		font.font_names = PackedStringArray(["Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans CJK SC"])
+		_name_font = font
+	return _name_font
 
 func _ready() -> void:
 	z_index = 4
@@ -117,12 +126,17 @@ func _draw() -> void:
 		entries.append(_person_entry(actor["position"],not sitting,Color("#3f6f8f"),String(actor["label"]),sitting))
 	if runner_visible:
 		entries.append(_person_entry(runner_point,true,Color("#6f8f4a"),runner_label if runner_label!="" else "传菜",false))
+	for person: Dictionary in crew_people:
+		var staff := _person_entry(person.point, bool(person.get("moving", false)), person.color, str(person.label), false)
+		staff["staff"] = true
+		staff["depth"] = float(staff.depth) + 30.0
+		entries.append(staff)
 	entries.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return a.depth<b.depth)
 	for entry:Dictionary in entries:
 		match entry.kind:
 			"furniture": _furniture(entry.data)
 			"marker": _marker(entry.data)
-			"person": _person(entry.point,entry.moving,entry.shirt,entry.caption,entry.seated)
+			"person": _person(entry.point,entry.moving,entry.shirt,entry.caption,entry.seated,bool(entry.get("staff", false)))
 
 func _person_entry(point:Vector2,moving:bool,shirt:Color,caption:String,seated:bool) -> Dictionary:
 	return {"kind":"person","depth":(point.x+point.y)/float(layout.cell_px),"point":point,"moving":moving,"shirt":shirt,"caption":caption,"seated":seated}
@@ -140,6 +154,11 @@ func _marker(marker: Dictionary) -> void:
 		draw_rect(Rect2(point+Vector2(-17,-80),Vector2(34,60)),Color("704b32"))
 		draw_rect(Rect2(point+Vector2(10,-39),Vector2(4,4)),Color("e2ba69"))
 		label_y=-99
+	elif marker.action=="hire":
+		draw_rect(Rect2(point+Vector2(-18,-70),Vector2(36,48)),Color("efe2c4"))
+		draw_rect(Rect2(point+Vector2(-18,-70),Vector2(36,48)),Color("6d5334"),false,2)
+		draw_rect(Rect2(point+Vector2(-8,-22),Vector2(16,28)),Color("8a6238"))
+		label_y=-84
 	elif marker.action=="menu":
 		draw_rect(Rect2(point+Vector2(-3,-29),Vector2(6,32)),Color("493c2c"))
 		draw_rect(Rect2(point+Vector2(-23,-64),Vector2(46,45)),Color("684d31"))
@@ -208,19 +227,24 @@ func _edit_grid() -> void:
 			var points := _quad(x, y, 1, 1)
 			draw_polyline(points + PackedVector2Array([points[0]]), Color(1, 1, 1, 0.18), 1.0)
 
-func _person(point: Vector2, moving: bool, shirt: Color, caption: String, seated: bool = false) -> void:
+func _person(point: Vector2, moving: bool, shirt: Color, caption: String, seated: bool = false, staff: bool = false) -> void:
 	if layout == null:
 		return
 	var grid := Vector2(point.x / float(layout.cell_px), point.y / float(layout.cell_px))
 	var bob := sin(Time.get_ticks_msec() / 140.0) * 3.0 if moving and not seated else 0.0
 	var drop := -8.0 if seated else -20.0
 	var at := project(grid.x, grid.y) + Vector2(0, drop - absf(bob))
-	if not interaction_markers.is_empty() and shirt==Color("#d86b4a"):
+	if not interaction_markers.is_empty() and (staff or shirt==Color("#d86b4a")):
 		var ground:=project(grid.x,grid.y)
 		draw_colored_polygon(PackedVector2Array([ground+Vector2(-7,0),ground+Vector2(0,-3),ground+Vector2(7,0),ground+Vector2(0,3)]),Color(0,0,0,.25))
 		var body:=chef_rect(point)
 		body.position.y-=absf(bob)
 		draw_texture_rect(CHEF_SPRITE,body,false)
+		if staff and caption != "":
+			var plate := Rect2(body.position + Vector2(-18, -24), Vector2(92, 22))
+			draw_rect(plate, Color(0.08, 0.12, 0.1, 0.88))
+			draw_rect(plate, shirt, false, 2.0)
+			draw_string(_staff_font(), plate.position + Vector2(4, 16), caption, HORIZONTAL_ALIGNMENT_CENTER, 84, 14, Color("#fff4d2"))
 		return
 	if seated:
 		draw_rect(Rect2(at + Vector2(-10, 8), Vector2(20, 5)), Color("#6b4a32"))

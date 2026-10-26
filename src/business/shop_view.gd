@@ -99,6 +99,8 @@ func _make_kitchen() -> void:
 	_holder.add_child(kitchen); kitchen.world.scale=Vector2(.71875,.71875)
 	kitchen.world.get_node("Background").z_index=-1
 	kitchen.world.set_return_visible(false)
+	kitchen.world.crew = shop.crew
+	kitchen.world.order_shop = shop
 	if embedded:
 		kitchen.world.service_door=true
 		kitchen.world.dining_requested.connect(func()->void:back_requested.emit())
@@ -237,6 +239,8 @@ func _orders_panel(state: Dictionary) -> void:
 	var clock_text: String="筹备不计时" if state.phase=="PREPARE" else ("今日已结算" if state.phase=="SETTLED" else ("停止接客 · 完成剩余订单" if state.phase=="DRAINING" else "营业剩余 %d 秒" % maxi(0,int(service.config.settings.day_sec)-int(state.elapsed_sec))))
 	_sidebar.add_child(TDUI.label(clock_text,17))
 	_sidebar.add_child(TDUI.label("同菜先到先服务；不同菜可乱序出餐。",14,TDUI.MUTED))
+	if shop.crew != null and not shop.crew.duty_line().is_empty():
+		_sidebar.add_child(TDUI.label(shop.crew.duty_line(),15,TDUI.ORANGE))
 	if _new_needs_confirmation: _sidebar.add_child(TDUI.label("新店尚未覆盖旧档；首次保存前会确认。",15,TDUI.ORANGE))
 	for item: Dictionary in state.orders:
 		if item.status not in ["WAITING","COOKING"]: continue

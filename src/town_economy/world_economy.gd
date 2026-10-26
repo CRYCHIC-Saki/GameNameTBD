@@ -415,6 +415,7 @@ func sync_costs(ledger: Array) -> void:
 		if society.state.baseline_attached:
 			match str(event.kind):
 				"purchase": society.state.sectors.market-=int(event.cents)
+				"wage": society.state.sectors.services-=int(event.cents)
 				"world_adjustment":
 					if int(event.cents)>0: society.state.external_net_cents+=int(event.cents)
 					elif str(event.extra.get("label","")).begins_with("跨镇采购"): society.state.sectors.market-=int(event.cents)

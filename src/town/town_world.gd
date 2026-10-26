@@ -123,8 +123,7 @@ func _process(delta: float) -> void:
 		_seen_revision = session.map_revision
 		if commercial_refresh.is_valid(): commercial_refresh.call()
 		_build_blockers()
-		if _player != null:
-			_player.position = _origin() + Vector2((TDTownMap.CENTER + 0.5) * CELL, (TDTownMap.CENTER + 0.5) * CELL)
+		_keep_player_on_map()
 	queue_redraw()
 
 func _overview_zoom() -> float:
@@ -404,6 +403,25 @@ func _place_status_bar() -> void:
 		box.size = Vector2(maxf(1.0, view.x - 32.0), minf(bar_h, view.y) - 16.0)
 	_layout_factory_panel()
 	_follow_camera()
+
+func _keep_player_on_map() -> void:
+	if _player == null or session == null:
+		return
+	var cell := _player_cell()
+	if session.town_map.is_walkable(cell.x, cell.y):
+		return
+	var best := Vector2i(TDTownMap.CENTER, TDTownMap.CENTER)
+	var distance := INF
+	for y: int in TDTownMap.SIZE:
+		for x: int in TDTownMap.SIZE:
+			if not session.town_map.is_walkable(x, y):
+				continue
+			var score := Vector2(x, y).distance_squared_to(Vector2(cell))
+			if score < distance:
+				distance = score
+				best = Vector2i(x, y)
+	_player.position = _origin() + (Vector2(best) + Vector2(0.5, 0.5)) * CELL
+	_player.velocity = Vector2.ZERO
 
 func _feet_on_road(at: Vector2) -> bool:
 	var cell := _cell_at(at)

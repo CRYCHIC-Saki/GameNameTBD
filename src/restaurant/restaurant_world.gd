@@ -59,6 +59,8 @@ var _runner_points := PackedVector2Array()
 var _runner_index: int = 0
 var _runner_ticket: String = ""
 var _runner_button: Button
+var _crew_time: float = 0.0
+var _waiter_feet: Array[Vector2] = []
 var _iso: TDRestaurantIsoView
 var _board: TDEconomyBoard
 var _pantry: TDPantryBoard
@@ -111,13 +113,14 @@ func _ready() -> void:
 		_set_status(room)
 	_pull_layout_staff()
 	if player_mode:
-		_set_status("WASD 走动 · 靠近门牌、账本、装修桌或门按 E · B 菜谱 · Esc 暂停")
+		_set_status("WASD 走动 · 招工处可雇厨师或服务员 · 门牌、账本、装修桌或门按 E · B 菜谱 · Esc 暂停")
 		_iso.interaction_markers=interaction_points()
 
 func _process(delta: float) -> void:
 	if _player != null:
 		_player.z_index = int(_player.position.y)
 	if player_mode and not get_tree().paused:
+		_crew_time += delta
 		_sync_business_guests()
 	elif not get_tree().paused:
 		_tick_service(delta)
@@ -140,6 +143,7 @@ func _process(delta: float) -> void:
 		_iso.runner_label = _runner_caption()
 		_iso.pass_point = layout.cell_center(pass_cell()) if _pass_has_plate() else Vector2(-1, -1)
 		_iso.held_label = _held_caption()
+		_iso.crew_people = _crew_points(0.0 if get_tree().paused else delta)
 		_iso.sync(_player, guest_nodes())
 	if _editing:
 		queue_redraw()
@@ -215,6 +219,9 @@ func close() -> void:
 
 func player_position() -> Vector2:
 	return _player.position if _player != null else Vector2.ZERO
+
+func _feet_inside_room(proposed: Vector2) -> bool:
+	return layout != null and layout.feet_inside(proposed)
 
 func cell_of_player() -> Vector2i:
 	return _cell_at(player_position())
@@ -428,6 +435,8 @@ func _build_world() -> void:
 	feet.shape = capsule
 	_player.add_child(feet)
 	sprite.visible = false
+	if player_mode:
+		_player.confine_to = _feet_inside_room
 	add_child(_player)
 	_iso = TDRestaurantIsoView.new()
 	_iso.name = "IsoView"
@@ -1243,6 +1252,54 @@ func _close_pantry() -> void:
 		_pantry.queue_free()
 	_pantry = null
 
+func _crew_points(delta: float) -> Array:
+	var people: Array = []
+	if layout == null or layout.crew == null:
+		return people
+	var posts: Array[Vector2] = []
+	var jobs: Array[Vector2] = []
+	var servers := layout.crew.waiters()
+	for index: int in servers.size():
+		posts.append(_waiter_post(index))
+	for guest: TDRestaurantGuest in guest_nodes():
+		if guest.phase != "wait_serve" or guest.seat_id == "":
+			continue
+		var cell := approach_cell(guest.seat_id)
+		if layout.is_walkable(cell.x, cell.y):
+			jobs.append(layout.cell_center(cell))
+	while _waiter_feet.size() < servers.size():
+		_waiter_feet.append(posts[_waiter_feet.size()])
+	while _waiter_feet.size() > servers.size():
+		_waiter_feet.pop_back()
+	for index: int in servers.size():
+		var server: Dictionary = servers[index]
+		var target: Vector2 = posts[index]
+		if index < jobs.size():
+			target = jobs[index]
+		var current := _waiter_feet[index].move_toward(target, 90.0 * maxf(delta, 0.0))
+		_waiter_feet[index] = current
+		people.append({
+			"point": current,
+			"label": "服务员 %s %d级" % [String(server["name"]), int(server.get("level", 1))],
+			"color": Color("#2f7a68"),
+			"moving": current.distance_to(target) > 0.5,
+		})
+	return people
+
+func _waiter_post(index: int) -> Vector2:
+	return _staff_spot(Vector2i(layout.columns - 2, layout.rows - 3), index)
+
+func _staff_spot(origin: Vector2i, slot: int) -> Vector2:
+	var offsets: Array[Vector2i] = [
+		Vector2i.ZERO, Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN,
+		Vector2i(-2, 0), Vector2i(2, 0), Vector2i(0, 2), Vector2i(0, -2),
+	]
+	for step: int in offsets.size():
+		var cell := origin + offsets[(slot + step) % offsets.size()]
+		if layout.is_walkable(cell.x, cell.y):
+			return layout.cell_center(cell)
+	return layout.cell_center(Vector2i(clampi(origin.x, 1, layout.columns - 2), clampi(origin.y, 1, layout.rows - 2)))
+
 func interaction_points() -> Array[Dictionary]:
 	if layout==null: return []
 	return [
@@ -1252,6 +1309,7 @@ func interaction_points() -> Array[Dictionary]:
 		{"action":"recipes","name":"菜谱架","cell":Vector2(3,2)},
 		{"action":"decorate","name":"装修桌","cell":Vector2(1,layout.rows-3)},
 		{"action":"rest","name":"休息处","cell":Vector2(layout.columns-2,layout.rows-4)},
+		{"action":"hire","name":"招工处","cell":Vector2(layout.columns-3,layout.rows-4)},
 		{"action":"kitchen","name":"后厨","cell":Vector2(layout.columns-2,layout.rows-2)}]
 
 func _sync_business_guests() -> void:

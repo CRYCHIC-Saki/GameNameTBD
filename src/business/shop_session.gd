@@ -13,6 +13,7 @@ var research_controlled: bool = false
 var commerce: TDWorldEconomy
 var recipe_cultures: Dictionary = {}
 var cooking_reward: Callable
+var crew: TDRestaurantCrew
 var _starter_override: Array = []
 var stock_rules: Dictionary = TDFoodStock.load_rules()
 
@@ -424,7 +425,7 @@ func _arrive_economic() -> void:
 			continue
 		_s.order_serial+=1
 		var identity: String="%s:d%d:o%d"%[_s.run_id,_s.day,_s.order_serial]
-		_s.orders.append({"id":identity,"recipe_id":id,"family_id":family_id(id),"culture":str(recipe_cultures.get(family_id(id),"chinese")),"status":"WAITING","price_cents":int(arrival.intent.quoted_cents),"reference_cents":int(arrival.reference_cents),"customer":customer,"economic_profile":arrival.person,"economic_intent":arrival.intent,"arrival_sec":float(_s.elapsed_sec),"deadline_sec":float(_s.elapsed_sec)+float(arrival.intent.patience_seconds),"lane":-1,"reserved":{},"used":{},"prepaid_cents":0,"refunded_cents":0,"tip_cents":0,"dish_id":"","score":{},"plan":{}})
+		_s.orders.append({"id":identity,"recipe_id":id,"family_id":family_id(id),"culture":str(recipe_cultures.get(family_id(id),"chinese")),"status":"WAITING","price_cents":int(arrival.intent.quoted_cents),"reference_cents":int(arrival.reference_cents),"customer":customer,"economic_profile":arrival.person,"economic_intent":arrival.intent,"arrival_sec":float(_s.elapsed_sec),"deadline_sec":float(_s.elapsed_sec)+guest_patience(float(arrival.intent.patience_seconds)),"lane":-1,"reserved":{},"used":{},"prepaid_cents":0,"refunded_cents":0,"tip_cents":0,"dish_id":"","score":{},"plan":{}})
 
 func _economic_review(item: Dictionary) -> void:
 	if item.status!="SERVED" and item.has("economic_intent"): commerce.society.release(item.economic_intent.opportunity_id)
@@ -455,7 +456,7 @@ func _arrive() -> void:
 		customer.requirements = customer.requirements.filter(func(r:Dictionary)->bool:return str(r.get("ingredient_id","")).is_empty())
 		customer.name = "偏甜的客人" if int(_s.order_serial)%2==1 else "偏鲜的客人"
 	var identity: String = "%s:d%d:o%d" % [_s.run_id,_s.day,_s.order_serial]
-	_s.orders.append({"id":identity,"recipe_id":id,"status":"WAITING","price_cents":int(_s.menu[id].price_cents),"customer":customer,"deadline_sec":float(_s.elapsed_sec)+float(catalog.config.settings.patience_sec),"lane":-1,"reserved":{},"used":{},"prepaid_cents":0,"refunded_cents":0,"tip_cents":0,"dish_id":"","score":{},"plan":{}})
+	_s.orders.append({"id":identity,"recipe_id":id,"status":"WAITING","price_cents":int(_s.menu[id].price_cents),"customer":customer,"deadline_sec":float(_s.elapsed_sec)+guest_patience(float(catalog.config.settings.patience_sec)),"lane":-1,"reserved":{},"used":{},"prepaid_cents":0,"refunded_cents":0,"tip_cents":0,"dish_id":"","score":{},"plan":{}})
 
 func active_orders() -> Array:
 	return _s.orders.filter(func(x:Dictionary)->bool:return x.status in ["WAITING","COOKING"]).duplicate(true)
@@ -486,9 +487,23 @@ func can_deliver(id: String, dish: Dictionary) -> TDOutcome:
 		return TDOutcome.new(true,"FAILED_DISH","",{"satisfaction":0.0,"quality":0.0,"harmony":0.0,"stars":0,"reasons":[{"message":"收到无法食用的失败菜品。","penalty":100.0,"source":"failed_dish"}]})
 	return scorer.evaluate(dish,item.customer)
 
+func guest_patience(base: float) -> float:
+	return base * (crew.cook_pace() if crew != null else 1.0)
+
+func pay_wage(cents: int, reference: String) -> TDOutcome:
+	if cents <= 0 or reference.is_empty():
+		return TDOutcome.new(false, "INVALID_WAGE", "工资无效。")
+	if int(_s.money_cents) < cents:
+		return TDOutcome.new(false, "BROKE", "手头不够付今日日薪。")
+	_record("wage", -cents, {}, reference, {"label": "雇员日薪"})
+	return TDOutcome.new(true, "PAID", "已支付日薪。")
+
 func deliver(id: String, dish: Dictionary) -> TDOutcome:
 	if dish.get("state")!="delivered": return TDOutcome.new(false,"NOT_DELIVERED")
-	var scored := can_deliver(id,dish)
+	var preview := order(id)
+	var customer: Dictionary = preview.get("customer", {}) if preview.get("customer") is Dictionary else {}
+	var plated: Dictionary = dish if crew == null or preview.is_empty() else crew.apply_dish(dish, customer)
+	var scored := can_deliver(id, plated)
 	if not scored.ok: return scored
 	var item: Dictionary = _s.orders[_order_index(id)]
 	if dish.get("failed_dish",false):
@@ -498,7 +513,7 @@ func deliver(id: String, dish: Dictionary) -> TDOutcome:
 		_record("failed_delivery",0,{},id,{"dish_id":dish.dish_id})
 		if commerce!=null: _economic_review(item);_pay_economic_debt()
 		return TDOutcome.new(true,"SERVED",item.feedback,item)
-	var requested_tip:=roundi(float(item.price_cents)*maxf(0.0,float(scored.data.satisfaction)-80.0)/200.0)
+	var requested_tip:=roundi(float(item.price_cents)*maxf(0.0,float(scored.data.satisfaction)-80.0)/200.0 * (crew.tip_scale() if crew != null else 1.0))
 	if commerce!=null and item.has("economic_intent"):
 		var paid:=commerce.society.pay(item.economic_intent.opportunity_id,requested_tip)
 		if not paid.ok: return paid
@@ -518,7 +533,10 @@ func deliver(id: String, dish: Dictionary) -> TDOutcome:
 	if satisfaction < float(catalog.config.settings.refund_below): refund(id)
 	if commerce!=null: _economic_review(item);_pay_economic_debt()
 	if cooking_reward.is_valid(): cooking_reward.call(int(_s.day),family_id(item.recipe_id),satisfaction)
-	return TDOutcome.new(true,"SERVED","",item)
+	var growth := ""
+	if crew != null:
+		growth = "，".join(PackedStringArray(crew.record_served_order()))
+	return TDOutcome.new(true,"SERVED",growth,item)
 
 func refund(id: String) -> TDOutcome:
 	var i: int = _order_index(id)
@@ -847,7 +865,7 @@ func validate_save(data: Variant) -> TDOutcome:
 	for id: String in catalog.config.costs: inventory[id]=0
 	for event: Variant in data.ledger:
 		if not event is Dictionary or not event.get("id") is String or ids.has(event.id) or not event.get("kind") is String or not TDServiceCatalog.integer(event.get("cents"),-1000000000,1000000000) or not event.get("inventory_delta") is Dictionary or not TDServiceCatalog.integer(event.get("day"),1,int(data.day)): return TDOutcome.new(false,"INVALID_LEDGER")
-		if not event.get("reference") is String or not event.get("extra") is Dictionary or event.kind not in ["purchase","prepayment","consumption","tip","refund_cancel","refund_served","settlement","emergency_grant","recipe_unlock","failed_delivery","world_adjustment","supply_delivery","operating_payment","bank_transfer","spoilage"]: return TDOutcome.new(false,"INVALID_LEDGER")
+		if not event.get("reference") is String or not event.get("extra") is Dictionary or event.kind not in ["purchase","prepayment","consumption","tip","refund_cancel","refund_served","settlement","emergency_grant","recipe_unlock","failed_delivery","world_adjustment","supply_delivery","operating_payment","bank_transfer","spoilage","wage"]: return TDOutcome.new(false,"INVALID_LEDGER")
 		if event.kind=="spoilage":
 			if int(event.cents)!=0 or not event.extra.get("cold_foods") is Array: return TDOutcome.new(false,"INVALID_LEDGER")
 			for quantity: Variant in event.inventory_delta.values():
