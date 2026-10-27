@@ -11,6 +11,8 @@ var error := TDOutcome.new(true)
 var society: TDCommunitySociety
 var expansion: TDBusinessExpansion
 var _daily_interest: Dictionary = {}
+## Negative means "not set": player_store keeps map attractiveness. The live shell writes layout effect.
+var interior_effect: float = -1.0
 const SOCIETY_FIELDS: Array[String] = ["society","expansion","legacy_archive","tax_due_cents","today_interest_cents"]
 const FIRM_FIELDS: Array[String] = ["owner_id","name","parcel_id","capacity","open_day","status","cost_basis","consumed_cents","wage_expense_cents","tax_cents","tax_due_cents","profitable_reviews","last_profit_cents","travel_minutes","basket_index"]
 
@@ -309,7 +311,15 @@ func player_store(menu: Array, waiting: int, group: Dictionary, origin: String =
 		dish.familiarity=float(state.familiarity.get(group.id+":"+str(dish.get("culture","chinese")),0.7 if dish.get("culture","chinese")=="chinese" else 0.25))
 	var service:=reputation(group.id,"service")
 	if state.residents.has(resident_id): service=lerpf(service,float(state.residents[resident_id].last_experience),0.25)
-	return {"id":"player","open":true,"reachable":place.reachable,"visibility":place.visibility,"awareness":state.awareness,"brand":state.brand,"service":service,"travel_minutes":place.travel_minutes.get(origin,5.0),"wait_minutes":waiting*35.0,"decor_match":place.attractiveness,"menu":actual_menu}
+	return {"id":"player","open":true,"reachable":place.reachable,"visibility":place.visibility,"awareness":state.awareness,"brand":state.brand,"service":service,"travel_minutes":place.travel_minutes.get(origin,5.0),"wait_minutes":waiting*35.0,"decor_match":decor_match_for(float(place.attractiveness)),"menu":actual_menu}
+
+func decor_match_for(attractiveness: float) -> float:
+	var base := clampf(attractiveness, 0.0, 1.0)
+	if interior_effect < 0.0 or not is_finite(interior_effect):
+		return base
+	# AI-048: a uniform low-tier room scores about 30 and does not move the old location weight.
+	var delta := clampf((interior_effect - 30.0) / 80.0, -0.25, 0.25)
+	return clampf(base + delta, 0.0, 1.0)
 
 func forecast(menu: Array) -> Dictionary:
 	var expected: float=0
@@ -345,7 +355,9 @@ func arrivals(slot: int, menu: Array, waiting: int, capacity: int, templates: Ar
 		group=spending_group(group,state.home,index)
 		var candidates:=_firms(state.home,group)
 		candidates.append(player_store(menu,waiting+result.size(),group,person.snapshot().origin_id,person.id))
-		var chosen:=TDEconomicDemand.pick(TDEconomicDemand.choices(group,candidates,config.outside_utility,config.menu_tau),unit("choice:%s:%d:%d"%[state.home,state.day,index]))
+		var compared:=TDEconomicDemand.choices(group,candidates,config.outside_utility,config.menu_tau)
+		var chosen:=TDEconomicDemand.pick(compared,unit("choice:%s:%d:%d"%[state.home,state.day,index]))
+		var comparison:=TDEconomicDemand.comparison_note(compared,chosen)
 		state.day_stats.opportunities+=1
 		if chosen.store_id=="outside" or society.available(family)==0: state.day_stats.outside+=1;continue
 		if chosen.store_id!="player":
@@ -356,7 +368,9 @@ func arrivals(slot: int, menu: Array, waiting: int, capacity: int, templates: Ar
 		if waiting+result.size()>=capacity: state.day_stats.capacity_rejected+=1;continue
 		var dish: Dictionary=menu.filter(func(d:Dictionary)->bool:return d.id==chosen.recipe_id)[0]
 		var patience_seconds:=clampf(patience*float(group.patience_scale)*pow(-log(maxf(0.000001,1.0-unit("patience:%d:%d"%[state.day,index]))),0.5),90,600)
-		var intent:=TDMealIntent.new({"schema_version":1,"opportunity_id":"%s:d%d:s%d:n%d"%[state.home,state.day,slot,index],"customer_id":person.id,"town_id":state.home,"origin_id":person.snapshot().origin_id,"group_id":group.id,"store_id":"player","recipe_id":chosen.recipe_id,"day":int(state.day),"slot":slot,"quoted_cents":int(dish.price_cents),"travel_minutes":float(candidates.back().travel_minutes),"expected_wait_minutes":float(candidates.back().wait_minutes),"patience_seconds":patience_seconds,"reasons":["预算范围内","比较菜单、路程和预计等待后到店"]})
+		var reasons: Array=["预算范围内","比较菜单、路程和预计等待后到店"]
+		if comparison!="": reasons.append(comparison)
+		var intent:=TDMealIntent.new({"schema_version":1,"opportunity_id":"%s:d%d:s%d:n%d"%[state.home,state.day,slot,index],"customer_id":person.id,"town_id":state.home,"origin_id":person.snapshot().origin_id,"group_id":group.id,"store_id":"player","recipe_id":chosen.recipe_id,"day":int(state.day),"slot":slot,"quoted_cents":int(dish.price_cents),"travel_minutes":float(candidates.back().travel_minutes),"expected_wait_minutes":float(candidates.back().wait_minutes),"patience_seconds":patience_seconds,"reasons":reasons})
 		if not society.reserve(family,int(dish.price_cents),intent.snapshot().opportunity_id).ok:
 			state.day_stats.capacity_rejected+=1;continue
 		state.day_stats.admitted+=1
