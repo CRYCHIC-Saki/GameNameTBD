@@ -14,6 +14,7 @@ var selected_id: String = ""
 var player_point := Vector2.ZERO
 var player_moving: bool = false
 var player_facing:=Vector2i.DOWN
+var player_walk_frame: int = -1
 var actors: Array = []
 var runner_visible: bool = false
 var runner_point := Vector2.ZERO
@@ -35,6 +36,7 @@ func _staff_font() -> Font:
 
 func _ready() -> void:
 	z_index = 4
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	# Transparent texture padding must not shift the visible feet from the body origin.
 	_chef_foot_ratio=1.0
 	_camera = Camera2D.new()
@@ -63,8 +65,10 @@ func set_room(next: TDRestaurantLayout) -> void:
 func sync(player: Node2D, guests: Array) -> void:
 	if player != null:
 		player_point = player.position
-		if player is TDKitchenPlayer: player_facing=player.facing
-		player_moving = player is TDKitchenPlayer and (player as TDKitchenPlayer).velocity.length_squared() > 1.0
+		if player is TDKitchenPlayer:
+			player_facing = player.facing
+			player_walk_frame = player.walk_frame
+		player_moving = player_walk_frame >= 0
 	actors = []
 	for item: Variant in guests:
 		var guest := item as TDRestaurantGuest
@@ -240,8 +244,10 @@ func _person(point: Vector2, moving: bool, shirt: Color, caption: String, seated
 		var ground:=project(grid.x,grid.y)
 		draw_colored_polygon(PackedVector2Array([ground+Vector2(-7,0),ground+Vector2(0,-3),ground+Vector2(7,0),ground+Vector2(0,3)]),Color(0,0,0,.25))
 		var body:=chef_rect(point)
-		body.position.y-=absf(bob)
-		draw_texture_rect(CHEF_SPRITE if staff else TDChefArt.texture(player_facing),body,false)
+		if staff:
+			body = Rect2(ground - Vector2(28, 70 * _chef_foot_ratio + absf(bob)), Vector2(56, 70))
+		# The protagonist shares the physics player's frame; no wall-clock bob during pause.
+		draw_texture_rect(CHEF_SPRITE if staff else TDChefArt.texture(player_facing, player_walk_frame),body,false)
 		if staff and caption != "":
 			var plate := Rect2(body.position + Vector2(-18, -24), Vector2(92, 22))
 			draw_rect(plate, Color(0.08, 0.12, 0.1, 0.88))
@@ -259,7 +265,9 @@ func _person(point: Vector2, moving: bool, shirt: Color, caption: String, seated
 
 func chef_rect(point: Vector2) -> Rect2:
 	var grid:=point/float(layout.cell_px)
-	return Rect2(project(grid.x,grid.y)-Vector2(28,70*_chef_foot_ratio),Vector2(56,70))
+	var texture := TDChefArt.texture(player_facing, player_walk_frame)
+	var size := texture.get_size() * 70.0 / texture.get_height()
+	return Rect2(project(grid.x,grid.y) - Vector2(size.x * 0.5, size.y), size)
 
 func _prop(index: int, at: Vector2, width: float) -> void:
 	var side:float=FURNITURE.get_width()/2.0

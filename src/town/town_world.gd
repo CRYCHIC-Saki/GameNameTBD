@@ -73,7 +73,8 @@ func _ready() -> void:
 	_player.collision_layer = 32
 	_player.collision_mask = 16
 	_player.directional_art=player_mode
-	_player.sprite_height=48.0
+	_player.sprite_height=72.0
+	_player.walk_cycle_distance=96.0
 	var sprite := Sprite2D.new()
 	sprite.name = "Sprite2D"
 	sprite.texture = preload("res://assets/kitchen/chef-v1.png") if player_mode else TDRestaurantArt.guest_texture()

@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "date": "2026-10-27",
+  "generator": "built-in image_gen",
+  "reference": "protagonist-idle-four-directions-v1.png",
+  "output": "protagonist-walk-four-directions-v1.png",
+  "transparent_background": true,
+  "status": "ENGINE_AND_EXPORT_PASS",
+  "sha256": "6ce7ffdf3d460e82a09a983d754b9cc267c866fd17f28ae7f4ec56003c3c6a6d",
+  "source_idle_sha256": "169c2ed07230794e57d7d92369211794f10b57dbffb648515768a5b005292409",
+  "visible_bounds_threshold": 128,
+  "regions_by_direction_then_stride": [[104,20,236,466],[104,515,236,468],[460,20,232,464],[460,515,232,467],[842,22,229,462],[840,517,232,462],[1219,22,222,463],[1217,517,229,464]],
+  "generator_output": "C:/Users/Administrator/.codex/generated_images/01a11e94-e1d7-7c40-8dde-4cfdbe246fc8/exec-c90b5405-9a32-4de7-b48c-a8cc628f7def.png",
+  "layout": "1536x1024; columns DOWN/UP/LEFT/RIGHT; rows opposite strides; cycle strideA/idle/strideB/idle",
+  "prompts": [
+    {
+      "purpose": "Eight opposite walking poses",
+      "text": "Use case: identity-preserve. Game sprite sheet for the EXACT chef girl in reference image. Produce EIGHT full-body WALKING sprites only, uniform 4 columns x 2 rows on fully transparent background, no text. Columns are strictly FRONT, BACK, LEFT PROFILE (nose points left), RIGHT PROFILE (nose points right). Top row: left foot forward and right arm forward. Bottom row: right foot forward and left arm forward. The two rows must show visibly OPPOSITE stride poses, not duplicate legs. Keep heads and torso facing fixed; NEVER mirror the whole character between steps. Same approved pixel-art face, flame hair tuft, cream tilted hat, white blouse, red tie, cream flame apron, black skirt, brown boots, hip pouch and black pan on back, same body proportions as reference. The hat is on screen LEFT in front view, screen RIGHT in back view, screen RIGHT in left profile, screen LEFT in right profile. Strong readable opposite leg swings, natural small arm swing. Consistent head size across all eight sprites. Each sprite sits entirely inside its equal grid cell with 7 percent clear padding on every side, no clipping. Transparent sheet about 1536 wide x 1024 tall. Reference is identity/design source, not a layout to copy."
+    },
+    {
+      "purpose": "Background alpha cleanup",
+      "text": "Use case: background-extraction. Edit the provided 4 columns by 2 rows sprite sheet ONLY to remove the entire brown/black blurry background. The output must have a genuinely transparent alpha=0 background including between legs, arms, and body. Preserve all EIGHT existing chef girl sprites, their exact positions, dimensions, pixels, faces, poses, hats, colors and outlines. Keep the same canvas size and 4x2 arrangement. Do not redraw, move, resize, mirror, or add anything. No floor, shadows, checkerboard, text, or other background. Transparent PNG game asset."
+    }
+  ],
+  "rejected_attempts": [
+    "Initial sixteen-cell call cancelled after no returned result",
+    "exec-4793e194-dd0b-445a-90f8-96320b24d5e4.png: inconsistent hats and facing",
+    "exec-44f1f3f5-01fc-4c89-8687-1e18d24c01d3.png: unresolved hats and facing"
+  ],
+  "human_art_acceptance": "PENDING"
+}

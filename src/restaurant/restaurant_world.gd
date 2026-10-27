@@ -423,6 +423,7 @@ func _build_world() -> void:
 	_player.collision_layer = 8
 	_player.collision_mask = 4
 	_player.walk_speed=180.0
+	_player.vertical_stride_multiplier=1.6
 	_player.motion_transform=Transform2D(Vector2(32,16)/layout.cell_px,Vector2(-32,16)/layout.cell_px,Vector2.ZERO).affine_inverse()
 	var sprite := Sprite2D.new()
 	sprite.name = "Sprite2D"

@@ -1,5 +1,7 @@
 # GameNameTBD · 小镇食堂
 
+新增D040主角：小镇、餐厅、厨房和小屋使用指定的火焰发色厨师形象，四向迈步与实际移动同步，松键或撞墙回站姿。R1放大厨房/小镇角色；R2修复餐厅非正交投影重复计距造成的动画快放，实际走速保持。专项：`pwsh -File tools/check.ps1 -Suite protagonist`；真实图形预览：用锁定Godot运行 `--path . --script res://tools/protagonist_probe.gd`，结果写入artifacts/protagonist-stride-r2，使用隔离存档。素材及补帧提示见 [主角素材](assets/characters/protagonist/README.md)，验收见 [protagonist.md](docs/phases/protagonist.md)。
+
 本次 D039：修复餐厅穿墙与斜向速度，角色四向转身并面向建筑交互；新增独立小屋，日结到床休息和保存，后续读档回床边；三首休闲/营业/做菜BGM替换持续节拍器。详见 [本次验收与试玩](docs/phases/habitat.md)。专项：`pwsh -File tools/check.ps1 -Suite habitat`。
 
 新增 **D037库存与熟练制作**：市场/工厂只出售已解锁可制作菜谱的主料，调料全部开放，按瓶/袋购买。冰箱仅展示持有库存，沿用工厂四类并显示图标、余量和保质期；到期损耗记账，切配退回保留到期日。M6长按按实际用量扣调料，耗尽时变灰禁用。手工制作分≥80按实际分累积，达到400后装好锅料按F可选自动制作，完成后E端盘；自动仍耗料、占锅、耗时，不增加手艺。QTE与评分容差已放宽，建议数值待试玩。验证和五步试玩见 [kitchen-stock.md](docs/phases/kitchen-stock.md)。专项：`pwsh -File tools/check.ps1 -Suite stock`，真实厨房：`-Suite service`，完整导出：`pwsh -File tools/export.ps1`。

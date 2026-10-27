@@ -1,7 +1,7 @@
 class_name TDKitchenPlayer
 extends CharacterBody2D
 
-## Feet are the movement/collision origin; the generated sprite rises above it.
+## Feet remain the collision origin. Visual frames never move the physics body.
 const WALK_SPEED: float = 230.0
 var controls_enabled: bool = true
 var body_lift: float = 47.0
@@ -10,18 +10,20 @@ var facing := Vector2i.DOWN
 var motion_transform := Transform2D.IDENTITY
 var walk_speed: float=WALK_SPEED
 var directional_art: bool=true
-var sprite_height: float=70.0
+@export var sprite_height: float = 70.0
+var walk_cycle_distance: float = 140.0
+var vertical_stride_multiplier: float = 1.0
 var _walk_time: float = 0.0
+var _walk_phase: float = 0.0
+var walk_frame: int = -1
 var _sprite: Sprite2D
 var _sprite_scale: Vector2
 
 func _ready() -> void:
 	_sprite = $Sprite2D as Sprite2D
 	if directional_art:
-		_sprite.texture=TDChefArt.texture(facing)
-		_sprite.scale=Vector2.ONE*sprite_height/40.0
 		body_lift=sprite_height*.5
-		_sprite.position.y=-body_lift
+		_apply_directional_pose()
 	_sprite_scale = _sprite.scale
 	texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST
 
@@ -29,7 +31,18 @@ func face(direction: Vector2) -> void:
 	if direction.is_zero_approx(): return
 	facing=Vector2i(int(signf(direction.x)),0) if absf(direction.x)>absf(direction.y) else Vector2i(0,int(signf(direction.y)))
 	if directional_art and is_instance_valid(_sprite):
-		_sprite.texture=TDChefArt.texture(facing);_sprite.flip_h=false
+		_apply_directional_pose()
+
+func animation_texture() -> Texture2D:
+	return TDChefArt.texture(facing, walk_frame)
+
+func _apply_directional_pose() -> void:
+	_sprite.texture = animation_texture()
+	_sprite.centered = true
+	_sprite.flip_h = false
+	_sprite.rotation = 0.0
+	_sprite.scale = Vector2.ONE * sprite_height / _sprite.texture.get_height()
+	_sprite.position = Vector2(0.0, -sprite_height * 0.5)
 
 func faces_target(target: Vector2) -> bool:
 	var offset:=motion_transform.basis_xform_inv(target-position)
@@ -42,6 +55,7 @@ func set_controls_enabled(enabled: bool) -> void:
 		_reset_pose()
 
 func _physics_process(delta: float) -> void:
+	var before_motion := position
 	var direction := Vector2.ZERO
 	if controls_enabled:
 		direction = Input.get_vector("world_left", "world_right", "world_up", "world_down")
@@ -67,7 +81,24 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity = motion
 		move_and_slide()
-	if velocity.length_squared() > 1.0:
+	# Convert actual travel back to screen space (the restaurant uses inverse projection).
+	# Input or requested velocity alone would keep walking into a solid wall forever.
+	# The isometric inverse projection is not orthonormal. basis_xform_inv
+	# transposes it and would count horizontal pixels twice and vertical pixels
+	# eight times. Use the actual affine inverse when measuring animation travel.
+	var screen_travel := motion_transform.affine_inverse().basis_xform(position - before_motion)
+	if directional_art:
+		if controls_enabled and screen_travel.length_squared() > 0.0001:
+			var stride_scale := vertical_stride_multiplier if facing.y != 0 else 1.0
+			var cycle_length := maxf(walk_cycle_distance * stride_scale, 1.0)
+			# Art size is independent of stride. Normalized phase also avoids a
+			# pose jump when turning between directions with different strides.
+			_walk_phase = fposmod(_walk_phase + screen_travel.length() / cycle_length, 1.0)
+			walk_frame = mini(int(_walk_phase * 4.0), 3)
+			_apply_directional_pose()
+		else:
+			_reset_pose()
+	elif velocity.length_squared() > 1.0:
 		_walk_time += delta
 		var step := sin(_walk_time * 14.0)
 		_sprite.position.y = -body_lift - absf(step) * 3.0
@@ -80,7 +111,12 @@ func _physics_process(delta: float) -> void:
 
 func _reset_pose() -> void:
 	_walk_time = 0.0
+	_walk_phase = 0.0
+	walk_frame = -1
 	if is_instance_valid(_sprite):
+		if directional_art:
+			_apply_directional_pose()
+			return
 		_sprite.position.y = -body_lift
 		_sprite.rotation = 0.0
 		_sprite.scale = _sprite_scale

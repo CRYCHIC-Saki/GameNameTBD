@@ -25,9 +25,11 @@ function Run-Process([string]$Exe, [string]$Name, [string[]]$Arguments) {
   [void]$process.Start()
   $output = $process.StandardOutput.ReadToEndAsync()
   $errors = $process.StandardError.ReadToEndAsync()
-  if (-not $process.WaitForExit(90000)) { $process.Kill($true); throw "$Name timeout" }
+  $timedOut = -not $process.WaitForExit(90000)
+  if ($timedOut) { $process.Kill($true); $process.WaitForExit() }
   $text = $output.GetAwaiter().GetResult() + $errors.GetAwaiter().GetResult()
   [IO.File]::WriteAllText((Join-Path $evidence "$Name.log"), $text)
+  if ($timedOut) { throw "$Name timeout; see $evidence/$Name.log" }
   if ($process.ExitCode -ne 0 -or $text -match '(?m)^\s*(SCRIPT ERROR|ERROR):|Parse Error:|ObjectDB.*leaked') {
     throw "$Name failed exit=$($process.ExitCode); see $evidence"
   }
@@ -40,10 +42,15 @@ try {
   try {
     $names = @($archive.Entries | ForEach-Object { $_.FullName })
     foreach ($name in $names) {
-      if ($name -notmatch '^(src/|\.godot/|assets/audio/(casual|service|cooking)\.wav(\.import)?$|assets/(kitchen/(recipe-icons/)?|town/)[^/]+\.png(\.import)?$|content/(dev_samples|cooking_prototype|cooking_system|service_content|restaurant|phase3_world|pantry|ingredient_index|research/recipe_atlas|research/runtime_recipes|town_economy/economy|markets/kitchen_stock|brand/progression)\.json$|project\.binary$)') { throw "Non-runtime resource exported: $name" }
+      if ($name -notmatch '^(src/|\.godot/|assets/characters/protagonist/protagonist-(idle|walk)-four-directions-v1\.png(\.import)?$|assets/audio/(casual|service|cooking)\.wav(\.import)?$|assets/(kitchen/(recipe-icons/)?|town/)[^/]+\.png(\.import)?$|content/(dev_samples|cooking_prototype|cooking_system|service_content|restaurant|phase3_world|pantry|ingredient_index|research/recipe_atlas|research/runtime_recipes|town_economy/economy|markets/kitchen_stock|brand/progression)\.json$|project\.binary$)') { throw "Non-runtime resource exported: $name" }
     }
     $names | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'runtime-manifest.json') -Encoding utf8
 	if ('content/town_economy/economy.json' -notin $names) { throw 'Missing exported economy configuration' }
+    $crewResource = 'src/restaurant/restaurant_crew.gd'
+    if ($crewResource -notin $names -and ($crewResource + '.remap') -notin $names) { throw 'Missing exported restaurant crew script' }
+    foreach ($pose in @('idle','walk')) {
+      if (('assets/characters/protagonist/protagonist-' + $pose + '-four-directions-v1.png.import') -notin $names) { throw "Missing exported protagonist $pose atlas" }
+    }
 	foreach ($resource in @('src/platform/game_music.gd','src/town/cottage_world.gd','src/world/chef_art.gd','assets/audio/casual.wav.import','assets/audio/service.wav.import','assets/audio/cooking.wav.import','content/brand/progression.json','src/business/level_progression.gd','src/ui/level_rewards_view.gd','content/markets/kitchen_stock.json','src/business/food_stock.gd','src/ui/ingredient_icon.gd')) {
 	  if ($resource -notin $names -and ($resource + '.remap') -notin $names) { throw "Missing exported stock resource: $resource" }
 	}

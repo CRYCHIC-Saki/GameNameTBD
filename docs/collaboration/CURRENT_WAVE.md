@@ -1,5 +1,29 @@
 # 当前协作波次
 
+## 2026-10-27 拉取经营闭环并保留主角改动
+
+- 用户最新请求拉取GitHub新内容；fetch确认origin/main=732d144（经营闭环），本地主角基线8e33432。先备份39份修改/未跟踪文件至artifacts/pull-20261027-202823，再将已验收主角与前序导出修复保存为本地提交，采用merge整合，保留共同历史。
+- 唯一集成写入者本任务Agent；锁餐厅绘制/场景重叠段、导出配置/门禁及公共记录。远端顾客/装修规则保持，主角动画按真实屏幕位移的修复保留。远端同名D040/AI-048以VISIT后缀消歧并保留原编号来源；原始doc/source资料不提交、不覆盖。
+- 状态INTEGRATING。合并后运行全量检查和实际导出验证；不以先前458项通过代替新组合结果。
+
+## 2026-10-27 主角四向形象与行走动画
+
+- D040-R2再次反馈餐厅前后步频过快。唯一写入者本任务，修改kitchen_player.gd、test_protagonist.gd、protagonist_probe.gd及对应记录。非正交投影误用basis_xform_inv造成左右×2、上下×8；独立绘制投影回归先失败，再修正计步，不改实际移动/碰撞/尺寸。458/458全量与GPU17图通过；19:43包首次退出有ObjectDB警告，标准导出FAIL保留，同包verbose及3次29项严格复验通过，偶发警告原因未定位。所有权39文件PASS、写入锁释放，状态DELIVERED_LOCAL_PLAYTEST_PENDING_WITH_EXIT_WARNING，未提交/推送。
+
+- D040-R1已修正用户反馈：厨房/小镇人物放大到屏幕约72、餐厅/小屋70保持；餐厅仅前后步频降至原62.5%，实际走速不变。唯一写入者仍为本任务；涉及kitchen_player.gd、kitchen_world.tscn、town_world.gd、restaurant_world.gd、图形探针与对应记录，图集/物理/存档不变。专项19/19、GPU18图、全量457/457及EXE导出检查全部通过，所有权39文件PASS，写入锁释放；状态DELIVERED_LOCAL_PLAYTEST_PENDING，未提交/推送。
+
+- 用户指定assets/characters/protagonist/protagonist-idle-four-directions-v1.png替换主角，并完善行走动画。基线8e33432，保留上一轮未提交的导出修复；当前integration/phase-4-wave-protagonist。
+- 唯一写入者本任务Agent，顺序承担角色视觉与集成；protagonist_motion_facts代理只读调查运动/绘制链。锁src/world/chef_art.gd、kitchen_player.gd、src/restaurant/restaurant_iso.gd、restaurant_world.gd及必要场景装配；新增角色动画PNG和元数据、专项测试/视觉探针、导出配置/工具及工程记录。已有站姿PNG、半身像与doc/source/原稿不改写。
+- 仅替换主角及步态；NPC雇员保持原形象，碰撞/移动速度/朝向交互/存档规则不变。停止、受阻、弹窗、暂停和隐藏时必须正确停止或冻结动画；餐厅投影使用同一动画状态，不另造一套计时。
+- 状态DELIVERED_LOCAL_PLAYTEST_PENDING，写入锁释放。专项19/19、图形15图、全量457/457及440资源导出、EXE启动3次和菜单/移动29项均通过；验收与实际技能来源见docs/phases/protagonist.md。原站姿/半身像/设计稿哈希不变；未提交、推送。
+
+## 2026-10-27 本地重建的导出依赖修复
+
+- 用户要求重新构建；基线main=8e33432（PR #5已合并且已pull）。首次标准导出全量453/453通过，但Windows包遗漏餐厅员工类TDRestaurantCrew，实际EXE启动超时；隔离诊断确认缺失类导致解析失败。
+- 唯一写入者：本任务Agent（集成角色）；分支integration/phase-4-wave-export-crew。锁定export_presets.cfg、tools/export.ps1以及本记录、PROJECT_STATE。仅补运行依赖与导出门禁/超时日志，不修改员工或其他玩法。
+- AC-BUILD-001：员工脚本进入运行包且资源清单校验通过；AC-BUILD-002：标准导出全量、真实EXE启动退出三次与菜单输入检查通过；AC-BUILD-003：玩家档不接触，三份原始资料哈希不变。三项工程PASS：最终pre-export-20261027-153400为453/453、15186断言，436运行资源、EXE启动退出3次和29项输入检查均通过。第二轮中断未计通过，首轮失败证据保留。
+- 状态DELIVERED_LOCAL，写入锁释放；图形/音频与人工试玩本轮未执行，不提交、不推送。构建期间新增的其他角色素材与来源目录保持原样，不包含在本轮修改/运行包中。
+
 ## 2026-10-27 habitat与远端员工更新的集成
 
 - 用户授权推送；origin/main=466b9d2，原基线c54fc86，本地已验收修改先保存为5ee38e9。集成者唯一处理冲突和共享入口；保留D038等级、D039住所移动音乐和远端员工/工厂变更，不强推、不直接合并main。

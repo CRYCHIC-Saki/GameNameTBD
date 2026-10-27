@@ -1,5 +1,9 @@
 # 项目架构与接入边界
 
+## D040：共享主角视觉
+
+TDChefArt只缓存原站姿和补绘迈步图集的AtlasTexture；8张迈步图与4张原站姿形成四向4拍循环，不写模板或存档。TDKitchenPlayer在真实移动/道路限制后，将位移逆变换回屏幕距离推进实例步态；站立、受阻和禁用输入回原站姿。Sprite2D按贴图比例和底部脚点显示，餐厅自绘读取同一facing/walk_frame并做既有投影及遮挡排序，不另计动画时间。NPC绘制保持旧资源，没有新增节点管理器或Autoload。
+
 ## D039：住所、方向与音乐
 
 GameProfile的schema4追加residence v1（cottage_bed锚点及稳定地块）。TDTownMap负责验证/安装住宅覆盖层，保留底层地图、道路及产权；旧档分配位置在验证阶段完成可行性检查。GameShell装配TDCottageWorld，拥有旅行、日结和保存策略；小屋只发送rest/town意图，不修改Shop或存档。场景碰撞层隔离，隐藏/暂停/弹窗均关闭对应输入。

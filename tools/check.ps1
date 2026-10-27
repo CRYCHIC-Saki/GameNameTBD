@@ -2,7 +2,7 @@
 [CmdletBinding()]
 param(
   [string]$GodotPath = $env:GODOT_BIN,
-  [ValidateSet('all','content','cooking','qte','platform','scoring','integration','business','service','research','profiles','game','title','movement','commerce','stock','progression','habitat')]
+  [ValidateSet('all','content','cooking','qte','platform','scoring','integration','business','service','research','profiles','game','title','movement','commerce','stock','progression','habitat','protagonist')]
   [string]$Suite = 'all',
   [int]$TimeoutSeconds = 1800,
   [string]$ReportName = ''
@@ -67,6 +67,7 @@ try {
   if ($plugin -notmatch ('version="' + [regex]::Escape($lock.gut.version) + '"')) { throw 'GUT version mismatch' }
 
   $testMap = @{
+    protagonist = @('tests/integration/test_protagonist.gd','tests/integration/test_habitat.gd','tests/integration/test_town_motion.gd','tests/integration/test_kitchen_world.gd')
     habitat = @('tests/integration/test_habitat.gd')
     progression = @('tests/unit/test_shop_progression.gd','tests/integration/test_level_progression.gd')
     stock = @('tests/unit/test_shop_stock.gd','tests/unit/test_season_hold.gd')

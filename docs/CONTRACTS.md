@@ -1,5 +1,16 @@
 # 公共契约：v3完整烹饪，兼容v1/v2历史入口
 
+## D040 主角视觉契约
+
+- R2计步的屏幕还原使用motion_transform.affine_inverse().basis_xform(实际位移)，不能对非正交投影使用basis_xform_inv。测试/图形探针从餐厅绘制project独立量距离；相位按真实屏幕140/224距离推进。R1倍率保留，纠正其旧验证度量，物理移动参数不变。
+
+- R1：sprite_height只决定视觉大小，walk_cycle_distance决定一循环的位移长度，vertical_stride_multiplier仅调上下朝向步频；默认140/1.0。内部相位归一化，转向连续；放大角色不能隐式改变步频或物理速度。厨房100、小镇72、餐厅/小屋70；小镇步态96、餐厅前后224，其余140。
+
+- TDChefArt.texture(facing, walk_frame=-1)返回共享只读AtlasTexture：-1为用户原站姿，0–3为该方向行走帧；非法朝向回向下，帧索引约束在合法区间。缓存只保存视觉资源，调用者不得修改atlas/region。
+- TDKitchenPlayer持有每实例的walk_frame/距离，animation_texture()只读当前贴图。move_and_slide/道路限制完成后的位移经motion_transform逆基变换为屏幕距离，才推进循环；不改世界位置/速度/碰撞或face/faces_target规则。
+- 餐厅sync读取玩家的facing/walk_frame，自己只负责投影与遮挡排序；普通Sprite2D与餐厅使用同一底部脚点、等比例帧。静态读取不会推进动画，NPC/雇员仍使用原美术。
+- 站姿/行走图为运行资源，设计原稿、生成提示和测试探针不出包；没有新增存档字段或Autoload。
+
 ## D039 移动与住所契约
 
 - Player.facing为屏幕四向，静止保留；motion_transform仅把屏幕归一向量转换到房间物理坐标。餐厅真实move_and_slide＋四边围界，门只由交互切场景。faces_target使用屏幕投影后的目标方向；小镇E选正前方相邻格，鼠标仅选中，操作必须靠近面向。
