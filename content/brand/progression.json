@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "rules_version": 1,
+  "source": "AI-046: proposed balance; D038 shop attributes only",
+  "max_level": 50,
+  "curve": {"base_xp": 60, "linear_xp": 20, "quadratic_xp": 4},
+  "daily": {"profit_reference_cents": 3000, "profit_cap_xp": 70, "popularity_cap_xp": 15, "awareness_cap_xp": 15, "growth_xp_per_point": 3, "max_xp": 100},
+  "rewards": {"inspiration": 2, "milestone_every": 5, "milestone_bonus": 3},
+  "hooks": []
+}

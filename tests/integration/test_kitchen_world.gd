@@ -39,7 +39,7 @@ func test_actual_scene_uses_generated_assets_and_character_body() -> void:
 
 func test_near_stove_input_emits_identity_once_until_reenabled() -> void:
 	var player := world.get_node("Player") as TDKitchenPlayer
-	player.position = Vector2(588.0, 310.0)
+	player.position = Vector2(588.0, 310.0);player.face(Vector2.UP)
 	assert_true(world.interaction_available())
 	watch_signals(world)
 	_press_e(true)
@@ -50,7 +50,7 @@ func test_near_stove_input_emits_identity_once_until_reenabled() -> void:
 	_press_e()
 	assert_signal_emit_count(world, "cooking_requested", 1)
 	world.set_controls_enabled(true)
-	player.position = Vector2(693.0, 310.0)
+	player.position = Vector2(693.0, 310.0);player.face(Vector2.UP)
 	_press_e()
 	assert_signal_emitted_with_parameters(world, "cooking_requested", ["kitchen.stove.right"])
 	assert_signal_emit_count(world, "cooking_requested", 2)
@@ -62,7 +62,7 @@ func test_real_movement_and_engine_collision_block_counter() -> void:
 	await wait_physics_frames(5)
 	Input.action_release("world_right")
 	assert_gt(world.player_position().x, initial.x)
-	player.position = Vector2(588.0, 310.0)
+	player.position = Vector2(588.0, 310.0);player.face(Vector2.UP)
 	await get_tree().physics_frame
 	var collision := player.move_and_collide(Vector2(0.0, -200.0))
 	assert_not_null(collision, "The actual counter collider must stop walking")
@@ -71,7 +71,7 @@ func test_real_movement_and_engine_collision_block_counter() -> void:
 
 func test_disabled_controls_and_paused_world_cannot_move_or_interact() -> void:
 	var player := world.get_node("Player") as TDKitchenPlayer
-	player.position = Vector2(588.0, 310.0)
+	player.position = Vector2(588.0, 310.0);player.face(Vector2.UP)
 	world.set_controls_enabled(false)
 	var initial := world.player_position()
 	Input.action_press("world_down")
@@ -111,7 +111,7 @@ func test_hired_cooks_stay_at_the_stoves() -> void:
 		assert_eq(point, TDKitchenWorld.cook_point(index, 0.0))
 
 func test_close_disables_world_and_reentry_starts_fresh() -> void:
-	(world.get_node("Player") as TDKitchenPlayer).position = Vector2(588.0, 310.0)
+	(world.get_node("Player") as TDKitchenPlayer).position = Vector2(588.0, 310.0);(world.get_node("Player") as TDKitchenPlayer).face(Vector2.UP)
 	world.close()
 	assert_false(world.request_interaction())
 	var second := WORLD.instantiate() as TDKitchenWorld

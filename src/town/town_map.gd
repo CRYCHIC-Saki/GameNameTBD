@@ -37,6 +37,7 @@ const MARKET_TIERS: Array = [
 var plots: Array = []
 var housing_names: Array[String] = []
 var roads: Dictionary = {}
+var cottage: Dictionary={}
 
 static func supply_of_slot(slot: int) -> String:
 	if slot <= 0:
@@ -175,6 +176,76 @@ func build(catalog: TDTownCatalog, seed_value: int, _home_size: String = "small"
 			house["approach_y"] = door.y
 			plots.append(house)
 	_copy_catalog(catalog)
+	if not cottage.is_empty(): install_cottage(cottage)
+
+func choose_cottage() -> Dictionary:
+	var connected:=_connected_roads()
+	var available:=_home_cells()
+	var goal:=Vector2(CENTER,CENTER)
+	for plot:Dictionary in plots:
+		if plot.id=="player_diner": goal=Vector2(plot.x+plot.w*.5,plot.y+plot.h*.5)
+	var best:Dictionary={};var score:float=INF
+	for y:int in SIZE-1:
+		for x:int in SIZE-1:
+			var at:=Vector2i(x,y)
+			if not _empty_home_square(at,available): continue
+			var door:=_approach(x,y,2,2)
+			if not connected.has(door) or not _adjacent_home(at,door): continue
+			var distance:=Vector2(at).distance_squared_to(goal)
+			if distance<score:
+				score=distance;best={"id":"player_cottage","x":x,"y":y,"w":2,"h":2,"approach_x":door.x,"approach_y":door.y}
+	return best
+
+func _connected_roads() -> Dictionary:
+	var queue:Array[Vector2i]=[Vector2i(CENTER,CENTER)];var found:Dictionary={queue[0]:true};var cursor:int=0
+	while cursor<queue.size():
+		var at:=queue[cursor];cursor+=1
+		for direction:Vector2i in [Vector2i.LEFT,Vector2i.RIGHT,Vector2i.UP,Vector2i.DOWN]:
+			var next:=at+direction
+			if is_road(next.x,next.y) and not found.has(next): found[next]=true;queue.append(next)
+	return found
+
+func _home_cells() -> Dictionary:
+	var available:Dictionary={}
+	for plot:Dictionary in plots:
+		if plot.kind=="housing": available[Vector2i(plot.x,plot.y)]=true
+	for plot:Dictionary in plots:
+		if plot.kind=="housing" or plot.id=="player_cottage": continue
+		for y:int in range(int(plot.y),int(plot.y+plot.h)):
+			for x:int in range(int(plot.x),int(plot.x+plot.w)): available.erase(Vector2i(x,y))
+	return available
+
+func _empty_home_square(at:Vector2i,available:Dictionary={}) -> bool:
+	if available.is_empty(): available=_home_cells()
+	for dy:int in 2:
+		for dx:int in 2:
+			var x:=at.x+dx;var y:=at.y+dy
+			if is_road(x,y): return false
+			if not available.has(Vector2i(x,y)): return false
+	return true
+
+func _adjacent_home(at:Vector2i,door:Vector2i) -> bool:
+	return ((door.x==at.x-1 or door.x==at.x+2) and door.y>=at.y and door.y<at.y+2) or ((door.y==at.y-1 or door.y==at.y+2) and door.x>=at.x and door.x<at.x+2)
+
+func validate_cottage(raw:Variant) -> TDOutcome:
+	if not raw is Dictionary or raw.get("id")!="player_cottage" or raw.get("w")!=2 or raw.get("h")!=2: return TDOutcome.new(false,"INVALID_COTTAGE")
+	for key:Variant in raw:
+		if key not in ["id","x","y","w","h","approach_x","approach_y"]: return TDOutcome.new(false,"INVALID_COTTAGE")
+	for key:String in ["x","y","approach_x","approach_y"]:
+		if not TDServiceCatalog.integer(raw.get(key),0,SIZE-1): return TDOutcome.new(false,"INVALID_COTTAGE")
+	var at:=Vector2i(raw.x,raw.y);var door:=Vector2i(raw.approach_x,raw.approach_y)
+	if not _empty_home_square(at) or not _adjacent_home(at,door) or not _connected_roads().has(door): return TDOutcome.new(false,"PROTECTED_COTTAGE_LOCATION")
+	return TDOutcome.new(true,"VALID")
+
+func install_cottage(value:Dictionary) -> TDOutcome:
+	var checked:=validate_cottage(value)
+	if not checked.ok: return checked
+	cottage=value.duplicate(true)
+	var plot:=value.duplicate(true)
+	plot.merge({"kind":"player_cottage","name":"小屋","enabled":true,"walkable":false,"pool":0,"budget_shift":0,"foreign_scale":1.0})
+	plots=plots.filter(func(p:Dictionary)->bool:return p.id!="player_cottage")
+	plots.push_front(plot)
+	return TDOutcome.new(true,"COTTAGE_READY")
 
 func _copy_catalog(catalog: TDTownCatalog) -> void:
 	for index in plots.size():

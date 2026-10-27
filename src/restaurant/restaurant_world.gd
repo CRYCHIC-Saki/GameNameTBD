@@ -251,7 +251,7 @@ func request_interaction() -> bool:
 		var nearest: Dictionary={};var distance:float=1.6
 		for entry: Dictionary in interaction_points():
 			var gap:=Vector2(cell_of_player()).distance_to(entry.cell)
-			if gap<distance: nearest=entry;distance=gap
+			if gap<distance and _player.faces_target(layout.cell_center(Vector2i(entry.cell))): nearest=entry;distance=gap
 		if nearest.is_empty(): return false
 		object_requested.emit(str(nearest.action))
 		return true
@@ -422,6 +422,8 @@ func _build_world() -> void:
 	_player.motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
 	_player.collision_layer = 8
 	_player.collision_mask = 4
+	_player.walk_speed=180.0
+	_player.motion_transform=Transform2D(Vector2(32,16)/layout.cell_px,Vector2(-32,16)/layout.cell_px,Vector2.ZERO).affine_inverse()
 	var sprite := Sprite2D.new()
 	sprite.name = "Sprite2D"
 	sprite.texture = CHEF
@@ -435,8 +437,6 @@ func _build_world() -> void:
 	feet.shape = capsule
 	_player.add_child(feet)
 	sprite.visible = false
-	if player_mode:
-		_player.confine_to = _feet_inside_room
 	add_child(_player)
 	_iso = TDRestaurantIsoView.new()
 	_iso.name = "IsoView"
@@ -551,6 +551,12 @@ func _rebuild() -> void:
 				collider.shape = shape
 				collider.position = layout.cell_center(Vector2i(x, y))
 				_blockers.add_child(collider)
+	# Even a walkable door cell ends at a solid boundary; E owns scene transitions.
+	var width:float=layout.columns*layout.cell_px
+	var height:float=layout.rows*layout.cell_px
+	for edge:Rect2 in [Rect2(-32,-32,width+64,32),Rect2(-32,height,width+64,32),Rect2(-32,0,32,height),Rect2(width,0,32,height)]:
+		var wall:=CollisionShape2D.new();var rectangle:=RectangleShape2D.new()
+		rectangle.size=edge.size;wall.shape=rectangle;wall.position=edge.get_center();_blockers.add_child(wall)
 	for item: Variant in layout.pieces():
 		_add_fixture(item)
 	if _player != null and not layout.is_walkable(cell_of_player().x, cell_of_player().y):
@@ -1308,7 +1314,6 @@ func interaction_points() -> Array[Dictionary]:
 		{"action":"ledger","name":"账本","cell":Vector2(5,2)},
 		{"action":"recipes","name":"菜谱架","cell":Vector2(3,2)},
 		{"action":"decorate","name":"装修桌","cell":Vector2(1,layout.rows-3)},
-		{"action":"rest","name":"休息处","cell":Vector2(layout.columns-2,layout.rows-4)},
 		{"action":"hire","name":"招工处","cell":Vector2(layout.columns-3,layout.rows-4)},
 		{"action":"kitchen","name":"后厨","cell":Vector2(layout.columns-2,layout.rows-2)}]
 

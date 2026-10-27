@@ -1,5 +1,7 @@
 # GameNameTBD · 小镇食堂
 
+本次 D039：修复餐厅穿墙与斜向速度，角色四向转身并面向建筑交互；新增独立小屋，日结到床休息和保存，后续读档回床边；三首休闲/营业/做菜BGM替换持续节拍器。详见 [本次验收与试玩](docs/phases/habitat.md)。专项：`pwsh -File tools/check.ps1 -Suite habitat`。
+
 新增 **D037库存与熟练制作**：市场/工厂只出售已解锁可制作菜谱的主料，调料全部开放，按瓶/袋购买。冰箱仅展示持有库存，沿用工厂四类并显示图标、余量和保质期；到期损耗记账，切配退回保留到期日。M6长按按实际用量扣调料，耗尽时变灰禁用。手工制作分≥80按实际分累积，达到400后装好锅料按F可选自动制作，完成后E端盘；自动仍耗料、占锅、耗时，不增加手艺。QTE与评分容差已放宽，建议数值待试玩。验证和五步试玩见 [kitchen-stock.md](docs/phases/kitchen-stock.md)。专项：`pwsh -File tools/check.ps1 -Suite stock`，真实厨房：`-Suite service`，完整导出：`pwsh -File tools/export.ps1`。
 
 当前入口已更新为 **D033：单店游戏流程与六槽存档**。主菜单为“开始游戏 / 继续游戏 / 载入存档 / 设置 / 退出游戏”，新档从中式食堂门口开始。完整 Phase 4 未完成；本轮验收、失败记录与人工待测见 [game-shell.md](docs/phases/game-shell.md)。
@@ -14,13 +16,15 @@
 2. 开店前沿路到菜摊按E买食材，现货立即进入冰箱库存。首轮建议番茄/鸡蛋各4份，油/酱油各1瓶，盐/糖/淀粉各1袋；份量只是试玩备货建议。菜摊显示今日预计客流。
 3. 回店与“营业牌”按E交互，勾选当天菜品、调整售价后开门。进入厨房复用既有备菜与QTE：E取放、F开灶、Q取锅料。订单自动排队，按成品匹配交付。营业中不能离店采购。
 4. B或餐厅菜谱架打开研习。新档只有蛋炒饭、番茄炒蛋；阳春面和蒸水蛋使用真实厨房操作研习。花灵感买永久资格，80分解锁，失败可免费重试；营业中只能查阅。
-5. 营业牌可提前打烊；处理完余单，去“账本”查看日结/保存，去“休息处”进入次日。Esc暂停菜单也可在筹备/日结保存。退出营业会明确提示回退最近边界，不能恢复QTE现场。
+5. 营业牌可提前打烊；处理完余单，去“账本”查看日结/保存，离店后去店对面“小屋”，面向床按E休息、保存并进入次日。Esc暂停菜单也可在筹备/日结保存。退出营业会明确提示回退最近边界，不能恢复QTE现场。
 
 存档在 `%APPDATA%/TownDinerPhase0/profiles/slot-01.json` 至 `slot-06.json`：经营、研究、世界和装修写在同一校验包。新档互不继承；在新游戏存档页点“导入旧进度”才会只读导入旧 `shop-v1.json` / `research-v1.json`，源文件保留。坏档/未来版本不会被静默覆盖，可明确恢复已校验备份或临时档。
 
 钱庄在商业街内部，走到“钱庄”牌前按E；存取借还随当前槽保存。商业街的施工商铺和街坊食堂也可近前按E查看经营告示。五镇经济已相互联动，其他四镇当前只在后台模拟，不代表它们的旅行场景或剧情已经完成。
 
 反引号 **\`** 打开控制台，输入 `debug` 后可用 `help`、`status`、`san 0..100`、`tools`、`debug_off`。旧厨房/营业/员工/分店试验在独立调试入口，不与玩家槽混用。进入旧工具需先打烊并保存。
+
+新档首次出生在店门外；后续载入回小屋床边。WASD按屏幕方向走动，斜向同速；面向建筑/工作台按E，停止后保留朝向。筹备时床可保存，日结后可过夜，营业中不能离店。休闲、营业、做菜三首BGM随状态切换。
 
 设置支持主音量、全屏/窗口和当前槽研习输入偏移。新的街景、家具图集见 [素材来源](assets/town/README.md)；实际键鼠、音频延迟和连续营业疲劳仍需人工试玩。
 
@@ -53,7 +57,7 @@ pwsh -File tools/export.ps1
 4. 按B或“返回”原地继续，当前筹备菜单立即加入新学菜。查看书会主动暂停当前场景；营业中只能查看，打烊后才能研习。未解锁菜系显示锁且不可进入。蛋炒饭用熟米饭+鸡蛋，阳春面用细面条+清水走灶台煮制，蒸水蛋用鸡蛋+清水走蒸笼；参数为建议值。已覆盖真实制作和交付。
 5. 重开游戏检查资格、最佳分与解锁仍在。正常存储在user://research-v1.json；坏档会显示恢复入口，未来版本拒绝覆盖。真人设备延迟、音画同步和谱面乐趣均待试玩。
 
-专项检查：`pwsh -File tools/check.ps1 -Suite research`；全量检查：`pwsh -File tools/check.ps1`（单阶段超时预算600秒）；本地导出：`pwsh -File tools/export.ps1`。锁定Godot/GUT版本继续由dependencies.lock.json规定，未升级。图形检查工具：`tools/research_visual_check.gd`，所有验证存档隔离在artifacts/test-storage。
+专项检查：`pwsh -File tools/check.ps1 -Suite research`；全量检查：`pwsh -File tools/check.ps1`（单阶段超时预算1800秒，覆盖扩大的完整回归）；本地导出：`pwsh -File tools/export.ps1`。锁定Godot/GUT版本继续由dependencies.lock.json规定，未升级。图形检查工具：`tools/research_visual_check.gd`，所有验证存档隔离在artifacts/test-storage。
 
 接口、建议参数和逐项证据见[研习验收记录](docs/phases/recipe-study.md)、[契约D030](docs/CONTRACTS.md)。下面保留历史经营说明；涉及解锁的旧规则以本节为准。
 
@@ -161,6 +165,8 @@ Godot编辑器导入根目录 `project.godot` 可运行主场景；完整厨房�
 CI配置在 `.github/workflows/check.yml`，推送和Pull Request调用同一 `tools/check.ps1`。每次提交的远程结果及日志见 [GitHub Actions](https://github.com/CRYCHIC-Saki/GameNameTBD/actions)，本地通过不代替远程通过。
 
 ## 文档入口
+
+经营等级：餐厅账本→“经营等级”查看经验、当日来源和升级奖励；日结升级自动发灵感，保存后显示奖励页。正式经验只读店铺净利润、人气和知名度，不读菜品名气。专项检查 `pwsh -NoProfile -File tools/check.ps1 -Suite progression`；图形探针 `Godot --path . --script res://tools/level_visual_check.gd`。等级同六槽存档保存，旧档从接入后开始积累；详见 `docs/phases/level-progression.md`。
 
 - `AGENTS.md` / `docs/DEVELOPMENT_PROTOCOL.md`：总控规范，之后每阶段必读。
 - `docs/PROJECT_STATE.md` / `docs/DECISIONS.md`：当前状态、已确认决定、建议与冲突。

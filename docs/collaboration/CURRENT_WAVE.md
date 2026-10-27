@@ -1,5 +1,30 @@
 # 当前协作波次
 
+## 2026-10-27 habitat与远端员工更新的集成
+
+- 用户授权推送；origin/main=466b9d2，原基线c54fc86，本地已验收修改先保存为5ee38e9。集成者唯一处理冲突和共享入口；保留D038等级、D039住所移动音乐和远端员工/工厂变更，不强推、不直接合并main。
+- 餐厅使用真实物理碰撞，保留招工交互；工资按两个日结标记之间的账本事件计入税前经营利润，日结后的支付归下一营业日，避免遗漏或重复。相关专项18/18、合并后全量453/453与集成所有权检查通过。远端D038/AI-046/047与本地编号冲突，保留原编号并用CREW后缀区分。
+- 构建、测试缓存和三份既有未跟踪原始资料不上传；本地验证通过，准备提交集成并推送。人工试玩PENDING，远程CI须以GitHub实际结果为准。
+
+## 2026-10-26 移动、小屋和音频（D039）
+
+- 唯一写入者本任务Agent，三项调查代理只读。保留D038未提交，备份artifacts/habitat-baseline；集成分支integration/phase-4-wave-habitat，基线c54fc86＋本地D038。
+- 顺序角色：cook工作树artifacts/habitat-work/cook负责src/world/kitchen_player.gd、chef_art.gd、kitchen_world.gd、src/kitchen/full_kitchen.gd/cooking_lane.gd；town负责restaurant_world/restaurant_iso、town_world/town_art、新cottage_world及相应测试；building负责town_map住所选择/保护接口和建筑测试。三个角色入口所有权检查0变更PASS。
+- 集成者锁game_shell/game_profile、src/platform/game_music与beat_audio、assets/audio、工具/导出/测试助手/跨模块测试/文档。接口按habitat报告与CONTRACTS先定义，不改厂商/经济核心；独立小屋覆盖旧餐厅休息点。
+- 状态DELIVERED_LOCAL_PLAYTEST_PENDING。前序等级内容保留，不提交、推送或合并。
+- 补充锁：复用progression-work/economy仅给test_shop_application的实际输入助手加转向；复用progression-work/town-economy把整包断言改为schema4。两个角色仍只顺序由本任务写入；与生产规则一致，不跳过测试。集成者维护startup_exit_probe/pack_title_probe及导出检查，用真实退出动作验证音频清理，测试驱动不打进交付包。
+- 最终断点：全量445/445、15054断言，pre-export-20261026-200517；434资源导出、EXE启动退出3次/菜单移动29项、GPU7图/WASAPI三曲均PASS。cook10/town7/building3/economy7/town-economy1及integrator77所有权检查PASS，20份D039角色文件哈希一致。所有写入锁完成释放，角色工作树保留供审阅；人工PENDING、远程CI NOT_RUN，未提交或推送。
+
+## 2026-10-26 经营等级（D038）
+
+- 用户授权等级经验、灵感奖励、奖励界面及功能/家具/剧情接口。净经营利润已确认；最新纠正为店铺属性，不采用菜品名气。GRILL_RESULT=NO_BLOCKING_PRODUCT_QUESTIONS，三项事实调查只读完成。
+- 基线main=c54fc86（PR #3/#4已合并），远端一致。integration/phase-4-wave-progression为集成分支；唯一写入者本任务Agent，顺序承担economy和集成角色。
+- economy工作树artifacts/progression-work/economy：src/business/level_progression.gd、shop_session.gd（仅日结完成信号）、content/brand/progression.json、tests/unit/test_shop_progression.gd；入口所有权检查PASS。
+- 集成者锁：src/business/game_profile.gd、src/app/game_shell.gd、src/ui/level_rewards_view.gd、tests/integration/test_level_progression.gd、必要旧档测试、tools/check.ps1/load_check.gd/export.ps1/level_visual_check.gd、export_presets.cfg及工程记录。只接正式账和槽，不改NPC/厂商/建筑核心。
+- 状态DELIVERED_LOCAL_PLAYTEST_PENDING。三份未跟踪原始资料只读，真实玩家档不用于测试。不提交、推送或自动合并。
+- 顺序承担town-economy测试适配：artifacts/progression-work/town-economy仅修改test_town_economy_integration.gd的整包schema3期望并断言旧档不补XP；独立角色入口检查PASS。集成者在test_game_shell.gd现有三日真实QTE流程加等级保存断言，不替代厨房联调。
+- 最终439/439全量、17/17专项、GPU6图、422资源导出和独立EXE29入口检查PASS。economy6/town-economy1文件所有权PASS，7份SHA256与集成副本一致；集成32文件PASS（含3份原有只读未跟踪资料）。本轮锁释放，保留角色工作树供审阅；人工平衡PENDING，远程CI NOT_RUN。
+
 ## 2026-10-25 库存与熟练制作上传交接
 
 - 用户已明确授权推送D037。fetch后origin/main仍为83888da，origin/integration/phase-4-wave-commerce仍为3d1f138，无远端新增提交；无需冲突合并。

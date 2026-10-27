@@ -11,8 +11,11 @@ static func sprite(index: int) -> AtlasTexture:
 static func draw_world(canvas: Node2D, session: TDPhase3Session, selected: Dictionary) -> void:
 	var origin:=Vector2(300,24);var cell:float=TDTownWorld.CELL
 	var housing:Dictionary={};var drawn_houses:Dictionary={}
+	var home_rect:=Rect2i()
+	if not session.town_map.cottage.is_empty():
+		var home:Dictionary=session.town_map.cottage;home_rect=Rect2i(home.x,home.y,home.w,home.h)
 	for plot:Dictionary in session.town_map.plots:
-		if plot.kind=="housing": housing[Vector2i(plot.x,plot.y)]=true
+		if plot.kind=="housing" and not home_rect.has_point(Vector2i(plot.x,plot.y)): housing[Vector2i(plot.x,plot.y)]=true
 	canvas.draw_rect(Rect2(origin,Vector2.ONE*TDTownMap.SIZE*cell),Color("526f50"))
 	for y: int in TDTownMap.SIZE:
 		for x: int in TDTownMap.SIZE:
@@ -27,6 +30,7 @@ static func draw_world(canvas: Node2D, session: TDPhase3Session, selected: Dicti
 	for plot: Dictionary in session.town_map.plots:
 		var rect:=Rect2(origin+Vector2(plot.x,plot.y)*cell,Vector2(plot.w,plot.h)*cell)
 		var kind:=str(plot.kind)
+		if kind=="housing" and home_rect.has_point(Vector2i(plot.x,plot.y)): continue
 		if kind=="diner_lot":
 			canvas.draw_rect(rect,Color("8b8661"))
 			continue
@@ -63,6 +67,8 @@ static func draw_world(canvas: Node2D, session: TDPhase3Session, selected: Dicti
 				var house_size:float=cell*2.6 if span==3 else cell*2
 				rect=Rect2(origin+Vector2(block)*cell+Vector2.ONE*(cell*span-house_size)*.5,Vector2.ONE*house_size)
 			canvas.draw_texture_rect(sprite(1),rect.grow(3),false)
+		elif kind=="player_cottage":
+			canvas.draw_rect(rect,Color("8c8364"));canvas.draw_texture_rect(sprite(1),rect,false)
 		elif kind=="player_diner":
 			canvas.draw_rect(rect,Color("ac9973"))
 			canvas.draw_texture_rect(sprite(0),rect,false)

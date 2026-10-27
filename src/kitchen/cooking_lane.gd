@@ -611,6 +611,8 @@ func use_recipe_profile(value: TDCookingCatalog, identity: String, customer: Dic
 func feedback_remaining() -> float:
 	return maxf(0,float(judgement_feedback.get("shown_at_sec",-10)) + float(_content.pc_operations.document_rules.get("feedback_sec",.9)) - clock.qte_sec)
 
+var feedback_audible: bool=true
+
 func _capture_feedback(data: Dictionary) -> void:
 	if not document_rules: return
 	var event: Dictionary = data.get("last_judgement",{})
@@ -621,7 +623,7 @@ func _capture_feedback(data: Dictionary) -> void:
 	judgement_feedback = event.duplicate(true)
 	judgement_feedback.operation_id = data.operation_id
 	judgement_feedback.shown_at_sec = float(event.at_sec)
-	if feedback_remaining() > 0: _audio.play_feedback(str(event.grade))
+	if feedback_remaining() > 0 and feedback_audible and not automatic: _audio.play_feedback(str(event.grade))
 
 func next_boundary_sec() -> float:
 	var boundary: float = sheet.next_in(clock.qte_sec) if sheet != null else INF

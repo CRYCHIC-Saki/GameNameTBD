@@ -13,6 +13,7 @@ var editing: bool = false
 var selected_id: String = ""
 var player_point := Vector2.ZERO
 var player_moving: bool = false
+var player_facing:=Vector2i.DOWN
 var actors: Array = []
 var runner_visible: bool = false
 var runner_point := Vector2.ZERO
@@ -35,8 +36,7 @@ func _staff_font() -> Font:
 func _ready() -> void:
 	z_index = 4
 	# Transparent texture padding must not shift the visible feet from the body origin.
-	var used:=CHEF_SPRITE.get_image().get_used_rect()
-	_chef_foot_ratio=float(used.end.y)/float(CHEF_SPRITE.get_height())
+	_chef_foot_ratio=1.0
 	_camera = Camera2D.new()
 	_camera.name = "IsoCamera"
 	_camera.position = project(10.0, 5.5)
@@ -63,6 +63,7 @@ func set_room(next: TDRestaurantLayout) -> void:
 func sync(player: Node2D, guests: Array) -> void:
 	if player != null:
 		player_point = player.position
+		if player is TDKitchenPlayer: player_facing=player.facing
 		player_moving = player is TDKitchenPlayer and (player as TDKitchenPlayer).velocity.length_squared() > 1.0
 	actors = []
 	for item: Variant in guests:
@@ -173,6 +174,7 @@ func _floor_cell(cell: Vector2i) -> void:
 	draw_polyline(points + PackedVector2Array([points[0]]), color.darkened(0.25), 1.0)
 
 func _wall(cell: Vector2i, along_north: bool) -> void:
+	if layout.is_entrance(cell.x,cell.y): return # The visible door marker owns this gap.
 	var start := project(float(cell.x), float(cell.y))
 	var finish := project(float(cell.x + (1 if along_north else 0)), float(cell.y + (0 if along_north else 1)))
 	var up := Vector2(0, -WALL_HEIGHT)
@@ -239,7 +241,7 @@ func _person(point: Vector2, moving: bool, shirt: Color, caption: String, seated
 		draw_colored_polygon(PackedVector2Array([ground+Vector2(-7,0),ground+Vector2(0,-3),ground+Vector2(7,0),ground+Vector2(0,3)]),Color(0,0,0,.25))
 		var body:=chef_rect(point)
 		body.position.y-=absf(bob)
-		draw_texture_rect(CHEF_SPRITE,body,false)
+		draw_texture_rect(CHEF_SPRITE if staff else TDChefArt.texture(player_facing),body,false)
 		if staff and caption != "":
 			var plate := Rect2(body.position + Vector2(-18, -24), Vector2(92, 22))
 			draw_rect(plate, Color(0.08, 0.12, 0.1, 0.88))

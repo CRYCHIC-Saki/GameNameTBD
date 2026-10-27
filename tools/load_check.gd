@@ -10,6 +10,9 @@ func _initialize() -> void:
 		finish()
 		return
 	var catalog := TDCatalog.new()
+	var levels := TDLevelProgression.new()
+	if not levels.error.ok:
+		printerr(levels.error.code); failures += 1
 	var outcome := catalog.load_file("res://content/dev_samples.json")
 	if not outcome.ok:
 		printerr(outcome.message)
