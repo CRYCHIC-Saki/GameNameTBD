@@ -46,3 +46,25 @@ static func pick(rows: Array, unit: float) -> Dictionary:
 		remaining -= float(row.probability)
 		if remaining < 0: return row.duplicate(true)
 	return rows.back().duplicate(true) if not rows.is_empty() else {}
+
+static func comparison_note(rows: Array, chosen: Dictionary) -> String:
+	if rows.is_empty() or chosen.is_empty():
+		return ""
+	var player := 0.0
+	var rival := 0.0
+	var outside := 0.0
+	for item: Variant in rows:
+		if not item is Dictionary:
+			continue
+		var row: Dictionary = item
+		var chance := float(row.get("probability", 0.0))
+		var store := str(row.get("store_id", ""))
+		if store == "player":
+			player += chance
+		elif store == "outside":
+			outside += chance
+		else:
+			rival += chance
+	var picked := str(chosen.get("store_id", ""))
+	var where := "本店" if picked == "player" else ("在家" if picked == "outside" else "竞品")
+	return "比较后去%s：本店%.0f%%，竞品合计%.0f%%，在家%.0f%%" % [where, player * 100.0, rival * 100.0, outside * 100.0]

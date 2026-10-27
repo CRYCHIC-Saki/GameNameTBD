@@ -75,6 +75,7 @@ func sync(player: Node2D, guests: Array) -> void:
 			"gone": guest.phase == "gone",
 			"seated": guest.seated,
 			"label": guest.dish_name,
+			"shirt": TDGuestVisit.shirt(guest.phase),
 		})
 	queue_redraw()
 
@@ -124,7 +125,10 @@ func _draw() -> void:
 		if bool(actor["gone"]):
 			continue
 		var sitting := bool(actor.get("seated", false))
-		entries.append(_person_entry(actor["position"],not sitting,Color("#3f6f8f"),String(actor["label"]),sitting))
+		var shirt := Color("#3f6f8f")
+		if actor.get("shirt") is Color:
+			shirt = actor.shirt as Color
+		entries.append(_person_entry(actor["position"],not sitting,shirt,String(actor["label"]),sitting))
 	if runner_visible:
 		entries.append(_person_entry(runner_point,true,Color("#6f8f4a"),runner_label if runner_label!="" else "传菜",false))
 	for person: Dictionary in crew_people:

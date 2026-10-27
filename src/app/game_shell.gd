@@ -89,6 +89,8 @@ func _process(_delta: float) -> void:
 		if atlas!=null and atlas.trial!=null and atlas.trial.lesson!=null: cooking=atlas.trial.lesson.kitchen.music_audible()
 		music.select_context("silent" if cooking else ("service" if profile!=null and not profile.at_boundary() else "casual"),get_tree().paused)
 	if profile==null: return
+	if restaurant!=null and restaurant.layout!=null and profile.commerce!=null and profile.world!=null and profile.world.catalog!=null:
+		profile.commerce.interior_effect=float(TDEconomyMath.decor_of(restaurant.layout.pieces(),profile.world.catalog.wildcards).effect)
 	# Factory work follows the same paused active-game clock in every room.
 	if automatic_time and atlas==null and not get_tree().paused: profile.world.tick_factories(_delta)
 	var state:=profile.shop.snapshot()
@@ -337,6 +339,9 @@ func _place(kind: String, id: String) -> void:
 			box.add_child(TDUI.label("歇歇脚 · %.0f小时 · %d元 · 精神恢复%d"%[offer.hours,offer.cost,offer.san],18))
 			box.add_child(TDUI.button("在这里逛一逛",func()->void:_outcome(profile.world_transaction(profile.world.visit_zone.bind(kind),"visit:"+kind))))
 		else: box.add_child(TDUI.label("走访街区，回店经营。",18,TDUI.MUTED))
+		var pool:=int(plot.get("pool",0));var shift:=int(plot.get("budget_shift",0))
+		if pool!=0 or shift!=0:
+			box.add_child(TDUI.label("这个功能区计入客流：人数 %+d，预算 %+d。客人进店时仍会和竞品比较装修、价格和等待。"%[pool,shift],18))
 
 func show_market() -> void:
 	if not profile.can_leave_shop(): _outcome(TDOutcome.new(false,"SHOP_OPEN","营业中不能采购。"));return
@@ -512,6 +517,11 @@ func show_competitor(parcel_id: String) -> void:
 	for firm: Dictionary in selected:
 		box.add_child(TDUI.label("%s · %s\n售价 ¥%.2f · 今日接待%d/%d · 在岗%d人\n最近经营利润 ¥%.2f · 现金 ¥%.2f"%[firm.name,"第%d天开业"%int(firm.open_day) if firm.status=="construction" else "营业中",float(firm.price_cents)/100,firm.served,firm.capacity,economy.society.staff(firm.id).size(),float(firm.last_profit_cents)/100,float(firm.cash_cents)/100],19))
 	box.add_child(TDUI.label("商业街可交易商铺剩余%d处。竞争者按盈利、人员和资金决定投资，不增加全镇用餐机会。"%economy.expansion.candidates(economy.state.home).size(),17,TDUI.MUTED))
+	var decor:=TDEconomyMath.decor_of(profile.layout.pieces(),profile.world.catalog.wildcards)
+	box.add_child(TDUI.label("每个用餐机会只选择一次：比较本店菜单、这些竞品和在家吃饭。预算、菜价、路程、等待、品牌和装修一起决定。\n你的装修效果 %.0f（统一 %.0f，高端 %.0f）。到店后的改价不改已经生成的订单。"%[float(decor.effect),float(decor.unity),float(decor.luxury)],18))
+	var stats:Dictionary=economy.state.day_stats
+	if int(stats.get("opportunities",0))>0:
+		box.add_child(TDUI.label("今日用餐机会 %d · 选本店 %d · 选竞品 %d · 在家或没买成 %d"%[int(stats.opportunities),int(stats.considered),int(stats.competitor),int(stats.outside)],18,TDUI.ORANGE))
 	for event: Dictionary in economy.expansion.state.events:
 		if event.town_id==economy.state.home: box.add_child(TDUI.label("第%d天买地建店 · 支出 ¥%.2f · 第%d天开业"%[event.day,float(event.cost_cents)/100,event.open_day],16,TDUI.MUTED))
 

@@ -44,6 +44,9 @@ static func draw_world(canvas: Node2D, session: TDPhase3Session, selected: Dicti
 				canvas.draw_rect(Rect2(rect.position+Vector2(rect.size.x-22, -8), Vector2(10, 22)), Color("4a3a32"))
 				canvas.draw_rect(Rect2(rect.position+Vector2(rect.size.x-24, -12), Vector2(14, 6)), Color("3a2c26"))
 		elif kind=="housing" or kind=="competitor":
+			if kind=="competitor":
+				canvas.draw_rect(rect.grow(-2),Color("a85a4a"))
+				canvas.draw_rect(Rect2(rect.position+Vector2(8,8),Vector2(rect.size.x-16,10)),Color("f0cc70"))
 			if kind=="housing":
 				var block:=Vector2i(plot.x,plot.y)
 				if drawn_houses.has(block): continue
@@ -75,6 +78,12 @@ static func draw_world(canvas: Node2D, session: TDPhase3Session, selected: Dicti
 		elif kind=="market":
 			canvas.draw_rect(rect,Color("c5b18c"))
 			canvas.draw_texture_rect(sprite(2),rect,false)
+		elif _zone_color(kind).a > 0.0:
+			var fill := _zone_color(kind)
+			canvas.draw_rect(rect.grow(-3), fill)
+			canvas.draw_rect(rect.grow(-6), fill.lightened(0.16), false, 3)
+			var icon := Rect2(rect.position + rect.size * 0.5 - Vector2(16, 18), Vector2(32, 22))
+			canvas.draw_rect(icon, fill.darkened(0.28))
 		else:
 			canvas.draw_rect(rect.grow(-4),Color("82906a"))
 			for row: int in range(0,int(plot.h),3):
@@ -87,3 +96,26 @@ static func draw_world(canvas: Node2D, session: TDPhase3Session, selected: Dicti
 			canvas.draw_rect(panel,Color("342b25"))
 			canvas.draw_string(font,panel.position+Vector2(5,17),label,HORIZONTAL_ALIGNMENT_CENTER,panel.size.x-10,14,Color("f0dbab"))
 		if str(plot.id)==str(selected.get("id","")): canvas.draw_rect(rect,Color("e8bd6f"),false,2)
+
+static func _zone_color(kind: String) -> Color:
+	match kind:
+		"plaza":
+			return Color("7f9a6a")
+		"urban_village":
+			return Color("8d7b62")
+		"rich_district":
+			return Color("c4b48a")
+		"commercial_street":
+			return Color("b08968")
+		"snack_street":
+			return Color("c47a4a")
+		"amusement":
+			return Color("6a8f9a")
+		"zoo":
+			return Color("5f8a62")
+		"landmark":
+			return Color("8a7a9a")
+		"bank":
+			return Color("6a7d8a")
+		_:
+			return Color(0, 0, 0, 0)

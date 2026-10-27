@@ -193,6 +193,56 @@ func test_waiters_stay_put_until_a_guest_is_waiting_for_food() -> void:
 	var returning: Array = world._crew_points(0.25)
 	assert_lt((returning[0] as Dictionary).point.distance_to(home), (serving[0] as Dictionary).point.distance_to(home))
 
+func test_business_guest_follows_the_shop_order_through_leaving() -> void:
+	var service := TDServiceCatalog.new()
+	assert_true(service.load_file().ok)
+	var shop := TDShopSession.new(service, "floor-guest", 22)
+	assert_true(shop.buy(shop.offer("service.tomato_egg").stock, "buy").ok)
+	assert_true(shop.open_day().ok)
+	shop.advance(1.0)
+	assert_eq(shop.active_orders().size(), 1)
+	var order_id := str(shop.active_orders()[0].id)
+	world.player_mode = true
+	world.business = shop
+	world._sync_business_guests()
+	assert_eq(world.guest_nodes().size(), 1)
+	var guest := world.guest_nodes()[0]
+	assert_eq(guest.phase, "approach")
+	assert_true(world._order_board.text.contains("装修效果"))
+	var guard := 0
+	while guest.phase == "approach" and guard < 40:
+		guest.advance(240.0)
+		world._sync_business_guests()
+		guard += 1
+	assert_eq(guest.phase, "wait_serve")
+	assert_true(guest.dish_name.contains("等上菜"))
+	var elapsed := float(shop.snapshot().elapsed_sec)
+	shop._s.orders[0].status = "SERVED"
+	shop._s.orders[0].score = {"satisfaction": 91.0}
+	shop._s.orders[0].prepaid_cents = 1200
+	world._sync_business_guests()
+	assert_eq(guest.phase, "eat")
+	assert_true(guest.dish_name.contains("91"))
+	shop._s.elapsed_sec = elapsed + 6.0
+	world._sync_business_guests()
+	assert_eq(guest.phase, "pay")
+	assert_true(guest.dish_name.contains("结账"))
+	shop._s.elapsed_sec = elapsed + 9.0
+	world._sync_business_guests()
+	assert_eq(guest.phase, "leave")
+	guard = 0
+	while is_instance_valid(guest) and world._business_guests.has(order_id) and guard < 50:
+		guest.advance(240.0)
+		world._sync_business_guests()
+		guard += 1
+	assert_false(world._business_guests.has(order_id))
+	assert_true(world.layout.crew.hire("cook-he").ok)
+	var saw_cook := false
+	for person: Variant in world._crew_points(0.0):
+		if str((person as Dictionary).label).begins_with("后厨"):
+			saw_cook = true
+	assert_true(saw_cook)
+
 func _open_dining_cell(room: TDRestaurantWorld) -> Vector2i:
 	for y in room.layout.rows - 1:
 		for x in room.layout.columns:
