@@ -231,12 +231,38 @@ func buy(cart: Dictionary) -> TDOutcome:
 	commerce.mark_delivered(token)
 	return result
 
+func close_branch_books() -> TDOutcome:
+	if world == null or not world.branch_open:
+		return TDOutcome.new(true, "NO_BRANCH")
+	var played := int(shop.snapshot().day)
+	if world.branch_settled.has(str(played)):
+		return TDOutcome.new(true, "ALREADY", "分店今天已经结过。")
+	var previous_day := world.day
+	world.money = int(shop.snapshot().money_cents) / 100
+	world.day = played
+	var before := world.money
+	var report := world.settle_branch()
+	world.day = previous_day
+	if not bool(report.get("ok", false)):
+		return TDOutcome.new(false, str(report.get("code", "BRANCH")), str(report.get("events", "")))
+	var delta := (world.money - before) * 100
+	if delta != 0:
+		var recorded := shop.world_adjustment(delta, "branch-day:%s:%d" % [shop.snapshot().run_id, played], "分店日结")
+		if not recorded.ok:
+			return recorded
+	world.money = int(shop.snapshot().money_cents) / 100
+	return TDOutcome.new(true, "BRANCH", str(report.get("events", "")))
+
 func next_day() -> TDOutcome:
 	var settled := settle_progression()
 	if not settled.ok: return settled
 	var previous:=commerce.snapshot()
 	var moved:=commerce.advance_day(int(shop.snapshot().day))
 	if not moved.ok: return moved
+	var books := close_branch_books()
+	if not books.ok:
+		commerce.restore(previous)
+		return books
 	var result:=shop.next_day(int(shop.snapshot().day))
 	if result.ok:
 		world.day=int(shop.snapshot().day);world.day_phase="morning";world.free_spent=0.0

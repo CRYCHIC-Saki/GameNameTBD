@@ -205,6 +205,17 @@ func test_legacy_recipe_definition_and_unlock_survive_without_unlocking_new_slot
 	assert_true(other.shop.is_unlocked("phase3.kaoya"))
 	assert_eq(other.research.snapshot().legacy_ids,["kaoya"])
 
+func test_opening_a_branch_charges_the_shop_wallet_and_saves() -> void:
+	var profile := create_profile("slot-01")
+	var before := int(profile.shop.snapshot().money_cents)
+	var opened := profile.world_transaction(func() -> TDOutcome: return profile.world.open_branch_in_town("paris"), "开分店")
+	assert_true(opened.ok, opened.message)
+	assert_eq(profile.world.town_id, profile.world.home_town_id)
+	assert_eq(profile.world.branch_town, "paris")
+	assert_eq(int(profile.shop.snapshot().money_cents), before - TDPhase3Session.CLAIM_FEE * 100)
+	var saved := profile.save()
+	assert_true(saved.ok, saved.code)
+
 func test_malformed_nested_world_data_cannot_partially_restore() -> void:
 	var profile:=create_profile("slot-01")
 	var before:=profile.snapshot()

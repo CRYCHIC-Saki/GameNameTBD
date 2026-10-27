@@ -66,6 +66,11 @@ var _board: TDEconomyBoard
 var _pantry: TDPantryBoard
 var _order_board: Label
 var _order_plate: Panel
+var floor_service: bool = false
+var caller_name: String = ""
+var caller_inside: bool = false
+var caller_left: bool = false
+var _plate_order: String = ""
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -115,7 +120,7 @@ func _ready() -> void:
 		_set_status(room)
 	_pull_layout_staff()
 	if player_mode:
-		_set_status("WASD 走动 · 招工处可雇厨师或服务员 · 门牌、账本、装修桌或门按 E · B 菜谱 · Esc 暂停")
+		_set_status("WASD 走动 · 招工处可雇厨师、服务员、迎宾、传菜和收银 · 门牌、账本、装修桌或门按 E · B 菜谱 · Esc 暂停" if floor_service else "WASD 走动 · 招工处可雇厨师或服务员 · 门牌、账本、装修桌或门按 E · B 菜谱 · Esc 暂停")
 		_iso.interaction_markers=interaction_points()
 
 func _process(delta: float) -> void:
@@ -135,7 +140,9 @@ func _process(delta: float) -> void:
 			_set_status("客人走到了%s" % String(seat.get("name", "座位")))
 		elif guest.service_active and not player_mode:
 			_watch_service(guest)
-	if not get_tree().paused and not player_mode:
+	if not get_tree().paused and player_mode and floor_service:
+		_tick_floor_runner(delta)
+	elif not get_tree().paused and not player_mode:
 		_tick_runner(delta)
 	if _iso != null:
 		_iso.editing = _editing
@@ -143,7 +150,7 @@ func _process(delta: float) -> void:
 		_iso.runner_visible = _runner_on
 		_iso.runner_point = _runner_pos
 		_iso.runner_label = _runner_caption()
-		_iso.pass_point = layout.cell_center(pass_cell()) if _pass_has_plate() else Vector2(-1, -1)
+		_iso.pass_point = layout.cell_center(pass_cell()) if _pass_has_plate() or _needs_player_plate() else Vector2(-1, -1)
 		_iso.held_label = _held_caption()
 		_iso.crew_people = _crew_points(0.0 if get_tree().paused else delta)
 		_iso.sync(_player, guest_nodes())
@@ -250,6 +257,8 @@ func request_interaction() -> bool:
 	if _closed or _player == null or layout == null or get_tree().paused or _covered:
 		return false
 	if player_mode:
+		if floor_service and _floor_act():
+			return true
 		var faced := _faced_guest()
 		if faced != null:
 			_set_status(_guest_brief(faced))
@@ -1195,6 +1204,8 @@ func _pass_has_plate() -> bool:
 	return session != null and session.ready and not session.floor.pass_plate().is_empty()
 
 func _held_caption() -> String:
+	if _plate_order != "":
+		return "待上桌"
 	if _held_ticket == "" or session == null:
 		return ""
 	for item: Variant in session.floor.tickets:
@@ -1334,6 +1345,16 @@ func _crew_points(delta: float) -> Array:
 			"color": Color("#8a4b32"),
 			"moving": false,
 		})
+	var active := _session()
+	if active != null and active.ready and layout != null:
+		if active.staff_on("greeter"):
+			people.append({"point": layout.cell_center(layout.entrance()), "label": "迎宾", "color": Color("#d7a15a"), "moving": false})
+		if active.staff_on("cashier"):
+			var desk := layout.piece_by_kind("cashier")
+			var at := layout.entrance()
+			if not desk.is_empty():
+				at = Vector2i(int(desk.approach_x), int(desk.approach_y))
+			people.append({"point": layout.cell_center(at), "label": "收银", "color": Color("#c4b15a"), "moving": false})
 	return people
 
 func _waiter_post(index: int) -> Vector2:
@@ -1395,10 +1416,17 @@ func _sync_business_guests() -> void:
 		guest.seat_id = str(seat.get("id", ""))
 		guest.phase = "approach"
 		guest.set_meta("recipe_label", business.recipe_name(str(order.recipe_id)))
+		var welcomed := duty_on("greeter")
+		guest.set_meta("welcomed", welcomed)
+		guest.set_meta("sent_in", welcomed)
 		guest.dish_name = _order_caption(order, "approach", now)
 		guest.process_mode = Node.PROCESS_MODE_PAUSABLE
 		_guests.add_child(guest)
-		guest.set_path(route, layout.cell_px)
+		if welcomed:
+			guest.set_path(route, layout.cell_px)
+		else:
+			guest.position = layout.cell_center(layout.entrance())
+			guest.finished = true
 		_business_guests[str(order.id)] = guest
 	var ids: Array = _business_guests.keys()
 	for id: String in ids:
@@ -1409,19 +1437,48 @@ func _sync_business_guests() -> void:
 		var order: Dictionary = by_id.get(id, {})
 		var status := str(order.get("status", "CANCELLED"))
 		var arrived := guest.phase != "approach" or guest.finished
+		var welcomed := duty_on("greeter") or bool(guest.get_meta("welcomed", false))
+		if not welcomed:
+			guest.phase = "approach"
+			guest.dish_name = _order_caption(order, "approach", now)
+			continue
+		if not bool(guest.get_meta("sent_in", false)):
+			guest.set_meta("sent_in", true)
+			guest.set_meta("welcomed", true)
+			var seat := layout.piece(guest.seat_id)
+			var dest := layout.entrance()
+			if not seat.is_empty():
+				dest = Vector2i(int(seat.approach_x), int(seat.approach_y))
+			var walk: Array = layout.path(layout.entrance(), dest)
+			if walk.is_empty():
+				guest.finished = true
+			else:
+				guest.set_path(walk, layout.cell_px)
+			arrived = guest.finished or guest.phase != "approach"
 		if status in ["WAITING", "COOKING"]:
 			guest.phase = TDGuestVisit.phase_of(status, arrived, 0.0)
 			if guest.has_meta("settled_at"):
 				guest.remove_meta("settled_at")
 		else:
+			var plated := duty_on("runner") or bool(guest.get_meta("plated", false))
+			if status == "SERVED" and not plated:
+				if guest.has_meta("settled_at"):
+					guest.remove_meta("settled_at")
+				guest.phase = "wait_serve" if arrived else "approach"
+				guest.dish_name = _order_caption(order, guest.phase, now)
+				continue
 			if not guest.has_meta("settled_at"):
 				guest.set_meta("settled_at", now)
 			var since := now - float(guest.get_meta("settled_at"))
 			var next := TDGuestVisit.phase_of(status, true, since)
-			if next == "leave":
+			if next == "leave" and not duty_on("cashier") and not bool(guest.get_meta("cashed", false)):
+				guest.phase = "pay"
+			elif next == "leave":
 				if guest.phase != "leave":
 					_send_guest_out(guest)
 				elif guest.finished:
+					if bool(guest.get_meta("caller", false)):
+						caller_left = true
 					_guests.remove_child(guest)
 					guest.free()
 					_business_guests.erase(id)
@@ -1430,7 +1487,109 @@ func _sync_business_guests() -> void:
 				guest.phase = next
 		if is_instance_valid(guest):
 			guest.dish_name = _order_caption(order, guest.phase, now)
+	_claim_caller()
 	_refresh_order_board(orders, now)
+
+func duty_on(role: String) -> bool:
+	if not floor_service:
+		return true
+	var active := _session()
+	if active == null or not active.ready:
+		return false
+	return active.staff_on(role)
+
+func greet_guest(guest: TDRestaurantGuest) -> void:
+	if guest == null:
+		return
+	guest.set_meta("welcomed", true)
+
+func hand_plate(guest: TDRestaurantGuest) -> void:
+	if guest == null:
+		return
+	guest.set_meta("plated", true)
+	if _plate_order == guest.ticket_id:
+		_plate_order = ""
+
+func cash_guest(guest: TDRestaurantGuest) -> void:
+	if guest == null:
+		return
+	guest.set_meta("cashed", true)
+
+func _floor_act() -> bool:
+	var faced := _faced_guest()
+	if _plate_order != "" and faced != null:
+		if faced.ticket_id != _plate_order:
+			_set_status("这盘要端给点这道菜的那一桌。")
+			return true
+		hand_plate(faced)
+		_set_status("菜放到桌上了。客人开始吃。钱在后厨出餐时已经入账。")
+		return true
+	if faced != null and not duty_on("greeter") and not bool(faced.get_meta("welcomed", false)):
+		greet_guest(faced)
+		_set_status("%s请进，我带你去座位。" % _guest_name(faced))
+		return true
+	if faced != null and faced.phase == "pay" and not duty_on("cashier") and not bool(faced.get_meta("cashed", false)):
+		cash_guest(faced)
+		_set_status("这一桌送走了。款项在出餐时已经入账。")
+		return true
+	if _plate_order == "" and _needs_player_plate() and cell_of_player() == pass_cell():
+		_plate_order = _unplated_order()
+		_set_status("从传菜口端起菜。走到客人面前按 E。")
+		return true
+	return false
+
+func _needs_player_plate() -> bool:
+	return floor_service and not duty_on("runner") and _unplated_order() != ""
+
+func _unplated_order() -> String:
+	for id: String in _business_guests.keys():
+		var guest: TDRestaurantGuest = _business_guests[id]
+		if not is_instance_valid(guest) or bool(guest.get_meta("plated", false)):
+			continue
+		if business == null:
+			continue
+		var order := business.order(id)
+		if str(order.get("status", "")) == "SERVED":
+			return id
+	return ""
+
+func _guest_name(guest: TDRestaurantGuest) -> String:
+	if guest != null and bool(guest.get_meta("caller", false)) and caller_name != "":
+		return caller_name
+	return "客人"
+
+func _claim_caller() -> void:
+	if not caller_inside or caller_name == "" or _has_caller():
+		return
+	for id: String in _business_guests.keys():
+		var guest: TDRestaurantGuest = _business_guests[id]
+		if is_instance_valid(guest):
+			guest.set_meta("caller", true)
+			return
+
+func _has_caller() -> bool:
+	for id: String in _business_guests.keys():
+		var guest: TDRestaurantGuest = _business_guests[id]
+		if is_instance_valid(guest) and bool(guest.get_meta("caller", false)):
+			return true
+	return false
+
+func _tick_floor_runner(delta: float) -> void:
+	if layout == null or not duty_on("runner"):
+		_runner_on = false
+		return
+	_runner_on = true
+	if _runner_pos == Vector2.ZERO:
+		_runner_pos = layout.cell_center(pass_cell())
+	var goal := pass_cell()
+	for guest: TDRestaurantGuest in guest_nodes():
+		if guest.phase != "wait_serve" or guest.seat_id == "":
+			continue
+		var next := approach_cell(guest.seat_id)
+		if next.x >= 0:
+			goal = next
+			break
+	_step_runner(goal, delta)
 
 func _send_guest_out(guest: TDRestaurantGuest) -> void:
 	guest.phase = "leave"
@@ -1501,6 +1660,8 @@ func _guest_brief(guest: TDRestaurantGuest) -> String:
 		refunded = int(order.get("refunded_cents", 0))
 		if order.get("customer") is Dictionary:
 			customer = str((order.customer as Dictionary).get("name", "客人"))
+		if bool(guest.get_meta("caller", false)) and caller_name != "":
+			customer = caller_name
 		if order.get("score") is Dictionary and not (order.score as Dictionary).is_empty():
 			satisfaction = float((order.score as Dictionary).get("satisfaction", -1.0))
 		if order.get("economic_intent") is Dictionary:
@@ -1512,7 +1673,10 @@ func _guest_brief(guest: TDRestaurantGuest) -> String:
 	var crew := ""
 	if layout != null and layout.crew != null:
 		crew = layout.crew.duty_line()
-	return TDGuestVisit.inspect_text(dish, customer, status, guest.phase, left, price, satisfaction, net, refunded, reasons, float(_decor_now().get("effect", 0.0)), crew)
+	var text := TDGuestVisit.inspect_text(dish, customer, status, guest.phase, left, price, satisfaction, net, refunded, reasons, float(_decor_now().get("effect", 0.0)), crew)
+	if floor_service:
+		text += "\n迎宾%s，传菜%s，收银%s。没雇的岗位要你亲自做，不另收一笔钱。" % ["在岗" if duty_on("greeter") else "你来", "在岗" if duty_on("runner") else "你来", "在岗" if duty_on("cashier") else "你来"]
+	return text
 
 func _refresh_order_board(orders: Array, now: float) -> void:
 	if _order_board == null:
@@ -1527,6 +1691,10 @@ func _refresh_order_board(orders: Array, now: float) -> void:
 	lines.append("装修效果 %.0f · 统一 %.0f · 高端 %.0f" % [float(decor.effect), float(decor.unity), float(decor.luxury)])
 	if layout != null and layout.crew != null and not layout.crew.duty_line().is_empty():
 		lines.append(layout.crew.duty_line())
+	if floor_service:
+		lines.append("迎宾%s，传菜%s，收银%s" % ["在岗" if duty_on("greeter") else "你来", "在岗" if duty_on("runner") else "你来", "在岗" if duty_on("cashier") else "你来"])
+	if caller_inside and caller_name != "":
+		lines.append("%s进店了" % caller_name)
 	var active: Array = []
 	var recent: Dictionary = {}
 	for order: Dictionary in orders:
@@ -1554,7 +1722,7 @@ func _refresh_order_board(orders: Array, now: float) -> void:
 		shown += 1
 	if shown == 0:
 		lines.append("还没有客人。开门后，客人会比较本店、竞品和在家吃饭。")
-	lines.append("面向客人按 E，查看点单、比较和结算。")
+	lines.append("面向客人按 E。没雇迎宾、传菜、收银时，招呼、端菜和送客也是这一下。" if floor_service else "面向客人按 E，查看点单、比较和结算。")
 	_order_board.text = "\n".join(lines)
 
 var last_visit: Dictionary = {}

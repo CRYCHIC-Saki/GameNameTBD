@@ -10,6 +10,7 @@ var transaction_sink: Callable
 var external_factory_clock: bool = false
 var balance_reader: Callable
 var commercial_refresh: Callable
+var shop_open: bool = false
 
 const CELL := 48
 const BAR_HEIGHT := 92.0
@@ -53,6 +54,8 @@ var _qty_count: int = 1
 var _qty_summary: Label
 var _factory_accent: Color = Color("#ecb36e")
 var _entering_diner: bool = false
+var _caller: TDTownCaller
+var _caller_wait: float = 0.0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -101,11 +104,15 @@ func _ready() -> void:
 	_status_bar()
 	if player_mode: spawn_at_home()
 	_set_status(_enter_hint())
-	if player_mode: _set_status("WASD 走动 · 面向建筑按 E · 小屋的床可保存/休息 · B 菜谱 · Esc 暂停")
+	if player_mode:
+		_boot_caller()
+		_set_status("WASD 走动 · 面向建筑或林夏按 E · 小屋的床可保存/休息 · B 菜谱 · Esc 暂停")
 	queue_redraw()
 
 func _process(delta: float) -> void:
 	_follow_camera()
+	if player_mode and not get_tree().paused:
+		_tick_caller(delta)
 	if not player_mode: _try_enter_diner()
 	if _closed:
 		return
@@ -163,6 +170,7 @@ func _draw() -> void:
 	if player_mode:
 		TDTownArt.draw_world(self,session,_selected)
 		_draw_economic_places()
+		_draw_caller()
 		return
 	var origin := _origin()
 	for y in TDTownMap.SIZE:
@@ -272,6 +280,10 @@ func _interact() -> void:
 			if not neighbor.is_empty() and String(neighbor["kind"]) != "housing" and not neighbor.get("economic_courtyard",false):
 				plot = neighbor
 				break
+	if player_mode and _caller_faced():
+		_set_status(_caller.line())
+		queue_redraw()
+		return
 	if plot.is_empty():
 		_set_status("前方没有可交互建筑。请走近并转向门口或摊贩。")
 		return
@@ -1239,6 +1251,88 @@ func set_presented(value: bool) -> void:
 
 func spawn_at_home() -> void:
 	spawn_at_plot("player_diner")
+
+func caller_phase() -> String:
+	return _caller.phase if _caller != null else ""
+
+func finish_call() -> void:
+	if _caller == null or _caller.phase != "dining":
+		return
+	_caller.ate = true
+	_caller.meal_done = false
+	_caller.phase = "home"
+
+func _boot_caller() -> void:
+	_caller = TDTownCaller.new()
+	var door := _diner_door()
+	var start := door if door.x >= 0 else Vector2i(1, 1)
+	for y in TDTownMap.SIZE:
+		var found := false
+		for x in TDTownMap.SIZE:
+			if not session.town_map.is_road(x, y):
+				continue
+			if door.x >= 0 and absi(x - door.x) + absi(y - door.y) <= 6:
+				continue
+			start = Vector2i(x, y)
+			found = true
+			break
+		if found:
+			break
+	_caller.boot(start, start)
+
+func _tick_caller(delta: float) -> void:
+	if _caller == null or session == null:
+		return
+	_caller_wait += delta
+	if _caller_wait < 0.45:
+		queue_redraw()
+		return
+	_caller_wait = 0.0
+	var previous := _caller.phase
+	_caller.tick(func(x: int, y: int) -> bool: return session.town_map.is_road(x, y), _diner_door(), shop_open)
+	if _caller.phase != previous and _caller.phase == "dining":
+		_set_status("林夏进了食堂。回店里能看见她点的那一单。")
+	elif _caller.phase != previous and previous == "dining":
+		_set_status(_caller.line())
+	queue_redraw()
+
+func _diner_door() -> Vector2i:
+	var plot := session._plot_by_id("player_diner")
+	if plot.is_empty():
+		return Vector2i(-1, -1)
+	var x0 := int(plot.x)
+	var y0 := int(plot.y)
+	var width := int(plot.w)
+	var height := int(plot.h)
+	var best := Vector2i(-1, -1)
+	var best_distance := 999999
+	for y in range(y0 - 1, y0 + height + 1):
+		for x in range(x0 - 1, x0 + width + 1):
+			if not session.town_map.is_road(x, y):
+				continue
+			if x >= x0 and x < x0 + width and y >= y0 and y < y0 + height:
+				continue
+			var distance := absi(x - (x0 + width / 2)) + absi(y - (y0 + height))
+			if distance < best_distance:
+				best_distance = distance
+				best = Vector2i(x, y)
+	return best
+
+func _caller_faced() -> bool:
+	if _caller == null or _caller.phase == "dining" or _player == null:
+		return false
+	if Vector2(_player_cell()).distance_to(Vector2(_caller.cell)) > 1.45:
+		return false
+	var at := _origin() + (Vector2(_caller.cell) + Vector2(0.5, 0.5)) * CELL
+	return _player.faces_target(at)
+
+func _draw_caller() -> void:
+	if _caller == null or _caller.phase == "dining":
+		return
+	var at := _origin() + (Vector2(_caller.cell) + Vector2(0.5, 0.55)) * CELL
+	draw_rect(Rect2(at + Vector2(-10, -30), Vector2(20, 28)), Color("#e08a3c"))
+	draw_rect(Rect2(at + Vector2(-8, -40), Vector2(16, 12)), Color("#f3d7b0"))
+	draw_string(ThemeDB.fallback_font, at + Vector2(-18, -46), TDTownCaller.NAME, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("#fff6df"))
 
 func facing_plot() -> Dictionary:
 	var cell:=_player_cell()+_player.facing

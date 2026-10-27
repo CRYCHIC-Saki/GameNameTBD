@@ -1267,6 +1267,50 @@ func claim_branch(size_id: String, origin: Vector2i) -> TDOutcome:
 	var room := TDRestaurantSizes.interior(size_id)
 	return TDOutcome.new(true, "CLAIMED", "分店划在%s，地图%d×%d，店内%d×%d。饮食偏好是%s。" % [town_name(), branch_w, branch_h, room.x, room.y, branch_culture])
 
+func open_branch_in_town(target_id: String, size_id: String = "small") -> TDOutcome:
+	if target_id == home_town_id:
+		return TDOutcome.new(false, "HOME", "主店所在的小镇不能再划一块分店。")
+	if branch_open:
+		return TDOutcome.new(false, "ONE_BRANCH", "已经有一家分店。先关掉，才能换小镇。")
+	if not TDRestaurantSizes.IDS.has(size_id):
+		return TDOutcome.new(false, "MISSING", "没有这种面积")
+	var home := town_id
+	var moved := set_town(target_id)
+	if not moved.ok:
+		return moved
+	var claimed := TDOutcome.new(false, "BLOCKED", "这张地图上找不到能放下这家店的空地。")
+	for y in TDTownMap.SIZE:
+		if claimed.ok:
+			break
+		for x in TDTownMap.SIZE:
+			claimed = claim_branch(size_id, Vector2i(x, y))
+			if claimed.ok:
+				break
+	var back := set_town(home)
+	if not claimed.ok:
+		return claimed
+	if not back.ok:
+		return back
+	return claimed
+
+func buy_branch_portion() -> TDOutcome:
+	if not branch_open:
+		return TDOutcome.new(false, "CLOSED", "分店还没开。")
+	if branch_menu.is_empty():
+		return TDOutcome.new(false, "EMPTY", "分店菜单是空的。")
+	var entry: Dictionary = branch_menu[0]
+	var snap: Dictionary = entry.get("snapshot", {})
+	var ids: Array = snap.get("ingredients", [])
+	var cost := maxi(1, int(snap.get("ingredient_cost", 1)))
+	if money < cost:
+		return TDOutcome.new(false, "BROKE", "进一份原料要%d元。" % cost)
+	money -= cost
+	for item: Variant in ids:
+		var ingredient_id := String(item)
+		branch_stock[ingredient_id] = int(branch_stock.get(ingredient_id, 0)) + 1
+	var title := String(snap.get("name", entry.get("dish_id", "这道菜")))
+	return TDOutcome.new(true, "STOCKED", "分店进了一份%s的原料，花了%d元。主店厨房的库存不动。" % [title, cost])
+
 func close_branch() -> TDOutcome:
 	if not branch_open:
 		return TDOutcome.new(false, "CLOSED", "没有开着的分店。")

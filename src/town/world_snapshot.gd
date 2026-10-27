@@ -44,9 +44,15 @@ static func validate(raw: Variant) -> TDOutcome:
 	for field: String in ["prices","branch_stock","wage_paid","branch_wage_paid","home_skill","branch_skill"]:
 		for amount: Variant in raw[field].values():
 			if not TDServiceCatalog.integer(amount,0,1000000000): return TDOutcome.new(false,"INVALID_WORLD_VALUE",field)
-	for field: String in ["branch_menu","branch_chef_recipes","home_chef_recipes"]:
-		for id: Variant in raw[field]:
-			if not id is String: return TDOutcome.new(false,"INVALID_WORLD_RECIPE")
+	for field: String in ["branch_chef_recipes","home_chef_recipes"]:
+		for item: Variant in raw[field]:
+			if item is String and not String(item).is_empty(): continue
+			if item is Dictionary and item.get("dish_id") is String and not String(item.dish_id).is_empty() and TDServiceCatalog.integer(item.get("version"),1,1000000) and TDServiceCatalog.integer(item.get("proficiency"),0,100): continue
+			return TDOutcome.new(false,"INVALID_WORLD_RECIPE",field)
+	for item: Variant in raw.branch_menu:
+		if item is String and not String(item).is_empty(): continue
+		if item is Dictionary and item.get("dish_id") is String and not String(item.dish_id).is_empty() and item.get("snapshot") is Dictionary and item.get("history") is Array: continue
+		return TDOutcome.new(false,"INVALID_WORLD_RECIPE","branch_menu")
 	if not raw.random.get("state") is String or not raw.random.state.is_valid_int() or not raw.random.get("seed") is String or not raw.random.seed.is_valid_int(): return TDOutcome.new(false,"INVALID_WORLD_RNG")
 	if not raw.supply.get("stock") is Dictionary or not raw.supply.get("incoming") is Array or not raw.supply.get("pipeline") is bool or not raw.supply.get("nearby_market") is bool: return TDOutcome.new(false,"INVALID_SUPPLY")
 	for amount: Variant in raw.supply.stock.values():

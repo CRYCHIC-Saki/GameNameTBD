@@ -243,6 +243,95 @@ func test_business_guest_follows_the_shop_order_through_leaving() -> void:
 			saw_cook = true
 	assert_true(saw_cook)
 
+func test_unhired_floor_posts_wait_for_the_player_and_do_not_charge_again() -> void:
+	var service := TDServiceCatalog.new()
+	assert_true(service.load_file().ok)
+	var shop := TDShopSession.new(service, "floor-posts", 22)
+	assert_true(shop.buy(shop.offer("service.tomato_egg").stock, "buy").ok)
+	assert_true(shop.open_day().ok)
+	shop.advance(1.0)
+	var order_id := str(shop.active_orders()[0].id)
+	var cents := int(shop.snapshot().money_cents)
+	world.player_mode = true
+	world.floor_service = true
+	world.business = shop
+	world._sync_business_guests()
+	var guest := world.guest_nodes()[0]
+	assert_eq(guest.phase, "approach")
+	assert_false(bool(guest.get_meta("welcomed", false)))
+	assert_true(world._order_board.text.contains("你来"))
+	world.teleport_player(world._cell_at(guest.position))
+	assert_true(world.request_interaction())
+	assert_true(bool(guest.get_meta("welcomed", false)))
+	var guard := 0
+	while guest.phase == "approach" and guard < 40:
+		guest.advance(240.0)
+		world._sync_business_guests()
+		guard += 1
+	assert_eq(guest.phase, "wait_serve")
+	var elapsed := float(shop.snapshot().elapsed_sec)
+	shop._s.orders[0].status = "SERVED"
+	shop._s.orders[0].score = {"satisfaction": 91.0}
+	shop._s.orders[0].prepaid_cents = 1200
+	world._sync_business_guests()
+	assert_eq(guest.phase, "wait_serve")
+	world.teleport_player(world.pass_cell())
+	assert_true(world.request_interaction())
+	assert_eq(world._plate_order, order_id)
+	world.teleport_player(world._cell_at(guest.position))
+	assert_true(world.request_interaction())
+	world._sync_business_guests()
+	assert_eq(guest.phase, "eat")
+	shop._s.elapsed_sec = elapsed + 6.0
+	world._sync_business_guests()
+	assert_eq(guest.phase, "pay")
+	shop._s.elapsed_sec = elapsed + 9.0
+	world._sync_business_guests()
+	assert_eq(guest.phase, "pay")
+	assert_true(world.request_interaction())
+	world._sync_business_guests()
+	assert_eq(guest.phase, "leave")
+	assert_eq(str(shop.order(order_id).status), "SERVED")
+	assert_eq(int(shop.snapshot().money_cents), cents)
+
+func test_hired_greeter_runner_and_cashier_carry_the_visit() -> void:
+	var service := TDServiceCatalog.new()
+	assert_true(service.load_file().ok)
+	var shop := TDShopSession.new(service, "floor-hired", 22)
+	assert_true(shop.buy(shop.offer("service.tomato_egg").stock, "buy").ok)
+	assert_true(shop.open_day().ok)
+	shop.advance(1.0)
+	world.player_mode = true
+	world.floor_service = true
+	world.business = shop
+	assert_true(world.hire_role("greeter", true).ok)
+	assert_true(world.hire_role("runner", true).ok)
+	assert_true(world.hire_role("cashier", true).ok)
+	world._sync_business_guests()
+	var guest := world.guest_nodes()[0]
+	var guard := 0
+	while guest.phase == "approach" and guard < 40:
+		guest.advance(240.0)
+		world._sync_business_guests()
+		guard += 1
+	assert_eq(guest.phase, "wait_serve")
+	var saw_greeter := false
+	for person: Variant in world._crew_points(0.0):
+		if str((person as Dictionary).label) == "迎宾":
+			saw_greeter = true
+	assert_true(saw_greeter)
+	var elapsed := float(shop.snapshot().elapsed_sec)
+	shop._s.orders[0].status = "SERVED"
+	shop._s.orders[0].score = {"satisfaction": 80.0}
+	world._sync_business_guests()
+	assert_eq(guest.phase, "eat")
+	shop._s.elapsed_sec = elapsed + 6.0
+	world._sync_business_guests()
+	assert_eq(guest.phase, "pay")
+	shop._s.elapsed_sec = elapsed + 9.0
+	world._sync_business_guests()
+	assert_eq(guest.phase, "leave")
+
 func _open_dining_cell(room: TDRestaurantWorld) -> Vector2i:
 	for y in room.layout.rows - 1:
 		for x in room.layout.columns:

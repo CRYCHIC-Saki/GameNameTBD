@@ -98,6 +98,13 @@ func _process(_delta: float) -> void:
 	_hud.text+="    Lv.%d"%int(profile.progression.progress().level)
 	if Time.get_ticks_msec()<_toast_until: _hud.text+= "  ·  "+_toast
 	_hud_layer.visible=location!="kitchen" and atlas==null
+	if town!=null: town.shop_open=state.phase in ["OPEN","DRAINING"]
+	if restaurant!=null and town!=null:
+		restaurant.caller_name=TDTownCaller.NAME
+		if restaurant.caller_left:
+			restaurant.caller_left=false
+			town.finish_call()
+		restaurant.caller_inside=town.caller_phase()=="dining"
 	if state.phase!=_last_phase:
 		_last_phase=state.phase
 		profile.world.day=int(state.day)
@@ -268,7 +275,7 @@ func _activate(next: TDGameProfile,first_entry:bool=false) -> void:
 	town.balance_reader=func()->int:return int(profile.shop.snapshot().money_cents)
 	town.commercial_refresh=profile.sync_commercial_map
 	town.restaurant_requested.connect(func()->void:travel("restaurant"));town.place_requested.connect(_place);town.pause_requested.connect(show_pause);add_child(town)
-	restaurant=TDRestaurantWorld.new();restaurant.player_mode=true;restaurant.session=profile.world;restaurant.layout=profile.layout;restaurant.business=profile.shop
+	restaurant=TDRestaurantWorld.new();restaurant.player_mode=true;restaurant.floor_service=true;restaurant.session=profile.world;restaurant.layout=profile.layout;restaurant.business=profile.shop
 	restaurant.object_requested.connect(_object);restaurant.pause_requested.connect(show_pause);add_child(restaurant)
 	cottage=TDCottageWorld.new();cottage.object_requested.connect(_object);add_child(cottage)
 	kitchen_view=TDShopView.new();kitchen_view.embedded=true;kitchen_view.shop=profile.shop;kitchen_view.day_san=profile.world.san;kitchen_view.boundary_save=save_game
@@ -423,7 +430,11 @@ func show_menu() -> void:
 		box.add_child(TDUI.label("正在营业。打烊后可出门采购、研究菜谱和布置餐厅。",20))
 		box.add_child(TDUI.button("提前打烊",func()->void:_outcome(profile.shop.close_early());_close_dialog()))
 		return
-	if state.phase=="SETTLED": box.add_child(TDUI.button("查看今日账本",show_ledger));return
+	if state.phase=="SETTLED":
+		box.add_child(TDUI.button("查看今日账本",show_ledger))
+		box.add_child(TDUI.button("分店",show_branch))
+		return
+	box.add_child(TDUI.button("分店",show_branch))
 	for id: String in state.menu:
 		if not profile.shop.is_unlocked(profile.shop.family_id(id)): continue
 		var row:=HBoxContainer.new();box.add_child(row)
@@ -459,6 +470,7 @@ func show_ledger() -> void:
 	var box:=_dialog("食堂账本")
 	var growth := profile.progression.progress()
 	box.add_child(TDUI.button("经营等级 Lv.%d · 查看等级奖励"%int(growth.level),show_levels))
+	box.add_child(TDUI.button("分店",show_branch))
 	var state:=profile.shop.snapshot()
 	if state.phase=="SETTLED": kitchen_view._summary_page(box,profile.shop.day_summary())
 	else: box.add_child(TDUI.label("第%d天 · 余额 ¥%.2f · 人气%d"%[state.day,float(state.money_cents)/100.0,state.popularity],21))
@@ -532,6 +544,7 @@ func show_crew() -> void:
 	var crew := profile.layout.crew
 	var box := _dialog("招工处")
 	box.add_child(TDUI.label("厨师在后厨做菜，服务员在店里端菜。每类最多两人，同一种加成不叠加，按在岗者里较高的等级计算。完成一单，在岗的人各得1点经验，每4点升1级，最高5级。入职数值较低，升级后才提高。辞退后经验还在。日薪当场扣除，打烊后才能办理。",18,TDUI.MUTED))
+	box.add_child(TDUI.label("迎宾、传菜和收银是店里的另外三个岗位。没雇的时候，进门、端菜和送客要你亲自做。雇了就由他们做。工资从同一本现金账扣，不重复收客人的钱。",18,TDUI.MUTED))
 	if not crew.duty_line().is_empty():
 		box.add_child(TDUI.label(crew.duty_line(),20,TDUI.ORANGE))
 	for person: Dictionary in crew.roster():
@@ -548,6 +561,25 @@ func show_crew() -> void:
 			var button := TDUI.button("雇佣", _hire_crew.bind(person_id))
 			button.disabled = not profile.at_boundary()
 			row.add_child(button)
+	for role: String in ["greeter", "cashier", "runner"]:
+		var floor := HBoxContainer.new()
+		box.add_child(floor)
+		var title := str(TDPhase3Session.ROLE_TITLE.get(role, role))
+		var wage := profile.world.catalog.wage_of(role)
+		var hired := profile.world.staff_on(role)
+		var caption := TDUI.label("%s · 日薪%d元\n%s" % [title, wage, "已经在岗" if hired else "没雇时要你亲自做这一岗"], 18)
+		caption.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		caption.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		floor.add_child(caption)
+		var role_id := role
+		if hired:
+			var dismiss := TDUI.button("辞退", _dismiss_floor.bind(role_id))
+			dismiss.disabled = not profile.at_boundary()
+			floor.add_child(dismiss)
+		else:
+			var hire := TDUI.button("雇佣", _hire_floor.bind(role_id))
+			hire.disabled = not profile.at_boundary()
+			floor.add_child(hire)
 
 func _hire_crew(id: String) -> void:
 	if profile == null or not profile.at_boundary():
@@ -576,6 +608,125 @@ func _dismiss_crew(id: String) -> void:
 	var saved := save_game()
 	_outcome(result if saved.ok else saved)
 	show_crew()
+
+func _hire_floor(role: String) -> void:
+	if profile == null or not profile.at_boundary():
+		_outcome(TDOutcome.new(false, "SHOP_OPEN", "打烊后才能雇人。"))
+		return
+	var title := str(TDPhase3Session.ROLE_TITLE.get(role, role))
+	var result := profile.world_transaction(func() -> TDOutcome: return profile.world.employ(role), "雇" + title)
+	if result.ok and role in ["greeter", "cashier"]:
+		profile.layout.set_staff(role, true)
+	if result.ok:
+		var saved := save_game()
+		if not saved.ok:
+			result = saved
+	_outcome(result)
+	show_crew()
+
+func _dismiss_floor(role: String) -> void:
+	if profile == null or not profile.at_boundary():
+		_outcome(TDOutcome.new(false, "SHOP_OPEN", "打烊后才能辞退。"))
+		return
+	var title := str(TDPhase3Session.ROLE_TITLE.get(role, role))
+	var result := profile.world_transaction(func() -> TDOutcome: return profile.world.dismiss(role), "辞退" + title)
+	if result.ok and role in ["greeter", "cashier"]:
+		profile.layout.set_staff(role, false)
+	if result.ok:
+		var saved := save_game()
+		if not saved.ok:
+			result = saved
+	_outcome(result)
+	show_crew()
+
+func show_branch() -> void:
+	if profile == null:
+		return
+	var box := _dialog("分店")
+	var world := profile.world
+	box.add_child(TDUI.label("同时只开一家，开在别的小镇，主店这张地图不动。钱和已会的菜谱共用，菜单、员工和原料分开。划地 %d 元。打烊结算时，有店长、会做菜单的主厨和原料，才有营业额；维护费照扣。这笔钱进同一本现金账，不另算经营等级。" % TDPhase3Session.CLAIM_FEE, 18, TDUI.MUTED))
+	if not profile.at_boundary():
+		box.add_child(TDUI.label("打烊后才能划地、雇人和进货。", 20))
+		return
+	if not world.branch_open:
+		for town: Dictionary in world.catalog.playable_towns():
+			if str(town.get("id", "")) == world.home_town_id:
+				continue
+			var town_id := str(town.get("id", ""))
+			var title := "%s · %s" % [str(town.get("real", town_id)), str(town.get("nickname", ""))]
+			box.add_child(TDUI.button("在%s开小店" % title, _open_branch.bind(town_id)))
+		return
+	var place := world.catalog.town(world.branch_town)
+	box.add_child(TDUI.label("分店在%s。地图 %d×%d。" % [str(place.get("real", world.branch_town)), world.branch_w, world.branch_h], 20))
+	for entry: Dictionary in world.branch_menu:
+		var snap: Dictionary = entry.get("snapshot", {})
+		box.add_child(TDUI.label("菜单 · %s · %d元" % [str(snap.get("name", entry.get("dish_id", ""))), int(entry.get("price", 0))], 18))
+		var dish_id := str(entry.get("dish_id", ""))
+		box.add_child(TDUI.button("教会主厨做" + str(snap.get("name", dish_id)), _teach_branch.bind(dish_id)))
+	if not world.branch_menu.is_empty():
+		var lead_entry: Dictionary = world.branch_menu[0]
+		var lead: Dictionary = lead_entry.get("snapshot", {})
+		box.add_child(TDUI.button("进一份原料 · %d元" % maxi(1, int(lead.get("ingredient_cost", 1))), _stock_branch))
+	for role: String in TDPhase3Session.ROLES:
+		var hired := bool(world.branch_staff.get(role, false))
+		var role_id := role
+		var row := HBoxContainer.new()
+		box.add_child(row)
+		row.add_child(TDUI.label("%s · 日薪%d元 · %s" % [str(TDPhase3Session.ROLE_TITLE.get(role, role)), world.catalog.wage_of(role), "在岗" if hired else "空缺"], 18))
+		if hired:
+			row.add_child(TDUI.button("辞退", _dismiss_branch.bind(role_id)))
+		else:
+			row.add_child(TDUI.button("雇佣", _hire_branch.bind(role_id)))
+	if profile.shop.snapshot().phase == "SETTLED" and not world.branch_settled.has(str(profile.shop.snapshot().day)):
+		box.add_child(TDUI.button("结算今天的分店", _settle_branch_now))
+	box.add_child(TDUI.button("关掉分店", _close_branch_ui))
+
+func _open_branch(town_id: String) -> void:
+	var result := profile.world_transaction(func() -> TDOutcome: return profile.world.open_branch_in_town(town_id), "开分店")
+	if result.ok:
+		if profile.residence.get("plot") is Dictionary:
+			profile.world.town_map.install_cottage(profile.residence.plot)
+		profile.sync_commercial_map()
+		profile.world.map_revision += 1
+		var saved := save_game()
+		if not saved.ok:
+			result = saved
+	_outcome(result)
+	show_branch()
+
+func _hire_branch(role: String) -> void:
+	var title := str(TDPhase3Session.ROLE_TITLE.get(role, role))
+	var result := profile.world_transaction(func() -> TDOutcome: return profile.world.employ(role, "branch"), "分店" + title)
+	_keep_branch(result)
+
+func _dismiss_branch(role: String) -> void:
+	var title := str(TDPhase3Session.ROLE_TITLE.get(role, role))
+	var result := profile.world_transaction(func() -> TDOutcome: return profile.world.dismiss(role, "branch"), "分店辞退" + title)
+	_keep_branch(result)
+
+func _teach_branch(dish_id: String) -> void:
+	var result := profile.world_transaction(func() -> TDOutcome: return profile.world.teach_chef("branch", dish_id), "分店主厨")
+	_keep_branch(result)
+
+func _stock_branch() -> void:
+	var result := profile.world_transaction(func() -> TDOutcome: return profile.world.buy_branch_portion(), "分店进货")
+	_keep_branch(result)
+
+func _settle_branch_now() -> void:
+	var result := profile.close_branch_books()
+	_keep_branch(result)
+
+func _close_branch_ui() -> void:
+	var result := profile.world_transaction(func() -> TDOutcome: return profile.world.close_branch(), "关掉分店")
+	_keep_branch(result)
+
+func _keep_branch(result: TDOutcome) -> void:
+	if result.ok:
+		var saved := save_game()
+		if not saved.ok:
+			result = saved
+	_outcome(result)
+	show_branch()
 
 func show_rest() -> void:
 	if profile==null or location!="cottage": return
