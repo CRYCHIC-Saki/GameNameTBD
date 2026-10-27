@@ -1,6 +1,6 @@
 #Requires -Version 7.2
 [CmdletBinding()]
-param([string]$GodotPath = $env:GODOT_BIN, [int]$CheckTimeoutSeconds = 1200)
+param([string]$GodotPath = $env:GODOT_BIN, [int]$CheckTimeoutSeconds = 1800)
 $ErrorActionPreference = 'Stop'
 $root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $lock = Get-Content -LiteralPath (Join-Path $root 'dependencies.lock.json') -Raw | ConvertFrom-Json
@@ -40,11 +40,11 @@ try {
   try {
     $names = @($archive.Entries | ForEach-Object { $_.FullName })
     foreach ($name in $names) {
-      if ($name -notmatch '^(src/|\.godot/|assets/(kitchen/(recipe-icons/)?|town/)[^/]+\.png(\.import)?$|content/(dev_samples|cooking_prototype|cooking_system|service_content|restaurant|phase3_world|pantry|ingredient_index|research/recipe_atlas|research/runtime_recipes|town_economy/economy|markets/kitchen_stock)\.json$|project\.binary$)') { throw "Non-runtime resource exported: $name" }
+      if ($name -notmatch '^(src/|\.godot/|assets/audio/(casual|service|cooking)\.wav(\.import)?$|assets/(kitchen/(recipe-icons/)?|town/)[^/]+\.png(\.import)?$|content/(dev_samples|cooking_prototype|cooking_system|service_content|restaurant|phase3_world|pantry|ingredient_index|research/recipe_atlas|research/runtime_recipes|town_economy/economy|markets/kitchen_stock|brand/progression)\.json$|project\.binary$)') { throw "Non-runtime resource exported: $name" }
     }
     $names | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'runtime-manifest.json') -Encoding utf8
 	if ('content/town_economy/economy.json' -notin $names) { throw 'Missing exported economy configuration' }
-	foreach ($resource in @('content/markets/kitchen_stock.json','src/business/food_stock.gd','src/ui/ingredient_icon.gd')) {
+	foreach ($resource in @('src/platform/game_music.gd','src/town/cottage_world.gd','src/world/chef_art.gd','assets/audio/casual.wav.import','assets/audio/service.wav.import','assets/audio/cooking.wav.import','content/brand/progression.json','src/business/level_progression.gd','src/ui/level_rewards_view.gd','content/markets/kitchen_stock.json','src/business/food_stock.gd','src/ui/ingredient_icon.gd')) {
 	  if ($resource -notin $names -and ($resource + '.remap') -notin $names) { throw "Missing exported stock resource: $resource" }
 	}
 	foreach ($script in Get-ChildItem -LiteralPath (Join-Path $root 'src/town_economy') -Filter '*.gd' -File) {
@@ -52,8 +52,16 @@ try {
 	  if ($resource -notin $names -and ($resource + '.remap') -notin $names) { throw "Missing exported economy script: $resource" }
 	}
   } finally { $archive.Dispose() }
-  # Exported games locate their adjacent PCK themselves. Do not pass a --path override.
-  Run-Process (Join-Path $build 'TownDiner.exe') 'smoke' @('--headless','--quit-after','12','--',('--validation-root=' + (Join-Path $evidence 'smoke-storage')))
+  # Exercise the real title quit action, allowing audio to shut down gracefully.
+  # --quit-after destroys the engine without running the game's quit handler.
+  Run-Process $GodotPath 'startup-probe-pack' @('--headless','--path',$root,'--script','res://tools/pack_title_probe.gd','--','--startup-exit')
+  $startup = Join-Path $evidence 'startup-probe'
+  Copy-Item -LiteralPath (Join-Path $build 'TownDiner.exe') -Destination (Join-Path $startup 'StartupProbe.exe')
+  Copy-Item -LiteralPath (Join-Path $startup 'probe.pck') -Destination (Join-Path $startup 'StartupProbe.pck')
+  foreach ($attempt in 1..3) {
+    Run-Process (Join-Path $startup 'StartupProbe.exe') ('smoke-' + $attempt) @('--headless','--',('--probe-root=' + (Join-Path $startup ('storage-' + $attempt))))
+    if ((Get-Content -LiteralPath (Join-Path $evidence ('smoke-' + $attempt + '.log')) -Raw) -notmatch 'STARTUP_EXIT success=true checks=4') { throw 'Real startup and quit did not complete' }
+  }
   # Editor runs can resolve missing res:// dependencies from the checkout. Exercise
   # the actual exported executable with a sibling disposable PCK instead. Preserve
   # every production resource, replacing only the entry scene with the mouse driver.

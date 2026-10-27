@@ -201,7 +201,8 @@ func test_v1_migration_keeps_cash_and_research_without_retrospective_fees() -> v
 	assert_eq(restored.research.snapshot(),profile.research.snapshot())
 	assert_eq(int(restored.commerce.state.debt_cents),0)
 	assert_true(restored.commerce.state.books.is_empty())
-	assert_eq(int(restored.snapshot().schema_version),2)
+	assert_eq(int(restored.snapshot().schema_version),4)
+	assert_eq(restored.progression.progress().total_xp,0,"Historical economic migration does not invent level XP")
 	var corrupt:=restored.snapshot();corrupt.economy.competitors.chengdu[0].erase("ingredients")
 	var before:=restored.snapshot();assert_false(restored.restore(corrupt).ok);assert_eq(restored.snapshot(),before)
 

@@ -1,5 +1,6 @@
 class_name TDShopSession
 extends RefCounted
+signal day_settled(day: int)
 ## Money, orders and stock have one owner. The kitchen provides real dish snapshots.
 var catalog: TDServiceCatalog
 var scorer := TDCustomerScorer.new()
@@ -554,6 +555,7 @@ func settle_day() -> TDOutcome:
 			if payment.ok: _record("bank_transfer",int(payment.data.cash_delta_cents),{},str(payment.data.token),{"action":"repay","interest_paid_cents":payment.data.interest_paid_cents})
 		_s.popularity=roundi(commerce.state.popularity)
 	_s.settled_days.append(int(_s.day)); _s.phase = "SETTLED"; _record("settlement",0,{},"day-%d" % _s.day,{"reason":_day_end_reason})
+	day_settled.emit(int(_s.day))
 	return TDOutcome.new(true,"SETTLED")
 
 func next_day(expected_day: int) -> TDOutcome:

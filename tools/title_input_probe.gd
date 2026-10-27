@@ -42,10 +42,16 @@ func finish() -> void:
 	if shell!=null:
 		print("NOTICE ",shell._notice.text if is_instance_valid(shell._notice) else shell._title_notice.text)
 		shell.go_title()
-	if app!=null: app.queue_free()
-	await frames()
 	print("TITLE_PROBE success=",not failed," checks=",checks)
-	quit(1 if failed else 0)
+	if not failed and is_instance_valid(shell):
+		# Use the same audio retirement and exit path as the real title screen.
+		# A missing application quit is caught by the process timeout.
+		shell.request_quit()
+		return
+	if is_instance_valid(shell) and is_instance_valid(shell.music): shell.music.shutdown()
+	if app!=null: app.queue_free()
+	await root.get_tree().create_timer(0.15,true).timeout
+	quit(1)
 
 func run() -> void:
 	for argument:String in OS.get_cmdline_user_args():

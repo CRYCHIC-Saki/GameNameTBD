@@ -67,7 +67,8 @@ func _ready() -> void:
 		else: _station_interaction(id))
 	world.back_requested.connect(func() -> void: back_requested.emit())
 	beat_audio = TDBeatAudio.new(); add_child(beat_audio)
-	beat_audio.prepare_loop(float(_content.pc_operations.bpm))
+	beat_audio.prepare_cooking_music(float(_content.pc_operations.bpm))
+	beat_audio.volume_db=-80.0
 	var audio_delay: float = 0.0
 	panel = PanelContainer.new()
 	var backdrop := StyleBoxFlat.new(); backdrop.bg_color = Color("142c29")
@@ -191,7 +192,13 @@ func set_dual(value: bool) -> void:
 		lane.refresh()
 
 func _process(_delta: float) -> void:
+	beat_audio.volume_db=-12.0 if music_audible() else -80.0
+	for lane:TDCookingLane in lanes+[prep]: lane.feedback_audible=music_audible() and stage.lanes.has(lane)
 	if auto_advance: _sync_time()
+
+func music_audible() -> bool:
+	if _closed or shared_clock.paused or not is_visible_in_tree(): return false
+	return stage!=null and stage.visible and stage.lanes.any(func(lane:TDCookingLane)->bool:return lane.qte!=null or lane.thermal_qte!=null or (lane.sheet!=null and lane.sheet.running))
 
 func _sync_time() -> void:
 	var now: int = Time.get_ticks_usec()

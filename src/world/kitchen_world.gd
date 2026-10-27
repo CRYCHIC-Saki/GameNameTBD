@@ -129,12 +129,12 @@ func _station_at_player() -> Dictionary:
 	var shortest: float = INTERACTION_RADIUS
 	if service_door and is_instance_valid(_player):
 		var door_distance := _player.position.distance_to(DOOR_POS)
-		if door_distance <= shortest:
+		if door_distance <= shortest and _player.faces_target(DOOR_POS):
 			shortest = door_distance
 			best = {"id": "kitchen.dining", "position": DOOR_POS, "name": "餐厅门口", "visual": DOOR_POS + Vector2(0, -80)}
 	for station: Dictionary in stations():
 		var distance: float = _player.position.distance_to(station["position"] as Vector2)
-		if distance <= shortest:
+		if distance <= shortest and _player.faces_target(station.position):
 			shortest = distance
 			best = station
 	return best

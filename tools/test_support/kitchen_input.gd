@@ -9,7 +9,9 @@ func key(code: Key,pressed: bool=true) -> void:
 func tap(code: Key) -> void: key(code); key(code,false)
 func station(id: String, button: Key=KEY_E) -> void:
 	for entry: Dictionary in kitchen.world.stations():
-		if entry.id==id: (kitchen.world.get_node("Player") as TDKitchenPlayer).position=entry.position+Vector2(0,40); tap(button); return
+		if entry.id==id:
+			var player:=kitchen.world.get_node("Player") as TDKitchenPlayer
+			player.position=entry.position+Vector2(0,40);player.face(Vector2.UP);tap(button);return
 func click(at: Vector2) -> void:
 	var motion:=InputEventMouseMotion.new(); motion.position=at; motion.global_position=at; viewport.push_input(motion,true)
 	for down: bool in [true,false]:

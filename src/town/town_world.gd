@@ -72,6 +72,8 @@ func _ready() -> void:
 	_player.motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
 	_player.collision_layer = 32
 	_player.collision_mask = 16
+	_player.directional_art=player_mode
+	_player.sprite_height=48.0
 	var sprite := Sprite2D.new()
 	sprite.name = "Sprite2D"
 	sprite.texture = preload("res://assets/kitchen/chef-v1.png") if player_mode else TDRestaurantArt.guest_texture()
@@ -99,7 +101,7 @@ func _ready() -> void:
 	_status_bar()
 	if player_mode: spawn_at_home()
 	_set_status(_enter_hint())
-	if player_mode: _set_status("小镇清晨 · WASD 走动 · 点原料厂空地建厂，再点厂房生产 · 店门/菜摊按 E · B 菜谱 · Esc 暂停")
+	if player_mode: _set_status("WASD 走动 · 面向建筑按 E · 小屋的床可保存/休息 · B 菜谱 · Esc 暂停")
 	queue_redraw()
 
 func _process(delta: float) -> void:
@@ -263,18 +265,21 @@ func close() -> void:
 func _interact() -> void:
 	var cell := _player_cell()
 	var plot := session.town_map.plot_at(cell.x, cell.y)
-	if plot.is_empty() or plot.get("economic_courtyard",false):
+	if player_mode:
+		plot=facing_plot()
+	elif plot.is_empty() or plot.get("economic_courtyard",false):
 		for step: Vector2i in [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
 			var neighbor := session.town_map.plot_at(cell.x + step.x, cell.y + step.y)
 			if not neighbor.is_empty() and String(neighbor["kind"]) != "housing" and not neighbor.get("economic_courtyard",false):
 				plot = neighbor
 				break
 	if plot.is_empty():
-		_set_status("旁边没有功能区。点建设区空地建店或建厂；沿路按E选功能区。")
+		_set_status("前方没有可交互建筑。请走近并转向门口或摊贩。")
 		return
 	_selected = plot
 	var kind := String(plot["kind"])
 	if player_mode:
+		if kind=="player_cottage": place_requested.emit("cottage",str(plot.id));return
 		if kind=="player_diner" and String(plot.get("id",""))=="player_diner":
 			restaurant_requested.emit()
 			return
@@ -377,7 +382,7 @@ func _status_bar() -> void:
 	_status.add_theme_color_override("font_color", GLASS_INK)
 	box.add_child(_status)
 	if player_mode:
-		_status.text = "WASD 走动 · 点原料厂建厂/生产 · 店门或摊贩按 E · B 菜谱 · Esc 暂停"
+		_status.text = "WASD 走动 · 面向建筑按 E · 小屋的床可保存/休息 · B 菜谱 · Esc 暂停"
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
 	box.add_child(row)
@@ -425,6 +430,8 @@ func _click_build(mouse: InputEventMouse) -> void:
 	var world := _world_from_pointer(mouse)
 	var plot := _plot_under(world)
 	var kind := String(plot.get("kind", ""))
+	if player_mode and str(facing_plot().get("id",""))!=str(plot.get("id","")):
+		_selected=plot;_set_status("请走近并面向这栋建筑，再按 E 交互。");queue_redraw();return
 	if kind == "diner_lot":
 		_selected = plot
 		_open_venue_choice()
@@ -1213,9 +1220,18 @@ func set_presented(value: bool) -> void:
 	set_process_unhandled_input(value)
 
 func spawn_at_home() -> void:
+	spawn_at_plot("player_diner")
+
+func facing_plot() -> Dictionary:
+	var cell:=_player_cell()+_player.facing
+	var target:=session.town_map.plot_at(cell.x,cell.y)
+	if target.get("economic_courtyard",false) or target.get("kind","")=="housing": return {}
+	return target
+
+func spawn_at_plot(identity:String) -> void:
 	if session == null or _player == null:
 		return
-	var home: Dictionary = session._plot_by_id("player_diner")
+	var home: Dictionary = session._plot_by_id(identity)
 	if home.is_empty():
 		return
 	var goal := Vector2i(int(home.x) + int(home.w) / 2, int(home.y) + int(home.h))
@@ -1231,6 +1247,9 @@ func spawn_at_home() -> void:
 				best = at
 				distance = score
 	_player.position = _origin() + (Vector2(best) + Vector2(0.5, 0.5)) * CELL
+	if identity=="player_cottage":
+		_player.position=_origin()+(Vector2(home.approach_x,home.approach_y)+Vector2(.5,.5))*CELL
+	_player.face(_origin()+Vector2(home.x+home.w*.5,home.y+home.h*.5)*CELL-_player.position)
 	_player.velocity = Vector2.ZERO
 	_follow_camera()
 

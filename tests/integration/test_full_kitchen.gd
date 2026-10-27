@@ -112,7 +112,7 @@ func test_scene_fixed_seed_and_long_frame_heat_match_split_updates() -> void:
 func test_walk_to_stove_opens_real_bench_and_reenter_keeps_same_session() -> void:
 	bench.close_bench()
 	assert_false(bench.panel.visible)
-	(bench.world.get_node("Player") as TDKitchenPlayer).position = Vector2(588, 310)
+	(bench.world.get_node("Player") as TDKitchenPlayer).position = Vector2(588, 310);(bench.world.get_node("Player") as TDKitchenPlayer).face(Vector2.UP)
 	_key(KEY_E); _key(KEY_E, false)
 	assert_true(bench.panel.visible)
 	var identity: String = lane.snapshot().session_id

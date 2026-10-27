@@ -92,11 +92,14 @@ func test_market_inventory_menu_open_and_real_kitchen_delivery_three_day_save_lo
 		view.shop.close_early()
 		for remaining: Dictionary in view.shop.active_orders(): view.shop.cancel_order(remaining.id)
 		kitchen.advance(.01);assert_eq(view.shop.snapshot().phase,"SETTLED")
+		assert_eq(shell.profile.progression.snapshot().last_day,day,"Real QTE day produces one level settlement")
+		assert_true(shell.profile.progression_error.ok,shell.profile.progression_error.code)
 		assert_eq(int(shell.profile.commerce.cash_audit(int(view.shop.snapshot().money_cents)).difference_cents),0,"Taxes, wages and refunds conserve total cash.")
 		assert_true(shell.save_game().ok)
 		var before:Dictionary=shell.profile.snapshot()
 		shell.go_title();assert_true(shell.load_game("slot-01").ok)
 		assert_eq(shell.profile.shop.snapshot().day,day)
+		assert_true(TDLevelProgression.same_value(shell.profile.progression.snapshot(),before.progression),"Real kitchen level progress survives restart")
 		assert_eq(JSON.parse_string(JSON.stringify(shell.profile.shop.snapshot())),JSON.parse_string(JSON.stringify(before.shop)))
 		assert_eq(JSON.parse_string(JSON.stringify(shell.profile.research.snapshot())),JSON.parse_string(JSON.stringify(before.research)))
 		assert_true(shell.profile.next_day().ok)
@@ -127,6 +130,7 @@ func test_bank_world_interaction_and_buttons_use_the_profile_wallet() -> void:
 	if banks.is_empty(): return
 	var bank: Dictionary=banks[0]
 	shell.town._player.position=shell.town._origin()+Vector2(int(bank.approach_x)+.5,int(bank.approach_y)+.5)*TDTownWorld.CELL
+	shell.town._player.face(Vector2(bank.x+bank.w*.5-bank.approach_x-.5,bank.y+bank.h*.5-bank.approach_y-.5))
 	driver.tap(KEY_E)
 	assert_not_null(shell._modal)
 	if shell._modal==null: return

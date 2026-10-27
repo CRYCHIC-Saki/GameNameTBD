@@ -1,5 +1,19 @@
 # 项目架构与接入边界
 
+## D039：住所、方向与音乐
+
+GameProfile的schema4追加residence v1（cottage_bed锚点及稳定地块）。TDTownMap负责验证/安装住宅覆盖层，保留底层地图、道路及产权；旧档分配位置在验证阶段完成可行性检查。GameShell装配TDCottageWorld，拥有旅行、日结和保存策略；小屋只发送rest/town意图，不修改Shop或存档。场景碰撞层隔离，隐藏/暂停/弹窗均关闭对应输入。
+
+TDKitchenPlayer统一四向外观TDChefArt及朝向判断。餐厅保留原逻辑网格与真实碰撞，通过逆投影把屏幕输入转换成逻辑速度，补外边界；Town只取朝向相邻格，不再按固定邻居顺序猜建筑。厨房原公共输入助手也必须转向工作台。
+
+TDGameMusic由GameShell持有，播放休闲/营业曲；真实厨房和研习共用FullKitchen内连续烹饪音轨，只有可见活动谱面才发声。TDBeatAudio的旧点击生成器仅保留校准/旧测试，正式厨房用原创音轨；循环端点按音频帧数而非压缩字节数计算。没有新增Autoload，音频合成只发生在离线素材工具。
+
+## D038：经营成长
+
+TDLevelProgression为纯规则RefCounted，持有等级/日游标/最多28日日结明细/奖励与持久事件；独立于Shop钱账和Research灵感账。Profile将Shop完成日结的day_settled信号接到一次性等级结算，读取WorldEconomy税后利润及店铺属性，以候选Level/Research一起验证并提交内存；Research候选通过无save_sink的隔离实例调用既有grant_inspiration，不递归触发整包保存。之后同一profile schema3通过既有临时文件/读回/备份写盘，失败保留可重试的完整内存状态。
+
+GameShell完成日结保存后显示升级提示；餐厅账本进入TDLevelRewardsView，只读取快照。HUD显示等级。规则输入支持稳定store_id、scale_milli和店铺指标前后值，目前Profile只适配真实主店；正式分店需在同日汇总此接口，不能把旧独立世界分店账接来重复算钱。pending_level_events/acknowledge_level_event提供持久投递与显式确认；事件消费者必须按ID幂等，权益查询不代表家具已经生成或剧情已播放。
+
 ## D037：批次库存与熟练制作
 
 TDFoodStock为无节点批次函数，Shop.inventory数量仍是权威账，inventory_lots逐项校验和其一致；原料出库把到期日传给CookingModel，portable_data跨砧板/锅/冰箱带回，不更改模板。GameProfile给旧工厂装配公开的可供货清单与商品信息，正式和调试世界不混账；图标抽取为TDIngredientIcon供工厂/集市/冰箱/M6复用。

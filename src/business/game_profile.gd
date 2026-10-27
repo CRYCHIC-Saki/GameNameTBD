@@ -15,6 +15,9 @@ var persistence: Callable
 var _alive: bool = true
 var error := TDOutcome.new(true)
 var commerce: TDWorldEconomy
+var progression := TDLevelProgression.new()
+var progression_error := TDOutcome.new(true)
+var residence:Dictionary={}
 
 func _init() -> void:
 	error=service.load_file()
@@ -47,6 +50,75 @@ func _init() -> void:
 	commerce=TDWorldEconomy.new(service.config.costs,world.home_town_id if not world.home_town_id.is_empty() else world.town_id,int(shop.snapshot().seed))
 	if not commerce.error.ok: error=commerce.error;return
 	_wire_commerce()
+	if not progression.error.ok: error=progression.error;return
+	initialize_progression()
+	shop.day_settled.connect(_on_day_settled)
+	error=initialize_residence()
+
+func initialize_residence() -> TDOutcome:
+	var plot:=world.town_map.choose_cottage()
+	if plot.is_empty(): return TDOutcome.new(false,"NO_COTTAGE_LOCATION")
+	var installed:=world.town_map.install_cottage(plot)
+	if not installed.ok: return installed
+	residence={"schema_version":1,"anchor":"cottage_bed","plot":plot}
+	return installed
+
+func initialize_progression(migrated: bool = false) -> void:
+	var day := int(shop.snapshot().day)+(1 if shop.snapshot().phase=="SETTLED" else 0)
+	progression.start(day,{"player_diner":{"popularity":float(shop.snapshot().popularity),"awareness":float(commerce.state.awareness)*100.0}},migrated)
+
+func level_daily_report() -> TDOutcome:
+	# Formal player branches will supply the full same-day portfolio here. NPC firms and
+	# the old independent world branch ledger are deliberately not player income.
+	if not _alive or shop.snapshot().phase!="SETTLED": return TDOutcome.new(false,"NOT_SETTLED")
+	var day := int(shop.snapshot().day)
+	var book: Dictionary=shop.day_summary().economy
+	if book.is_empty() or int(book.day)!=day: return TDOutcome.new(false,"MISSING_LEVEL_BUSINESS_BOOK")
+	var before: Dictionary=progression.snapshot().baselines.get("player_diner",{})
+	if before.is_empty(): return TDOutcome.new(false,"MISSING_LEVEL_BASELINE")
+	return TDOutcome.new(true,"LEVEL_REPORT","",{"day":day,"stores":[{"store_id":"player_diner","scale_milli":1000,"profit_cents":int(book.profit_cents),"popularity_before":float(before.popularity),"popularity_after":float(shop.snapshot().popularity),"awareness_before":float(before.awareness),"awareness_after":float(commerce.state.awareness)*100.0}]})
+
+func _on_day_settled(_day: int) -> void:
+	progression_error=settle_progression()
+
+func settle_progression() -> TDOutcome:
+	if not _alive: return TDOutcome.new(false,"STALE_PROFILE")
+	if shop.snapshot().phase!="SETTLED": return TDOutcome.new(true,"NOT_DUE")
+	if int(progression.snapshot().last_day)==int(shop.snapshot().day): return TDOutcome.new(true,"ALREADY_APPLIED")
+	if not research._active.is_empty(): return TDOutcome.new(false,"RESEARCH_BUSY")
+	var report := level_daily_report()
+	if not report.ok: return report
+	var staged := TDLevelProgression.new(progression.config)
+	var restored := staged.restore(progression.snapshot())
+	if not restored.ok: return restored
+	var result := staged.settle(report.data)
+	if not result.ok: return result
+	# Stage rewards through the existing rule, without the live save_sink. Both domains
+	# enter the same profile package; a scene refresh never invokes the reward rule.
+	var staged_research := TDResearchSession.new(research.catalog)
+	restored=staged_research.restore(research.snapshot())
+	if not restored.ok: return restored
+	for reward: Dictionary in result.data.rewards:
+		var granted := staged_research.grant_inspiration(str(reward.grant_id),int(reward.inspiration))
+		if not granted.ok: return granted
+	var checked := progression.validate_save(staged.snapshot())
+	if not checked.ok: return checked
+	progression.restore(staged.snapshot())
+	research.restore(staged_research.snapshot())
+	progression_error=TDOutcome.new(true)
+	return result
+
+func pending_level_events() -> Array:
+	return progression.pending_events() if _alive else []
+
+func acknowledge_level_event(event_id: String) -> TDOutcome:
+	if not _alive or not at_boundary(): return TDOutcome.new(false,"NOT_AT_BOUNDARY")
+	var before := progression.snapshot()
+	var result := progression.acknowledge(event_id)
+	if not result.ok or result.code=="ALREADY_APPLIED": return result
+	var saved := save()
+	if not saved.ok: progression.restore(before);return saved
+	return result
 
 func _wire_commerce() -> void:
 	shop.commerce=commerce
@@ -120,12 +192,17 @@ func snapshot(candidate: Dictionary = {}) -> Dictionary:
 	state.day=int(business.day);state.money=int(business.money_cents)/100
 	state.day_phase="evening" if business.phase=="SETTLED" else "morning"
 	progress.world_time={"day":int(business.day),"phase":state.day_phase,"spent":state.free_spent}
-	return {"schema_version":2,"kind":"town-diner-profile","slot_id":slot_id,"title":title,"updated_at":updated_at,"revision":revision,"imported_legacy":imported_legacy,"shop":business,"research":progress,"world":state,"layout":layout.to_dict(),"economy":commerce.snapshot()}
+	return {"schema_version":4,"kind":"town-diner-profile","slot_id":slot_id,"title":title,"updated_at":updated_at,"revision":revision,"imported_legacy":imported_legacy,"shop":business,"research":progress,"world":state,"layout":layout.to_dict(),"economy":commerce.snapshot(),"progression":progression.snapshot(),"residence":residence.duplicate(true)}
 
 func save(candidate: Dictionary = {}) -> TDOutcome:
 	if not _alive: return TDOutcome.new(false,"STALE_PROFILE")
 	if not at_boundary(): return TDOutcome.new(false,"NOT_AT_BOUNDARY","营业中不能存档，请打烊后保存。")
 	if not persistence.is_valid(): return TDOutcome.new(false,"NO_STORAGE")
+	# Research's candidate callback must never recurse into another live reward commit.
+	if not candidate.is_empty() and shop.snapshot().phase=="SETTLED" and int(progression.snapshot().last_day)!=int(shop.snapshot().day): return TDOutcome.new(false,"PROGRESSION_PENDING")
+	if candidate.is_empty():
+		var settled := settle_progression()
+		if not settled.ok: return settled
 	var data:=snapshot(candidate)
 	data.updated_at=int(Time.get_unix_time_from_system()*1000000.0);data.revision=revision+1
 	var result: TDOutcome=persistence.call(slot_id,data)
@@ -154,6 +231,8 @@ func buy(cart: Dictionary) -> TDOutcome:
 	return result
 
 func next_day() -> TDOutcome:
+	var settled := settle_progression()
+	if not settled.ok: return settled
 	var previous:=commerce.snapshot()
 	var moved:=commerce.advance_day(int(shop.snapshot().day))
 	if not moved.ok: return moved
@@ -258,16 +337,24 @@ func restore(data: Dictionary) -> TDOutcome:
 	var checked:=validate_save(data)
 	if not checked.ok: return checked
 	# Validation completes before any live object is changed.
+	world.town_map.cottage={};residence={}
 	install_legacy(service,data.shop.menu.keys())
 	shop.restore(data.shop);research.restore(data.research)
 	TDWorldSnapshot.restore(world,data.world)
-	if int(data.schema_version)==2:
+	if int(data.schema_version)>=2:
 		commerce=TDWorldEconomy.new(service.config.costs,str(data.economy.home),int(data.shop.seed),int(data.shop.day))
 		commerce.restore(data.economy)
 	else:
 		# Explicit v1 -> v2 in-memory migration. Never charge past days or rewrite on read.
 		initialize_legacy_commerce()
 	_wire_commerce()
+	if int(data.schema_version)>=3: progression.restore(data.progression)
+	else: initialize_progression(true)
+	if int(data.schema_version)>=4:
+		residence=data.residence.duplicate(true);world.town_map.install_cottage(residence.plot)
+	else:
+		var installed:=initialize_residence()
+		if not installed.ok: return installed
 	for plot: Dictionary in world.town_map.plots: plot.enabled=bool(data.world.zone_enabled.get(plot.id,plot.enabled))
 	var furniture:=TDRestaurantCatalog.new();furniture.load_file()
 	layout=TDRestaurantLayout.import_dict(data.layout,furniture)
@@ -288,7 +375,9 @@ func initialize_legacy_commerce() -> void:
 	_wire_commerce()
 
 static func validate_save(raw: Variant) -> TDOutcome:
-	if not raw is Dictionary or not TDServiceCatalog.integer(raw.get("schema_version"),1,2) or raw.get("kind")!="town-diner-profile": return TDOutcome.new(false,"UNSUPPORTED_VERSION")
+	if not raw is Dictionary or not TDServiceCatalog.integer(raw.get("schema_version"),1,4) or raw.get("kind")!="town-diner-profile": return TDOutcome.new(false,"UNSUPPORTED_VERSION")
+	if int(raw.schema_version)>=4:
+		if not raw.get("residence") is Dictionary or raw.residence.get("schema_version")!=1 or raw.residence.get("anchor")!="cottage_bed" or not raw.residence.get("plot") is Dictionary: return TDOutcome.new(false,"INVALID_RESIDENCE")
 	if not raw.get("slot_id") is String or not raw.slot_id in ["slot-01","slot-02","slot-03","slot-04","slot-05","slot-06"]: return TDOutcome.new(false,"INVALID_SLOT")
 	if not raw.get("title") is String or raw.title.strip_edges().is_empty() or raw.title.length()>40 or not raw.get("imported_legacy") is bool: return TDOutcome.new(false,"INVALID_PROFILE")
 	if not TDServiceCatalog.integer(raw.get("revision"),0,1000000000) or not TDServiceCatalog.integer(raw.get("updated_at"),0,9007199254740991): return TDOutcome.new(false,"INVALID_PROFILE")
@@ -312,7 +401,7 @@ static func validate_save(raw: Variant) -> TDOutcome:
 	var furniture:=TDRestaurantCatalog.new();checked=furniture.load_file()
 	if not checked.ok: return checked
 	if TDRestaurantLayout.import_dict(raw.layout,furniture)==null: return TDOutcome.new(false,"INVALID_LAYOUT",TDRestaurantLayout.import_code)
-	if int(raw.schema_version)==2:
+	if int(raw.schema_version)>=2:
 		if not raw.get("economy") is Dictionary: return TDOutcome.new(false,"MISSING_ECONOMY")
 		var economy:=TDWorldEconomy.new(content.config.costs)
 		checked=economy.validate_save(raw.economy)
@@ -322,6 +411,24 @@ static func validate_save(raw: Variant) -> TDOutcome:
 			if not checked.ok: return checked
 		if int(raw.economy.day)!=int(raw.shop.day) or int(raw.economy.cost_cursor)!=raw.shop.ledger.size(): return TDOutcome.new(false,"INCONSISTENT_ECONOMY")
 		if raw.shop.phase=="SETTLED" and int(raw.economy.last_settled_day)!=int(raw.shop.day): return TDOutcome.new(false,"INCONSISTENT_ECONOMY")
+	if int(raw.schema_version)<2 or int(raw.economy.schema_version)!=2:
+		var world_data:=TDPhase3Session.new();checked=world_data.load_default()
+		if not checked.ok: return checked
+		checked=TDWorldSnapshot.restore(world_data,raw.world)
+		if not checked.ok: return checked
+		checked=_validate_residence(world_data,raw)
+		if not checked.ok: return checked
+	if int(raw.schema_version)>=3:
+		var levels := TDLevelProgression.new()
+		if not levels.error.ok: return levels.error
+		checked=levels.validate_save(raw.get("progression"))
+		if not checked.ok: return checked
+		var cursor := int(raw.shop.day)-(0 if raw.shop.phase=="SETTLED" else 1)
+		if int(raw.progression.last_day)!=cursor or not raw.progression.baselines.has("player_diner"): return TDOutcome.new(false,"INCONSISTENT_LEVEL_DAY")
+		for reward: Dictionary in raw.progression.rewards:
+			if not TDLevelProgression.same_value(raw.research.events.get(reward.grant_id),{"kind":"inspiration","amount":int(reward.inspiration)}): return TDOutcome.new(false,"INCONSISTENT_LEVEL_REWARD")
+		for event_id: String in raw.research.events:
+			if event_id.begins_with("level:v1:") and event_id.ends_with(":inspiration") and not raw.progression.rewards.any(func(reward:Dictionary)->bool:return reward.grant_id==event_id): return TDOutcome.new(false,"INCONSISTENT_LEVEL_REWARD")
 	return TDOutcome.new(true,"VALID")
 
 static func _validate_social_links(raw: Dictionary) -> TDOutcome:
@@ -340,6 +447,8 @@ static func _validate_social_links(raw: Dictionary) -> TDOutcome:
 	if not loaded.ok: return loaded
 	loaded=TDWorldSnapshot.restore(world_data,raw.world)
 	if not loaded.ok: return loaded
+	loaded=_validate_residence(world_data,raw)
+	if not loaded.ok: return loaded
 	for town: String in economy.expansion.parcels:
 		var map:=world_data.town_map if town==economy.home else TDTownMap.new()
 		if town!=economy.home:
@@ -353,6 +462,11 @@ static func _validate_social_links(raw: Dictionary) -> TDOutcome:
 			for field: String in ["x","y","w","h","approach_x","approach_y","parent_id","tradable","capacity","initial_store_index"]:
 				if not p.has(field) or p[field]!=definitions[id][field]: return TDOutcome.new(false,"INVALID_PROPERTY_GEOMETRY",id+":"+field)
 	return TDOutcome.new(true,"VALID_SOCIAL_LINKS")
+
+static func _validate_residence(world_data:TDPhase3Session,raw:Dictionary) -> TDOutcome:
+	if int(raw.schema_version)>=4: return world_data.town_map.validate_cottage(raw.residence.plot)
+	if world_data.town_map.choose_cottage().is_empty(): return TDOutcome.new(false,"NO_COTTAGE_LOCATION")
+	return TDOutcome.new(true,"VALID")
 
 static func install_legacy(content: TDServiceCatalog, needed: Array) -> void:
 	# Definitions are not unlocks. This preserves legitimate older phase3 recipe IDs.
@@ -371,3 +485,4 @@ func close() -> void:
 		# Keep the rejecting sink on stale references instead of silently accepting writes.
 	persistence=Callable()
 	if shop!=null: shop.cooking_reward=Callable()
+	if shop!=null and shop.day_settled.is_connected(_on_day_settled): shop.day_settled.disconnect(_on_day_settled)

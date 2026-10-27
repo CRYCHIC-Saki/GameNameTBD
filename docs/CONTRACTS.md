@@ -1,5 +1,21 @@
 # 公共契约：v3完整烹饪，兼容v1/v2历史入口
 
+## D039 移动与住所契约
+
+- Player.facing为屏幕四向，静止保留；motion_transform仅把屏幕归一向量转换到房间物理坐标。餐厅真实move_and_slide＋四边围界，门只由交互切场景。faces_target使用屏幕投影后的目标方向；小镇E选正前方相邻格，鼠标仅选中，操作必须靠近面向。
+- Profile整包schema4增加residence={schema_version:1,anchor:"cottage_bed",plot:{id,x,y,w,h,approach_x,approach_y}}；初次create显式店外，load按床边锚点。v1–v3显式选固定空置住宅迁移，保留所有旧领域；未知版本/越权占地拒绝。小屋独立场景不掌管日期或钱。
+- 床在PREPARE只保存，SETTLED先保存日结再推进及保存次日，OPEN/DRAINING拒绝；重复回调绑定槽/日期，不能连续跳天。现有其他边界保存继续保留，恢复位置统一床边。
+- BGM由入口装配，无Autoload；休闲/营业流退让给实际可见烹饪/研习的120BPM同步流。隐藏同步流静音但保留时钟相位，暂停同时冻结；原命中反馈只对可见操作发声，不改变判定公式。
+
+## D038 经营等级契约（2026-10-26）
+
+- TDLevelProgression是独立RefCounted规则，配置content/brand/progression.json；不拥有钱/库存/灵感钱包。日输入{day,stores:[{store_id,scale_milli,profit_cents,popularity_before,popularity_after,awareness_before,awareness_after}]}，货币分、规模1000=标准店、指标0–100。相同ID拒绝；整体净利润先汇总再取正/规模归一，指标按规模加权日净变化后取正；一天只映射一次，最高100XP。
+- 当前正式适配只读主店WorldEconomy的税后profit_cents、人气和awareness，规模1000。日基准在等级快照保存；不读菜品名气、菜单和现金余额差，不计NPC/旧分店。未来正式分店必须一次提交全体真实经营店，不逐店调用经验结算。
+- Shop.day_settled在所有经营账完成后发出。Profile用等级/研究候选先校验再一起提交内存，奖励经隔离Research.grant_inspiration验证；不递归调用save_sink。单包schema3必含progression；schema1/2显式从已结算日迁移为Lv1/0XP，无历史补发。保存失败保留完整内存候选，磁盘按已有临时/备份恢复，不出现一半奖励落盘。
+- settle重复当前日相同输入返回ALREADY_APPLIED，冲突返回DAY_CONFLICT；旧日拒绝，跳日拒绝；snapshot和展示只读。日记录保留28条，等级奖励和事件按稳定level ID保存；负指标不扣XP。等级最高50（可调建议），满级不再加经验。
+- 每级奖励灵感由Profile调用既有grant_inspiration，ID为level:v1:<等级>:inspiration；重复不再给。levels/rewards数据自动到账，非手动领点。pending_events与acknowledge_level_event用于至少一次投递/显式确认；消费方按事件ID幂等，不能把瞬时信号视为可靠剧情执行。feature/furniture/story/event通过配置hook target_id与entitlement查询接入；本轮不配置虚构功能或剧情。
+- 旧AI-005的每升一级5点、AI-025的品牌终局5级不是本次硬规则；本次独立经营等级不改变已有0–1品牌信任和未来终局。
+
 ## D037 正式库存与手艺契约（2026-10-25）
 
 - 正式库存与熟练仍由Shop拥有，存入同一槽；不接管旧调试Pantry的钱账。采购资格由已解锁且可运行菜谱主料并集＋全部运行调味定义生成，界面和事务共同检查。已持有的历史原料不删除，但不能再买未开放的主料。

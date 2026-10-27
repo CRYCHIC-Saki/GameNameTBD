@@ -37,7 +37,7 @@ func tap(code: Key) -> void:
 func station(id: String) -> void:
 	for entry: Dictionary in TDKitchenWorld.STATIONS:
 		if entry.id == id:
-			(kitchen.world.get_node("Player") as TDKitchenPlayer).position = entry.position + Vector2(0,40)
+			(kitchen.world.get_node("Player") as TDKitchenPlayer).position = entry.position + Vector2(0,40); (kitchen.world.get_node("Player") as TDKitchenPlayer).face(Vector2.UP)
 			tap(KEY_E)
 			return
 	fail_test("Unknown station " + id)

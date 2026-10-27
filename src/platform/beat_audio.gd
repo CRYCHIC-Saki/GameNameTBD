@@ -1,7 +1,7 @@
 class_name TDBeatAudio
 extends AudioStreamPlayer
 
-## Procedural placeholder click track. One stream avoids frame-scheduled beat drift.
+## Continuous sample clock for QTE; legacy clicks remain only in calibration tests.
 var scheduled_beats: Array[float] = []
 var estimated_delay_sec: float = 0.0
 var _feedback_tracks: Dictionary = {}
@@ -60,3 +60,10 @@ func prepare_loop(bpm: float) -> void:
 	track.loop_mode = AudioStreamWAV.LOOP_FORWARD
 	track.loop_begin = 0
 	track.loop_end = int(16 * 60.0 / bpm * track.mix_rate)
+
+func prepare_cooking_music(bpm:float) -> void:
+	stop();scheduled_beats.clear()
+	var track:=TDGameMusic.loop_track("cooking")
+	# The authored loop is 32 beats at 120 BPM; preserve the selected chart tempo.
+	pitch_scale=bpm/120.0
+	stream=track
