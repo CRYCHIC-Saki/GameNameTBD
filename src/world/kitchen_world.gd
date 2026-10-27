@@ -34,6 +34,12 @@ var simmer_meters: Array=[]
 var station_names: Dictionary={}
 var single_fridge: bool = false
 var pot_contents: Array=[]
+var crew: TDRestaurantCrew
+const CHEF_SPRITE := preload("res://assets/kitchen/chef-v1.png")
+const COOK_POSTS: Array[Vector2] = [Vector2(588, 360), Vector2(720, 360)]
+var _staff_nodes: Array[Node2D] = []
+var _crew_time: float = 0.0
+var order_shop: TDShopSession
 
 func stations() -> Array[Dictionary]:
 	if not single_fridge: return STATIONS.duplicate(true)
@@ -64,8 +70,11 @@ func _ready() -> void:
 			body.add_child(collider); add_child(body)
 	_update_prompt()
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	if is_inside_tree() and not get_tree().paused:
+		_crew_time += delta
 	_update_prompt()
+	_sync_staff()
 	queue_redraw()
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -207,6 +216,59 @@ func set_context(value: Dictionary, message: String = "", simmer: String = "") -
 		_held_label.text = "手上：" + ("空" if hand.is_empty() else str(hand.name) + " · " + {"whole":"完整","slice":"片","strip":"条","chunk":"块","dice":"丁"}.get(hand.shape,hand.shape)) + "     " + _message
 	if _simmer_label != null: _simmer_label.text = simmer
 	queue_redraw()
+
+static func cook_point(index: int, _time_sec: float) -> Vector2:
+	return COOK_POSTS[index % COOK_POSTS.size()]
+
+func _sync_staff() -> void:
+	var wanted: Array[Dictionary] = []
+	if crew != null:
+		var cooks := crew.cooks()
+		for index: int in cooks.size():
+			var cook: Dictionary = cooks[index]
+			wanted.append({"caption": "厨师 %s %d级" % [String(cook["name"]), int(cook.get("level", 1))], "at": cook_point(index, _crew_time), "color": Color("#c46a3a")})
+	while _staff_nodes.size() < wanted.size():
+		var root := Node2D.new()
+		var sprite := Sprite2D.new()
+		sprite.name = "Body"
+		sprite.texture = CHEF_SPRITE
+		sprite.centered = true
+		sprite.position = Vector2(0, -47)
+		sprite.scale = Vector2(0.07, 0.07)
+		root.add_child(sprite)
+		var caption := Label.new()
+		caption.name = "Name"
+		caption.theme = TDUI.theme()
+		caption.position = Vector2(-60, -102)
+		caption.size = Vector2(120, 24)
+		caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		caption.add_theme_font_size_override("font_size", 14)
+		root.add_child(caption)
+		root.name = "Cook%d" % _staff_nodes.size()
+		add_child(root)
+		_staff_nodes.append(root)
+	while _staff_nodes.size() > wanted.size():
+		var extra: Node2D = _staff_nodes.pop_back()
+		extra.queue_free()
+	for index: int in wanted.size():
+		var info: Dictionary = wanted[index]
+		var root: Node2D = _staff_nodes[index]
+		var body := root.get_node("Body") as Sprite2D
+		if not root.has_meta("placed"):
+			root.position = info.at
+			root.set_meta("placed", true)
+		var step_x := float(info.at.x) - root.position.x
+		root.position = info.at
+		root.z_index = 1
+		if step_x < -0.4:
+			body.flip_h = true
+		elif step_x > 0.4:
+			body.flip_h = false
+		var cooking := order_shop != null and not order_shop.active_orders().is_empty()
+		body.position.y = -47.0 - (absf(sin(_crew_time * 8.0 + float(index))) * 2.0 if cooking else 0.0)
+		var caption := root.get_node("Name") as Label
+		caption.text = String(info.caption)
+		caption.add_theme_color_override("font_color", info.color)
 
 func _station_hint(id: String) -> String:
 	var hand: Dictionary = _context.get("hand",{})

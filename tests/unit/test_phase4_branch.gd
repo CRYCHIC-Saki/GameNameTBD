@@ -252,6 +252,50 @@ func test_branch_culture_price_and_thirty_days_do_not_double_settle() -> void:
 	assert_eq(restored.money, saved_money)
 	assert_false(session.staff_on("prep"))
 
+func test_building_a_factory_keeps_the_map_and_the_player() -> void:
+	var session := TDPhase3Session.new()
+	assert_true(session.load_default().ok)
+	var parcels: Array = session.town_map.commercial_parcels()
+	if not parcels.is_empty():
+		var sample: Dictionary = parcels[0]
+		var ownership := {}
+		ownership[String(sample["id"])] = {"owner_id": "npc", "store_id": "store-a", "name": "街坊餐馆", "construction": false}
+		var placed := session.town_map.apply_commercial_occupancy(ownership)
+		assert_true(placed.ok, placed.message)
+	var roads: Dictionary = session.town_map.roads.duplicate()
+	var places: Array[String] = []
+	for item: Variant in session.town_map.plots:
+		var plot: Dictionary = item
+		places.append("%s|%s|%d|%d|%d|%d" % [String(plot["id"]), String(plot["kind"]), int(plot["x"]), int(plot["y"]), int(plot["w"]), int(plot["h"])])
+	var revision := session.map_revision
+	var factory: Dictionary = session.town_map.factory_lots()[0]
+	var town := TDTownWorld.new()
+	town.session = session
+	town.player_mode = true
+	add_child_autofree(town)
+	await get_tree().process_frame
+	var away := Vector2i(TDTownMap.CENTER + 3, TDTownMap.CENTER)
+	assert_true(session.town_map.is_walkable(away.x, away.y))
+	town._player.position = town._origin() + (Vector2(away) + Vector2(0.5, 0.5)) * TDTownWorld.CELL
+	assert_eq(session.build_factory(String(factory["id"])).code, "BUILT")
+	await get_tree().process_frame
+	assert_eq(town._player_cell(), away)
+	assert_eq(session.map_revision, revision)
+	assert_eq(session.town_map.roads, roads)
+	var changed := 0
+	assert_eq(session.town_map.plots.size(), places.size())
+	for index: int in places.size():
+		var plot: Dictionary = session.town_map.plots[index]
+		var line := "%s|%s|%d|%d|%d|%d" % [String(plot["id"]), String(plot["kind"]), int(plot["x"]), int(plot["y"]), int(plot["w"]), int(plot["h"])]
+		if line == places[index]:
+			continue
+		changed += 1
+		assert_eq(String(plot["id"]), String(factory["id"]))
+		assert_eq(String(plot["kind"]), "supply_factory")
+		assert_eq(int(plot["x"]), int(factory["x"]))
+		assert_eq(int(plot["y"]), int(factory["y"]))
+	assert_eq(changed, 1)
+
 func _session() -> TDPhase3Session:
 	var session := TDPhase3Session.new()
 	assert_true(session.load_default().ok)

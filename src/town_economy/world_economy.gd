@@ -415,6 +415,7 @@ func sync_costs(ledger: Array) -> void:
 		if society.state.baseline_attached:
 			match str(event.kind):
 				"purchase": society.state.sectors.market-=int(event.cents)
+				"wage": society.state.sectors.services-=int(event.cents)
 				"world_adjustment":
 					if int(event.cents)>0: society.state.external_net_cents+=int(event.cents)
 					elif str(event.extra.get("label","")).begins_with("跨镇采购"): society.state.sectors.market-=int(event.cents)
@@ -452,7 +453,14 @@ func settle(ledger: Array, receipts: int) -> Dictionary:
 	for town: String in config.active_towns: expansion.review(town,state.competitors[town],society,int(state.day))
 	var utility: int=roundi(float(config.fees.opening_cents)+int(state.day_stats.admitted)*float(config.fees.guest_cents)+float(state.day_stats.cooking_seconds)*float(config.fees.cooking_second_cents))
 	var rent: int=0 if state.lease.owned else int(state.lease.daily_cents)
-	var before_tax:=receipts-int(state.cost_consumed)-utility-rent-int(state.today_interest_cents)
+	# A wage paid after yesterday's settlement belongs to the next business day.
+	# The ledger settlement marker makes this boundary survive save/reload without
+	# charging the same wage twice or changing a previously settled book.
+	var wage: int=0
+	for event: Dictionary in ledger:
+		if event.kind=="settlement": wage=0
+		elif event.kind=="wage": wage-=int(event.cents)
+	var before_tax:=receipts-int(state.cost_consumed)-utility-rent-wage-int(state.today_interest_cents)
 	var tax:=roundi(float(maxi(0,before_tax))*int(config.society.profit_tax_bps)/10000)
 	state.tax_due_cents+=tax
 	var expense:=utility+rent+tax
@@ -466,7 +474,7 @@ func settle(ledger: Array, receipts: int) -> Dictionary:
 		for review: Dictionary in visits: average+=float(review.visit)/visits.size()
 		state.brand=lerpf(float(state.brand),average,0.025*visits.size()/(visits.size()+8.0))
 	var book: Dictionary={"day":int(state.day),"sales_net_cents":receipts,"consumed_cost_cents":int(state.cost_consumed),"utilities_cents":utility,"rent_cents":rent,"expense_cents":expense,"profit_cents":receipts-int(state.cost_consumed)-expense,"debt_cents":int(state.debt_cents),"funnel":state.day_stats.duplicate(true),"paid_cents":0}
-	book.profit_before_tax_cents=before_tax;book.tax_cents=tax;book.interest_cents=int(state.today_interest_cents);book.profit_cents=before_tax-tax
+	book.profit_before_tax_cents=before_tax;book.tax_cents=tax;book.interest_cents=int(state.today_interest_cents);book.wages_cents=wage;book.profit_cents=before_tax-tax
 	book.funnel.erase("reviews");book.funnel.erase("arrivals")
 	state.books.append(book)
 	while state.books.size()>28: state.books.pop_front()

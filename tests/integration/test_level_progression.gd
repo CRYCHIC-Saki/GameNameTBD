@@ -51,6 +51,26 @@ func test_real_profit_and_store_metrics_exclude_bank_cash_menu_and_recipe_fame()
 	assert_eq(growth.profit_xp,0);assert_eq(growth.store_count,1);assert_eq(growth.scale_milli,1000)
 	assert_gt(growth.awareness_xp,0);assert_eq(growth.popularity_xp,0)
 
+func test_wages_reduce_store_profit_once_across_settlement_and_reload() -> void:
+	var profile:=create_profile()
+	assert_true(profile.shop.pay_wage(2800,"crew:first").ok)
+	finish_day(profile)
+	var first:Dictionary=profile.shop.day_summary().economy
+	assert_eq(first.wages_cents,2800)
+	assert_eq(first.profit_before_tax_cents,-int(first.consumed_cost_cents)-int(first.utilities_cents)-int(first.rent_cents)-int(first.interest_cents)-2800)
+	assert_eq(profile.level_daily_report().data.stores[0].profit_cents,first.profit_cents)
+	assert_true(profile.shop.pay_wage(3200,"crew:after-settlement").ok)
+	assert_true(profile.save().ok)
+	var saved:=store.load_slot("slot-01");assert_true(saved.ok)
+	var restored:=create_profile("slot-02");assert_true(restored.restore(saved.data).ok)
+	assert_true(restored.next_day().ok)
+	finish_day(restored)
+	var second:Dictionary=restored.shop.day_summary().economy
+	assert_eq(second.wages_cents,3200)
+	assert_eq(second.profit_before_tax_cents,-int(second.consumed_cost_cents)-int(second.utilities_cents)-int(second.rent_cents)-int(second.interest_cents)-3200)
+	assert_false(restored.shop.settle_day().ok)
+	assert_eq(restored.shop.day_summary().economy.wages_cents,3200)
+
 func test_multi_day_level_reward_and_six_slot_package_are_idempotent() -> void:
 	var profile:=create_profile();var other:=create_profile("slot-02")
 	var initial_points:=int(profile.research.snapshot().points)

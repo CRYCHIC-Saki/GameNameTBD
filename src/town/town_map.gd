@@ -627,6 +627,17 @@ func _mark_built_factories(built_factories: Array) -> void:
 		plot["name"] = supply_name(String(plot.get("supply", "")), true)
 		plots[index] = plot
 
+func mark_factory_built(plot_id: String) -> bool:
+	for index in plots.size():
+		var plot: Dictionary = plots[index]
+		if String(plot.get("id", "")) != plot_id or String(plot.get("kind", "")) != "factory_lot":
+			continue
+		plot["kind"] = "supply_factory"
+		plot["name"] = supply_name(String(plot.get("supply", "")), true)
+		plots[index] = plot
+		return true
+	return false
+
 func _place_home_diner(span: Vector2i, used: Dictionary, venue: String) -> void:
 	var lot := diner_lot()
 	if lot.is_empty():

@@ -992,7 +992,9 @@ func build_factory(plot_id: String) -> TDOutcome:
 	if bool(factory_built.get(key, false)):
 		return TDOutcome.new(false, "ALREADY", "%s已经建好了。" % TDTownMap.supply_name(String(plot.get("supply", "")), true))
 	factory_built[key] = true
-	_rebuild_map()
+	if not town_map.mark_factory_built(plot_id):
+		factory_built.erase(key)
+		return TDOutcome.new(false, "MISSING", "没有这块原料厂空地。")
 	var supply := String(plot.get("supply", ""))
 	return TDOutcome.new(true, "BUILT", "%s建好了，提供%s。点击厂房安排生产。" % [TDTownMap.supply_name(supply, true), TDTownMap.supply_goods(supply)])
 

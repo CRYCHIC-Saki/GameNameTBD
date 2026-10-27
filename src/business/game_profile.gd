@@ -45,6 +45,7 @@ func _init() -> void:
 	if layout==null: error=TDOutcome.new(false,"INVALID_LAYOUT");return
 	error=layout.furnish_player_home()
 	if not error.ok: return
+	shop.crew=layout.crew
 	research.save_sink=_research_candidate
 	research.changed.connect(_sync_recipes)
 	commerce=TDWorldEconomy.new(service.config.costs,world.home_town_id if not world.home_town_id.is_empty() else world.town_id,int(shop.snapshot().seed))
@@ -358,6 +359,7 @@ func restore(data: Dictionary) -> TDOutcome:
 	for plot: Dictionary in world.town_map.plots: plot.enabled=bool(data.world.zone_enabled.get(plot.id,plot.enabled))
 	var furniture:=TDRestaurantCatalog.new();furniture.load_file()
 	layout=TDRestaurantLayout.import_dict(data.layout,furniture)
+	if layout!=null: shop.crew=layout.crew
 	slot_id=data.slot_id;title=data.title;updated_at=int(data.updated_at);revision=int(data.revision);imported_legacy=data.imported_legacy
 	world.scaled_interior=false
 	_sync_recipes()

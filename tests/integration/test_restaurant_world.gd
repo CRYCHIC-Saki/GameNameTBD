@@ -169,6 +169,30 @@ func test_edit_bar_tracks_viewport_size_changes() -> void:
 	var local := TDRestaurantIsoView.project(spot.x + 0.5, spot.y + 0.5)
 	assert_false(room._pointer_on_chrome(room._iso.get_global_transform_with_canvas() * local))
 
+func test_waiters_stay_put_until_a_guest_is_waiting_for_food() -> void:
+	assert_true(world.layout.crew.hire("waiter-ning").ok)
+	assert_true(world.layout.crew.hire("waiter-tao").ok)
+	var idle: Array = world._crew_points(0.5)
+	var still: Array = world._crew_points(0.5)
+	assert_eq(idle.size(), 2)
+	assert_eq((still[0] as Dictionary).point, (idle[0] as Dictionary).point)
+	assert_eq((still[1] as Dictionary).point, (idle[1] as Dictionary).point)
+	assert_false(bool((still[0] as Dictionary).moving))
+	var seat := world.layout.piece_by_kind("dining_table")
+	var table := world.layout.cell_center(world.approach_cell(String(seat["id"])))
+	var guest := TDRestaurantGuest.new()
+	guest.phase = "wait_serve"
+	guest.seat_id = String(seat["id"])
+	world._guests.add_child(guest)
+	var serving: Array = world._crew_points(0.25)
+	var home: Vector2 = idle[0].point
+	assert_gt(home.distance_to((serving[0] as Dictionary).point), 1.0)
+	assert_lt((serving[0] as Dictionary).point.distance_to(table), home.distance_to(table))
+	assert_eq((serving[1] as Dictionary).point, (idle[1] as Dictionary).point)
+	guest.phase = "leave"
+	var returning: Array = world._crew_points(0.25)
+	assert_lt((returning[0] as Dictionary).point.distance_to(home), (serving[0] as Dictionary).point.distance_to(home))
+
 func _open_dining_cell(room: TDRestaurantWorld) -> Vector2i:
 	for y in room.layout.rows - 1:
 		for x in room.layout.columns:
