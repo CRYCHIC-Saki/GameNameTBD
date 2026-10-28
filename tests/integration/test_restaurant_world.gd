@@ -148,8 +148,45 @@ func test_edit_click_selects_places_and_removes_through_a_blocking_parent() -> v
 	room._armed_kind = "stool"
 	_click_room(room, spot.x, spot.y, MOUSE_BUTTON_LEFT)
 	assert_eq(room.layout.pieces().size(), before + 1, room._status.text)
+	room._tool = "select"
 	_click_room(room, int(piece["x"]), int(piece["y"]), MOUSE_BUTTON_RIGHT)
 	assert_true(room.layout.piece(id).is_empty())
+
+func test_hover_wheel_finish_and_right_click_cancels_building() -> void:
+	var room := TDRestaurantWorld.new()
+	add_child_autofree(room)
+	await get_tree().process_frame
+	room._toggle_edit()
+	room._tool = "place"
+	room._armed_kind = "stool"
+	var spot := _open_dining_cell(room)
+	assert_ne(spot, Vector2i(-1, -1))
+	room._hover_at(spot)
+	assert_true(room._hover_label.text.contains("凳子"))
+	assert_true(room._hover_label.text.contains("用餐"))
+	assert_true(room._iso.ghost_ok)
+	room._spin(1)
+	assert_eq(room._place_rotation, 90)
+	var before := room.layout.pieces().size()
+	room._click_cell(spot, MOUSE_BUTTON_RIGHT)
+	assert_eq(room._tool, "select")
+	assert_eq(room.layout.pieces().size(), before)
+	room._tool = "paint"
+	room._brush = "carpet"
+	room._click_cell(spot, MOUSE_BUTTON_LEFT)
+	assert_eq(room.layout.finish_at(spot.x, spot.y), "carpet")
+	var wall := Vector2i(-1, -1)
+	for y in room.layout.rows:
+		for x in room.layout.columns:
+			if room.layout.cell_zone(x, y) == "facade":
+				wall = Vector2i(x, y)
+				break
+		if wall.x >= 0:
+			break
+	room._brush = "paper"
+	room._click_cell(wall, MOUSE_BUTTON_LEFT)
+	assert_eq(room.layout.finish_at(wall.x, wall.y), "paper")
+	assert_eq(room.layout.set_finish(wall.x, wall.y, "wood").code, "BAD_FINISH")
 
 func test_edit_bar_tracks_viewport_size_changes() -> void:
 	var viewport := SubViewport.new()

@@ -35,10 +35,29 @@ func test_overlap_and_wrong_zone_leave_the_layout_unchanged() -> void:
 	var before := layout.to_dict()
 	var overlap := layout.place("stool", 6, 6, 0)
 	assert_eq(overlap.code, "OVERLAP")
-	var wrong := layout.place("stool", 3, 7, 0)
-	assert_eq(wrong.code, "WRONG_ZONE")
+	var wall := _first_cell("facade")
+	assert_ne(wall, Vector2i(-1, -1))
+	assert_eq(layout.place("stool", wall.x, wall.y, 0).code, "WRONG_ZONE")
 	assert_eq(layout.place("missing", 11, 6, 0).code, "UNKNOWN_KIND")
 	assert_eq(layout.to_dict(), before)
+	var floor := _open_floor_outside("dining")
+	assert_ne(floor, Vector2i(-1, -1))
+	var placed := layout.place("stool", floor.x, floor.y, 0)
+	assert_true(placed.ok, placed.message)
+	assert_ne(layout.cell_zone(floor.x, floor.y), "dining")
+	assert_eq(layout.facility_zone(floor.x, floor.y), "dining")
+	assert_false(before.has("finish_ids"))
+	assert_true(layout.set_finish(floor.x, floor.y, "carpet").ok)
+	assert_eq(layout.set_finish(floor.x, floor.y, "paper").code, "BAD_FINISH")
+	assert_true(layout.set_finish(wall.x, wall.y, "floral").ok)
+	assert_eq(layout.set_finish(wall.x, wall.y, "wood").code, "BAD_FINISH")
+	var saved := layout.to_dict()
+	assert_true(saved.has("finish_ids"))
+	var loaded := TDRestaurantLayout.import_dict(saved, catalog)
+	assert_not_null(loaded)
+	assert_eq(loaded.to_dict(), saved)
+	assert_eq(loaded.finish_at(floor.x, floor.y), "carpet")
+	assert_eq(loaded.facility_zone(floor.x, floor.y), "dining")
 	var desk := layout.piece_by_kind("welcome_desk")
 	assert_eq(layout.paint(int(desk["x"]), int(desk["y"]), ".").code, "OCCUPIED")
 	assert_eq(layout.paint(1, 1, ".").code, "LAST_ENTRANCE")
@@ -145,3 +164,21 @@ func _assert_walk(cells: Variant) -> void:
 			continue
 		var previous: Vector2i = path[index - 1]
 		assert_eq(absi(cell.x - previous.x) + absi(cell.y - previous.y), 1)
+
+func _first_cell(zone: String) -> Vector2i:
+	for y in layout.rows:
+		for x in layout.columns:
+			if layout.cell_zone(x, y) == zone:
+				return Vector2i(x, y)
+	return Vector2i(-1, -1)
+
+func _open_floor_outside(skip_zone: String) -> Vector2i:
+	for y in layout.rows - 1:
+		for x in layout.columns:
+			var zone := layout.cell_zone(x, y)
+			if zone == "" or zone == "facade" or zone == skip_zone or layout.is_entrance(x, y):
+				continue
+			var preview := layout.preview_piece("stool", x, y, 0)
+			if bool(preview["ok"]):
+				return Vector2i(x, y)
+	return Vector2i(-1, -1)

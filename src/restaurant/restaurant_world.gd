@@ -12,7 +12,7 @@ var _business_guests: Dictionary = {}
 
 const CHEF := preload("res://assets/kitchen/chef-v1.png")
 const INTERACTION_RADIUS := 78.0
-const BRUSHES: Array[String] = ["+", ".", "R", "O", "D", "#"]
+const BRUSHES: Array[String] = ["wood", "tile", "stone", "carpet", "paper", "stripe", "floral", "brick", "#", ".", "+"]
 
 var save_path: String = ""
 var guest_speed: float = 150.0
@@ -29,7 +29,10 @@ var _dirty: bool = false
 var _selected: String = ""
 var _tool: String = "select"
 var _armed_kind: String = "dining_table"
-var _brush: String = "."
+var _place_rotation: int = 0
+var _brush: String = "wood"
+var _hover_cell := Vector2i(-1, -1)
+var _hover_label: Label
 var _culture: String = "chinese"
 var _tier: String = "low"
 var _store: TDRestaurantStore
@@ -69,6 +72,8 @@ var _order_plate: Panel
 var floor_service: bool = false
 var caller_name: String = ""
 var caller_inside: bool = false
+var _talk_layer: CanvasLayer
+var _talk_view: TDDialogueView
 var caller_left: bool = false
 var _plate_order: String = ""
 
@@ -107,6 +112,20 @@ func _ready() -> void:
 			warning = TDRestaurantLayout.floor_error
 	_build_world()
 	_build_status_bar()
+	_hover_label = Label.new()
+	_hover_label.visible = false
+	_hover_label.position = Vector2(16, 168)
+	_hover_label.size = Vector2(440, 110)
+	_hover_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_hover_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hover_label.theme = _theme
+	_hover_label.z_index = 30
+	_hover_label.add_theme_font_size_override("font_size", 16)
+	_hover_label.add_theme_color_override("font_color", Color("#fff6df"))
+	_hover_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.88))
+	_hover_label.add_theme_constant_override("shadow_offset_x", 1)
+	_hover_label.add_theme_constant_override("shadow_offset_y", 1)
+	add_child(_hover_label)
 	_rebuild()
 	teleport_player(_spawn_cell())
 	if warning != "" and save_path != "":
@@ -160,6 +179,11 @@ func _process(delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if _closed or layout == null:
 		return
+	if _talk_open():
+		if event.is_action_pressed("pause") and not event.is_echo():
+			_talk_view.finish_now()
+			get_viewport().set_input_as_handled()
+		return
 	if event.is_action_pressed("pause") and not event.is_echo():
 		pause_requested.emit()
 		get_viewport().set_input_as_handled()
@@ -171,14 +195,27 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 
 func _input(event: InputEvent) -> void:
+	if _talk_open():
+		return
 	if _closed or not _editing or layout == null or _iso == null or get_tree().paused:
+		return
+	if event is InputEventMouseMotion:
+		var motion := event as InputEventMouseMotion
+		if _pointer_on_chrome(motion.position):
+			_clear_hover()
+			return
+		_hover_at(_iso.pick_cell(_screen_to_room(motion.position)))
 		return
 	if not event is InputEventMouseButton:
 		return
 	var click := event as InputEventMouseButton
-	if not click.pressed or click.button_index not in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]:
-		return
 	if _pointer_on_chrome(click.position):
+		return
+	if click.pressed and click.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
+		_spin(1 if click.button_index == MOUSE_BUTTON_WHEEL_UP else -1)
+		get_viewport().set_input_as_handled()
+		return
+	if not click.pressed or click.button_index not in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]:
 		return
 	_click_cell(_iso.pick_cell(_screen_to_room(click.position)), click.button_index)
 	get_viewport().set_input_as_handled()
@@ -213,6 +250,7 @@ func _draw() -> void:
 
 func close() -> void:
 	_closed = true
+	_dismiss_talk()
 	if session != null:
 		session.floor.clear()
 	if _iso != null:
@@ -256,10 +294,16 @@ func guest_nodes() -> Array[TDRestaurantGuest]:
 func request_interaction() -> bool:
 	if _closed or _player == null or layout == null or get_tree().paused or _covered:
 		return false
+	if _talk_open():
+		return true
 	if player_mode:
 		if floor_service and _floor_act():
 			return true
 		var faced := _faced_guest()
+		if faced != null and not _editing:
+			var portrait := "linxia" if caller_name != "" and _guest_name(faced) == caller_name else "guest"
+			_open_talk(TDGuestVisit.conversation(_guest_name(faced), faced.dish_name, faced.phase, portrait))
+			return true
 		if faced != null:
 			_set_status(_guest_brief(faced))
 			return true
@@ -315,7 +359,7 @@ func spawn_guest() -> TDOutcome:
 	return TDOutcome.new(true, "SEATED", guest.seat_id)
 
 func place_kind(kind: String, x: int, y: int) -> TDOutcome:
-	return _apply(layout.place(kind, x, y, 0))
+	return _apply(layout.place(kind, x, y, _place_rotation))
 
 func paint_cell(x: int, y: int, symbol: String) -> TDOutcome:
 	return _apply(layout.paint(x, y, symbol))
@@ -638,6 +682,12 @@ func _click_cell(cell: Vector2i, button: int = MOUSE_BUTTON_LEFT) -> void:
 		return
 	var hit := _piece_at(cell)
 	if button == MOUSE_BUTTON_RIGHT:
+		if _tool == "place" or _tool == "paint":
+			_tool = "select"
+			_refresh_buttons()
+			_set_status("已取消。选择后再右键，才会拆掉点中的家具。")
+			_refresh_hover()
+			return
 		if hit == "":
 			_set_status("这里没有家具。")
 			return
@@ -645,18 +695,23 @@ func _click_cell(cell: Vector2i, button: int = MOUSE_BUTTON_LEFT) -> void:
 		remove_selected()
 		return
 	if _tool == "paint":
-		paint_cell(cell.x, cell.y, _brush)
+		if _brush in ["#", ".", "+"]:
+			paint_cell(cell.x, cell.y, _brush)
+		else:
+			_apply(layout.set_finish(cell.x, cell.y, _brush))
+		_refresh_hover()
 		return
 	if _tool == "place" and hit == "":
 		place_kind(_armed_kind, cell.x, cell.y)
+		_refresh_hover()
 		return
 	_selected = hit
 	queue_redraw()
 	if _selected == "":
-		_set_status("这格是空的。先点「放置」，再点空地新增。")
+		_set_status("这格是空的。点「放置」后，滚轮转向，左键放下，右键取消。")
 	else:
 		var selected := layout.piece(_selected)
-		_set_status("选中%s。方向键移动，右键或「拆除」删掉它。" % String(selected["name"]))
+		_set_status("选中%s。滚轮或「转向」旋转，选择模式下右键或「拆除」删掉它。" % String(selected["name"]))
 
 func _apply(result: TDOutcome) -> TDOutcome:
 	if result.ok:
@@ -724,8 +779,10 @@ func _toggle_edit() -> void:
 	_edit_button.text = "完成布置" if _editing else "布置"
 	_tool = "select"
 	_fit_bar()
+	if not _editing:
+		_clear_hover()
 	queue_redraw()
-	_set_status("左键点家具选中。点「放置」后再点空地新增。右键或「拆除」删掉点中的那件。" if _editing else "回到走动。E 可以查看家具。")
+	_set_status("左键选家具。放置时滚轮转向、右键取消。地板都能放东西，接待、点餐和用餐只看家具。墙纸和地板只改外观。" if _editing else "回到走动。E 可以查看家具。")
 
 func _cycle_kind() -> void:
 	var kinds := catalog.kinds()
@@ -733,14 +790,16 @@ func _cycle_kind() -> void:
 	_armed_kind = kinds[(index + 1) % kinds.size()]
 	_tool = "place"
 	_refresh_buttons()
-	_set_status("再点一格空地，放下%s。点到已有家具会改成选中，右键拆除。" % String(catalog.furniture(_armed_kind)["name"]))
+	_set_status("滚轮转向，左键在任意地板放下%s。右键取消。它会把自己的格子划成%s。" % [String(catalog.furniture(_armed_kind)["name"]), _zone_title(String(catalog.furniture(_armed_kind).get("zone", "")))])
+	_refresh_hover()
 
 func _cycle_brush() -> void:
 	var index := BRUSHES.find(_brush)
 	_brush = BRUSHES[(index + 1) % BRUSHES.size()]
 	_tool = "paint"
 	_refresh_buttons()
-	_set_status("下一次点击把格子改成%s。顾客只能走门口和过道。" % _brush_name(_brush))
+	_set_status("左键刷上%s。墙纸只上墙，地板只上地面。这不划功能区。" % _brush_name(_brush))
+	_refresh_hover()
 
 func _cycle_culture() -> void:
 	var cultures := catalog.cultures()
@@ -755,14 +814,35 @@ func _cycle_tier() -> void:
 	_set_status("当前档次是%s。高端只是更亮的占位外观。" % catalog.tier_name(_tier))
 
 func _rotate_selected() -> void:
+	if _tool == "place":
+		_spin(1)
+		return
 	if _selected == "":
-		_set_status("先点选一件家具")
+		_set_status("先点选一件家具，或先进入放置再用滚轮转向。")
 		return
 	_apply(layout.rotate_piece(_selected))
+	_refresh_hover()
+
+func _spin(steps: int) -> void:
+	if _tool == "place":
+		_place_rotation = posmod(_place_rotation + steps * 90, 360)
+		_refresh_buttons()
+		_refresh_hover()
+		_set_status("朝向 %d°。右键取消放置。" % _place_rotation)
+		return
+	if _tool == "paint":
+		return
+	if _selected == "":
+		_set_status("先选中一件家具，滚轮才能转它。")
+		return
+	_apply(layout.rotate_piece_by(_selected, steps * 90))
+	_refresh_hover()
 
 func _set_tool(next: String) -> void:
 	_tool = next
-	_set_status("点击家具即可选中。" if next == "select" else next)
+	_refresh_buttons()
+	_refresh_hover()
+	_set_status("点击家具即可选中。选择模式下右键拆除。" if next == "select" else "滚轮转向，右键取消。")
 
 func _refresh_buttons() -> void:
 	if layout == null:
@@ -784,7 +864,7 @@ func _refresh_buttons() -> void:
 			runner_on = session.staff_on("runner")
 		_runner_button.text = "辞退传菜员" if runner_on else "雇用传菜员（%d元）" % runner_wage
 	if _kind_button != null:
-		_kind_button.text = "放置：" + String(catalog.furniture(_armed_kind).get("name", _armed_kind))
+		_kind_button.text = "放置：%s · %d°" % [String(catalog.furniture(_armed_kind).get("name", _armed_kind)), _place_rotation]
 	if _brush_button != null:
 		_brush_button.text = "笔刷：" + _brush_name(_brush)
 	if _style_button != null:
@@ -798,16 +878,105 @@ func _brush_name(symbol: String) -> String:
 			return "门口"
 		".":
 			return "过道"
-		"R":
-			return "接待"
-		"O":
-			return "点餐"
-		"D":
-			return "用餐"
 		"#":
-			return "墙"
+			return "砌墙"
 		_:
-			return symbol
+			return TDRestaurantLayout.finish_name(symbol)
+
+func _zone_title(zone: String) -> String:
+	match zone:
+		"reception":
+			return "接待"
+		"ordering":
+			return "点餐"
+		"dining":
+			return "用餐"
+		"facade":
+			return "门面"
+		_:
+			return "过道"
+
+func _hover_at(cell: Vector2i) -> void:
+	_hover_cell = cell
+	if layout == null or cell.x < 0 or cell.y < 0 or cell.x >= layout.columns or cell.y >= layout.rows:
+		_clear_hover()
+		return
+	if _hover_label != null:
+		_hover_label.visible = true
+	if _tool == "place":
+		var preview := layout.preview_piece(_armed_kind, cell.x, cell.y, _place_rotation)
+		_show_ghost(cell, int(preview["w"]), int(preview["h"]), bool(preview["ok"]))
+		if _hover_label != null:
+			_hover_label.text = _place_hover_text(preview)
+		return
+	if _tool == "paint":
+		_show_ghost(cell, 1, 1, _finish_fits(cell))
+		if _hover_label != null:
+			_hover_label.text = _paint_hover_text(cell)
+		return
+	_show_ghost(Vector2i(-1, -1), 0, 0, false)
+	if _hover_label != null:
+		_hover_label.text = _cell_hover_text(cell)
+
+func _refresh_hover() -> void:
+	if not _editing:
+		_clear_hover()
+		return
+	if _hover_cell.x < 0:
+		return
+	_hover_at(_hover_cell)
+
+func _clear_hover() -> void:
+	_hover_cell = Vector2i(-1, -1)
+	if _hover_label != null:
+		_hover_label.visible = false
+		_hover_label.text = ""
+	_show_ghost(Vector2i(-1, -1), 0, 0, false)
+
+func _show_ghost(cell: Vector2i, width: int, height: int, ok: bool) -> void:
+	if _iso == null:
+		return
+	_iso.ghost_cell = cell
+	_iso.ghost_size = Vector2i(width, height)
+	_iso.ghost_ok = ok
+	_iso.queue_redraw()
+
+func _finish_fits(cell: Vector2i) -> bool:
+	var wall := layout.cell_zone(cell.x, cell.y) == "facade"
+	if _brush in ["#", ".", "+"]:
+		return true
+	if wall:
+		return TDRestaurantLayout.WALL_FINISHES.has(_brush)
+	return TDRestaurantLayout.FLOOR_FINISHES.has(_brush)
+
+func _place_hover_text(preview: Dictionary) -> String:
+	var title := "%s  %d×%d  ·  %d°" % [String(preview["name"]), int(preview["w"]), int(preview["h"]), _place_rotation]
+	var zone := _zone_title(String(preview["zone"]))
+	if not bool(preview["ok"]):
+		return "%s\n%s" % [title, String(preview["message"])]
+	var before := float(_decor_now()["effect"])
+	var pieces := layout.pieces()
+	pieces.append(preview["piece"])
+	var wild: Array = []
+	if session != null and session.catalog != null:
+		wild = session.catalog.wildcards
+	var after := float(TDEconomyMath.decor_of(pieces, wild)["effect"])
+	return "%s\n可以放下。所占地板划成%s。\n装修效果 %.0f → %.0f（墙纸和地板不计入）" % [title, zone, before, after]
+
+func _paint_hover_text(cell: Vector2i) -> String:
+	var facility := layout.facility_zone(cell.x, cell.y)
+	var role := "这格还没有功能区" if facility == "" else "这格功能仍是%s" % _zone_title(facility)
+	if _brush in ["#", ".", "+"]:
+		return "%s\n%s。砌墙会挡住走路，不靠颜色划接待或用餐。" % [_brush_name(_brush), role]
+	return "%s\n%s。只改外观。" % [_brush_name(_brush), role]
+
+func _cell_hover_text(cell: Vector2i) -> String:
+	var facility := layout.facility_zone(cell.x, cell.y)
+	var finish := layout.finish_at(cell.x, cell.y)
+	var surface := "墙" if layout.cell_zone(cell.x, cell.y) == "facade" else "地板"
+	var role := "还没有功能区，放下迎宾台、收银台或餐桌后才划出来" if facility == "" else "由家具划成%s" % _zone_title(facility)
+	var coat := "" if finish == "" else "，%s" % TDRestaurantLayout.finish_name(finish)
+	return "%s%s。%s。" % [surface, coat, role]
 
 func _back() -> void:
 	if _dirty and save_path != "":
@@ -1067,6 +1236,8 @@ func deliver_held_plate() -> TDOutcome:
 	return result
 
 func set_floor_cover(covered: bool) -> void:
+	if covered:
+		_dismiss_talk()
 	_covered = covered
 	visible = not covered
 	set_process_unhandled_input(not covered)
@@ -1088,7 +1259,36 @@ func set_observe(observing: bool) -> void:
 func _lock_player() -> void:
 	if _player == null:
 		return
-	_player.set_controls_enabled(not _closed and not _covered and not _observing)
+	_player.set_controls_enabled(not _closed and not _covered and not _observing and not _talk_open())
+
+func _talk_open() -> bool:
+	return _talk_view != null and is_instance_valid(_talk_view) and _talk_view.visible
+
+func _ensure_talk() -> void:
+	if _talk_view != null and is_instance_valid(_talk_view):
+		return
+	_talk_layer = CanvasLayer.new()
+	_talk_layer.layer = 40
+	_talk_layer.name = "DialogueLayer"
+	add_child(_talk_layer)
+	_talk_view = TDDialogueView.new()
+	_talk_layer.add_child(_talk_view)
+	_talk_view.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_talk_view.closed.connect(_on_talk_closed)
+
+func _open_talk(next: TDDialogue) -> void:
+	_ensure_talk()
+	_talk_view.present(next)
+	_lock_player()
+
+func _on_talk_closed(last_text: String, _picks: Array) -> void:
+	if last_text != "":
+		_set_status(last_text)
+	_lock_player()
+
+func _dismiss_talk() -> void:
+	if _talk_view != null and is_instance_valid(_talk_view):
+		_talk_view.dismiss()
 
 func _place_seated(guest: TDRestaurantGuest) -> void:
 	if layout == null or guest.seat_id == "":

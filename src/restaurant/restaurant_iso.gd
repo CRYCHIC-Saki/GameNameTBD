@@ -11,6 +11,9 @@ const CHEF_SPRITE := preload("res://assets/kitchen/chef-v1.png")
 var layout: TDRestaurantLayout
 var editing: bool = false
 var selected_id: String = ""
+var ghost_cell := Vector2i(-1, -1)
+var ghost_size := Vector2i.ZERO
+var ghost_ok: bool = false
 var player_point := Vector2.ZERO
 var player_moving: bool = false
 var player_facing:=Vector2i.DOWN
@@ -104,6 +107,8 @@ func _draw() -> void:
 			if x == 0:
 				_wall(cell, false)
 			_floor_cell(cell)
+	if editing and ghost_size.x > 0 and ghost_size.y > 0:
+		_ghost()
 	if editing:
 		_edit_grid()
 	if pass_point.x >= 0.0:
@@ -173,9 +178,25 @@ func _marker(marker: Dictionary) -> void:
 
 func _floor_cell(cell: Vector2i) -> void:
 	var points := _quad(cell.x, cell.y, 1, 1)
-	var color := TDRestaurantArt.zone_color(layout.culture, layout.tier, layout.cell_zone(cell.x, cell.y), layout.is_entrance(cell.x, cell.y))
+	var structural := layout.cell_zone(cell.x, cell.y)
+	var shown := "facade" if structural == "facade" else "movement"
+	var color := TDRestaurantArt.zone_color(layout.culture, layout.tier, shown, layout.is_entrance(cell.x, cell.y))
+	var finish := layout.finish_at(cell.x, cell.y)
+	if finish != "":
+		color = TDRestaurantArt.finish_color(finish).lerp(color, 0.22)
 	draw_colored_polygon(points, color)
-	draw_polyline(points + PackedVector2Array([points[0]]), color.darkened(0.25), 1.0)
+	var facility := layout.facility_zone(cell.x, cell.y)
+	if facility != "" and facility != "facade":
+		var mark := TDRestaurantArt.zone_color(layout.culture, layout.tier, facility, false)
+		draw_polyline(points + PackedVector2Array([points[0]]), mark, 2.4 if editing else 1.4)
+	else:
+		draw_polyline(points + PackedVector2Array([points[0]]), color.darkened(0.25), 1.0)
+
+func _ghost() -> void:
+	var points := _quad(ghost_cell.x, ghost_cell.y, ghost_size.x, ghost_size.y)
+	var fill := Color(0.35, 0.78, 0.42, 0.42) if ghost_ok else Color(0.86, 0.28, 0.22, 0.45)
+	draw_colored_polygon(points, fill)
+	draw_polyline(points + PackedVector2Array([points[0]]), Color("#fff6df"), 2.0)
 
 func _wall(cell: Vector2i, along_north: bool) -> void:
 	if layout.is_entrance(cell.x,cell.y): return # The visible door marker owns this gap.
@@ -185,6 +206,9 @@ func _wall(cell: Vector2i, along_north: bool) -> void:
 	var quad := PackedVector2Array([start, finish, finish + up, start + up])
 	var swatch := TDRestaurantArt.swatch(layout.culture, layout.tier)
 	var color := Color(String(swatch["accent"]))
+	var paper := layout.finish_at(cell.x, cell.y)
+	if TDRestaurantLayout.WALL_FINISHES.has(paper):
+		color = TDRestaurantArt.finish_color(paper)
 	if not along_north:
 		color = color.darkened(0.28)
 	if layout.tier == "high":

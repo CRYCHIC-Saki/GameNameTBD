@@ -1,5 +1,26 @@
 # 公共契约：v3完整烹饪，兼容v1/v2历史入口
 
+## D044 第一日剧本（2026-10-28）
+
+- `TDOpening` 的 `beat` 为 arrive、soup、cook、founded、done。缺记录或无法识别的记录保持未开始，不把旧档拉回第一章。Profile schema 仍是 4。`story` 只在章节已经开始时写入快照。
+- 新档在 `create_game` 存档前 `begin()`。阿铃和老陈站在食材铺外的道路上，不占主店门口那一格。进入 cook 之后，阿铃改站到主店旁、仍不是门口的道路上。罗厄没有实体。
+- `talk` 只生成 `TDDialogue`。`resolve` 只在选了对应回复时前进。尝羹的效果是 `san: -5`，由世界记下，只记一次。拒绝没有这个效果。完成度由离开厨房时的番茄炒蛋快照写入，状态须是 plated、delivered 或 completed。`good` 为完成度 >= 80。
+- 成立讨伐军时欠阿铃一笔账。金额是 `service.tomato_egg` 的 `reference_cents`。只在 PREPARE 或 SETTLED 用 `world_adjustment` 入账，令牌按本局 `run_id` 只成功一次。入账失败不退回剧情。港口对话只在当日已打烊或经营日 >= 2 时结束本章。
+- 立绘增加色块 `aling`、`chen`、`luo`。林夏和客人的对话、订单、迎宾、传菜、收银都不改。
+
+## D043 人物对话（2026-10-28）
+
+- `TDDialogue` 保存句子和选项。短按先显示完当前句，再进入下一句。按住超过 0.32 秒后每 0.07 秒快进，遇到选项停止。`skip` 跳到下一个选项；后面没有选项就结束。`pick` 只记录选项并显示对应的下一句。
+- 对话框盖住画面并压暗背景。左键由对话框接收。跳过按钮在选项出现时停用。立绘按 `linxia` 或 `guest` 用色块绘制。
+- 林夏的 `conversation()` 和客人的 `TDGuestVisit.conversation` 不修改阶段、订单或现金。正式店里，迎宾、传菜、收银这些 E 动作仍先于对话。
+
+## D042 装修预览、饰面和功能区（2026-10-27）
+
+- 非门面家具可放在 movement、reception、ordering、dining 任一地板上。门面家具仍只放墙上。落脚点必须是地板，且不压在这件家具自己身上。墙上放置仍返回 `WRONG_ZONE`。
+- `facility_zone(x, y)` 读盖住该格的家具区域；空地返回空字符串。客人入座仍看 `seat_use`，不看地板颜色。
+- `set_finish` 接受地板 `wood` `tile` `stone` `carpet` 和墙纸 `paper` `stripe` `floral` `brick`。刷错位置返回 `BAD_FINISH`。布局 schema 仍是 1。只有刷过的格子才写入 `finish_ids`；缺这个键表示全空。`decor_of` 不读取饰面。
+- 布置中滚轮改放置朝向；已选中家具时滚轮调用 `rotate_piece_by`。放置或刷饰面时右键回到选择，不调用拆除。
+
 ## D041 镇上客人、分店和三个店内岗位（2026-10-27）
 
 - 林夏只存在于正式小镇画面。`phase` 为 wander、to_diner、dining、home。dining 时餐厅把最早一单标成她的名字。离开或 `finish_call` 后她回到镇上。不写第二本客人账，不改 Shop 订单状态机。

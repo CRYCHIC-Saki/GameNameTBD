@@ -41,3 +41,24 @@ func test_the_town_shows_her_and_she_enters_when_the_shop_opens() -> void:
 	town.finish_call()
 	assert_eq(town.caller_phase(), "home")
 	assert_true(town._caller.line().contains("吃好了"))
+
+func test_talking_opens_the_portrait_box_and_leaves_her_route_alone() -> void:
+	var session := TDPhase3Session.new()
+	assert_true(session.load_default().ok)
+	var town := TDTownWorld.new()
+	town.player_mode = true
+	town.session = session
+	add_child_autofree(town)
+	await get_tree().process_frame
+	var phase := town.caller_phase()
+	town._open_talk(town._caller.conversation())
+	assert_true(town._talk_open())
+	assert_gt(town._talk_view.dim_alpha(), 0.5)
+	assert_false(town._player.controls_enabled)
+	town._talk_view._on_skip()
+	assert_true(town._talk_view.talk.choices_open)
+	(town._talk_view.get_node("Box/Choices").get_child(0) as Button).pressed.emit()
+	town._talk_view._on_skip()
+	assert_false(town._talk_open())
+	assert_eq(town.caller_phase(), phase)
+	assert_true(town._player.controls_enabled)

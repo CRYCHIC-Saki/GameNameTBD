@@ -27,7 +27,7 @@ const PALETTES := {
 }
 
 static func floor_texture(layout: TDRestaurantLayout) -> ImageTexture:
-	var key := "floor:%s:%s:%d" % [layout.culture, layout.tier, layout.to_dict()["rows"].hash()]
+	var key := "floor:%s:%s:%d:%d" % [layout.culture, layout.tier, layout.to_dict()["rows"].hash(), layout.finish_stamp()]
 	if _cache.has(key):
 		return _cache[key]
 	var cell := layout.cell_px
@@ -35,7 +35,11 @@ static func floor_texture(layout: TDRestaurantLayout) -> ImageTexture:
 	for y in layout.rows:
 		for x in layout.columns:
 			var zone := layout.cell_zone(x, y)
-			var color := _floor_color(layout.culture, layout.tier, zone, layout.is_entrance(x, y))
+			var shown := "facade" if zone == "facade" else "movement"
+			var color := _floor_color(layout.culture, layout.tier, shown, layout.is_entrance(x, y))
+			var finish := layout.finish_at(x, y)
+			if finish != "":
+				color = finish_color(finish).lerp(color, 0.22)
 			image.fill_rect(Rect2i(x * cell, y * cell, cell, cell), color)
 			_pattern(image, Rect2i(x * cell, y * cell, cell, cell), layout.culture, layout.tier)
 	var texture := ImageTexture.create_from_image(image)
@@ -154,6 +158,27 @@ static func swatch(culture: String, tier: String) -> Dictionary:
 
 static func zone_color(culture: String, tier: String, zone: String, entrance: bool) -> Color:
 	return _floor_color(culture, tier, zone, entrance)
+
+static func finish_color(finish_id: String) -> Color:
+	match finish_id:
+		"wood":
+			return Color("#c4a574")
+		"tile":
+			return Color("#d7ddd8")
+		"stone":
+			return Color("#8d8478")
+		"carpet":
+			return Color("#8f4d4a")
+		"paper":
+			return Color("#efe6d4")
+		"stripe":
+			return Color("#d7c7a2")
+		"floral":
+			return Color("#d7b4b8")
+		"brick":
+			return Color("#a86448")
+		_:
+			return Color("#d7c4a2")
 
 static func _palette(culture: String, tier: String) -> Dictionary:
 	var key := "%s_%s" % [culture, tier]
