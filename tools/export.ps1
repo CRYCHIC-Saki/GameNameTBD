@@ -50,6 +50,8 @@ try {
     if ($crewResource -notin $names -and ($crewResource + '.remap') -notin $names) { throw 'Missing exported restaurant crew script' }
     $guestResource = 'src/restaurant/guest_visit.gd'
     if ($guestResource -notin $names -and ($guestResource + '.remap') -notin $names) { throw 'Missing exported guest visit script' }
+    $callerResource = 'src/town/town_caller.gd'
+    if ($callerResource -notin $names -and ($callerResource + '.remap') -notin $names) { throw 'Missing exported town caller script' }
     foreach ($pose in @('idle','walk')) {
       if (('assets/characters/protagonist/protagonist-' + $pose + '-four-directions-v1.png.import') -notin $names) { throw "Missing exported protagonist $pose atlas" }
     }

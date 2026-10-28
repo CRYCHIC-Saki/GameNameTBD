@@ -324,6 +324,35 @@ func _cook_until_done(session: TDPhase3Session) -> Dictionary:
 		assert_eq(cooked.code, "ACCIDENT", cooked.message)
 	return result
 
+func test_branch_opens_off_the_home_town_and_the_books_settle_once() -> void:
+	var session := TDPhase3Session.new()
+	assert_true(session.load_default().ok)
+	var home := session.town_id
+	assert_eq(session.open_branch_in_town(home).code, "HOME")
+	var opened := session.open_branch_in_town("paris")
+	assert_true(opened.ok, opened.message)
+	assert_eq(session.town_id, home)
+	assert_true(session.branch_open)
+	assert_eq(session.branch_town, "paris")
+	assert_eq(session.money, session.catalog.starter_money - TDPhase3Session.CLAIM_FEE)
+	assert_eq(session.open_branch_in_town("london").code, "ONE_BRANCH")
+	assert_true(session.set_branch_menu(["mapodoufu"]).ok)
+	assert_true(session.employ("manager", "branch").ok)
+	assert_true(session.employ("chef", "branch").ok)
+	assert_true(session.teach_chef("branch", "mapodoufu").ok)
+	assert_true(session.buy_branch_portion().ok)
+	var saved := TDWorldSnapshot.capture(session)
+	var valid := TDWorldSnapshot.validate(saved)
+	assert_true(valid.ok, valid.code)
+	var before := session.money
+	var first := session.settle_branch()
+	assert_eq(str(first.get("code", "")), "SETTLED")
+	var after := session.money
+	var repeat_report := session.settle_branch()
+	assert_eq(str(repeat_report.get("code", "")), "REPEAT")
+	assert_eq(session.money, after)
+	assert_ne(after, before)
+
 func _plot(session: TDPhase3Session, id: String) -> Dictionary:
 	for item: Variant in session.town_map.plots:
 		var plot: Dictionary = item

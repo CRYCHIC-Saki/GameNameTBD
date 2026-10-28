@@ -1,5 +1,12 @@
 # 公共契约：v3完整烹饪，兼容v1/v2历史入口
 
+## D041 镇上客人、分店和三个店内岗位（2026-10-27）
+
+- 林夏只存在于正式小镇画面。`phase` 为 wander、to_diner、dining、home。dining 时餐厅把最早一单标成她的名字。离开或 `finish_call` 后她回到镇上。不写第二本客人账，不改 Shop 订单状态机。
+- `floor_service` 为真时，迎宾、传菜、收银读 `TDPhase3Session.staff`。未雇则分别卡住入座、开吃、离店，直到玩家对客人或传菜口按 E。已雇则这三步自动发生。画面动作不调用第二次 `deliver`。工资走 `world_transaction`，日薪仍是迎宾 8、收银 8、传菜 7。
+- 分店用 `open_branch_in_town` 在非主店小镇划地，然后回到主店地图。`buy_branch_portion` 按菜谱 `ingredient_cost` 扣一份。`close_branch_books` 在日结进下一天时调用一次；`branch_settled` 已有当天则不再加减现金。保存仍走世界快照：菜单项可以是带 `dish_id`、`snapshot`、`history` 的字典，主厨菜可以是带 `dish_id`、`version`、`proficiency` 的字典。
+- 分店现金差额记为 Shop 的 `world_adjustment`，标签「分店日结」或「开分店」。等级经验不读取这笔分店利润。
+
 ## D040 主角视觉契约
 
 - R2计步的屏幕还原使用motion_transform.affine_inverse().basis_xform(实际位移)，不能对非正交投影使用basis_xform_inv。测试/图形探针从餐厅绘制project独立量距离；相位按真实屏幕140/224距离推进。R1倍率保留，纠正其旧验证度量，物理移动参数不变。
