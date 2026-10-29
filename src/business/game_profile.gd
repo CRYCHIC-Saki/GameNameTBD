@@ -18,6 +18,7 @@ var commerce: TDWorldEconomy
 var progression := TDLevelProgression.new()
 var progression_error := TDOutcome.new(true)
 var residence:Dictionary={}
+var story := TDOpening.new()
 
 func _init() -> void:
 	error=service.load_file()
@@ -193,7 +194,10 @@ func snapshot(candidate: Dictionary = {}) -> Dictionary:
 	state.day=int(business.day);state.money=int(business.money_cents)/100
 	state.day_phase="evening" if business.phase=="SETTLED" else "morning"
 	progress.world_time={"day":int(business.day),"phase":state.day_phase,"spent":state.free_spent}
-	return {"schema_version":4,"kind":"town-diner-profile","slot_id":slot_id,"title":title,"updated_at":updated_at,"revision":revision,"imported_legacy":imported_legacy,"shop":business,"research":progress,"world":state,"layout":layout.to_dict(),"economy":commerce.snapshot(),"progression":progression.snapshot(),"residence":residence.duplicate(true)}
+	var data:={"schema_version":4,"kind":"town-diner-profile","slot_id":slot_id,"title":title,"updated_at":updated_at,"revision":revision,"imported_legacy":imported_legacy,"shop":business,"research":progress,"world":state,"layout":layout.to_dict(),"economy":commerce.snapshot(),"progression":progression.snapshot(),"residence":residence.duplicate(true)}
+	var chapter:=story.export_state()
+	if not chapter.is_empty(): data.story=chapter
+	return data
 
 func save(candidate: Dictionary = {}) -> TDOutcome:
 	if not _alive: return TDOutcome.new(false,"STALE_PROFILE")
@@ -387,6 +391,8 @@ func restore(data: Dictionary) -> TDOutcome:
 	layout=TDRestaurantLayout.import_dict(data.layout,furniture)
 	if layout!=null: shop.crew=layout.crew
 	slot_id=data.slot_id;title=data.title;updated_at=int(data.updated_at);revision=int(data.revision);imported_legacy=data.imported_legacy
+	if data.has("story") and data.story is Dictionary: story.restore(data.story)
+	else: story.clear()
 	world.scaled_interior=false
 	_sync_recipes()
 	return TDOutcome.new(true,"RESTORED")

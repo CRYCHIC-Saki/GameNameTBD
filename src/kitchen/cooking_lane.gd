@@ -14,6 +14,7 @@ var progress: Dictionary = {}
 var last_result: TDOutcome
 var input_offset_sec: float = 0.0
 var day_san: float = -1.0
+var story_coach: bool = false
 var dual: bool = false
 var generation: int = 0
 var base_recipe_id: String = "tomato_egg"
@@ -279,6 +280,8 @@ func _finish() -> void:
 		_local_instances[_pending_plan_local_id] = last_result.data.instance_id
 	_pending_plan_local_id = ""
 	_status.text = "%s · %s · 表现 %.0f%%（%s）" % [_content.operations[_operation].name, result.data.grade, float(result.data.quality) * 100, result.data.reason]
+	if story_coach and str(result.data.get("grade", "")).to_lower().contains("miss"):
+		_status.text += "\n这一击偏离了命运。命运尚未宣判。继续，盯住下一拍。"
 	if not last_result.ok:
 		session.cancel_operation(str(result.data.operation_id))
 		_status.text = "本次工序未应用：" + _explain_error(last_result)
@@ -791,7 +794,11 @@ func _refresh_pc(dish: Dictionary) -> void:
 		_hint.text = "在功能位选择操作；返回厨房继续搬运食材。" if dish.state != "plated" else "可拖动摆盘；返回厨房后在灶台按 E 端起，送到出餐台。"
 	_primary.text = "长按空格 → 绿区松开" if progress.get("qte_kind") == "charge" else "空格 · 卡拍操作"
 	var lines: Array[String] = ["食材处理状态："]
-	for item: Dictionary in dish.ingredients.values(): lines.append("%s · %s · 细碎 %d/8 · %.1f℃" % [item.name,{"whole":"完整","slice":"片","strip":"条","chunk":"块","dice":"丁"}.get(item.shape,item.shape),roundi(float(item.fine)*8),item.temperature_c])
+	for item: Dictionary in dish.ingredients.values():
+		lines.append("%s · %s · 细碎 %d/8 · %.1f℃" % [item.name,{"whole":"完整","slice":"片","strip":"条","chunk":"块","dice":"丁"}.get(item.shape,item.shape),roundi(float(item.fine)*8),item.temperature_c])
+		var note := TDPrepGuide.handling_for_id(String(item.get("ingredient_id", "")), String(dish.get("recipe_id", base_recipe_id)))
+		if note != "":
+			lines.append("  " + note)
 	lines.append("\n客人明确要求：")
 	for customer: Dictionary in _content.customers:
 		lines.append(customer.name)

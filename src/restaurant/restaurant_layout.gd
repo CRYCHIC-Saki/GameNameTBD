@@ -5,6 +5,8 @@ static var import_code: String = ""
 
 const ZONE_OF := {"#": "facade", "+": "movement", ".": "movement", "R": "reception", "O": "ordering", "D": "dining"}
 const CHAR_OF := {"facade": "#", "movement": ".", "reception": "R", "ordering": "O", "dining": "D"}
+const FLOOR_FINISHES: Array[String] = ["wood", "tile", "stone", "carpet"]
+const WALL_FINISHES: Array[String] = ["paper", "stripe", "floral", "brick"]
 
 var culture: String = "plain"
 var tier: String = "low"
@@ -13,6 +15,7 @@ var rows: int = 0
 var cell_px: int = 64
 var _catalog: TDRestaurantCatalog
 var _zones: PackedStringArray = PackedStringArray()
+var _finishes: PackedStringArray = PackedStringArray()
 var _entrances: Array[Vector2i] = []
 var _pieces: Array = []
 var _staff: Dictionary = {}
@@ -39,6 +42,7 @@ static func make_sized(catalog: TDRestaurantCatalog, columns_value: int, rows_va
 	layout._staff = {"greeter": false, "cashier": false}
 	layout._zones = PackedStringArray()
 	layout._zones.resize(columns_value * rows_value)
+	layout._blank_finishes()
 	layout._entrances = []
 	layout._pieces = []
 	for y in rows_value:
@@ -136,6 +140,73 @@ func cell_zone(x: int, y: int) -> String:
 		return ""
 	return _zones[y * columns + x]
 
+func facility_zone(x: int, y: int) -> String:
+	var covered := _occupant(x, y)
+	if covered == "":
+		return ""
+	return String(piece(covered).get("zone", ""))
+
+func finish_at(x: int, y: int) -> String:
+	if not _inside(x, y) or _finishes.size() != columns * rows:
+		return ""
+	return _finishes[y * columns + x]
+
+func finish_stamp() -> int:
+	var joined := ""
+	for item: String in _finishes:
+		joined += item + "|"
+	return joined.hash()
+
+func set_finish(x: int, y: int, finish_id: String) -> TDOutcome:
+	if not _inside(x, y):
+		return _fail("OUT_OF_BOUNDS", "超出餐厅边界")
+	var wall := cell_zone(x, y) == "facade"
+	if wall and not WALL_FINISHES.has(finish_id):
+		return _fail("BAD_FINISH", "墙纸只能刷在墙上")
+	if not wall and not FLOOR_FINISHES.has(finish_id):
+		return _fail("BAD_FINISH", "地板花纹只能刷在地面上")
+	if _finishes.size() != columns * rows:
+		_blank_finishes()
+	_finishes[y * columns + x] = finish_id
+	return TDOutcome.new(true, "FINISHED", "已换成%s" % finish_name(finish_id))
+
+static func finish_name(finish_id: String) -> String:
+	match finish_id:
+		"wood":
+			return "木地板"
+		"tile":
+			return "瓷砖"
+		"stone":
+			return "石砖"
+		"carpet":
+			return "地毯"
+		"paper":
+			return "素墙纸"
+		"stripe":
+			return "条纹墙纸"
+		"floral":
+			return "花墙纸"
+		"brick":
+			return "砖纹墙"
+		_:
+			return finish_id
+
+func preview_piece(kind: String, x: int, y: int, rotation: int, style_id: String = "") -> Dictionary:
+	var built := _make_piece("preview-hover", kind, x, y, rotation, style_id if style_id != "" else _venue_style())
+	if built.is_empty():
+		return {"ok": false, "code": "UNKNOWN_KIND", "message": "没有这种家具", "name": "", "w": 0, "h": 0, "zone": "", "piece": {}}
+	var checked := _validate_piece(built)
+	return {
+		"ok": checked.ok,
+		"code": checked.code,
+		"message": checked.message if not checked.ok else "可以放下",
+		"name": String(built["name"]),
+		"w": int(built["w"]),
+		"h": int(built["h"]),
+		"zone": String(built["zone"]),
+		"piece": built,
+	}
+
 func is_walkable(x: int, y: int) -> bool:
 	# Floor zoning controls placement; only walls and occupied furniture block feet.
 	if cell_zone(x,y) not in ["movement","reception","ordering","dining"]:
@@ -201,10 +272,13 @@ func move_piece(id: String, x: int, y: int) -> TDOutcome:
 	return _commit(_index_of(id), _make_piece(id, String(current["kind"]), x, y, int(current["rotation"]), String(current["style_id"])))
 
 func rotate_piece(id: String) -> TDOutcome:
+	return rotate_piece_by(id, 90)
+
+func rotate_piece_by(id: String, degrees: int) -> TDOutcome:
 	var current := piece(id)
 	if current.is_empty():
 		return _fail("MISSING", "没有这件家具")
-	var rotation := (int(current["rotation"]) + 90) % 360
+	var rotation := posmod(int(current["rotation"]) + degrees, 360)
 	return _commit(_index_of(id), _make_piece(id, String(current["kind"]), int(current["x"]), int(current["y"]), rotation, String(current["style_id"])))
 
 func restyle_piece(id: String, next_culture: String, next_tier: String) -> TDOutcome:
@@ -244,11 +318,16 @@ func paint(x: int, y: int, symbol: String) -> TDOutcome:
 	if was_entrance and symbol != "+" and _entrances.size() <= 1:
 		return _fail("LAST_ENTRANCE", "至少保留一个门口")
 	var previous_zone := cell_zone(x, y)
+	var previous_finish := finish_at(x, y)
 	_write_cell(x, y, String(ZONE_OF[symbol]), symbol == "+")
 	if not _fixtures_valid():
 		_write_cell(x, y, previous_zone, was_entrance)
-		return _fail("PAINT_BREAKS_FIXTURE", "这样改会让已有家具离开它的区域或失去落脚点")
-	return TDOutcome.new(true, "PAINTED", "区域已修改")
+		return _fail("PAINT_BREAKS_FIXTURE", "这样改会挡住已有家具的落脚点")
+	var next_wall := cell_zone(x, y) == "facade"
+	var finish_fits := (next_wall and WALL_FINISHES.has(previous_finish)) or (not next_wall and FLOOR_FINISHES.has(previous_finish))
+	if not previous_finish.is_empty() and not finish_fits and _finishes.size() == columns * rows:
+		_finishes[y * columns + x] = ""
+	return TDOutcome.new(true, "PAINTED", "格子已修改")
 
 func interact_code(id: String) -> String:
 	var current := piece(id)
@@ -358,6 +437,8 @@ func to_dict() -> Dictionary:
 	}
 	if not crew.export_state().is_empty():
 		data["crew"] = crew.export_state()
+	if _has_finish():
+		data["finish_ids"] = _finish_rows()
 	return data
 
 func _load(data: Dictionary, catalog: TDRestaurantCatalog) -> TDOutcome:
@@ -398,6 +479,11 @@ func _load(data: Dictionary, catalog: TDRestaurantCatalog) -> TDOutcome:
 			if not ZONE_OF.has(symbol):
 				return _fail("BAD_ZONE", "区域符号无效")
 			_write_cell(x, y, String(ZONE_OF[symbol]), symbol == "+")
+	_blank_finishes()
+	if data.has("finish_ids"):
+		var decoded := _read_finishes(data.get("finish_ids"))
+		if not decoded.ok:
+			return decoded
 	if _entrances.is_empty():
 		return _fail("LAST_ENTRANCE", "至少要有一个门口")
 	if not data.get("pieces") is Array:
@@ -472,16 +558,20 @@ func _validate_piece(built: Dictionary) -> TDOutcome:
 			var cell_y := int(built["y"]) + y
 			if not _inside(cell_x, cell_y):
 				return _fail("OUT_OF_BOUNDS", "家具超出餐厅边界")
-			if cell_zone(cell_x, cell_y) != String(built["zone"]):
-				return _fail("WRONG_ZONE", "%s只能放在对应区域" % String(built["name"]))
+			var surface := cell_zone(cell_x, cell_y)
+			var wants := String(built["zone"])
+			if wants == "facade":
+				if surface != "facade":
+					return _fail("WRONG_ZONE", "%s要放在墙上" % String(built["name"]))
+			elif not _is_floor(surface):
+				return _fail("WRONG_ZONE", "%s只能放在地板上" % String(built["name"]))
 			if _occupant(cell_x, cell_y, String(built["id"])) != "":
 				return _fail("OVERLAP", "和已有家具重叠")
 	if bool(built["has_approach"]):
 		var ax := int(built["approach_x"])
 		var ay := int(built["approach_y"])
-		# Service approaches still require a dedicated aisle, preserving saved layouts.
-		if cell_zone(ax,ay)!="movement":
-			return _fail("BAD_APPROACH", "%s旁边没有顾客能走的格子" % String(built["name"]))
+		if not _is_floor(cell_zone(ax, ay)):
+			return _fail("BAD_APPROACH", "%s旁边没有顾客能走的地板" % String(built["name"]))
 		if _contains(built, ax, ay):
 			return _fail("BAD_APPROACH", "落脚点不能压在家具上")
 	return TDOutcome.new(true, "PLACED", "已放置")
@@ -557,6 +647,48 @@ func _inside(x: int, y: int) -> bool:
 
 func _venue_style() -> String:
 	return "%s_%s" % [culture, tier]
+
+func _is_floor(zone: String) -> bool:
+	return zone in ["movement", "reception", "ordering", "dining"]
+
+func _blank_finishes() -> void:
+	_finishes = PackedStringArray()
+	_finishes.resize(columns * rows)
+	_finishes.fill("")
+
+func _has_finish() -> bool:
+	for item: String in _finishes:
+		if not item.is_empty():
+			return true
+	return false
+
+func _finish_rows() -> Array:
+	var lines: Array = []
+	for y in rows:
+		var row: Array[String] = []
+		for x in columns:
+			row.append(finish_at(x, y))
+		lines.append(row)
+	return lines
+
+func _read_finishes(raw: Variant) -> TDOutcome:
+	if not raw is Array or (raw as Array).size() != rows:
+		return _fail("BAD_FINISH", "地板记录行数不正确")
+	for y in rows:
+		var line: Variant = (raw as Array)[y]
+		if not line is Array or (line as Array).size() != columns:
+			return _fail("BAD_FINISH", "某一行的地板记录长度不正确")
+		for x in columns:
+			var finish := String((line as Array)[x])
+			if finish.is_empty():
+				continue
+			var wall := cell_zone(x, y) == "facade"
+			if wall and not WALL_FINISHES.has(finish):
+				return _fail("BAD_FINISH", "墙纸无效")
+			if not wall and not FLOOR_FINISHES.has(finish):
+				return _fail("BAD_FINISH", "地板花纹无效")
+			_finishes[y * columns + x] = finish
+	return TDOutcome.new(true, "OK")
 
 func _key(cell: Vector2i) -> String:
 	return "%d,%d" % [cell.x, cell.y]

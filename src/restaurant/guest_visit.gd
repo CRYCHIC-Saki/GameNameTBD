@@ -104,3 +104,41 @@ static func _sentence(status: String, phase: String, seconds_left: int, satisfac
 	if status == "CANCELLED":
 		return "这单已取消，客人不留下吃饭。"
 	return "客人正在离开。"
+
+static func conversation(who: String, dish: String, phase: String, portrait: String) -> TDDialogue:
+	var talk := TDDialogue.new()
+	var meal := dish if dish != "" else "这道菜"
+	var person := who if who != "" else "客人"
+	var opening := "%s：我点了%s。" % [person, meal]
+	if phase == "eat":
+		opening = "%s：%s我正在吃。" % [person, meal]
+	elif phase in ["pay", "leave"]:
+		opening = "%s：这桌我用完了。" % person
+	elif phase == "wait_serve":
+		opening = "%s：%s还没上来，我坐着等。" % [person, meal]
+	talk.add_line(person, portrait if portrait != "" else "guest", opening)
+	var calm_id := "soon"
+	var blunt_id := "hurry"
+	var calm_label := "马上就好，请再坐一会儿。"
+	var blunt_label := "你再催也快不了。"
+	var calm := "%s：好，我等这道%s。来了我就吃。" % [person, meal]
+	var blunt := "%s：那我再等等。催也不另算一笔。" % person
+	if phase == "eat":
+		calm_id = "enjoy"
+		blunt_id = "rush"
+		calm_label = "慢慢吃，不着急。"
+		blunt_label = "吃完请马上走。"
+		calm = "%s：我按自己的速度吃。账在出餐时已经记过了。" % person
+		blunt = "%s：吃完我会自己起身，不用赶。" % person
+	elif phase in ["pay", "leave"]:
+		calm_id = "thanks"
+		blunt_id = "stay"
+		calm_label = "谢谢光临。"
+		blunt_label = "再坐一会儿吧。"
+		calm = "%s：谢谢。这一桌的账已经算过，我这就走。" % person
+		blunt = "%s：不坐了。账不会再算一次。" % person
+	talk.add_choice([
+		{"id": calm_id, "label": calm_label, "text": calm, "speaker": person, "portrait": portrait},
+		{"id": blunt_id, "label": blunt_label, "text": blunt, "speaker": person, "portrait": portrait},
+	])
+	return talk

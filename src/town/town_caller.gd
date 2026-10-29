@@ -31,6 +31,30 @@ func line() -> String:
 		return "林夏：今天已经吃过了。明天开门我再来。"
 	return "林夏：我在镇上走走。你开门后，我会进来点菜。"
 
+func conversation() -> TDDialogue:
+	var talk := TDDialogue.new()
+	talk.add_line(NAME, "linxia", line())
+	var ask := "林夏：等你开门我再决定吃什么。现在先在镇上走走。"
+	var stroll := "林夏：好，我在镇上逛。你开门我就过来点菜。"
+	if phase == "to_diner":
+		ask = "林夏：想吃你们今天的热菜。我走到门口就进去，不另下一单。"
+		stroll = "林夏：店开着我还是会过来。先让我走到门口。"
+	elif phase == "home":
+		if ate:
+			ask = "林夏：吃好了。钱已经在店里结过，我沿街回去。"
+			stroll = "林夏：好，我自己走回去。"
+		else:
+			ask = "林夏：今天没吃成。你下次开门我再来。"
+			stroll = "林夏：那我先回家。"
+	elif ate:
+		ask = "林夏：今天已经吃过了。明天开门我再点。"
+		stroll = "林夏：我再逛一圈。明天才再来吃。"
+	talk.add_choice([
+		{"id": "ask", "label": "今天想吃点什么？", "text": ask, "speaker": NAME, "portrait": "linxia"},
+		{"id": "stroll", "label": "你先在镇上逛逛吧。", "text": stroll, "speaker": NAME, "portrait": "linxia"},
+	])
+	return talk
+
 func tick(is_road: Callable, door: Vector2i, shop_open: bool) -> void:
 	if phase == "dining":
 		if meal_done:

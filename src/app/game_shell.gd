@@ -16,6 +16,7 @@ var cottage:TDCottageWorld
 var music:TDGameMusic
 var _rest_busy:bool=false
 var _quitting:bool=false
+var _story_pay_note: String = ""
 var kitchen_view: TDShopView
 var atlas: TDRecipeAtlas
 var location: String="title"
@@ -98,7 +99,12 @@ func _process(_delta: float) -> void:
 	_hud.text+="    Lv.%d"%int(profile.progression.progress().level)
 	if Time.get_ticks_msec()<_toast_until: _hud.text+= "  ·  "+_toast
 	_hud_layer.visible=location!="kitchen" and atlas==null
-	if town!=null: town.shop_open=state.phase in ["OPEN","DRAINING"]
+	if town!=null:
+		town.shop_open=state.phase in ["OPEN","DRAINING"]
+		town.chapter_ready=state.phase=="SETTLED" or int(state.day)>=2
+		_fill_story_board(state)
+	_story_purse()
+	_story_supplies()
 	if restaurant!=null and town!=null:
 		restaurant.caller_name=TDTownCaller.NAME
 		if restaurant.caller_left:
@@ -109,6 +115,9 @@ func _process(_delta: float) -> void:
 		_last_phase=state.phase
 		profile.world.day=int(state.day)
 		profile.world.day_phase="morning" if state.phase=="PREPARE" else ("evening" if state.phase=="SETTLED" else "service")
+		if profile.story!=null and profile.story.started():
+			if state.phase in ["OPEN","DRAINING"]: profile.story.note_opened()
+			elif state.phase=="SETTLED": profile.story.note_served()
 		if state.phase=="SETTLED":
 			var result:=save_game()
 			if not result.ok: _message("自动保存失败："+result.code)
@@ -117,6 +126,7 @@ func _process(_delta: float) -> void:
 				if int(growth.day)==int(state.day) and not growth.rewards.is_empty():
 					if _modal==null and atlas==null: show_levels()
 					else: _message("经营等级提升至 Lv.%d，灵感已到账，可在账本查看奖励。"%int(growth.level_after))
+			if town!=null: town.show_quest()
 
 func _input(event: InputEvent) -> void:
 	if not is_visible_in_tree(): return
@@ -241,6 +251,7 @@ func create_game(id: String, name_value: String="小镇食堂") -> TDOutcome:
 		next.close()
 		return _outcome(next.error)
 	next.slot_id=id;next.title=name_value.strip_edges() if not name_value.strip_edges().is_empty() else "小镇食堂";next.persistence=slots.save_slot
+	next.story.begin()
 	var result:=next.save()
 	if not result.ok: next.close();return _outcome(result)
 	_activate(next,true)
@@ -274,6 +285,7 @@ func _activate(next: TDGameProfile,first_entry:bool=false) -> void:
 	town.transaction_sink=profile.world_transaction;town.external_factory_clock=true
 	town.balance_reader=func()->int:return int(profile.shop.snapshot().money_cents)
 	town.commercial_refresh=profile.sync_commercial_map
+	town.hero_name=profile.title;town.story=profile.story;town.story_effect.connect(_apply_story)
 	town.restaurant_requested.connect(func()->void:travel("restaurant"));town.place_requested.connect(_place);town.pause_requested.connect(show_pause);add_child(town)
 	restaurant=TDRestaurantWorld.new();restaurant.player_mode=true;restaurant.floor_service=true;restaurant.session=profile.world;restaurant.layout=profile.layout;restaurant.business=profile.shop
 	restaurant.object_requested.connect(_object);restaurant.pause_requested.connect(show_pause);add_child(restaurant)
@@ -289,6 +301,8 @@ func travel(destination: String,at_bed:bool=false) -> TDOutcome:
 	if destination in ["town","cottage"] and not profile.can_leave_shop(): return _outcome(TDOutcome.new(false,"SHOP_OPEN","营业中不能离店，请先处理订单并打烊。"))
 	if _modal!=null: _close_dialog()
 	var previous_location:=location
+	if destination=="kitchen": _coach_story_kitchen()
+	if previous_location=="kitchen": _note_story_plate()
 	location=destination
 	town.set_presented(destination=="town")
 	cottage.set_presented(destination=="cottage",at_bed)
@@ -303,6 +317,105 @@ func travel(destination: String,at_bed:bool=false) -> TDOutcome:
 		restaurant.teleport_player(entry)
 	_lock_controls(true)
 	return TDOutcome.new(true,"ARRIVED")
+
+func _note_story_plate() -> void:
+	if profile==null or profile.story==null or not profile.story.waiting_cook() or kitchen_view==null:
+		return
+	for lane: TDCookingLane in kitchen_view.kitchen.lanes:
+		var dish: Dictionary=lane.snapshot()
+		var recipe:=str(dish.get("recipe_id",""))
+		if not recipe.ends_with("tomato_egg"):
+			continue
+		if str(dish.get("state","")) not in ["plated","delivered","completed"]:
+			continue
+		var attrs: Variant=dish.get("dish_attributes",{})
+		if attrs is Dictionary:
+			profile.story.note_plate(float((attrs as Dictionary).get("completion",0.0)))
+
+func _apply_story(effect: Dictionary) -> void:
+	if profile==null or profile.story==null:
+		return
+	if effect.has("san"):
+		var before:=profile.world.san
+		var next:=clampi(before+int(effect.san),0,100)
+		var changed:=profile.world.set_san(next)
+		if not changed.ok:
+			profile.world.san=next
+		if kitchen_view!=null:
+			kitchen_view.day_san=profile.world.san
+		_message("SAN %d → %d。这次只影响之后的感知，不改这一下的操作难度。" % [before, profile.world.san])
+	if bool(effect.get("pay",false)):
+		_story_purse()
+	if bool(effect.get("grant",false)):
+		_story_supplies()
+
+func _fill_story_board(state: Dictionary) -> void:
+	if town==null or profile==null or profile.story==null or not profile.story.started():
+		return
+	var offer: Dictionary=profile.service.offer("service.tomato_egg")
+	var menu: Dictionary=state.menu.get("service.tomato_egg",{})
+	var reference:=int(offer.get("reference_cents",0))
+	town.story_board={
+		"menu": bool(menu.get("enabled",false)),
+		"price": reference>0 and int(menu.get("price_cents",0))==reference,
+		"stock": profile.shop.menu_available("service.tomato_egg"),
+		"served": profile.story.served,
+	}
+
+func _story_supplies() -> void:
+	if profile==null or profile.story==null or profile.story.supplied or not profile.story.owe_pack:
+		return
+	if not profile.at_boundary():
+		return
+	var inventory: Dictionary=profile.shop.snapshot().inventory
+	var pack: Dictionary={}
+	for id: String in ["tomato","egg","vegetableoil","salt","sugar"]:
+		if inventory.has(id):
+			pack[id]=1
+	if pack.is_empty():
+		profile.story.mark_supplied()
+		return
+	var token:="story-chen-pack:%s"%str(profile.shop.snapshot().get("run_id",""))
+	var sent:=profile.shop.receive_supply(pack,token,0)
+	if sent.ok or sent.code=="DUPLICATE":
+		profile.story.mark_supplied()
+		if sent.ok:
+			_message("老陈把试做的一份放进了冰箱。这一份不另收费。")
+	elif sent.code!="NOT_AT_BOUNDARY" and _story_pay_note!=sent.code:
+		_story_pay_note=sent.code
+		_message("试做食材还没入库："+sent.code)
+
+func _coach_story_kitchen() -> void:
+	if profile==null or profile.story==null or kitchen_view==null:
+		return
+	var coach:=profile.story.waiting_cook() and profile.story.score<0
+	for lane: TDCookingLane in kitchen_view.kitchen.lanes:
+		lane.story_coach=coach
+	if kitchen_view.kitchen.prep!=null:
+		kitchen_view.kitchen.prep.story_coach=coach
+	if coach and not profile.story.coached:
+		profile.story.coached=true
+		_message("冰箱 E 取番茄，砧板选大块。灶台 F 开始。调味按住，到量松开。失误不必重来。")
+
+func _story_purse() -> void:
+	if profile==null or profile.story==null or profile.story.paid or not profile.story.owe_pay:
+		return
+	if not profile.at_boundary():
+		return
+	var offer: Dictionary=profile.service.offer("service.tomato_egg")
+	var cents:=int(offer.get("reference_cents",0))
+	if cents<=0:
+		return
+	var token:="story-aling-tomato:%s"%str(profile.shop.snapshot().get("run_id",""))
+	var paid:=profile.shop.world_adjustment(cents,token,"阿铃的审判")
+	if paid.ok or paid.code=="DUPLICATE":
+		profile.story.mark_paid()
+		_story_pay_note=""
+		if paid.ok:
+			_message("阿铃放下了这一盘的钱。")
+	elif paid.code!="NOT_AT_BOUNDARY" and _story_pay_note!=paid.code:
+		_story_pay_note=paid.code
+		_message("阿铃的钱还没入账："+paid.code)
 
 func _object(action: String) -> void:
 	match action:

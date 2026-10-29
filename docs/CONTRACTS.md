@@ -1,9 +1,38 @@
 # 公共契约：v3完整烹饪，兼容v1/v2历史入口
 
+> fa172f7整合保留原契约；D042-DECOR为远端原装修D042，本地D042仍指移动。AI-050-DIALOGUE指远端对话字速，AI-050仍指本地疾跑；不互相覆盖。
+
 ## D042 移动输入与碰撞契约
 
 - world_sprint是按住式InputMap动作（左右Shift），只在controls_enabled且角色场景可处理时生效；倍率AI-050。松开恢复原walk_speed，不持久写入存档；暂停、模态界面和QTE不绕过旧禁用控制。
 - 餐厅使用独立绘制project核对屏幕位移。非等比例投影下，碰撞滑动必须受本物理步的屏幕位移预算约束；使用引擎真实扫掠碰撞，不先穿过再回拉位置。保留碰撞形状、基准速度和D040实际位移动画。
+
+## D045 食谱处理说明（2026-10-28）
+
+- `TDPrepGuide` 只读烹饪目录、研习图谱和进货规则。不写存档，不改 `pass_score`、灵感、前置或菜系锁。
+- 食谱详情和灶台食材页调用同一入口。有备菜谱时显示该谱的切配说明；细碎范围用现有片、块、条、丁。没有备菜谱时才按原料类别说明。
+- 解锁句子对应现有状态：UNLOCKED、AVAILABLE、RESEARCHABLE、POINTS_SHORT、PREREQUISITES、CHART_PENDING、STORY_LOCKED。购买句子对应现有规则：调料始终可买，主料跟随已掌握菜谱。
+
+## D044 第一日剧本（2026-10-28）
+
+- `TDOpening` 的 `beat` 为 arrive、follow、soup、cook、founded、done。缺记录或无法识别的记录保持未开始，不把旧档拉回第一章。Profile schema 仍是 4。`story` 只在章节已经开始时写入快照。
+- 新档在 `create_game` 存档前 `begin()`。到达时阿铃站在离主店门口至少三格的道路上。报上名字后她沿路走向食材铺，不占门口那一格。进入 cook 之后，她改站到主店旁。罗厄没有实体。三人都暂时画成主人公的厨师图。
+- `talk` 可以带 `page` 分格，只显示文字漫画。`resolve` 在尝羹或拒绝时给出一次 `grant`。金额和库存都走 Shop：试做用 `receive_supply`，阿铃的付款仍是 `service.tomato_egg` 的 `reference_cents`。港口对话还要求菜单开着、售价等于参考价、下一份库存够，并且这一天曾经从 OPEN 进入 SETTLED。
+- 成立讨伐军时欠阿铃一笔账。金额是 `service.tomato_egg` 的 `reference_cents`。只在 PREPARE 或 SETTLED 用 `world_adjustment` 入账，令牌按本局 `run_id` 只成功一次。入账失败不退回剧情。完成度由离开厨房时的番茄炒蛋快照写入，状态须是 plated、delivered 或 completed。`good` 为完成度 >= 80。
+- 对话立绘里，阿铃、老陈、罗厄和漫画分格使用主人公的厨师图。林夏和客人的对话、订单、迎宾、传菜、收银都不改。
+
+## D043 人物对话（2026-10-28）
+
+- `TDDialogue` 保存句子和选项。短按先显示完当前句，再进入下一句。按住超过 0.32 秒后每 0.07 秒快进，遇到选项停止。`skip` 跳到下一个选项；后面没有选项就结束。`pick` 只记录选项并显示对应的下一句。
+- 对话框盖住画面并压暗背景。左键由对话框接收。跳过按钮在选项出现时停用。立绘按 `linxia` 或 `guest` 用色块绘制。
+- 林夏的 `conversation()` 和客人的 `TDGuestVisit.conversation` 不修改阶段、订单或现金。正式店里，迎宾、传菜、收银这些 E 动作仍先于对话。
+
+## D042-DECOR 装修预览、饰面和功能区（2026-10-27）
+
+- 非门面家具可放在 movement、reception、ordering、dining 任一地板上。门面家具仍只放墙上。落脚点必须是地板，且不压在这件家具自己身上。墙上放置仍返回 `WRONG_ZONE`。
+- `facility_zone(x, y)` 读盖住该格的家具区域；空地返回空字符串。客人入座仍看 `seat_use`，不看地板颜色。
+- `set_finish` 接受地板 `wood` `tile` `stone` `carpet` 和墙纸 `paper` `stripe` `floral` `brick`。刷错位置返回 `BAD_FINISH`。布局 schema 仍是 1。只有刷过的格子才写入 `finish_ids`；缺这个键表示全空。`decor_of` 不读取饰面。
+- 布置中滚轮改放置朝向；已选中家具时滚轮调用 `rotate_piece_by`。放置或刷饰面时右键回到选择，不调用拆除。
 
 ## D041 镇上客人、分店和三个店内岗位（2026-10-27）
 
