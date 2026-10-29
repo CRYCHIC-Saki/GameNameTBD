@@ -1,5 +1,6 @@
 class_name TDDialogueView
 extends Control
+const CHEF_STAND_IN := preload("res://assets/kitchen/chef-v1.png")
 ## Portrait, dimmed room, and a bottom dialogue box.
 ## Left click advances. Holding the left button fast-forwards. Skip jumps ahead.
 
@@ -266,6 +267,9 @@ static func paint_bust(canvas: CanvasItem, who: String, box: Rect2) -> void:
 		cloth = Color("#3a2428")
 		hair = Color("#17141c")
 		accent = Color("#c6a15a")
+	if who in ["aling", "chen", "luo", "page"]:
+		_paint_stand_in(canvas, who, box)
+		return
 	canvas.draw_rect(box, Color(0.12, 0.1, 0.09, 0.55))
 	var ground := box.position + Vector2(box.size.x * 0.5, box.size.y * 0.92)
 	canvas.draw_rect(Rect2(ground + Vector2(-70, -210), Vector2(140, 210)), cloth)
@@ -277,3 +281,13 @@ static func paint_bust(canvas: CanvasItem, who: String, box: Rect2) -> void:
 	canvas.draw_circle(head + Vector2(-18, -2), 4, Color("#2a211c"))
 	canvas.draw_circle(head + Vector2(18, -2), 4, Color("#2a211c"))
 	canvas.draw_rect(Rect2(head + Vector2(-16, 22), Vector2(32, 4)), Color("#c48b78"))
+
+static func _paint_stand_in(canvas: CanvasItem, who: String, box: Rect2) -> void:
+	var paper := who == "page"
+	canvas.draw_rect(box, Color("#f4ecd8") if paper else Color(0.1, 0.08, 0.07, 0.35))
+	var fit := box.size.y * 0.72
+	var portrait := Rect2(box.position + Vector2((box.size.x - fit) * 0.5, box.size.y * 0.08), Vector2(fit, fit))
+	canvas.draw_texture_rect(CHEF_STAND_IN, portrait, false)
+	if paper:
+		canvas.draw_rect(box.grow(-4), Color("#8a6238"), false, 3.0)
+

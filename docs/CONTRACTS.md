@@ -1,12 +1,18 @@
 # 公共契约：v3完整烹饪，兼容v1/v2历史入口
 
+## D045 食谱处理说明（2026-10-28）
+
+- `TDPrepGuide` 只读烹饪目录、研习图谱和进货规则。不写存档，不改 `pass_score`、灵感、前置或菜系锁。
+- 食谱详情和灶台食材页调用同一入口。有备菜谱时显示该谱的切配说明；细碎范围用现有片、块、条、丁。没有备菜谱时才按原料类别说明。
+- 解锁句子对应现有状态：UNLOCKED、AVAILABLE、RESEARCHABLE、POINTS_SHORT、PREREQUISITES、CHART_PENDING、STORY_LOCKED。购买句子对应现有规则：调料始终可买，主料跟随已掌握菜谱。
+
 ## D044 第一日剧本（2026-10-28）
 
-- `TDOpening` 的 `beat` 为 arrive、soup、cook、founded、done。缺记录或无法识别的记录保持未开始，不把旧档拉回第一章。Profile schema 仍是 4。`story` 只在章节已经开始时写入快照。
-- 新档在 `create_game` 存档前 `begin()`。阿铃和老陈站在食材铺外的道路上，不占主店门口那一格。进入 cook 之后，阿铃改站到主店旁、仍不是门口的道路上。罗厄没有实体。
-- `talk` 只生成 `TDDialogue`。`resolve` 只在选了对应回复时前进。尝羹的效果是 `san: -5`，由世界记下，只记一次。拒绝没有这个效果。完成度由离开厨房时的番茄炒蛋快照写入，状态须是 plated、delivered 或 completed。`good` 为完成度 >= 80。
-- 成立讨伐军时欠阿铃一笔账。金额是 `service.tomato_egg` 的 `reference_cents`。只在 PREPARE 或 SETTLED 用 `world_adjustment` 入账，令牌按本局 `run_id` 只成功一次。入账失败不退回剧情。港口对话只在当日已打烊或经营日 >= 2 时结束本章。
-- 立绘增加色块 `aling`、`chen`、`luo`。林夏和客人的对话、订单、迎宾、传菜、收银都不改。
+- `TDOpening` 的 `beat` 为 arrive、follow、soup、cook、founded、done。缺记录或无法识别的记录保持未开始，不把旧档拉回第一章。Profile schema 仍是 4。`story` 只在章节已经开始时写入快照。
+- 新档在 `create_game` 存档前 `begin()`。到达时阿铃站在离主店门口至少三格的道路上。报上名字后她沿路走向食材铺，不占门口那一格。进入 cook 之后，她改站到主店旁。罗厄没有实体。三人都暂时画成主人公的厨师图。
+- `talk` 可以带 `page` 分格，只显示文字漫画。`resolve` 在尝羹或拒绝时给出一次 `grant`。金额和库存都走 Shop：试做用 `receive_supply`，阿铃的付款仍是 `service.tomato_egg` 的 `reference_cents`。港口对话还要求菜单开着、售价等于参考价、下一份库存够，并且这一天曾经从 OPEN 进入 SETTLED。
+- 成立讨伐军时欠阿铃一笔账。金额是 `service.tomato_egg` 的 `reference_cents`。只在 PREPARE 或 SETTLED 用 `world_adjustment` 入账，令牌按本局 `run_id` 只成功一次。入账失败不退回剧情。完成度由离开厨房时的番茄炒蛋快照写入，状态须是 plated、delivered 或 completed。`good` 为完成度 >= 80。
+- 对话立绘里，阿铃、老陈、罗厄和漫画分格使用主人公的厨师图。林夏和客人的对话、订单、迎宾、传菜、收银都不改。
 
 ## D043 人物对话（2026-10-28）
 

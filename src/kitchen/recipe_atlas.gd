@@ -92,6 +92,9 @@ func _refresh() -> void:
 	var icon:=TextureRect.new();icon.texture=load("res://assets/kitchen/recipe-icons/%s.png"%selected_id);icon.texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST;icon.custom_minimum_size=Vector2(250,118);icon.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;icon.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;_detail.add_child(icon)
 	_detail_label(r.description,16)
 	_detail_label("食材线索",12,Color("797c63"));_detail_label(r.ingredients,15)
+	_detail_label("做法与解锁",12,Color("797c63"))
+	for line: String in TDPrepGuide.recipe_lines(session, selected_id):
+		_detail_label(line,14)
 	_detail_label("研习资格     %d 灵感"%int(r.cost),19)
 	_detail_label("前置菜谱 · ALL",12,Color("797c63"))
 	if r.prerequisites.is_empty(): _detail_label("入门菜谱，无需前置。",14)
