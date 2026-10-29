@@ -41,7 +41,7 @@ func target() -> String:
 
 func _process(_delta:float) -> void:
 	if not presented: return
-	_prompt.text={"rest":"[ E ] 床 · 保存 / 收工休息","town":"[ E ] 出门去小镇"}.get(target(),"小屋 · WASD 走动，面向床或门按 E · B 菜谱 · Esc 暂停")
+	_prompt.text={"rest":"[ E ] 床 · 保存 / 收工休息","town":"[ E ] 出门去小镇"}.get(target(),"小屋 · WASD 走动 · Shift 疾跑，面向床或门按 E · B 菜谱 · Esc 暂停")
 
 func _unhandled_input(event:InputEvent) -> void:
 	if not presented or get_tree().paused or not player.controls_enabled: return

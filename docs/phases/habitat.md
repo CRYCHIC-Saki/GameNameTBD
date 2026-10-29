@@ -52,3 +52,29 @@ ENGINEERING_READY / PLAYTEST_PENDING。AC001–007 PASS，AC008 PENDING。保留
 5. 比较筹备/营业/做菜三种音乐；试Esc暂停和B研习，返回后检查位置、朝向、音轨。记录音箱/耳机听感与真实键盘延迟。
 
 人工移动舒适度、配乐听感与设备音画同步尚未验收；完整Phase4未完成，本切片交付后停止。
+# D042 增量：碰撞速度与疾跑（2026-10-29，工程就绪、待试玩）
+
+来源为用户本轮反馈；不启动新阶段，不改变NPC经济/存档格式。实际技能grilling与godot-gdscript-patterns路径及无阻塞审查见DECISIONS D042。
+
+| 验收 | 输入与可观察结果 | 验证 |
+|---|---|---|
+| AC-PHASE-4-MOTION-001 | 真实餐厅靠墙/桌角持续移动，屏幕每步位移不超过步行预算；离开障碍恢复原速，无穿墙 | 实际物理帧、绘制project独立计距；旧版先复现失败 |
+| AC-PHASE-4-MOTION-002 | 左/右Shift按住1.6倍、松开恢复；四场景共享疾跑、餐厅八方向同速，无输入不移动 | InputMap真实键事件及场景集成 |
+| AC-PHASE-4-MOTION-003 | 疾跑碰撞仍受速度限制；暂停/模态/做菜/隐藏不能移动；动画按真实位移 | 碰撞及输入禁用集成、既有主角/厨房回归 |
+| AC-PHASE-4-MOTION-004 | NPC Lifeline功能、画像/意向/展示/账本来源可追溯，指出重复或缺口 | 只读代码审计，单独标明未执行的场景推断 |
+| AC-PHASE-4-MOTION-005 | 统一检查、导出与启动通过；用户复验手感 | 自动工程检查；人工PENDING |
+
+本轮状态ENGINEERING_READY / PLAYTEST_PENDING。AC001–004 PASS；AC005工程PASS、人工PENDING。未执行远程CI，本轮无提交或推送。
+
+- 根因：Godot FLOATING的move_and_slide维持物理世界速度，但餐厅非等比例投影会把沿墙转向放大为屏幕加速。改为仅投影房间逐段move_and_collide，余量投影到可见墙切线并约束每步屏幕位移预算；不穿越后回拉，不改碰撞体。其他房间原移动方式保留。API依据[Godot 4.7 CharacterBody2D](https://docs.godotengine.org/en/4.7/classes/class_characterbody2d.html)及[KinematicCollision2D](https://docs.godotengine.org/en/4.7/classes/class_kinematiccollision2d.html)，实际执行锁定4.7.2。
+- 先复现：movement-d042-red，1项失败，贴墙最高约4.73像素/物理步（正常3），114条越界断言失败；修复后同一用例green-base通过，峰值3.0，168帧真实滑动。
+- 新增专项movement-d042-sprint-final：4/4、617断言、14.953秒、0失败/跳过，各步骤退出0、无孤儿节点。此前sprint首轮2/4失败是测试即刻读取尚未flush的键事件及厨房局部/全局坐标比较错误；改为真实引擎事件flush、全局物理位移计量，并等待测试退出场景queue_free完成。原失败证据保留，不声称首次全通过。
+- NPC审计详见npc-lifeline-audit.md。99个class_name无重复；经济画像/单餐意向/订单继续复用，但林夏没有居民身份绑定。闲逛、同日重复来店与终止订单离店门槛为静态审计缺口，本轮不重构。
+- 复验：进入餐厅沿墙和桌角按W/S移动；按住左右Shift及斜向移动，再松开确认恢复；在厨房/小镇/小屋重复，并打开暂停/做菜界面确认角色停止。真实键盘手感与图形观感人工PENDING。
+
+## D042 最终验证（13:32）
+
+- 标准命令`pwsh -File tools/export.ps1`完整执行统一检查：`artifacts/check/pre-export-20261029-131747`，55脚本、471/471测试、16250断言、806.077秒，0失败/0跳过；版本、导入、脚本/场景加载、测试各退出0。4条既有Float/Int比较警告保留，无解析或运行错误。专项复验命令`pwsh -File tools/check.ps1 -Suite locomotion`。
+- Windows开发包`build/TownDiner.exe`与`TownDiner.pck`于13:31重建，444运行资源审计、实际EXE启动退出3次×4检查、菜单和移动29项全部PASS，导出入口退出0；证据`artifacts/export/summary.json`。测试、开发资料、存档与未采用的角色设计素材未打入运行包。
+- 本轮真实场景与输入事件测试使用隔离存档；未进行人类键盘试玩、画面观感或音频设备验收，不将自动测试等同于手感验收。NPC缺口仅审计记录，没有改写其业务。
+- 集成者所有权检查与用户原有文件哈希复核见`artifacts/movement-d042/`；停止于本轮修复交付点，释放共享文件写入锁。

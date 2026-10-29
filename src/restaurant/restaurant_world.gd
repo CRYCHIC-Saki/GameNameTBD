@@ -120,7 +120,7 @@ func _ready() -> void:
 		_set_status(room)
 	_pull_layout_staff()
 	if player_mode:
-		_set_status("WASD 走动 · 招工处可雇厨师、服务员、迎宾、传菜和收银 · 门牌、账本、装修桌或门按 E · B 菜谱 · Esc 暂停" if floor_service else "WASD 走动 · 招工处可雇厨师或服务员 · 门牌、账本、装修桌或门按 E · B 菜谱 · Esc 暂停")
+		_set_status("WASD 走动 · Shift 疾跑 · 招工处可雇厨师、服务员、迎宾、传菜和收银 · 门牌、账本、装修桌或门按 E · B 菜谱 · Esc 暂停" if floor_service else "WASD 走动 · Shift 疾跑 · 招工处可雇厨师或服务员 · 门牌、账本、装修桌或门按 E · B 菜谱 · Esc 暂停")
 		_iso.interaction_markers=interaction_points()
 
 func _process(delta: float) -> void:

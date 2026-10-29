@@ -1,5 +1,11 @@
 # 决策与来源
 
+## D042｜碰撞速度与按住Shift疾跑（2026-10-29）
+
+- USER_CONFIRMED：修复餐厅碰障碍后加速；按住Shift疾跑；审查NPC Lifeline已实现功能和NPC结构复用/重复情况。NPC本轮只读审计，发现缺口另记，不自行扩大为经济/访客重构。
+- GRILL_RESULT=NO_BLOCKING_PRODUCT_QUESTIONS。决策树：碰撞修复遵守既有屏幕速度/真实碰撞；按住式疾跑已指定；暂停/弹窗/做菜沿用原输入禁用。可逆初值AI-050，不新增体力、费用或时间规则，松键恢复，四场景共用。
+- 已读取C:/Users/Administrator/.codex/skills/grilling/SKILL.md和godot-gdscript-patterns/SKILL.md，均无版本声明/显式依赖技能；按grilling分派只读NPC事实调查，已确认范围不再次询问开始。
+
 ## D041｜镇上客人、分店和迎宾收银传菜（2026-10-27）
 
 - USER_CONFIRMED：要有一个可互动的客人，在镇上走动，也会进食堂点菜。要能开分店，含逻辑和界面。迎宾、收银、传菜做完，并进入正式营业，不再只留在调试店。

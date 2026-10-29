@@ -217,3 +217,6 @@ Phase 2库存通过供料/消耗适配器与烹饪边界交互，经济订阅唯
 - 美术采用 assets/town 的生成 PNG 与既有厨房/厨师资源，图集原生切片、nearest 采样。布局仍可编辑，画面不代替路径、阻挡或库存逻辑。
 - 标题开始入口按TDProfileStore.latest直入最近成功保存的有效槽；无有效档选择首个真正空槽。创建/读取呈现进度并拒绝重复请求，初始化失败先返回结构化错误。TDIngredientBook只读content/ingredient_index.json运行身份索引，tools/build_ingredient_index.ps1显式从只读来源提取并检查一致；生产运行不再读取doc/source。
 - 同时存在的Town/Restaurant/Kitchen使用独立物理层（掩码墙体/人物：16/32、4/8、1/2），隐藏不等于移除碰撞，不能再共用墙体层。餐厅is_walkable由边界和真实阻挡家具决定，空功能区地砖可走；寻路和StaticBody生成同源，家具服务落脚规则仍保留专用过道。IsoView用脚底投影定位人物，并按地面位置排序人物/家具，原存档和位图不改变。
+# D042 NPC Lifeline结构审计入口
+
+正式经济仍以TDEconomicCustomer＋TDMealIntent＋Shop订单为权威；TDRestaurantGuest/TDGuestVisit负责展示。TDTownCaller是独立具名访客表现，当前未绑定稳定经济居民ID，只给首个现有订单客人套显示名；不能将其视为完整的原NPC画像接入。历史Phase3调试画像另存兼容。详细功能、重复检查与生命周期缺口见docs/phases/npc-lifeline-audit.md；本轮未重构NPC。

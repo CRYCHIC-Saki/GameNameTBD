@@ -161,7 +161,7 @@ func _update_prompt() -> void:
 	elif not station_id.is_empty():
 		_prompt.text = "[ E ]  %s · %s" % [String(station["name"]), _station_hint(station_id)]
 	else:
-		_prompt.text = "WASD 移动 · E 取放 · F 开灶台 · Q 取锅内材料" if single_fridge else "WASD / 方向键走动 · E 拿取 / 放下 / 操作 · 先去左上方拿食材"
+		_prompt.text = "WASD 移动 · Shift 疾跑 · E 取放 · F 开灶台 · Q 取锅内材料" if single_fridge else "WASD / 方向键走动 · Shift 疾跑 · E 拿取 / 放下 / 操作 · 先去左上方拿食材"
 
 func _make_hud() -> void:
 	_hud = Control.new()

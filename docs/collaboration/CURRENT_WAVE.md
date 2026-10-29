@@ -1,5 +1,11 @@
 # 当前协作波次
 
+## 2026-10-29 D042 碰撞速度修复、疾跑与 NPC 审计
+
+- 用户授权修复餐厅碰障碍加速、增加按住Shift疾跑，并检查NPC Lifeline功能及NPC数据复用。基线ce6da40；当前integration/phase-4-wave-protagonist。既有未提交主角/阿凌素材和doc/source资料保持只读，不提交、不推送。
+- 唯一写入者本任务Agent，集成角色顺序处理共享移动控制器src/world/kitchen_player.gd、project.godot、四场景操作提示/入口、tests/integration/test_player_motion.gd与检查入口/记录；NPC审计代理仅只读，无代码写权。本轮不重构NPC经济、雇佣或分店。
+- 状态DELIVERED_LOCAL_PLAYTEST_PENDING，写入锁释放。真实碰撞旧版失败→修复后通过，专项4/4、617断言；标准导出全量471/471、16250断言，444资源审计、EXE启动退出3次及菜单/移动29项通过。AC与技能审查见habitat.md D042，NPC只读审计见npc-lifeline-audit.md；人工手感PENDING，远程CI NOT_RUN，未提交/推送。
+
 ## 2026-10-28 拉取 NPC Lifeline 并保留本地主角修复
 
 - 用户要求重试拉取；本次fetch成功，origin/main=73f6f8f（NPC Lifeline），本地基线12900cb。采用merge保留双方历史，不推送、不改远端main。

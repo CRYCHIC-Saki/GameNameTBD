@@ -107,7 +107,7 @@ func _ready() -> void:
 	_set_status(_enter_hint())
 	if player_mode:
 		_boot_caller()
-		_set_status("WASD 走动 · 面向建筑或林夏按 E · 小屋的床可保存/休息 · B 菜谱 · Esc 暂停")
+		_set_status("WASD 走动 · Shift 疾跑 · 面向建筑或林夏按 E · 小屋的床可保存/休息 · B 菜谱 · Esc 暂停")
 	queue_redraw()
 
 func _process(delta: float) -> void:
@@ -394,7 +394,7 @@ func _status_bar() -> void:
 	_status.add_theme_color_override("font_color", GLASS_INK)
 	box.add_child(_status)
 	if player_mode:
-		_status.text = "WASD 走动 · 面向建筑按 E · 小屋的床可保存/休息 · B 菜谱 · Esc 暂停"
+		_status.text = "WASD 走动 · Shift 疾跑 · 面向建筑按 E · 小屋的床可保存/休息 · B 菜谱 · Esc 暂停"
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
 	box.add_child(row)

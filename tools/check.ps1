@@ -2,7 +2,7 @@
 [CmdletBinding()]
 param(
   [string]$GodotPath = $env:GODOT_BIN,
-  [ValidateSet('all','content','cooking','qte','platform','scoring','integration','business','service','research','profiles','game','title','movement','commerce','stock','progression','habitat','protagonist')]
+  [ValidateSet('all','content','cooking','qte','platform','scoring','integration','business','service','research','profiles','game','title','movement','commerce','stock','progression','habitat','protagonist','locomotion')]
   [string]$Suite = 'all',
   [int]$TimeoutSeconds = 1800,
   [string]$ReportName = ''
@@ -67,12 +67,13 @@ try {
   if ($plugin -notmatch ('version="' + [regex]::Escape($lock.gut.version) + '"')) { throw 'GUT version mismatch' }
 
   $testMap = @{
+    locomotion = @('tests/integration/test_player_motion.gd')
     protagonist = @('tests/integration/test_protagonist.gd','tests/integration/test_habitat.gd','tests/integration/test_town_motion.gd','tests/integration/test_kitchen_world.gd')
     habitat = @('tests/integration/test_habitat.gd')
     progression = @('tests/unit/test_shop_progression.gd','tests/integration/test_level_progression.gd')
     stock = @('tests/unit/test_shop_stock.gd','tests/unit/test_season_hold.gd')
     commerce = @('tests/unit/test_town_economy_contracts.gd','tests/unit/test_town_economy_rules.gd','tests/unit/test_town_economy_society.gd','tests/integration/test_town_economy_integration.gd')
-    movement = @('tests/integration/test_town_motion.gd','tests/integration/test_restaurant_world.gd','tests/unit/test_restaurant_layout.gd')
+    movement = @('tests/integration/test_player_motion.gd','tests/integration/test_town_motion.gd','tests/integration/test_restaurant_world.gd','tests/unit/test_restaurant_layout.gd')
     title = @('tests/integration/test_title_entry.gd','tests/unit/test_economy_ingredients.gd')
     game = @('tests/integration/test_game_shell.gd')
     profiles = @('tests/unit/test_shop_profiles.gd')

@@ -9,6 +9,7 @@ var confine_to: Callable = Callable()
 var facing := Vector2i.DOWN
 var motion_transform := Transform2D.IDENTITY
 var walk_speed: float=WALK_SPEED
+@export_range(1.0, 3.0, 0.05) var sprint_multiplier: float = 1.6
 var directional_art: bool=true
 @export var sprite_height: float = 70.0
 var walk_cycle_distance: float = 140.0
@@ -60,7 +61,8 @@ func _physics_process(delta: float) -> void:
 	if controls_enabled:
 		direction = Input.get_vector("world_left", "world_right", "world_up", "world_down")
 	face(direction)
-	var motion := motion_transform.basis_xform(direction * walk_speed)
+	var speed := walk_speed * (sprint_multiplier if controls_enabled and Input.is_action_pressed("world_sprint") else 1.0)
+	var motion := motion_transform.basis_xform(direction * speed)
 	if confine_to.is_valid():
 		var travel := motion * delta
 		var proposed := position + travel
@@ -80,7 +82,11 @@ func _physics_process(delta: float) -> void:
 		velocity = motion
 	else:
 		velocity = motion
-		move_and_slide()
+		if motion_transform == Transform2D.IDENTITY:
+			move_and_slide()
+		else:
+			_move_projected(motion * delta)
+			velocity = (position - before_motion) / delta if delta > 0.0 else Vector2.ZERO
 	# Convert actual travel back to screen space (the restaurant uses inverse projection).
 	# Input or requested velocity alone would keep walking into a solid wall forever.
 	# The isometric inverse projection is not orthonormal. basis_xform_inv
@@ -108,6 +114,25 @@ func _physics_process(delta: float) -> void:
 			_sprite.flip_h = direction.x < 0.0
 	else:
 		_reset_pose()
+
+func _move_projected(motion: Vector2) -> void:
+	# FLOATING move_and_slide preserves WORLD speed after a hit. An isometric
+	# projection has unequal axes, so that can accelerate the visible character.
+	# Sweep with real collisions; project the remainder onto the visible wall
+	# tangent and keep the total screen travel within this tick's input budget.
+	var to_screen := motion_transform.affine_inverse()
+	var remaining := motion
+	var budget := to_screen.basis_xform(motion).length()
+	for iteration: int in max_slides:
+		if remaining.length_squared() < 0.000001 or budget <= 0.000001: break
+		remaining = motion_transform.basis_xform(to_screen.basis_xform(remaining).limit_length(budget))
+		var before := position
+		var collision := move_and_collide(remaining, false, safe_margin)
+		budget = maxf(0.0, budget - to_screen.basis_xform(position - before).length())
+		if collision == null: break
+		var tangent := to_screen.basis_xform(collision.get_normal().orthogonal()).normalized()
+		var rest := to_screen.basis_xform(collision.get_remainder())
+		remaining = motion_transform.basis_xform(tangent * rest.dot(tangent))
 
 func _reset_pose() -> void:
 	_walk_time = 0.0

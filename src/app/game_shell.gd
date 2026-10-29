@@ -78,7 +78,7 @@ func _build_title() -> void:
 	column.add_child(TDUI.button("载入存档",func()->void:show_slots(false)))
 	column.add_child(TDUI.button("设置",show_settings))
 	column.add_child(TDUI.button("退出游戏",request_quit))
-	column.add_child(TDUI.label("WASD 移动  ·  E 交互",15,Color("b7c6b8")))
+	column.add_child(TDUI.label("WASD 移动 · Shift 疾跑  ·  E 交互",15,Color("b7c6b8")))
 	_title_notice=TDUI.label("",20,Color("f5dfb6"));_title_notice.position=Vector2(440,660);_title_notice.size=Vector2(780,100)
 	_title_notice.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;_title_screen.add_child(_title_notice)
 
@@ -776,7 +776,7 @@ func show_settings() -> void:
 		box.add_child(TDUI.label("研习输入校准（毫秒）",20))
 		var offset:=SpinBox.new();offset.min_value=-200;offset.max_value=200;offset.step=5;offset.value=profile.research.snapshot().input_offset_sec*1000;box.add_child(offset)
 		box.add_child(TDUI.button("保存校准",func()->void:_outcome(profile.research.calibrate(offset.value/1000.0))))
-	box.add_child(TDUI.label("WASD 移动 · E 交互 / 放取 · F 开灶 · Q 取锅料 · B 菜谱 · Esc 暂停",17,TDUI.MUTED))
+	box.add_child(TDUI.label("WASD 移动 · Shift 疾跑 · E 交互 / 放取 · F 开灶 · Q 取锅料 · B 菜谱 · Esc 暂停",17,TDUI.MUTED))
 
 func request_title() -> void:
 	if profile==null: return
