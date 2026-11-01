@@ -105,7 +105,7 @@ static func _sentence(status: String, phase: String, seconds_left: int, satisfac
 		return "这单已取消，客人不留下吃饭。"
 	return "客人正在离开。"
 
-static func conversation(who: String, dish: String, phase: String, portrait: String) -> TDDialogue:
+static func conversation(who: String, dish: String, phase: String, portrait: String, order: Dictionary = {}) -> TDDialogue:
 	var talk := TDDialogue.new()
 	var meal := dish if dish != "" else "这道菜"
 	var person := who if who != "" else "客人"
@@ -117,6 +117,25 @@ static func conversation(who: String, dish: String, phase: String, portrait: Str
 	elif phase == "wait_serve":
 		opening = "%s：%s还没上来，我坐着等。" % [person, meal]
 	talk.add_line(person, portrait if portrait != "" else "guest", opening)
+	if not order.is_empty():
+		var preferences: Array[String]=[]
+		for requirement: Dictionary in order.get("customer",{}).get("requirements",[]):
+			preferences.append(str(requirement.get("label","")))
+		var likes:="我对这顿饭没有额外要求。" if preferences.is_empty() else "这顿我想要："+"、".join(preferences)+"。"
+		var feedback:="还没吃到呢，等上菜后再告诉你。"
+		if order.status=="SERVED":
+			var score: Dictionary=order.get("score",{})
+			feedback="这顿饭我给%.0f分。"%float(score.get("satisfaction",0))
+			var reasons: Array[String]=[]
+			for reason: Variant in score.get("reasons",[]):
+				if reason is Dictionary: reasons.append(str(reason.get("label",reason.get("message",reason.get("code","")))))
+			if not reasons.is_empty(): feedback+="主要是："+"、".join(reasons.slice(0,3))+"。"
+		talk.context={"kind":"guest","ticket_id":str(order.id)}
+		talk.add_choice([
+			{"id":"taste","label":"你喜欢什么口味？","speaker":person,"portrait":portrait,"text":likes},
+			{"id":"feedback","label":"这道菜吃得怎么样？","speaker":person,"portrait":portrait,"text":feedback},
+		])
+		return talk
 	var calm_id := "soon"
 	var blunt_id := "hurry"
 	var calm_label := "马上就好，请再坐一会儿。"

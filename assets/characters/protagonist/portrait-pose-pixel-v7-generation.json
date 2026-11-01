@@ -1,0 +1,41 @@
+{
+  "date": "2026-10-28",
+  "user_request": [
+    "眼睛高光更自然",
+    "腰间配件明确为刀鞘，不是袋子",
+    "脸稍微长一点"
+  ],
+  "generator": "built-in image_gen",
+  "references": [
+    {
+      "file": "protagonist-dialogue-halfbody-pose-pixel-v6.png",
+      "role": "本轮编辑目标，保留托腮姿势、构图和细像素风"
+    },
+    {
+      "file": "doc/source/characters/protagonist/design-clean-original.png",
+      "role": "仅参考原稿扁平菜刀鞘造型"
+    }
+  ],
+  "first_generation_id": "exec-20467fb5-9bd6-44ec-9ca5-e5809b3b893f",
+  "final_generation_id": "exec-48e10b48-385a-4e47-b74b-95e43e6520c3",
+  "output": "protagonist-dialogue-halfbody-pose-pixel-v7.png",
+  "sha256": "9b45e97bc035faabc6fc7f20c93d33e48508f915ca49900d33492e816f1e2f0f",
+  "dimensions": [
+    1254,
+    1254
+  ],
+  "transparent_background": true,
+  "prompt": "Use case: precise-object-edit / identity-preserve.\nEdit IMAGE 1 (the current fine-pixel chin-touching half-body portrait) with exactly THREE small corrections. IMAGE 2 is only an accessory-design reference for the original flat brown knife sheath at the waist. Do NOT copy image 2's pose, full-body composition or smooth drawing medium.\n\n1. EYE HIGHLIGHTS: the large disconnected white square highlights currently look unnatural. Redraw the catchlights delicately: one small coherent cream-white catchlight near the same upper-left position of each iris, consistent with a single soft light source. Use a compact natural stepped pixel shape appropriate to the existing fine pixel resolution, not a large white tile in the pupil. Keep the dark pupil clearly readable and preserve the warm amber iris, eye sizes, eye locations and friendly expression. A very subtle warm amber secondary reflection is fine, but no second large white square, sparkles, star highlights or extra pupils. Keep the sclera white and keep the fine pixel technique.\n\n2. WAIST ACCESSORY IS A KNIFE SHEATH, NOT A BAG: the brown item under the hand on screen-left must be a FLAT leather sheath for a broad rectangular Chinese kitchen cleaver, shaped like the ORIGINAL brown knife sheath in IMAGE 2. Remove the boxy handbag volume, thick pouch gussets and envelope flap/closing lid. Make it a slim, flat, elongated rectangular brown leather blade sleeve with subtly rounded bottom corners, simple stitched side edges, a narrow open mouth at its top and belt attachment. No clasp, bag flap, handbag strap or bag-like cavity. It is broad and rectangular to fit a kitchen cleaver, NOT a long sword scabbard, NOT a thin dagger sheath. Keep it at the same hip position and keep the left-side hand naturally resting on its upper edge. Do not introduce an exposed blade or a new held weapon.\n\n3. SLIGHTLY LONGER FACE: gently increase the vertical length of the face by about 6–8%, mostly adding a little length below the eyes toward the jaw and chin. Maintain existing face width, slim lower cheeks, cute large eyes, soft rounded chin and identity. Do not broaden the face, create a sharply pointed chin or make her look mature. Retain the head tilt and chin-touching gesture; make only tiny local adjustments near the fingertip/chin if needed.\n\nPRESERVE everything else in IMAGE 1 as closely as possible: the chin-touching hand on screen-right and bent elbow, the hand at the waist on screen-left, shoulder/torso pose, framing and crop, hair locks, chef cap, flame tuft, red/gold colors, white shirt and pink fold shadows, red tie and two gold bars, cream apron and flame patch, belt and back pan. Keep the same fine pixel density, clean small pixel clusters, stair-stepped edges, line thickness and shading style throughout. No coarser pixel blocks, no smooth anime/vector rendering, no blur, no pose redesign or head-size change.\n\nOne edited square transparent RGBA PNG. Preserve genuine alpha, same framing and canvas size as IMAGE 1. No scene, background color, checkerboard, border, text or watermark.",
+  "eye_revision_prompt": "Precise localized pixel-art edit of the two EYES ONLY. Keep ALL other parts of this exact image unchanged, especially its slightly longer face, chin-touching pose, flat open-top brown cleaver sheath, fine pixel density, costume, framing and transparent background.\n\nThere is an unwanted large white rectangular patch in the CENTER of EACH dark pupil. REMOVE those TWO CENTRAL WHITE RECTANGLES entirely. Repaint those central white rectangles as the surrounding DEEP DARK BROWN pupil color, creating solid readable dark-brown pupils.\n\nKeep only the small existing cream-white catchlight at the UPPER-LEFT EDGE of EACH amber iris. These should be the ONLY white glints inside the two irises, one modest highlight per iris. Do not move, erase or recolor the normal white sclera outside each iris. Do not add extra white dots, lower glints, center glints, stars or sparkles. Do not lighten the pupil or make a white pupil. The pupil's center must be dark brown, not white.\n\nPreserve amber-gold iris color, eye shape, eye positions and current fine-pixel style. Do not change facial expression or any other design detail. Transparent PNG, same dimensions and composition, no text.",
+  "revision_note": "首轮完成刀鞘与脸长调整，但瞳孔中央仍残留较大白块；第二轮仅细化眼睛，保留深棕瞳孔和每眼左上小面积高光。首轮不作为最终交付。",
+  "design_clarification": "角色右腰（画面左侧）为扁平棕色菜刀鞘，非带翻盖的袋子。后续绘制遵循用户此次明确纠正。",
+  "verification": {
+    "png_decode": "PASS",
+    "rgba_transparency": "PASS",
+    "eyes_sheath_and_face_visual_review": "PASS",
+    "human_art_acceptance": "USER_CONFIRMED_KEEP_V7",
+    "game_checks": "NOT_RUN_ASSET_ONLY"
+  },
+  "selected_on": "2026-10-28",
+  "status": "DELIVERED_LOCAL_USER_SELECTED"
+}

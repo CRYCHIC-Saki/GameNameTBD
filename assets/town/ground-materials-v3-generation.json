@@ -1,0 +1,9 @@
+{
+  "tool": "built-in image_gen",
+  "intent": "new terrain material atlas",
+  "source": "user D049 map feedback",
+  "prompt": "Create one game terrain texture atlas for a cute Chinese small-town life sim, orthographic TOP-DOWN ground only, crisp hand-painted PIXEL ART, nearest-neighbor edges and dense small pixel clusters, bright warm natural palette. EXACT layout: square canvas divided into 2 by 2 equal square quadrants with NO borders, gaps, labels, text or objects crossing quadrants. Upper-left quadrant: seamless moss-green grassy earth, soft varied small grass tufts, minute scattered cream clover, subtle patchy natural texture, no tall vegetation. Upper-right: seamless irregular SMALL light warm gray stone cobbles, varied rounded rectangular shapes and thin earthy moss joints, no perspective vanishing point or large slabs. Lower-left: seamless warm sandy packed earth courtyard ground with tiny pebbles and subtle worn natural tonal variation. Lower-right: seamless teal-green calm shallow river water, soft tiny horizontal pixel ripples and subtle depth variation. Each quadrant is a tileable repeating material swatch; no scenery, buildings, roads, characters, shadows or horizon. Style should fit detailed cute Chinese blue-roof pixel buildings with warm wood and green plants, avoid flat vector shapes, avoid photorealism. Medium contrast, intricate but restful; 2D game-ready surface textures.",
+  "output": "assets/town/ground-materials-v3.png",
+  "regions": "2x2 equal 627x627; grass, cobble, earth, water; runtime nearest scale, no source bitmap edits",
+  "acceptance": "AI visual review; human playtest pending"
+}

@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "note": "AI-056 PROPOSED tunable meal times, minutes since day start (00:00). No extra customers.",
+  "start_minute": 480,
+  "end_minute": 1560,
+  "peaks": [
+    {"id": "breakfast", "mean": 540, "sigma": 35, "weight": 0.25},
+    {"id": "lunch", "mean": 720, "sigma": 35, "weight": 0.35},
+    {"id": "dinner", "mean": 1080, "sigma": 35, "weight": 0.30}
+  ],
+  "off_peak_weight": 0.10,
+  "off_peak_end": 1500
+}

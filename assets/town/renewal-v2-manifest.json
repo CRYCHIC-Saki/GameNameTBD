@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-30",
+  "decision": "D048 / AI-056",
+  "style_reference": "assets/characters/protagonist/protagonist-idle-four-directions-v1.png",
+  "reference_read_only": true,
+  "assets": [
+    {
+      "file": "assets/town/town-sprites-v2.png",
+      "source_output": "exec-064378b4-06de-4a70-a41a-e9b5ab0698a2.png",
+      "tool": "built-in image_gen.imagegen",
+      "intent": "generate; protagonist is style reference, not edit target",
+      "prompt_brief_zh": "可爱像素风中式小镇建筑图集，与指定四向主角的暖色、描边和比例相配。透明背景，四行四列：食堂、小屋、菜摊、大树；商铺、工坊、竹丛、凉亭；钱庄、车站、池塘、灯笼柱；仓库、小吃摊、盆栽、石桥。无人物、无文字。",
+      "prompt_record_kind": "normalized production brief; not a verbatim tool transcript",
+      "transparent_background": true,
+      "actual_dimensions": [
+        1254,
+        1254
+      ],
+      "sha256": "7e39cf9f2beeae8b6a070a789048f58059b68bcd8329aafc66084bb45b158e6b"
+    },
+    {
+      "file": "assets/town/diner-props-v2.png",
+      "source_output": "exec-7245d2e7-bb68-4ed3-9271-9a6ab60aae3c.png",
+      "tool": "built-in image_gen.imagegen",
+      "intent": "generate; protagonist is style reference, not edit target",
+      "prompt_brief_zh": "可爱像素风中式食堂/厨房家具透明图集，暖木色，清晰像素描边，与既有主角相配。四行四列：餐桌凳、账台、装修工作桌、菜谱书架；冰箱、砧板台、炒锅灶、蒸笼；出餐台、垃圾桶、菜单牌、盆栽；窗、灯笼、调料罐、壁架。无人物、无文字。",
+      "prompt_record_kind": "normalized production brief; not a verbatim tool transcript",
+      "transparent_background": true,
+      "actual_dimensions": [
+        1254,
+        1254
+      ],
+      "sha256": "361c980c36166883f527cd88ce3c8f1a8daea68a6a951c7bae0b2e67f950a09b"
+    },
+    {
+      "file": "assets/kitchen/kitchen-background-v2.png",
+      "source_output": "exec-3fd7342c-f0b1-425b-8a42-5799cd8b24ac.png",
+      "tool": "built-in image_gen.imagegen",
+      "intent": "generate; protagonist is style reference, not edit target",
+      "prompt_brief_zh": "中式温暖厨房的可爱像素背景，斜俯视，木梁、浅墙、窗、壁架、暖陶砖地板。上侧固定工作墙，中央大片空地供人物行走；不绘制功能家具、灶具、人物、UI或文字，供实际工位独立叠加。匹配指定四向主角。",
+      "prompt_record_kind": "normalized production brief; not a verbatim tool transcript",
+      "transparent_background": false,
+      "actual_dimensions": [
+        1586,
+        992
+      ],
+      "sha256": "2dcceff6da3edd1117cad9aef825ff35717c1e8ec3393a433a025c2bea0df648"
+    }
+  ],
+  "runtime": "TDEnvironmentArt explicit read-only regions; nearest filter; TDTownArt cached terrain; TDDaylight injected game clock"
+}

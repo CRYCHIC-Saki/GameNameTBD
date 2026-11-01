@@ -8,13 +8,21 @@ signal closed(last_text: String, picks: Array)
 
 class Portrait extends Control:
 	var who: String = "guest"
+	var emotion: String = ""
+	var action: String = ""
 
 	func _draw() -> void:
-		TDDialogueView.paint_bust(self, who, Rect2(Vector2.ZERO, size))
+		texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST
+		TDDialogueView.paint_bust(self, who, Rect2(Vector2.ZERO, size),emotion,action)
 
 var talk: TDDialogue
 var _pressing: bool = false
+var _ignore_release: bool = false
 var _portrait: Portrait
+var _right_portrait: Portrait
+var last_context: Dictionary = {}
+var last_completed: bool = false
+var _panel: Panel
 var _name: Label
 var _body: Label
 var _hint: Label
@@ -22,6 +30,16 @@ var _skip: Button
 var _choices: VBoxContainer
 var _choice_sig: String = ""
 var _dim: ColorRect
+var _cg: TDCutsceneView
+var _film_controls: HBoxContainer
+var _film_pause: Button
+var _skip_clip: Button
+var presentation_paused: bool=false
+var _arrival_hold: String=""
+signal hero_named(value: String)
+var _name_entry: HBoxContainer
+var _hero_input: LineEdit
+var _name_confirmed: bool=false
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -40,16 +58,23 @@ func _ready() -> void:
 	_dim.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_dim.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(_dim)
+	_cg=TDCutsceneView.new();_cg.position=Vector2.ZERO;_cg.size=Vector2(1280,550);add_child(_cg);_cg.hide()
 	_portrait = Portrait.new()
 	_portrait.name = "Portrait"
+	_portrait.z_index = 1
 	_portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_portrait.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-	_portrait.offset_left = 48.0
-	_portrait.offset_right = 348.0
+	_portrait.offset_left = 32.0
+	_portrait.offset_right = 308.0
 	_portrait.offset_top = -620.0
 	_portrait.offset_bottom = -36.0
 	add_child(_portrait)
+	_right_portrait=Portrait.new()
+	_right_portrait.name="RightPortrait"
+	_right_portrait.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	add_child(_right_portrait)
 	var panel := Panel.new()
+	_panel=panel
 	panel.name = "Box"
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
@@ -103,12 +128,39 @@ func _ready() -> void:
 	_hint.add_theme_color_override("font_color", TDUI.MUTED)
 	_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_child(_hint)
+	_film_controls=HBoxContainer.new();_film_controls.name="FilmControls"
+	_film_controls.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	_film_controls.offset_left=-310;_film_controls.offset_right=-20
+	_film_controls.offset_top=10;_film_controls.offset_bottom=48
+	add_child(_film_controls)
+	_film_pause=Button.new();_film_pause.text="暂停";_film_pause.focus_mode=Control.FOCUS_NONE
+	_film_pause.pressed.connect(toggle_presentation_pause)
+	_film_controls.add_child(_film_pause)
+	var skip_clip:=Button.new();skip_clip.name="SkipClip";skip_clip.text="跳过本段";skip_clip.focus_mode=Control.FOCUS_NONE
+	_skip_clip=skip_clip
+	skip_clip.pressed.connect(func()->void:
+		if talk!=null and not presentation_paused: talk.skip_cg();_pressing=false;_refresh();_emit_if_finished())
+	_film_controls.add_child(skip_clip)
+	_name_entry=HBoxContainer.new();_name_entry.name="HeroNameEntry"
+	_name_entry.position=Vector2(36,116);panel.add_child(_name_entry)
+	_hero_input=LineEdit.new();_hero_input.placeholder_text="你的昵称";_hero_input.max_length=20
+	_hero_input.custom_minimum_size=Vector2(450,46);_name_entry.add_child(_hero_input)
+	var confirm:=Button.new();confirm.text="报上真名";confirm.focus_mode=Control.FOCUS_NONE
+	confirm.pressed.connect(_confirm_hero_name);_name_entry.add_child(confirm)
+	_hero_input.text_submitted.connect(func(_value:String)->void:_confirm_hero_name())
+
 
 func present(next: TDDialogue) -> void:
 	talk = next
+	presentation_paused=false;_arrival_hold=""
+	_name_confirmed=not next.context.get("request_name",false)
+	_hero_input.text=""
 	talk.begin()
 	_pressing = false
+	_ignore_release = false
 	_choice_sig = ""
+	last_context={};last_completed=false
+	_apply_layout()
 	if _portrait != null:
 		_portrait.who = talk.portrait_id
 		_portrait.queue_redraw()
@@ -125,18 +177,24 @@ func finish_now() -> void:
 func dismiss() -> void:
 	_pressing = false
 	talk = null
+	if _cg!=null: _cg.stop_audio()
 	visible = false
 	set_process(false)
+	last_context={};last_completed=false
 
 func dim_alpha() -> float:
 	return _dim.color.a if _dim != null else 0.0
 
 func _gui_input(event: InputEvent) -> void:
-	if talk == null or not event is InputEventMouseButton:
+	if talk == null or presentation_paused or awaiting_name() or not event is InputEventMouseButton:
 		return
 	var mouse := event as InputEventMouseButton
 	if mouse.button_index != MOUSE_BUTTON_LEFT:
 		return
+	if mouse.pressed and talk.display_kind=="cg":
+		_ignore_release=true;accept_event();return
+	if not mouse.pressed and _ignore_release:
+		_ignore_release=false;_pressing=false;accept_event();return
 	if mouse.pressed:
 		_pressing = true
 		talk.pointer_down()
@@ -148,17 +206,23 @@ func _gui_input(event: InputEvent) -> void:
 	accept_event()
 
 func _process(delta: float) -> void:
-	if talk == null:
+	if talk == null or presentation_paused or awaiting_name():
 		return
+	var was_film:=talk.display_kind=="cg"
 	talk.tick(delta)
+	if was_film: _pressing=false
 	if _pressing:
 		talk.hold(delta, true)
 	_refresh()
 	_emit_if_finished()
 
 func _on_skip() -> void:
-	if talk == null:
+	if talk == null or presentation_paused or awaiting_name():
 		return
+	if talk.context.get("scene")=="intro":
+		if talk.display_kind=="cg": talk.skip_cg()
+		else: talk.click()
+		_refresh();_emit_if_finished();return
 	if talk.exhausted:
 		talk.click()
 	else:
@@ -171,7 +235,10 @@ func _emit_if_finished() -> void:
 		return
 	var text := talk.full_text()
 	var picked: Array = talk.picks.duplicate()
+	last_context=talk.context.duplicate(true)
+	last_completed=not talk.cancelled
 	talk = null
+	_cg.stop_audio()
 	_pressing = false
 	visible = false
 	set_process(false)
@@ -180,9 +247,36 @@ func _emit_if_finished() -> void:
 func _refresh() -> void:
 	if talk == null or _name == null:
 		return
-	_name.text = talk.speaker_name
+	_cg.size=size
+	var film:=talk.display_kind=="cg"
+	var intro: bool=str(talk.context.get("scene",""))=="intro"
+	if film and TDArrivalCutscene.SEGMENTS.has(talk.cg_id): _arrival_hold=talk.cg_id
+	if intro and not film and not _arrival_hold.is_empty():
+		_cg.show_shot(_arrival_hold,TDArrivalCutscene.SPANS[_arrival_hold],TDArrivalCutscene.SPANS[_arrival_hold],true)
+		_cg.stop_audio()
+	else: _cg.show_shot(talk.cg_id if film else "",talk.cg_elapsed,talk.cg_duration)
+	_panel.visible=not film;_dim.visible=not film and not intro;_film_controls.visible=film or intro
+	_film_pause.text="继续播放" if presentation_paused or talk.cg_paused else "暂停"
+	_skip_clip.disabled=not film or presentation_paused
+	_cg.set_audio_paused(presentation_paused or talk.cg_paused)
+
+	_portrait.visible=talk.display_kind=="line"
+	_right_portrait.visible=talk.presentation=="story" and talk.display_kind=="line"
+	# During this introduction the actors remain in the scene; Aling's offscreen
+	# call must not reveal her before her entrance. Later Gal portraits are unchanged.
+	if intro: _portrait.hide();_right_portrait.hide()
+	_portrait.emotion=talk.left_emotion if talk.presentation=="story" else talk.emotion
+	_right_portrait.emotion=talk.right_emotion
+	_portrait.action=talk.action if talk.active_side=="left" else ""
+	_right_portrait.action=talk.action if talk.active_side=="right" else ""
+	_name.text = "演出" if talk.display_kind=="cg" else talk.speaker_name
 	_body.text = talk.visible_text()
-	if _portrait != null and _portrait.who != talk.portrait_id:
+	if talk.presentation=="story":
+		_portrait.who=talk.left_portrait;_right_portrait.who=talk.right_portrait
+		_portrait.modulate=Color.WHITE if talk.active_side=="left" else Color(0.42,0.42,0.48)
+		_right_portrait.modulate=Color.WHITE if talk.active_side=="right" else Color(0.42,0.42,0.48)
+		_portrait.queue_redraw();_right_portrait.queue_redraw()
+	elif _portrait != null and _portrait.who != talk.portrait_id:
 		_portrait.who = talk.portrait_id
 		_portrait.queue_redraw()
 	elif _portrait != null and talk.portrait_id == "":
@@ -196,11 +290,12 @@ func _refresh() -> void:
 		_rebuild_choices()
 	_choices.visible = talk.choices_open
 	_body.visible = true
-	_body.position = Vector2(300, 54)
+	var left:=36.0 if talk.presentation=="story" else 300.0
+	_body.position = Vector2(left, 54)
 	var plate := _body.get_parent() as Control
 	var plate_width := plate.size.x if plate != null else 1100.0
-	_body.size = Vector2(maxf(280.0, plate_width - 340.0), 46.0 if talk.choices_open else 120.0)
-	_choices.position = Vector2(300, 104)
+	_body.size = Vector2(maxf(280.0, plate_width-left-40.0), 46.0 if talk.choices_open else 120.0)
+	_choices.position = Vector2(left, 104)
 	if talk.choices_open:
 		_hint.text = "请点选一句回复。跳过要等选完。"
 		_skip.text = "跳过"
@@ -209,14 +304,39 @@ func _refresh() -> void:
 		_hint.text = "点击鼠标左键，或按「关闭」。"
 		_skip.text = "关闭"
 		_skip.disabled = false
+
 	elif talk.shown < talk.body.length():
 		_hint.text = "点击显示完这句。长按鼠标左键快进。"
 		_skip.text = "跳过"
 		_skip.disabled = false
 	else:
-		_hint.text = "点击继续。长按鼠标左键快进。"
+		_hint.text = "演出中… 可点跳过" if talk.display_kind=="cg" and talk.cg_elapsed<talk.cg_duration else "点击继续。长按鼠标左键快进。"
 		_skip.text = "跳过"
 		_skip.disabled = false
+
+	_name_entry.visible=awaiting_name()
+	if intro and not film: _skip.text="继续"
+	if awaiting_name():
+		_skip.disabled=true;_body.text="见习厨师，你的名字是……";_hint.text="输入昵称后报上真名。"
+
+func awaiting_name() -> bool:
+	return talk!=null and talk.action=="enter_name" and not _name_confirmed
+
+func _confirm_hero_name() -> void:
+	if not awaiting_name() or presentation_paused: return
+	if talk.name_hero(_hero_input.text):
+		_name_confirmed=true;hero_named.emit(talk.hero_name);_hero_input.release_focus();_refresh()
+
+func toggle_presentation_pause() -> void:
+	if talk==null: return
+	presentation_paused=not presentation_paused
+	_pressing=false;talk.pointer_down()
+	talk.pause_cg(presentation_paused)
+	_refresh()
+
+func _notification(what: int) -> void:
+	if what==NOTIFICATION_APPLICATION_FOCUS_OUT and visible and talk!=null and not presentation_paused:
+		toggle_presentation_pause()
 
 func _rebuild_choices() -> void:
 	if _choices == null:
@@ -239,23 +359,46 @@ func _rebuild_choices() -> void:
 		_choices.add_child(button)
 
 func _choose(id: String) -> void:
-	if talk == null:
+	if talk == null or presentation_paused:
 		return
 	talk.pick(id)
 	_choice_sig = ""
 	_refresh()
 
-static func paint_bust(canvas: CanvasItem, who: String, box: Rect2) -> void:
+func _apply_layout() -> void:
+	var story_mode:=talk.presentation=="story"
+	_right_portrait.visible=story_mode
+	_portrait.modulate=Color.WHITE
+	_portrait.z_index=0 if story_mode else 1
+	_portrait.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
+	_portrait.offset_left=75.0 if story_mode else 32.0
+	_portrait.offset_right=555.0 if story_mode else 308.0
+	_portrait.offset_top=-760.0 if story_mode else -620.0
+	_portrait.offset_bottom=-248.0 if story_mode else -36.0
+	_right_portrait.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	_right_portrait.offset_left=-555.0;_right_portrait.offset_right=-75.0
+	_right_portrait.offset_top=-760.0;_right_portrait.offset_bottom=-248.0
+	_name.position.x=36.0 if story_mode else 300.0
+	_hint.position.x=_name.position.x
+	_choices.size.x=1080.0 if story_mode else 760.0
+
+static func paint_bust(canvas: CanvasItem, who: String, box: Rect2, emotion: String="", action: String="") -> void:
 	if box.size.x < 8.0 or box.size.y < 8.0:
+		return
+	if who=="luo":
+		var frame:=TDStoryArt.prop(5);canvas.draw_texture_rect(frame,TDStoryArt.fit(frame,box),false);return
+	var art:=TDStoryArt.portrait(who,emotion,action)
+	if art!=null:
+		canvas.draw_texture_rect(art,TDStoryArt.fit(art,box),false)
 		return
 	var cloth := Color("#3f6f8f")
 	var hair := Color("#243038")
 	var accent := Color("#d7e4ea")
-	if who == "linxia":
-		cloth = Color("#e07a3a")
-		hair = Color("#3a2418")
-		accent = Color("#f2c14e")
-	elif who == "aling":
+	if who.begins_with("guest"):
+		var variant:=clampi(int(who.trim_prefix("guest")),0,2)
+		cloth=[Color("497f92"),Color("a66f44"),Color("82719c")][variant]
+		hair=[Color("313642"),Color("704d36"),Color("666b72")][variant]
+	if who == "aling":
 		cloth = Color("#24344a")
 		hair = Color("#1b1a24")
 		accent = Color("#8ea0c0")
@@ -267,7 +410,9 @@ static func paint_bust(canvas: CanvasItem, who: String, box: Rect2) -> void:
 		cloth = Color("#3a2428")
 		hair = Color("#17141c")
 		accent = Color("#c6a15a")
-	if who in ["aling", "chen", "luo", "page"]:
+	if who=="crowd":
+		canvas.draw_circle(box.get_center()-Vector2(0,70),65,Color("232c32"));canvas.draw_rect(Rect2(box.get_center()-Vector2(90,10),Vector2(180,220)),Color("232c32"));return
+	if who in ["luo", "page"]:
 		_paint_stand_in(canvas, who, box)
 		return
 	canvas.draw_rect(box, Color(0.12, 0.1, 0.09, 0.55))

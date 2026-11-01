@@ -8,7 +8,7 @@ func before_each() -> void:
 	app=load("res://src/app/main.tscn").instantiate()
 	app.settings_path="res://artifacts/habitat-tests/%d/settings.json"%Time.get_ticks_usec()
 	add_child_autofree(app);shell=app.game_shell;shell.automatic_time=false
-	assert_true(shell.create_game("slot-01").ok)
+	assert_true(shell.create_game("slot-01").ok);shell.guide.dialogue.finish_now()
 	driver=DRIVER.new();driver.viewport=get_tree().root;driver.kitchen=shell.kitchen_view.kitchen
 	await wait_physics_frames(2)
 
@@ -32,18 +32,18 @@ func test_screen_speed_is_equal_in_eight_directions_and_entrance_cannot_escape()
 		await wait_physics_frames(6)
 		for action:String in actions: Input.action_release(action)
 		var delta:Vector2=(room.player_position()-before)/64.0
-		lengths.append(Vector2((delta.x-delta.y)*32,(delta.x+delta.y)*16).length())
+		lengths.append((TDRestaurantIsoView.project(delta.x,delta.y)-TDRestaurantIsoView.project(0,0)).length())
 	for distance:float in lengths: assert_almost_eq(distance,lengths[0],.1,"Equal actual on-screen movement")
 	assert_gt(lengths[0],15.0)
 	room.teleport_player(Vector2i(1,0))
 	assert_not_null(room._player.move_and_collide(Vector2(0,-300)),"Door interaction is not a hole through the perimeter")
 	assert_gt(room.player_position().y,0.0)
 
-func test_four_faces_select_only_front_building_and_cottage_is_a_real_room() -> void:
+func test_four_faces_nearby_building_and_cottage_is_a_real_room() -> void:
 	var town:=shell.town;town.spawn_at_plot("player_cottage")
 	assert_eq(town.facing_plot().get("id"),"player_cottage")
 	var correct:=town._player.facing;town._player.face(-Vector2(correct))
-	driver.tap(KEY_E);assert_ne(shell.location,"cottage","Facing another building must never enter the cottage")
+	driver.tap(KEY_E);assert_eq(shell.location,"cottage","Nearby interaction is independent of facing")
 	shell.travel("town");town.spawn_at_plot("player_cottage")
 	town._player.face(Vector2(correct));driver.tap(KEY_E);assert_eq(shell.location,"cottage")
 	var hashes:Dictionary={}
@@ -78,7 +78,7 @@ func test_bed_saves_next_day_once_and_loads_there_with_existing_progress() -> vo
 	assert_false(shell.restaurant.interaction_points().any(func(p:Dictionary)->bool:return p.action=="rest"))
 	var old:=before.duplicate(true);old.schema_version=3;old.erase("residence")
 	var migrated:=TDGameProfile.new();var result:=migrated.restore(old)
-	assert_true(result.ok,result.code);assert_eq(migrated.snapshot().schema_version,4)
+	assert_true(result.ok,result.code);assert_eq(migrated.snapshot().schema_version,6)
 	assert_true(TDLevelProgression.same_value(migrated.research.snapshot(),shell.profile.research.snapshot()));migrated.close()
 	var invalid:=before.duplicate(true);invalid.residence.schema_version=99
 	var unchanged:=shell.profile.snapshot()

@@ -69,12 +69,14 @@ var _board: TDEconomyBoard
 var _pantry: TDPantryBoard
 var _order_board: Label
 var _order_plate: Panel
+var characters: TDCharacterRoster
+var story_frozen: bool = false
+var _visit_seconds: float = 0.0
+var _finished_visits: Dictionary = {}
+var _visit_day: int = 0
 var floor_service: bool = false
-var caller_name: String = ""
-var caller_inside: bool = false
 var _talk_layer: CanvasLayer
 var _talk_view: TDDialogueView
-var caller_left: bool = false
 var _plate_order: String = ""
 
 func _ready() -> void:
@@ -139,16 +141,18 @@ func _ready() -> void:
 		_set_status(room)
 	_pull_layout_staff()
 	if player_mode:
-		_set_status("WASD 走动 · 招工处可雇厨师、服务员、迎宾、传菜和收银 · 门牌、账本、装修桌或门按 E · B 菜谱 · Esc 暂停" if floor_service else "WASD 走动 · 招工处可雇厨师或服务员 · 门牌、账本、装修桌或门按 E · B 菜谱 · Esc 暂停")
+		_set_status("WASD 走动 · Shift 疾跑 · 招工处可雇厨师、服务员、迎宾、传菜和收银 · 门牌、账本、装修桌或门按 E · B 菜谱 · Esc 暂停" if floor_service else "WASD 走动 · Shift 疾跑 · 招工处可雇厨师或服务员 · 门牌、账本、装修桌或门按 E · B 菜谱 · Esc 暂停")
 		_iso.interaction_markers=interaction_points()
 
 func _process(delta: float) -> void:
 	if _player != null:
 		_player.z_index = int(_player.position.y)
-	if player_mode and not get_tree().paused:
+	for guest: TDRestaurantGuest in guest_nodes(): guest.frozen=story_frozen or (_talk_open() and str(_talk_view.talk.context.get("ticket_id",""))==guest.ticket_id)
+	if player_mode and not get_tree().paused and not story_frozen:
+		_visit_seconds+=delta
 		_crew_time += delta
 		_sync_business_guests()
-	elif not get_tree().paused:
+	elif not get_tree().paused and not story_frozen and not player_mode:
 		_tick_service(delta)
 	for guest: TDRestaurantGuest in guest_nodes():
 		_place_seated(guest)
@@ -159,9 +163,9 @@ func _process(delta: float) -> void:
 			_set_status("客人走到了%s" % String(seat.get("name", "座位")))
 		elif guest.service_active and not player_mode:
 			_watch_service(guest)
-	if not get_tree().paused and player_mode and floor_service:
+	if not get_tree().paused and not story_frozen and player_mode and floor_service:
 		_tick_floor_runner(delta)
-	elif not get_tree().paused and not player_mode:
+	elif not get_tree().paused and not story_frozen and not player_mode:
 		_tick_runner(delta)
 	if _iso != null:
 		_iso.editing = _editing
@@ -171,8 +175,9 @@ func _process(delta: float) -> void:
 		_iso.runner_label = _runner_caption()
 		_iso.pass_point = layout.cell_center(pass_cell()) if _pass_has_plate() or _needs_player_plate() else Vector2(-1, -1)
 		_iso.held_label = _held_caption()
-		_iso.crew_people = _crew_points(0.0 if get_tree().paused else delta)
-		_iso.sync(_player, guest_nodes())
+		_iso.crew_people = _crew_points(0.0 if get_tree().paused or story_frozen else delta)
+		_iso.sync(_player, guest_nodes(),get_tree().paused or story_frozen)
+		if player_mode: _iso.nearby_action=str(nearby_object().get("action",""))
 	if _editing:
 		queue_redraw()
 
@@ -297,23 +302,26 @@ func request_interaction() -> bool:
 	if _talk_open():
 		return true
 	if player_mode:
+		# Actual floor duties retain their explicit E action; casual dialogue never steals a fixture.
 		if floor_service and _floor_act():
 			return true
+		var object:=nearby_object()
+		if not object.is_empty():
+			object_requested.emit(str(object.action));return true
 		var faced := _faced_guest()
 		if faced != null and not _editing:
-			var portrait := "linxia" if caller_name != "" and _guest_name(faced) == caller_name else "guest"
-			_open_talk(TDGuestVisit.conversation(_guest_name(faced), faced.dish_name, faced.phase, portrait))
+			var conversation: TDDialogue
+			if characters!=null and faced.character_id!="":
+				conversation=characters.conversation(faced.character_id)
+				conversation.context.ticket_id=faced.ticket_id
+			else:
+				conversation=TDGuestVisit.conversation(_guest_name(faced),str(faced.get_meta("recipe_label",faced.dish_name)),faced.phase,"guest%d"%faced.appearance_id,business.order(faced.ticket_id))
+			_open_talk(conversation)
 			return true
 		if faced != null:
 			_set_status(_guest_brief(faced))
 			return true
-		var nearest: Dictionary={};var distance:float=1.6
-		for entry: Dictionary in interaction_points():
-			var gap:=Vector2(cell_of_player()).distance_to(entry.cell)
-			if gap<distance and _player.faces_target(layout.cell_center(Vector2i(entry.cell))): nearest=entry;distance=gap
-		if nearest.is_empty(): return false
-		object_requested.emit(str(nearest.action))
-		return true
+		return false
 	if _held_ticket != "" and _player_at_seat(_held_ticket):
 		_set_status(deliver_held_plate().message)
 		return true
@@ -482,7 +490,8 @@ func _build_world() -> void:
 	_player.collision_layer = 8
 	_player.collision_mask = 4
 	_player.walk_speed=180.0
-	_player.motion_transform=Transform2D(Vector2(32,16)/layout.cell_px,Vector2(-32,16)/layout.cell_px,Vector2.ZERO).affine_inverse()
+	_player.vertical_stride_multiplier=1.6
+	_player.motion_transform=Transform2D(Vector2(TDRestaurantIsoView.HALF_W,TDRestaurantIsoView.HALF_H)/layout.cell_px,Vector2(-TDRestaurantIsoView.HALF_W,TDRestaurantIsoView.HALF_H)/layout.cell_px,Vector2.ZERO).affine_inverse()
 	var sprite := Sprite2D.new()
 	sprite.name = "Sprite2D"
 	sprite.texture = CHEF
@@ -498,6 +507,7 @@ func _build_world() -> void:
 	sprite.visible = false
 	add_child(_player)
 	_iso = TDRestaurantIsoView.new()
+	_iso.follow_player=player_mode
 	_iso.name = "IsoView"
 	add_child(_iso)
 
@@ -520,7 +530,7 @@ func _build_status_bar() -> void:
 	_observe_banner.add_theme_color_override("font_color", Color("f0cc70"))
 	layer.add_child(_observe_banner)
 	_order_plate = Panel.new()
-	_order_plate.position = Vector2(12, 8)
+	_order_plate.position = Vector2(12, 68)
 	_order_plate.size = Vector2(540, 188)
 	_order_plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_order_plate.visible = false
@@ -623,6 +633,7 @@ func _rebuild() -> void:
 	_floor.visible = false
 	if _iso != null:
 		_iso.set_room(layout)
+		if player_mode: _iso.interaction_markers=interaction_points()
 	if session != null and session.ready:
 		session.set_player_pieces(layout.pieces())
 	_free_children(_blockers)
@@ -1277,24 +1288,33 @@ func _ensure_talk() -> void:
 	_talk_view.closed.connect(_on_talk_closed)
 
 func _open_talk(next: TDDialogue) -> void:
+	if characters!=null and next.context.get("kind")=="resident": characters.hold(str(next.context.character_id),true)
 	_ensure_talk()
 	_talk_view.present(next)
 	_lock_player()
 
 func _on_talk_closed(last_text: String, _picks: Array) -> void:
+	var context: Dictionary=_talk_view.last_context
+	if characters!=null and context.get("kind")=="resident":
+		characters.hold(str(context.character_id),false)
+		characters.complete_chat(context,_talk_view.last_completed,_picks)
 	if last_text != "":
 		_set_status(last_text)
 	_lock_player()
 
 func _dismiss_talk() -> void:
 	if _talk_view != null and is_instance_valid(_talk_view):
+		if characters!=null and _talk_view.talk!=null and _talk_view.talk.context.get("kind")=="resident": characters.hold(str(_talk_view.talk.context.character_id),false)
 		_talk_view.dismiss()
 
 func _place_seated(guest: TDRestaurantGuest) -> void:
 	if layout == null or guest.seat_id == "":
 		guest.seated = false
 		return
-	if guest.phase != "wait_serve" and guest.phase != "eat" and guest.phase != "pay":
+	# Shop orders display payment at the table. Legacy service visits instead
+	# walk to a cashier during pay; snapping them back would block that route.
+	var at_table := guest.phase in ["wait_serve", "eat"] or (guest.phase == "pay" and not guest.service_active)
+	if not at_table:
 		guest.seated = false
 		return
 	var seat := layout.piece(guest.seat_id)
@@ -1532,6 +1552,7 @@ func _crew_points(delta: float) -> Array:
 		var verb := "招呼" if index < jobs.size() else "待命"
 		people.append({
 			"point": current,
+			"actor_id":str(server.id),
 			"label": "%s %s%d" % [verb, String(server["name"]), int(server.get("level", 1))],
 			"color": Color("#2f7a68"),
 			"moving": current.distance_to(target) > 0.5,
@@ -1541,6 +1562,7 @@ func _crew_points(delta: float) -> Array:
 		var cook: Dictionary = cooks[index]
 		people.append({
 			"point": _staff_spot(Vector2i(layout.columns - 2, layout.rows - 2), index),
+			"actor_id":str(cook.id),
 			"label": "后厨 %s%d" % [String(cook["name"]), int(cook.get("level", 1))],
 			"color": Color("#8a4b32"),
 			"moving": false,
@@ -1548,13 +1570,13 @@ func _crew_points(delta: float) -> Array:
 	var active := _session()
 	if active != null and active.ready and layout != null:
 		if active.staff_on("greeter"):
-			people.append({"point": layout.cell_center(layout.entrance()), "label": "迎宾", "color": Color("#d7a15a"), "moving": false})
+			people.append({"actor_id":"floor-greeter","point": layout.cell_center(layout.entrance()), "label": "迎宾", "color": Color("#d7a15a"), "moving": false})
 		if active.staff_on("cashier"):
 			var desk := layout.piece_by_kind("cashier")
 			var at := layout.entrance()
 			if not desk.is_empty():
 				at = Vector2i(int(desk.approach_x), int(desk.approach_y))
-			people.append({"point": layout.cell_center(at), "label": "收银", "color": Color("#c4b15a"), "moving": false})
+			people.append({"actor_id":"floor-cashier","point": layout.cell_center(at), "label": "收银", "color": Color("#c4b15a"), "moving": false})
 	return people
 
 func _waiter_post(index: int) -> Vector2:
@@ -1571,16 +1593,38 @@ func _staff_spot(origin: Vector2i, slot: int) -> Vector2:
 			return layout.cell_center(cell)
 	return layout.cell_center(Vector2i(clampi(origin.x, 1, layout.columns - 2), clampi(origin.y, 1, layout.rows - 2)))
 
+func nearby_object() -> Dictionary:
+	var nearest: Dictionary={};var distance: float=1.0
+	for entry: Dictionary in interaction_points():
+		var gap:=TDInteractionRange.distance(_player.position/float(layout.cell_px),entry.get("bounds",Rect2(entry.cell,Vector2.ONE)))
+		if gap<distance or (is_equal_approx(gap,distance) and str(entry.action)<str(nearest.get("action","~"))): nearest=entry;distance=gap
+	return nearest
+
 func interaction_points() -> Array[Dictionary]:
 	if layout==null: return []
+	var cashier:=layout.piece_by_kind("cashier")
+	var ledger_cell:=Vector2(maxi(2,layout.columns/3),0)
+	var ledger_bounds:=Rect2(ledger_cell,Vector2.ONE)
+	if not cashier.is_empty():
+		ledger_bounds=Rect2(cashier.x,cashier.y,cashier.w,cashier.h)
+		ledger_cell=ledger_bounds.get_center()-Vector2.ONE*.5
 	return [
 		{"action":"town","name":"店门 · 小镇","cell":Vector2(layout.entrance())},
-		{"action":"menu","name":"营业牌","cell":Vector2(1,3)},
-		{"action":"ledger","name":"账本","cell":Vector2(5,2)},
-		{"action":"recipes","name":"菜谱架","cell":Vector2(3,2)},
-		{"action":"decorate","name":"装修桌","cell":Vector2(1,layout.rows-3)},
-		{"action":"hire","name":"招工处","cell":Vector2(layout.columns-3,layout.rows-4)},
+		{"action":"menu","name":"营业牌","cell":Vector2(0,3)},
+		{"action":"ledger","name":"账本","cell":ledger_cell,"bounds":ledger_bounds,"on_counter":not cashier.is_empty()},
+		{"action":"recipes","name":"菜谱架","cell":Vector2(maxi(3,layout.columns/2),0)},
+		{"action":"decorate","name":"装修图板","cell":Vector2(0,layout.rows-3)},
+		{"action":"hire","name":"招工处","cell":Vector2(layout.columns-2,0)},
 		{"action":"kitchen","name":"后厨","cell":Vector2(layout.columns-2,layout.rows-2)}]
+
+func restore_visit_boundary() -> void:
+	# Boundary saves contain historical orders, not resumable dining actors.
+	_finished_visits.clear()
+	if business==null: return
+	var state:=business.snapshot()
+	_visit_day=int(state.day)
+	for order: Dictionary in state.orders:
+		if order.status not in ["WAITING","COOKING"]: _finished_visits[str(order.id)]=true
 
 func _sync_business_guests() -> void:
 	if business == null or layout == null or _guests == null:
@@ -1588,12 +1632,15 @@ func _sync_business_guests() -> void:
 	var snap := business.snapshot()
 	var orders: Array = snap.orders
 	var now := float(snap.elapsed_sec)
+	if _visit_day!=int(snap.day): _finished_visits.clear();_visit_day=int(snap.day)
 	var by_id := {}
 	for order: Dictionary in orders:
 		by_id[str(order.id)] = order
 	for order: Dictionary in orders:
-		if str(order.status) not in ["WAITING", "COOKING"] or _business_guests.has(str(order.id)):
+		if str(order.status) not in ["WAITING", "COOKING", "SERVED"] or _business_guests.has(str(order.id)) or _finished_visits.has(str(order.id)):
 			continue
+		var character_id:=characters.character_for(order.get("economic_profile",{})) if characters!=null else ""
+		if character_id!="" and not characters.can_enter(character_id,str(order.id)): continue
 		var occupied: Array = []
 		for current: TDRestaurantGuest in guest_nodes():
 			if current.seat_id != "":
@@ -1613,6 +1660,11 @@ func _sync_business_guests() -> void:
 			continue
 		var guest := TDRestaurantGuest.new()
 		guest.ticket_id = str(order.id)
+		guest.character_id=character_id
+		if characters!=null and not character_id.is_empty(): characters.begin_visit(character_id,str(order.id))
+		guest.appearance_id=absi(str(order.get("economic_profile",{}).get("id",order.id)).hash())%3
+		if order.has("economic_profile"): guest.dining_profile=TDEconomicCustomer.new(order.economic_profile)
+		if order.has("economic_intent"): guest.meal_intent=TDMealIntent.new(order.economic_intent)
 		guest.seat_id = str(seat.get("id", ""))
 		guest.phase = "approach"
 		guest.set_meta("recipe_label", business.recipe_name(str(order.recipe_id)))
@@ -1636,13 +1688,14 @@ func _sync_business_guests() -> void:
 			continue
 		var order: Dictionary = by_id.get(id, {})
 		var status := str(order.get("status", "CANCELLED"))
+		if _talk_open() and str(_talk_view.talk.context.get("ticket_id",""))==id: continue
 		var arrived := guest.phase != "approach" or guest.finished
 		var welcomed := duty_on("greeter") or bool(guest.get_meta("welcomed", false))
-		if not welcomed:
+		if not welcomed and status in ["WAITING","COOKING","SERVED"]:
 			guest.phase = "approach"
 			guest.dish_name = _order_caption(order, "approach", now)
 			continue
-		if not bool(guest.get_meta("sent_in", false)):
+		if not bool(guest.get_meta("sent_in", false)) and status in ["WAITING","COOKING","SERVED"]:
 			guest.set_meta("sent_in", true)
 			guest.set_meta("welcomed", true)
 			var seat := layout.piece(guest.seat_id)
@@ -1668,17 +1721,17 @@ func _sync_business_guests() -> void:
 				guest.dish_name = _order_caption(order, guest.phase, now)
 				continue
 			if not guest.has_meta("settled_at"):
-				guest.set_meta("settled_at", now)
-			var since := now - float(guest.get_meta("settled_at"))
+				guest.set_meta("settled_at", _visit_seconds)
+			var since := _visit_seconds - float(guest.get_meta("settled_at"))
 			var next := TDGuestVisit.phase_of(status, true, since)
-			if next == "leave" and not duty_on("cashier") and not bool(guest.get_meta("cashed", false)):
+			if next == "leave" and status=="SERVED" and not duty_on("cashier") and not bool(guest.get_meta("cashed", false)):
 				guest.phase = "pay"
 			elif next == "leave":
 				if guest.phase != "leave":
 					_send_guest_out(guest)
 				elif guest.finished:
-					if bool(guest.get_meta("caller", false)):
-						caller_left = true
+					_finished_visits[id]=true
+					if characters!=null: characters.finish_visit(guest.character_id,id)
 					_guests.remove_child(guest)
 					guest.free()
 					_business_guests.erase(id)
@@ -1687,7 +1740,6 @@ func _sync_business_guests() -> void:
 				guest.phase = next
 		if is_instance_valid(guest):
 			guest.dish_name = _order_caption(order, guest.phase, now)
-	_claim_caller()
 	_refresh_order_board(orders, now)
 
 func duty_on(role: String) -> bool:
@@ -1754,25 +1806,8 @@ func _unplated_order() -> String:
 	return ""
 
 func _guest_name(guest: TDRestaurantGuest) -> String:
-	if guest != null and bool(guest.get_meta("caller", false)) and caller_name != "":
-		return caller_name
+	if guest!=null and characters!=null and guest.character_id!="": return str(characters.definition(guest.character_id).get("name","客人"))
 	return "客人"
-
-func _claim_caller() -> void:
-	if not caller_inside or caller_name == "" or _has_caller():
-		return
-	for id: String in _business_guests.keys():
-		var guest: TDRestaurantGuest = _business_guests[id]
-		if is_instance_valid(guest):
-			guest.set_meta("caller", true)
-			return
-
-func _has_caller() -> bool:
-	for id: String in _business_guests.keys():
-		var guest: TDRestaurantGuest = _business_guests[id]
-		if is_instance_valid(guest) and bool(guest.get_meta("caller", false)):
-			return true
-	return false
 
 func _tick_floor_runner(delta: float) -> void:
 	if layout == null or not duty_on("runner"):
@@ -1833,7 +1868,7 @@ func _faced_guest() -> TDRestaurantGuest:
 		if guest.phase == "gone":
 			continue
 		var gap := here.distance_to(Vector2(_cell_at(guest.position)))
-		if gap >= best_gap or not _player.faces_target(guest.position):
+		if gap >= best_gap:
 			continue
 		best = guest
 		best_gap = gap
@@ -1860,8 +1895,7 @@ func _guest_brief(guest: TDRestaurantGuest) -> String:
 		refunded = int(order.get("refunded_cents", 0))
 		if order.get("customer") is Dictionary:
 			customer = str((order.customer as Dictionary).get("name", "客人"))
-		if bool(guest.get_meta("caller", false)) and caller_name != "":
-			customer = caller_name
+		if guest.character_id!="": customer=_guest_name(guest)
 		if order.get("score") is Dictionary and not (order.score as Dictionary).is_empty():
 			satisfaction = float((order.score as Dictionary).get("satisfaction", -1.0))
 		if order.get("economic_intent") is Dictionary:
@@ -1882,7 +1916,7 @@ func _refresh_order_board(orders: Array, now: float) -> void:
 	if _order_board == null:
 		return
 	if _order_plate != null:
-		_order_plate.visible = player_mode and not _covered
+		_order_plate.visible = player_mode and not _covered and business!=null and str(business.snapshot().phase) in ["OPEN","DRAINING"]
 	_order_board.visible = true
 	if not player_mode or _covered:
 		return
@@ -1893,8 +1927,6 @@ func _refresh_order_board(orders: Array, now: float) -> void:
 		lines.append(layout.crew.duty_line())
 	if floor_service:
 		lines.append("迎宾%s，传菜%s，收银%s" % ["在岗" if duty_on("greeter") else "你来", "在岗" if duty_on("runner") else "你来", "在岗" if duty_on("cashier") else "你来"])
-	if caller_inside and caller_name != "":
-		lines.append("%s进店了" % caller_name)
 	var active: Array = []
 	var recent: Dictionary = {}
 	for order: Dictionary in orders:
@@ -1922,7 +1954,15 @@ func _refresh_order_board(orders: Array, now: float) -> void:
 		shown += 1
 	if shown == 0:
 		lines.append("还没有客人。开门后，客人会比较本店、竞品和在家吃饭。")
-	lines.append("面向客人按 E。没雇迎宾、传菜、收银时，招呼、端菜和送客也是这一下。" if floor_service else "面向客人按 E，查看点单、比较和结算。")
+	lines.append("靠近客人按 E。没雇迎宾、传菜、收银时，招呼、端菜和送客也是这一下。" if floor_service else "靠近客人按 E，查看点单、比较和结算。")
 	_order_board.text = "\n".join(lines)
 
 var last_visit: Dictionary = {}
+
+func finish_night() -> void:
+	_dismiss_talk()
+	for guest: TDRestaurantGuest in guest_nodes():
+		_finished_visits[guest.ticket_id]=true
+		if characters!=null: characters.finish_visit(guest.character_id,guest.ticket_id)
+	_clear_guests()
+	_business_guests.clear();_plate_order=""

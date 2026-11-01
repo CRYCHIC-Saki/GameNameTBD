@@ -1,31 +1,40 @@
 class_name TDChefArt
 extends RefCounted
-## Original code-drawn pixel chef. All four poses share the same foot origin.
-static var _textures: Dictionary={}
+## Read-only atlas views; approved PNGs are never rewritten or resized on disk.
+const IDLE_ATLAS: Texture2D = preload("res://assets/characters/protagonist/protagonist-idle-four-directions-v1.png")
+const WALK_PATH := "res://assets/characters/protagonist/protagonist-walk-four-directions-v1.png"
+const IDLE_REGIONS: Array[Rect2] = [
+	Rect2(214,30,312,595), Rect2(728,30,307,595),
+	Rect2(255,649,254,576), Rect2(746,649,259,576),
+]
+# Measured opaque bounds: direction DOWN/UP/LEFT/RIGHT, then opposite stride.
+# The original idle pose supplies the two passing beats of each four-beat cycle.
+const WALK_REGIONS: Array[Rect2] = [
+	Rect2(104,20,236,466), Rect2(104,515,236,468),
+	Rect2(460,20,232,464), Rect2(460,515,232,467),
+	Rect2(842,22,229,462), Rect2(840,517,232,462),
+	Rect2(1219,22,222,463), Rect2(1217,517,229,464),
+]
+static var _textures: Dictionary = {}
+static var _walk_atlas: Texture2D
 
-static func texture(facing: Vector2i) -> Texture2D:
-	if _textures.has(facing): return _textures[facing]
-	var img:=Image.create(32,40,false,Image.FORMAT_RGBA8)
-	img.fill(Color.TRANSPARENT)
-	var side: bool=facing.x!=0
-	var back: bool=facing==Vector2i.UP
-	box(img,9,30,6,8,"34444a");box(img,18,30,6,8,"34444a")
-	box(img,8,37,7,3,"252b30");box(img,18,37,7,3,"252b30")
-	box(img,6,18,21,14,"d9dccc");box(img,9,18,15,15,"eee9ce")
-	box(img,4,21,4,10,"e8b48a");box(img,25,21,4,10,"e8b48a")
-	box(img,10,20,12,11,"a84e3b" if back else "c7714d")
-	if not back: box(img,12,23,8,9,"eee9ce");box(img,11,19,10,3,"ab4938")
-	box(img,9,8,15,11,"e5b18a");box(img,8,8,17,4,"4a342d")
-	box(img,9,2,15,7,"eeeeda");box(img,6,4,21,6,"f4f0d7");box(img,8,10,17,3,"c3ccbc")
-	if back:
-		box(img,9,13,15,5,"513b32")
-	elif side:
-		var eye_x:=22 if facing.x>0 else 10
-		box(img,eye_x,14,2,2,"2c302d");box(img,24 if facing.x>0 else 7,15,3,3,"edbf94")
-	else:
-		box(img,11,14,2,2,"2c302d");box(img,20,14,2,2,"2c302d");box(img,15,17,4,1,"925f47")
-	var result:=ImageTexture.create_from_image(img);_textures[facing]=result
-	return result
+static func direction_index(facing: Vector2i) -> int:
+	match facing:
+		Vector2i.UP: return 1
+		Vector2i.LEFT: return 2
+		Vector2i.RIGHT: return 3
+	return 0
 
-static func box(img: Image,x:int,y:int,w:int,h:int,color:String) -> void:
-	img.fill_rect(Rect2i(x,y,w,h),Color(color))
+static func texture(facing: Vector2i, walk_frame: int = -1) -> Texture2D:
+	var direction := direction_index(facing)
+	var frame := clampi(walk_frame, -1, 3)
+	if frame == 1 or frame == 3: return texture(facing)
+	var key := Vector2i(direction, frame)
+	if _textures.has(key): return _textures[key]
+	var atlas := AtlasTexture.new()
+	if frame >= 0 and _walk_atlas == null: _walk_atlas = load(WALK_PATH)
+	atlas.atlas = IDLE_ATLAS if frame < 0 else _walk_atlas
+	atlas.region = IDLE_REGIONS[direction] if frame < 0 else WALK_REGIONS[direction * 2 + (frame >> 1)]
+	atlas.filter_clip = true
+	_textures[key] = atlas
+	return atlas

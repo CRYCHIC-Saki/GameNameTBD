@@ -1,0 +1,75 @@
+{
+  "schema": 1,
+  "date": "2026-10-29",
+  "generator": "built-in image_gen",
+  "character_id": "ash-priest",
+  "references": [
+    {
+      "file": "design-annotated-original.jpg",
+      "sha256": "3915d5291b1d2d37f5a8ea9375a42ffaaffed1e74245a42beb89c931d0289d98",
+      "source_filename": "codex-clipboard-63329b23-eca1-4e98-874e-64b755f70e08.jpg",
+      "byte_identical": true,
+      "path": "doc/source/characters/ash-priest/design-annotated-original.jpg",
+      "role": "用户带标注形象原稿；部件参考"
+    },
+    {
+      "file": "design-clean-original.png",
+      "sha256": "32784dcb674004a51ea602d8085350e4aa6a62a4efefdc0f0733dafd1302072f",
+      "source_filename": "codex-clipboard-4bd7924b-a9e4-40a4-a340-3b8cb9bcc903.png",
+      "byte_identical": true,
+      "path": "doc/source/characters/ash-priest/design-clean-original.png",
+      "role": "用户无标注形象原稿；身份与配色主参考"
+    }
+  ],
+  "style_references": [
+    {
+      "path": "assets/characters/protagonist/protagonist-idle-four-directions-v1.png",
+      "sha256": "169c2ed07230794e57d7d92369211794f10b57dbffb648515768a5b005292409"
+    },
+    {
+      "path": "assets/characters/protagonist/protagonist-dialogue-halfbody-pose-pixel-v7.png",
+      "sha256": "9b45e97bc035faabc6fc7f20c93d33e48508f915ca49900d33492e816f1e2f0f"
+    },
+    {
+      "path": "assets/characters/aling/archive/2026-10-29/aling-dialogue-halfbody.png",
+      "sha256": "42e5e42d71caedebea76b421eb3bfb232b6d80389aade638ea271ba79cfb2eed"
+    }
+  ],
+  "runs": [
+    {
+      "purpose": "four-direction sprite sheet",
+      "generation_id": "exec-3de96aaa-660a-43cb-9a55-485c497901f7",
+      "selected": true,
+      "output": "ash-priest-idle-four-directions-v1.png",
+      "sha256": "7c97e9fa73933065d7eb8867e11437244b93cb4b3ee482e4f72ac2fbdce6f05e",
+      "transparent_background": true,
+      "prompt": "Use case: stylized-concept\nAsset type: transparent four-direction idle sprite sheet for our established cozy 2D pixel RPG.\nInput1: PRIMARY character identity, the clean original design of the ingredient shopkeeper who calls herself \"灰烬司祭\" (Ash Priest).\nInput2: same character annotated design, accessory construction reference only.\nInput3: existing protagonist four-way sprite sheet, PIXEL TECHNIQUE, chibi proportions and layout reference ONLY; do not copy chef identity or equipment.\nCreate exactly FOUR full-body standing sprites on a 2x2 atlas: TOP LEFT FRONT facing viewer/down, TOP RIGHT BACK facing away/up (no face), BOTTOM LEFT strict LEFT profile looking screen-left, BOTTOM RIGHT strict RIGHT profile looking screen-right. Same character, scale and baseline within rows; every crown, staff, cape and shoe completely inside its cell, generous transparent gutters and margins. No labels or grid lines.\nPixel style: clear readable small game sprites, visible coarse square pixel blocks like input3, not a fine anime illustration. Aim for roughly 48x96 logical pixels per whole figure including tall hat, enlarged with crisp nearest-neighbor-looking blocks. Uniform pixel size across eyes, hair, outfit and props; one logical pixel stepped outline, compact 2-3 shade ramps per material, limited palette about 32-40 colors. Simplify fine detail into strong recognizable clusters. No tiny noise, thin smooth curves, antialiased painting or gradients. Cute about 3-head body proportions beneath the tall crown, modestly slim body, soft rounded cheeks/chin, friendly eyes. No sharp V jaw, no adult glamour.\nCharacter: warm enthusiastic ingredient-shop proprietress, convinced she knows the secrets of a sacred meal, happy welcoming expression rather than ominous or severe.\nEssential original design:\n1. White/silver shoulder-length wispy hair with pale blush-pink underside/shadows and short bangs; amber-gold eyes, natural dark pupils with ONE tiny upper-corner highlight; rosy cheeks and cheerful little smile.\n2. DISTINCTIVE TALL RED OPEN-FRAME CROWN HAT: red headband supporting two rounded arched loops and a central vertical red rib, with a small RED SQUARE plaque bearing a pale-gold FLAME emblem at the top/front. Preserve the HOLLOW TRANSPARENT holes between the red ribs: not a solid red bishop hat, not a chef toque, not a tiara with spikes.\n3. Deep scarlet long-sleeve robe/dress with red collar, pale flame-shaped neck ornament and gold ties, cream ruffled shoulder bib/apron, cream waist sash, long ivory apron and tiered ivory ruffled skirt underneath open red outer skirt panels. Hem to ankles; pink ribbed stockings and red strap shoes.\n4. Signature COOKING LADLE STAFF held upright at her anatomical RIGHT side (viewer-left in front). Long straight copper-orange handle, large rounded copper/orange soup-ladle bowl at TOP, as in input1. This is a giant kitchen ladle carried like a ceremonial staff, not a cane hook, spear, torch or magic crystal. One hand holds it naturally in idle; gold bracelet on a visible gripping wrist.\n5. SMALL WOODEN ABACUS suspended at anatomical LEFT hip (viewer-right in front): rectangular tan open frame, clearly visible parallel rods and golden/orange BEADS. Dark red open gaps between rods, a horizontal divider where scale allows. Definitely an ABACUS, not a handbag, book, closed box, keyboard or jewelry. Thin red hanging cord and a small gold tassel below.\n6. TAN PURCHASE-ORDER PAPER CAPE flowing from her upper back to near hem: large joined paper sheet with faded red ruled marks and slightly torn/scalloped edges. Clearly parchment/order-slip material rather than cloth, wings or flames. This paper cape is dominant in BACK view; preserve red dress below/at sides. Original detached floating papers are omitted for clean usable idle sprites, but keep the attached paper cape.\nMaintain true anatomical accessory ownership across rotations; staff remains RIGHT hand, abacus LEFT hip. In LEFT profile the abacus is near/visible and staff may be on far side; in RIGHT profile staff is near and abacus naturally partly hidden. Draw independent profiles, no horizontal-mirror shortcuts. Back shows rear white hair, rear crown ribs, paper cape and correct staff side. Transparent RGBA with clear crown holes, no scenery, ground, shadow, captions, spell effects or extra items."
+    },
+    {
+      "purpose": "half-body initial composition",
+      "generation_id": "exec-1ce57884-f303-4a96-aba4-cd9550dc2a41",
+      "selected": false,
+      "reason": "冠帽顶部和算盘下缘贴边，追加构图留白修正",
+      "transparent_background": true,
+      "prompt": "Use case: stylized-concept\nAsset type: transparent fine-pixel half-body dialogue portrait for an existing cozy pixel RPG.\nCreate the ingredient shopkeeper who calls herself “灰烬司祭” (Ash Priest). She is convinced she understands the mysteries of the sacred meal and is extremely warm and enthusiastic with customers. Keep the original character's identity.\nInput1 PRIMARY clean character design. Input2 same annotated design, construction reference only. Input3 approved A Ling portrait, PIXEL ART STYLE and soft cute face reference only. Input4 approved chef protagonist portrait, same game's cute face and fine-pixel technique reference only. Do not copy the other characters' identity, clothes or props.\nComposition: ONE waist/upper-hip-up character at a gentle three-quarter angle toward screen-left, her eyes looking toward viewer/customer. Natural upright stance, both hands comfortably holding the same vertical copper ladle staff beside her, upper hand at chest height and lower hand around waist. An eager warm slightly open-mouth smile, bright friendly amber eyes, rosy cheeks. Keep the entire red crown including flame emblem INSIDE top margin, ladle bowl fully visible at screen-left, and the ENTIRE hip abacus inside lower frame. Show some parchment purchase-order cape behind shoulders. Square portrait with comfortable transparent margins, no UI, background or floating paper confetti.\nMatch the APPROVED portraits' art family: genuinely cute, modestly slender, SOFT SHORT ROUNDED CHIN and smoothly curving oval cheeks, no V chin or straight sharp diagonal jaw. Deliberate fine SQUARE PIXEL clusters and stair-stepped contours, clean controlled color ramps; detailed but still unmistakably pixel art. Not a vector/anime painting with a pixel-noise filter. No blur or airbrush. Simple small nose, small friendly mouth, bright amber-gold eyes with dark pupils and one small natural upper-corner catchlight per iris, not white squares in pupil centers.\nEssential original design details:\n- WHITE/SILVER shoulder-length windswept hair, short bangs, pink-tinted underside and shadows, a few creamy-gold highlights.\n- TALL SCARLET OPEN-RIB CROWN HAT: red headband with two curved arch-loop ribs and one central vertical red rib; square RED FRONT PLAQUE carrying a PALE GOLD FLAME near its top. Large HOLLOW TRANSPARENT openings between ribs, exactly the unusual silhouette from original; not a solid fabric bishop miter, chef hat or jeweled crown. Keep whole crown.\n- Scarlet long sleeves and stand collar, a small flame-shaped red/pale-gold neck ornament with gold ties, ivory/cream ruffled shoulder bib and apron, cream waist sash. Slim torso and gentle sleeve volume; remain cute rather than glamour.\n- A ceremonial staff made from an oversized KITCHEN SOUP LADLE: long slender straight copper-orange handle with a rounded copper ladle bowl at its top, shown in the original like a half-dome with a rim. Keep clear kitchen-utensil identity, not a shepherd crook, cane, torch or weapon. One gold bracelet at gripping wrist.\n- IMPORTANT a WOODEN CHINESE ABACUS hanging at her anatomical LEFT hip (viewer-right): rectangular open pale wooden frame, parallel rods with unmistakable GOLD/ORANGE BEADS; horizontal separating beam with a short upper bead section and longer lower bead section where visible. Dark red/transparent spaces between rods show it is OPEN, not a closed box. Thin red suspension cord and gold tassel below. Draw the entire abacus and tassel clearly, large enough to recognize in a dialogue portrait, but still naturally at hip. Do not replace with a book, bag, chest or tray.\n- Tan PURCHASE-ORDER PAPER CAPE attached from upper back: warm parchment sheets with faded red ruled lines/small square bookkeeping marks and slightly torn edges. It is paper stock-order slips made into a cape, not angel wings, flames or solid cloth. Let it peek behind arms and torso while keeping face/abacus clear.\nEverything coherent with original red/ivory/pale-pink/tan/gold colors. No new jewelry, weapons, religious icons, halo, or magic effects; preserve original flame emblem rather than inventing symbols. No text or watermark. Real transparent RGBA background including crown openings."
+    },
+    {
+      "purpose": "half-body framing correction",
+      "generation_id": "exec-cf9e108f-3353-4da5-814f-398ae7f9512e",
+      "selected": true,
+      "output": "ash-priest-dialogue-halfbody-v1.png",
+      "sha256": "dd4805805f0706090dae07195421527143d3e46d4630e209cd2b6d869ee8ba4d",
+      "transparent_background": true,
+      "prompt": "Use case: precise-object-edit\nEdit this exact fine-pixel portrait of the white-haired ingredient shopkeeper. ONLY FIX FRAMING. Keep the identical character design, soft rounded cute face, open friendly smile, head angle, both hands gripping the copper ladle staff, all colors, pixel density, red hollow crown construction, flame ornaments, gold wrist bangle, cream/red outfit, paper purchase-order cape, and wooden abacus. No stylistic redesign.\nProblem: top of the tall crown and bottom of the abacus touch/cross the image borders. Adjust the composition within the SAME square transparent canvas: reduce the scale of the ENTIRE connected character+props composition uniformly enough (approximately 88-90% of current) and reposition it so the COMPLETE top crown has AT LEAST 40 transparent pixels above it, and the COMPLETE wooden abacus frame INCLUDING its bottom-right corner and the gold tassel have AT LEAST 35 transparent pixels to the bottom/right edges. Ladle bowl and every hair tip also safely within canvas. Preserve the current relative proportions and positions of hat/head/body/abacus; do NOT shorten the hat or move the abacus up into the chest. The bottom crop may pass through her apron/upper hips and the long straight staff handle, but NEVER through the abacus or its tassel.\nMaintain a half-body portrait, do not extend to full-body/legs. Keep all fine square pixel detail and sharp stair-step edges, use no blur. Keep both open arches of crown fully transparent. Keep the abacus exactly an OPEN wooden frame with rods and golden beads, not a box/book/bag. Same lively friendly shopkeeper, no background, no border or captions, no new papers/props. Real transparent RGBA margins."
+    }
+  ],
+  "art_assumptions": [
+    "角色未提供个人姓名，目录以灰烬司祭的英文素材标签ash-priest命名，不新增剧情身份。",
+    "四向图用2×2版式，每向一张静态站姿，轮廓简化为小人比例。背面与侧面为基于原稿的补绘，待用户确认。",
+    "为让角色素材独立可用，省略原稿中四周漂浮的独立纸张；保留穿在身后的进货单纸披风。",
+    "半身像双手握汤勺、微侧头开口笑，保留冠帽和腰间算盘。",
+    "神职自称仅用于性格表现；没有新增魔法、战斗、宗教机制或商店规则。"
+  ],
+  "pixel_grid_note": "提示中的48×96逻辑网格是像素风视觉目标；实际输出1254×1254，没有宣称严格原生小尺寸网格。未脚本重绘、缩放、量化或修改alpha。",
+  "edit_note": "构图修正为生成式编辑，不保证初稿其他区域逐像素不变。"
+}

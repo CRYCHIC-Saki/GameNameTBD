@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-28",
+  "user_request": "保持指定图片的姿势和像素，仅仅将风格改得可爱一点",
+  "generator": "built-in image_gen",
+  "input_generation_id": "exec-44d728b2-3ae1-47fb-bac2-fe01a2291638",
+  "input": "doc/source/characters/protagonist/dialogue-pose-selected-reference.png",
+  "input_sha256": "cb0219db81d5b87bbeaf6bec8c68f2f822cfc0c1119b97ed747b5ffdabcffaa2",
+  "generation_id": "exec-77fb45e2-16da-40bc-abd5-79b45e58ffbf",
+  "output": "protagonist-dialogue-halfbody-pose-cute-v5.png",
+  "sha256": "4b2b6d62b3874cb11ae79f8babc560f621b6056f31cb083afdcc21fe451862f4",
+  "dimensions": [
+    1254,
+    1254
+  ],
+  "transparent_background": true,
+  "prompt": "Use case: identity-preserve / precise-object-edit.\nThis image is the EXACT edit target chosen by the user. Make this same pixel-art half-body portrait a little CUTER, while preserving its exact POSE, COMPOSITION and PIXEL-ART TECHNIQUE. This is a delicate localized face-style refinement, not a redesign.\n\nLOCK THE FOLLOWING:\nThe same head tilt and viewing angle; the raised hand on screen-right with index finger touching near the chin and the same bent fingers; the other hand resting on the pouch at the waist on screen-left; both arm positions, shoulders and torso; overall head size and head-to-body ratio; camera crop, framing and transparent canvas. Keep all hair locks, chef cap, flame tuft, gold/red hair colors, white shirt, red tie with gold bars, apron, pouch, belt, flame applique and pan EXACTLY as they are as closely as possible. No new pose, no front-facing turnaround, no enlarged chibi head.\n\nALLOWED CHANGE — THE FACE ONLY:\nKeep the face relatively slim and the same face size. Gently soften the pointed chin and cheek transitions by a few of the existing small pixels, without broadening into a round baby face. Make the amber eyes a little rounder and more open, with sweeter, friendlier gaze; retain eye location, eye spacing, amber color and existing eye-highlight style. Soften sharp upper eyelids and eyebrow angles so the expression is less sly and more endearing. Keep the tiny fang and a small cheerful, gentle smile. Retain modest warm blush. The result should feel cute, lively, approachable, and slightly mischievous, with no mature glamorous expression.\n\nPIXEL PRESERVATION:\nUse exactly the current fine micro-pixel density, stepped edge treatment, line thickness, palette rendering, shading and detailed pixel clusters of the provided target. Do not change to large coarse blocks. Do not change to smooth vector/anime line art. Do not blur, rescale, add an airbrush filter, simplify the costume, repaint the full character or alter the pixel detail level. Preserve the pixels outside the small face area as faithfully as possible.\n\nOutput one PNG preserving the current transparent alpha background, image size and crop. No background, no checkerboard, no added text, frame, panel, or watermark.",
+  "change": "以用户重新指定的早期托腮图为编辑目标，柔化眼神、眉眼和脸部线条；保留托腮与扶刀鞘姿势、构图、服装及细像素表现。不是在v4上继续修改。",
+  "verification": {
+    "png_decode": "PASS",
+    "rgba_transparency": "PASS",
+    "pose_and_pixel_style_visual_review": "PASS",
+    "pixel_exact_unchanged_outside_face": "NOT_CLAIMED_GENERATIVE_EDIT",
+    "human_art_acceptance": "PENDING",
+    "game_checks": "NOT_RUN_ASSET_ONLY"
+  },
+  "status": "DELIVERED_LOCAL_ART_REVIEW_PENDING"
+}

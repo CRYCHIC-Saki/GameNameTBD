@@ -1,18 +1,15 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://src/world/kitchen_world.gd" id="1_world"]
-[ext_resource type="Texture2D" path="res://assets/kitchen/kitchen-background-v1.png" id="2_background"]
+[ext_resource type="Texture2D" path="res://assets/kitchen/kitchen-background-v2.png" id="2_background"]
 [ext_resource type="Script" path="res://src/world/kitchen_player.gd" id="3_player"]
 [ext_resource type="Texture2D" path="res://assets/kitchen/chef-v1.png" id="4_chef"]
 
 [sub_resource type="RectangleShape2D" id="TopShape"]
-size = Vector2(1280, 252)
-
-[sub_resource type="RectangleShape2D" id="SideShape"]
-size = Vector2(96, 800)
+size = Vector2(1280, 280)
 
 [sub_resource type="RectangleShape2D" id="BottomShape"]
-size = Vector2(1280, 36)
+size = Vector2(1280, 64)
 
 [sub_resource type="CapsuleShape2D" id="FeetShape"]
 radius = 12.0
@@ -33,19 +30,17 @@ collision_layer = 1
 collision_mask = 0
 
 [node name="Top" type="CollisionShape2D" parent="CountersAndWalls"]
-position = Vector2(640, 126)
+position = Vector2(640, 140)
 shape = SubResource("TopShape")
 
-[node name="Left" type="CollisionShape2D" parent="CountersAndWalls"]
-position = Vector2(48, 400)
-shape = SubResource("SideShape")
+[node name="Left" type="CollisionPolygon2D" parent="CountersAndWalls"]
+polygon = PackedVector2Array(0, 0, 96, 280, 32, 736, 0, 800)
 
-[node name="Right" type="CollisionShape2D" parent="CountersAndWalls"]
-position = Vector2(1232, 400)
-shape = SubResource("SideShape")
+[node name="Right" type="CollisionPolygon2D" parent="CountersAndWalls"]
+polygon = PackedVector2Array(1280, 0, 1184, 280, 1248, 736, 1280, 800)
 
 [node name="Bottom" type="CollisionShape2D" parent="CountersAndWalls"]
-position = Vector2(640, 782)
+position = Vector2(640, 768)
 shape = SubResource("BottomShape")
 
 [node name="Player" type="CharacterBody2D" parent="."]
@@ -54,6 +49,7 @@ collision_layer = 2
 collision_mask = 1
 motion_mode = 1
 script = ExtResource("3_player")
+sprite_height = 100.0
 
 [node name="Feet" type="CollisionShape2D" parent="Player"]
 shape = SubResource("FeetShape")

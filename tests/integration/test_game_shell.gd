@@ -21,6 +21,7 @@ func after_each() -> void:
 
 func start() -> void:
 	var result:=shell.create_game("slot-01","灶间烟火")
+	shell.guide.dialogue.finish_now() # Fixture cancels the automatic arrival.
 	assert_true(result.ok,result.code)
 	driver.kitchen=shell.kitchen_view.kitchen
 
@@ -35,7 +36,9 @@ func test_title_new_slot_real_doors_and_repeated_entry_keep_same_session() -> vo
 	driver.tap(KEY_B);assert_null(app.atlas);assert_null(shell.atlas)
 	start();assert_eq(shell.location,"town");assert_true(shell.profile.world.home_built)
 	var profile:=shell.profile;var kitchen:=shell.kitchen_view.kitchen
-	# New-game spawn really is within interaction range of its own front door.
+	# New slots arrive at the harbor; the door test explicitly walks back home.
+	assert_eq(shell.town._player_cell(),TDHarbor.ARRIVAL)
+	shell.town.spawn_at_home()
 	driver.tap(KEY_E);assert_eq(shell.location,"restaurant")
 	for i: int in 3:
 		var point: Dictionary=shell.restaurant.interaction_points().filter(func(p:Dictionary)->bool:return p.action=="kitchen")[0]
@@ -116,7 +119,7 @@ func test_book_uses_real_kitchen_unlocks_within_slot_and_never_in_other_slot() -
 	assert_has(shell.profile.research.snapshot().unlocked,"C03")
 	shell.close_atlas();assert_true(shell.save_game().ok)
 	var old:=shell.profile
-	shell.go_title();assert_true(shell.create_game("slot-02").ok)
+	shell.go_title();assert_true(shell.create_game("slot-02").ok);shell.guide.dialogue.finish_now()
 	assert_eq(shell.profile.research.snapshot().unlocked,["C01","C02"])
 	assert_eq(old._research_candidate(old.research.snapshot()).code,"STALE_PROFILE")
 	shell.go_title();assert_true(shell.load_game("slot-01").ok)
@@ -142,7 +145,7 @@ func test_bank_world_interaction_and_buttons_use_the_profile_wallet() -> void:
 	assert_true(shell.save_game().ok)
 	shell.show_bank()
 	var stale_action: Callable=button("存入",shell._modal_box).pressed.get_connections()[0].callable
-	shell.go_title();assert_true(shell.create_game("slot-02").ok)
+	shell.go_title();assert_true(shell.create_game("slot-02").ok);shell.guide.dialogue.finish_now()
 	var unchanged:=shell.profile.snapshot()
 	stale_action.call()
 	assert_eq(shell.profile.snapshot(),unchanged)
@@ -193,6 +196,8 @@ func test_slot_layout_round_trip_and_old_file_explicit_import_is_read_only() -> 
 	shell.go_title();assert_true(shell.import_legacy().ok)
 	assert_true(shell.profile.imported_legacy)
 	assert_eq(int(shell.profile.commerce.state.day),3)
+	assert_eq(shell.profile.characters.clock.day,3)
+	assert_eq(shell.profile.characters.clock.minute,1200.0)
 	assert_eq(int(shell.profile.commerce.society.state.last_day),3)
 	assert_eq(int(shell.profile.commerce.state.tax_due_cents),0)
 	assert_eq(int(shell.profile.commerce.cash_audit(int(shell.profile.shop.snapshot().money_cents)).difference_cents),0)

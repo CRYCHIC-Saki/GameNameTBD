@@ -1,0 +1,171 @@
+{
+  "schema": 1,
+  "selected_dialogue_portrait": {
+    "file": "protagonist-dialogue-halfbody-pose-pixel-v7.png",
+    "sha256": "9b45e97bc035faabc6fc7f20c93d33e48508f915ca49900d33492e816f1e2f0f",
+    "selected_on": "2026-10-28",
+    "selection": "USER_CONFIRMED_KEEP_V7",
+    "generation_record": "portrait-pose-pixel-v7-generation.json",
+    "runtime_integration": "NOT_DONE"
+  },
+  "character_id": "protagonist",
+  "date": "2026-10-27",
+  "status": "ASSETS_GENERATED_GAME_INTEGRATION_NOT_REQUESTED",
+  "generator": "built-in image_gen",
+  "references": [
+    {
+      "path": "doc/source/characters/protagonist/design-annotated-original.jpg",
+      "sha256": "f5851099955f92bc31fa2384743c0e12e237651645e2df0839312629f233b842",
+      "role": "user original annotated concept; visual reference only"
+    },
+    {
+      "path": "doc/source/characters/protagonist/design-clean-original.png",
+      "sha256": "4a31337b1272266f9d980e1c85d949b766c6dead8a93aad1a9f6ee0a460a64b7",
+      "role": "user original clean concept; primary identity/color reference"
+    }
+  ],
+  "sprite_atlas": {
+    "file": "protagonist-idle-four-directions-v1.png",
+    "sha256": "169c2ed07230794e57d7d92369211794f10b57dbffb648515768a5b005292409",
+    "size": [
+      1254,
+      1254
+    ],
+    "layout": [
+      2,
+      2
+    ],
+    "cell_size": [
+      627,
+      627
+    ],
+    "frames_per_direction": 1,
+    "animation": "idle_static",
+    "filter_recommendation": "nearest",
+    "alpha": "RGBA; generated alpha preserved without thresholding or repacking",
+    "bounds_measurement_alpha_threshold": 128,
+    "pivot_note": "Suggested bottom-center of visible body, local to each cell; validate in runtime before using as collision origin. Do not center all cells blindly.",
+    "directions": [
+      {
+        "id": "front",
+        "facing": "down",
+        "region_xywh": [
+          0,
+          0,
+          627,
+          627
+        ],
+        "visible_bounds_local_xywh": [
+          214,
+          30,
+          312,
+          595
+        ],
+        "suggested_pivot_local_xy": [
+          370,
+          625
+        ]
+      },
+      {
+        "id": "back",
+        "facing": "up",
+        "region_xywh": [
+          627,
+          0,
+          627,
+          627
+        ],
+        "visible_bounds_local_xywh": [
+          101,
+          30,
+          307,
+          595
+        ],
+        "suggested_pivot_local_xy": [
+          254.5,
+          625
+        ]
+      },
+      {
+        "id": "left",
+        "facing": "left",
+        "region_xywh": [
+          0,
+          627,
+          627,
+          627
+        ],
+        "visible_bounds_local_xywh": [
+          255,
+          22,
+          254,
+          576
+        ],
+        "suggested_pivot_local_xy": [
+          382,
+          598
+        ]
+      },
+      {
+        "id": "right",
+        "facing": "right",
+        "region_xywh": [
+          627,
+          627,
+          627,
+          627
+        ],
+        "visible_bounds_local_xywh": [
+          119,
+          22,
+          259,
+          576
+        ],
+        "suggested_pivot_local_xy": [
+          248.5,
+          598
+        ]
+      }
+    ],
+    "generation_id": "exec-ce0fa2e9-6925-4b08-a20a-275c7af7ade9"
+  },
+  "dialogue_portrait": {
+    "file": "protagonist-dialogue-halfbody-v1.png",
+    "sha256": "997edd4c369246a9f7107bbaba4c7d6865a8e4998c9667d3321d6e63c72e8e44",
+    "size": [
+      1254,
+      1254
+    ],
+    "alpha": "RGBA; generated alpha preserved",
+    "portrait_placement": "left",
+    "dialogue_text_placement": "right",
+    "facing": "slightly_screen_right",
+    "expression": "confident_friendly_smile",
+    "crop": "waist_up",
+    "visible_bounds_xywh": [
+      264,
+      98,
+      767,
+      1148
+    ],
+    "filter_recommendation": "nearest",
+    "generation_id": "exec-b072ef12-169d-4a81-9108-963fa6d3603c"
+  },
+  "verification": {
+    "reference_copy_hashes": "PASS_2_OF_2",
+    "png_decode": "PASS_2_OF_2",
+    "transparent_background": "PASS",
+    "four_direction_visual_inspection": "PASS",
+    "four_cells_visible_body_not_clipped": "PASS_AT_ALPHA_128",
+    "portrait_headroom": "PASS_98_PIXELS_AT_ALPHA_128",
+    "human_art_acceptance": "PENDING",
+    "godot_check": "NOT_RUN_ASSET_ONLY",
+    "game_integration": "NOT_REQUESTED_NOT_DONE"
+  },
+  "assumptions": [
+    "Side/back costume details are generated interpretations of front-view user references.",
+    "Static idle views only; no walking cycle requested.",
+    "Generated PNGs retain original tool output size, not claimed to be a native 48x64 sprite export."
+  ]
+}
+

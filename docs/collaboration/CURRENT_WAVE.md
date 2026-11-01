@@ -1,5 +1,122 @@
 # 当前协作波次
 
+## 2026-11-01 当前版上传授权
+
+用户明确请求上传当前版本；root作为集成者在现有integration/phase-4-wave-protagonist提交推送，覆盖历史本轮“不提交/推送”约束。已fetch并确认origin/main fa172f7完整包含；代码/素材/测试与D054最终验证一致，无新玩法。保留本地doc/source改动，EXE、缓存与测试产物继续忽略；本轮不合并main。
+
+## 2026-11-01 D054 海港开篇（DELIVERED_LOCAL_PLAYTEST_PENDING）
+root唯一写入src/story新增arrival场景/时间轴、ui/dialogue/view、opening配置、town/harbor/planned_town/town_world及必要地表绘制、characters/character_roster、game_shell正式接线、关联测试/探针/导出与工程记录；cg_revision_facts仅只读。原存档/钱物/产权与原资料只读；本轮起点备份artifacts/arrival-coast/baseline。不提交推送，旧551/551不是本轮结果。AC见story-expansion D054。
+
+
+最终全量556/556、20070断言、三段30秒GPU录制、550资源及EXE启动3×4/菜单移动30项PASS；595输入哈希及96原文件不变，258起点备份完好，325路径所有权PASS。16:51本地EXE/PCK更新，写入锁释放；人工PENDING，远程CI NOT_RUN，未提交推送。
+
+## 2026-11-01 D053-R2 连续场景动画（DELIVERED_LOCAL_PLAYTEST_PENDING）
+
+root唯一写入story/cutscene_view、ui/dialogue与view、opening运行配置、必要Shell/Guide接线、测试/探针/检查导出/记录；cg_revision_facts只读核查。已有294路径改动已备份到artifacts/cg-revision/baseline；原资料/角色原图只读，不提交/推送。AC先行见story-expansion R2；旧分层CG的工程通过不能视为连续动画验收。
+
+最终551/551、20028断言、17段/1224帧GPU录制、538资源及EXE启动3×4/菜单移动29项PASS。804输入哈希不变，96原文件未变、252份起点文件备份完好，299路径所有权PASS；13:51本地EXE/PCK更新。写入锁释放；人工PENDING，远程CI NOT_RUN，未提交/推送。
+
+## 2026-10-31 D053 剧情演出与任务引导（DELIVERED_LOCAL_PLAYTEST_PENDING）
+
+根Agent唯一写入：src/story、content/story、assets/story，ui/dialogue/view、app/game_shell、town/town_world、business/shop_view、business/game_profile剧情子对象校验、kitchen/full_kitchen必要教程钩子、project.godot输入、对应测试/检查导出和工程记录。story_scope_facts_d053只读已完成。210份已有改动备份artifacts/story-expansion/baseline；原资料/角色原图只读。不提交推送。
+
+用户同轮追加D053-R1实际港口：root补src/town/harbor.gd、assets/town/harbor-v1及Shell告示接线。候船棚/船位使用东侧原不可建水域、接近点用原桥面；不写地图配置/产权/存档，不改其他工作线的建筑和经济。客运接口与货运商路分开，未制作目的地场景不允许传送。
+
+最终专项40/40、全量545/545、19938断言、67张实际GPU图、536运行资源、真实导出EXE启动退出3×4及菜单/移动29项PASS。799最终输入哈希不变、96原始资料/角色文件未变、210已有改动备份完整；294路径所有权PASS。22:10本地EXE/PCK已重建，写入锁释放，人工PENDING、远程CI NOT_RUN，未提交/推送。
+
+## 2026-10-30 D052 房屋周边铺地（DELIVERED_LOCAL_PLAYTEST_PENDING）
+
+- 根Agent唯一写入src/town/town_scenery.gd地表绘制与本轮工程记录；ground_patch_facts只读核查。原位图、地块/产权/道路/碰撞/存档不改。不提交/推送。
+- 复用residential专项及实际GPU场景核查；导出与真实EXE检查使用隔离槽。只修视觉铺地，不重复拆造地图。
+- 19/19相关回归、8张GPU核查、505资源与真实EXE启动3×4/菜单移动29项PASS；未重跑完整旧531项。543最终输入及69保护文件不变，208份前序备份完整，212路径所有权PASS。写入锁释放，人工PENDING，未提交/推送。
+
+## 2026-10-30 D051 NPC步态、统一小镇画风和餐厅疏密（DELIVERED_LOCAL_PLAYTEST_PENDING）
+
+- 唯一写入者本任务根Agent；npc_walk_facts_d051仅只读事实核查。保留D046–D050全部已有改动与原始素材，不提交/推送。
+- 锁story_art、新独立NPC步态素材与最小位移步态对象、town_world/restaurant_guest/restaurant_iso步态接线、environment_art/town_scenery/town_art新版本素材、restaurant_world功能物件布置/碰撞、必要专项测试/图形探针、检查/导出清单与文档。角色原图、地图产权、经营模型及存档字段不改。
+- 餐厅采用增加真实显示格距及重排功能陈设，保留家具实例/存档和容量；不通过整体镜头放大冒充通道增加。AC及契约见town-polish报告D051；根负责最终集成。
+- 最终所有权212路径PASS，专项42/42、移动复验30/30，完整检查加定向复验覆盖531项/19607断言；两处旧内部坐标断言修正，生产代码未在完整检查后变化。505资源、真实EXE启动3×4及菜单/移动29项PASS，543最终输入及69保护文件哈希一致。写入锁释放；人工PENDING，未提交/推送。
+
+## 2026-10-30 D050 居民区呈现（DELIVERED_LOCAL_PLAYTEST_PENDING）
+
+- 唯一写入者本任务Agent；residential_facts仅只读核查。保留全部前序未提交改动，不提交/推送。
+- 锁town_art、environment_art的新独立住宅图集、town_scenery的住宅基底、game_shell的居民区告示、对应专项/图形探针、导出清单与记录。住宅格/道路/小屋位置/经济/存档不改。
+- 已备份当前dirty/untracked至artifacts/residential/baseline，所有权检查PASS。AC与技能记录复用docs/phases/town-polish.md D050节。
+- 最终所有权191路径PASS；专项19/19、全量525/525、493资源、真实EXE启动3×4和菜单/移动29项PASS。528份已测输入及69份保护文件哈希不变；179份原始工作基线完整。写入锁已释放，未提交/推送。
+
+## 2026-10-30 D049 街区融合、NPC活动与周边交互（DELIVERED_LOCAL_PLAYTEST_PENDING）
+
+- 唯一写入者本任务Agent；npc_access_facts_r1只读调查。保留D046–D048和全部未提交素材资料，本轮不提交/推送。
+- 锁town_art/town_world、新scenery绘制、character_roster及其配置、world/kitchen_world、restaurant_world、cottage_world、game_shell最小时间接线、必要静态交互几何工具、专项/回归测试、检查/导出清单与工程记录。复用当前地图产权、存档schema6和原厨房/经济，不另造系统。
+- 所有权183路径PASS；原165份在artifacts/town-polish/baseline备份。全量521/521、491资源与真实EXE检查PASS，原523验证输入与69保护文件哈希无变化。写入锁已释放，未提交/推送。
+
+
+## 2026-10-30 D048 小镇更新（DELIVERED_LOCAL_PLAYTEST_PENDING）
+
+- 唯一写入者本任务Agent；day_demand_facts、map_layout_facts只读已完成。保留全部D046/D047及用户未提交资料、角色素材。本轮不提交/推送。
+- 写入范围：town_map/town_art/town_world/cottage_world，新增地形/昼夜/用餐时间纯规则及配置；restaurant_iso/restaurant_art/restaurant_world、kitchen_world场景与脚本；game_profile/profile_store/world_snapshot/phase3_session的显式地图迁移；game_shell/shop_view/shop_session/world_economy/character_roster必要时序适配；新版独立环境PNG；对应测试、检查/导出清单和工程记录。厂商、家庭财务、QTE评分不另造实现。
+- AC和用户已答决策见docs/phases/town-renewal.md。共享文件由本集成者顺序修改。最终513/513与导出/485资源/真实EXE检查PASS；写入锁已释放，人工试玩待验收。未提交/推送。
+
+
+## 2026-10-30 D047 NPC 分类、全天时钟与剧情双立绘
+
+- 唯一写入者本任务 Agent；npc_split_facts 仅只读调查，已完成。保留 D046 及所有用户未提交素材/资料，不提交、不推送。
+- 本轮锁 src/characters 新模块和 content/characters 配置、platform/day_clock、game_shell/game_profile、world_economy 的画像接入、shop_session 的真实订单与深夜收尾、shop_view 清理、town_world、restaurant_world/guest/iso/guest_visit、dialogue/dialogue_view、opening/story_art、相关测试及导出检查、工程记录。删除林夏专用 town_caller 及替名逻辑，保留原财务系统。
+- 状态 DELIVERED_LOCAL_PLAYTEST_PENDING；写入锁释放。范围、三个已回答产品问题和验收见 docs/phases/characters.md。最终502/502、467资源、真实EXE启动3×4与菜单/移动29项PASS；82份原始资料/素材不变。只读调查不写代码，未提交/推送。
+
+## 2026-10-29 D046 剧情厨房修复
+
+- 用户授权非营业做菜、剧情赠料和素材库人物接入。唯一写入者本任务 Agent；closed_kitchen_facts 只读调查，不写代码。
+- 锁共享 game_shell/game_profile、shop_view/shop_session、world_economy 的相关边界适配，story/opening、town_world/dialogue_view、最小 story_art、新专项测试及 test_shop_application 回归、检查/导出配置与记录。research_trial_view 仅修正保存提示，避免内存暂存误报已落盘。角色原PNG与原始资料只读；无推送或提交授权。
+- 验收见 docs/phases/story-kitchen.md；状态 DELIVERED_LOCAL_PLAYTEST_PENDING（2026-10-30），写入锁释放。最终全量488/488、EXE导出及菜单/移动29项PASS，所有权101文件检查通过。保留全部现有用户素材改动，82份原始资料/素材哈希不变，不创建平行厨房/剧情账；未提交/推送。罗厄缺专属素材，人工剧情试玩待验收。
+
+
+## 2026-10-29 拉取 storyline 并保留 D042
+
+- 用户授权拉取；仅本次fetch使用已验证的本机7897代理，未修改全局网络设置。origin/main从73f6f8f更新到fa172f7（含5b9830a与fa172f7），本地已验收移动修复先保存为0f06c97。
+- 唯一集成写入者本任务Agent；锁共享文档冲突段、game_shell/town_world/restaurant_world及必要导出依赖/集成验证。不扩展剧情或重构NPC。保留本地主角D040与移动D042，远端装修D042、对话AI-050以语义后缀消歧并保留原编号来源。
+- 73份既有改动已备份至artifacts/pull-20261029-155037。远端新增doc/source/无敌厨神！.docx与本地blob完全一致，整合后校验原文不变；其他素材/原始资料保持原样。
+- 状态INTEGRATED_LOCAL，写入锁释放。pre-export-20261029-155427：481/481、16407断言、804.968秒，0失败/跳过；452资源审计、实际EXE启动退出3次×4项及菜单/移动29项PASS，16:08重建包。53份用户素材/原始资料哈希一致，集成所有权92文件PASS；远端复查仍fa172f7。人工试玩PENDING、远程CI NOT_RUN，未推送。
+
+## 2026-10-29 D042 碰撞速度修复、疾跑与 NPC 审计
+
+- 用户授权修复餐厅碰障碍加速、增加按住Shift疾跑，并检查NPC Lifeline功能及NPC数据复用。基线ce6da40；当前integration/phase-4-wave-protagonist。既有未提交主角/阿凌素材和doc/source资料保持只读，不提交、不推送。
+- 唯一写入者本任务Agent，集成角色顺序处理共享移动控制器src/world/kitchen_player.gd、project.godot、四场景操作提示/入口、tests/integration/test_player_motion.gd与检查入口/记录；NPC审计代理仅只读，无代码写权。本轮不重构NPC经济、雇佣或分店。
+- 状态DELIVERED_LOCAL_PLAYTEST_PENDING，写入锁释放。真实碰撞旧版失败→修复后通过，专项4/4、617断言；标准导出全量471/471、16250断言，444资源审计、EXE启动退出3次及菜单/移动29项通过。AC与技能审查见habitat.md D042，NPC只读审计见npc-lifeline-audit.md；人工手感PENDING，远程CI NOT_RUN，未提交/推送。
+
+## 2026-10-28 拉取 NPC Lifeline 并保留本地主角修复
+
+- 用户要求重试拉取；本次fetch成功，origin/main=73f6f8f（NPC Lifeline），本地基线12900cb。采用merge保留双方历史，不推送、不改远端main。
+- 唯一集成写入者本任务Agent；锁公共记录、game_shell/game_profile/town_world/restaurant_world重叠段、对应集成测试及导出配置/门禁。保留远端林夏访客、分店和楼面岗位交互；保留本地主角动画、真实屏幕计步及旧客人收银离店兼容修复。
+- 拉取前26份修改/未跟踪文件已备份至artifacts/pull-20261028-205900，与远端变更无路径重叠。其他任务的主角立绘、阿凌素材和doc/source原始资料不覆盖、不提交；本任务不取得这些资源的写权。
+- 状态INTEGRATED_LOCAL，写入锁释放；town_caller已进入导出白名单及强制门禁。pre-export-20261028-210737为467/467、15633断言、1168.189秒，0失败/跳过；444运行资源导出、真实EXE启动退出3次及菜单/移动29项全部PASS。人工试玩PENDING、远程CI NOT_RUN。26份备份文件SHA256不变，仅本地同步、未推送。
+
+## 2026-10-27 拉取经营闭环并保留主角改动
+
+- 用户最新请求拉取GitHub新内容；fetch确认origin/main=732d144（经营闭环），本地主角基线8e33432。先备份39份修改/未跟踪文件至artifacts/pull-20261027-202823，再将已验收主角与前序导出修复保存为本地提交，采用merge整合，保留共同历史。
+- 唯一集成写入者本任务Agent；锁餐厅绘制/场景重叠段、导出配置/门禁及公共记录。远端顾客/装修规则保持，主角动画按真实屏幕位移的修复保留。远端同名D040/AI-048以VISIT后缀消歧并保留原编号来源；原始doc/source资料不提交、不覆盖。
+- 状态INTEGRATED_LOCAL，写入锁释放；仅本地同步，未推送。最终pre-export-20261027-204644为461/461、15561断言、723.902秒，导出/启动退出3次/菜单移动29项均PASS；人工PENDING、远程CI NOT_RUN。不以先前458项通过代替新组合结果。
+- 首次全量461项中460通过，旧phase3_visit离店回归失败：pay就座新增逻辑把需要走向收银台的旧service_active顾客持续放回椅子。由本集成者修复restaurant_world._place_seated，并在test_restaurant_world保留正式pay就座断言；不改经营结算。原失败证据pre-export-20261027-203216保留。
+- 整合所有权48文件PASS；17份原资料/美术哈希与拉取前一致。原始doc/source仍未跟踪，角色交付及合并均有本地提交，不改全局Git配置、不强推或合并远端main。
+
+## 2026-10-27 主角四向形象与行走动画
+
+- D040-R2再次反馈餐厅前后步频过快。唯一写入者本任务，修改kitchen_player.gd、test_protagonist.gd、protagonist_probe.gd及对应记录。非正交投影误用basis_xform_inv造成左右×2、上下×8；独立绘制投影回归先失败，再修正计步，不改实际移动/碰撞/尺寸。458/458全量与GPU17图通过；19:43包首次退出有ObjectDB警告，标准导出FAIL保留，同包verbose及3次29项严格复验通过，偶发警告原因未定位。所有权39文件PASS、写入锁释放，状态DELIVERED_LOCAL_PLAYTEST_PENDING_WITH_EXIT_WARNING，未提交/推送。
+
+- D040-R1已修正用户反馈：厨房/小镇人物放大到屏幕约72、餐厅/小屋70保持；餐厅仅前后步频降至原62.5%，实际走速不变。唯一写入者仍为本任务；涉及kitchen_player.gd、kitchen_world.tscn、town_world.gd、restaurant_world.gd、图形探针与对应记录，图集/物理/存档不变。专项19/19、GPU18图、全量457/457及EXE导出检查全部通过，所有权39文件PASS，写入锁释放；状态DELIVERED_LOCAL_PLAYTEST_PENDING，未提交/推送。
+
+- 用户指定assets/characters/protagonist/protagonist-idle-four-directions-v1.png替换主角，并完善行走动画。基线8e33432，保留上一轮未提交的导出修复；当前integration/phase-4-wave-protagonist。
+- 唯一写入者本任务Agent，顺序承担角色视觉与集成；protagonist_motion_facts代理只读调查运动/绘制链。锁src/world/chef_art.gd、kitchen_player.gd、src/restaurant/restaurant_iso.gd、restaurant_world.gd及必要场景装配；新增角色动画PNG和元数据、专项测试/视觉探针、导出配置/工具及工程记录。已有站姿PNG、半身像与doc/source/原稿不改写。
+- 仅替换主角及步态；NPC雇员保持原形象，碰撞/移动速度/朝向交互/存档规则不变。停止、受阻、弹窗、暂停和隐藏时必须正确停止或冻结动画；餐厅投影使用同一动画状态，不另造一套计时。
+- 状态DELIVERED_LOCAL_PLAYTEST_PENDING，写入锁释放。专项19/19、图形15图、全量457/457及440资源导出、EXE启动3次和菜单/移动29项均通过；验收与实际技能来源见docs/phases/protagonist.md。原站姿/半身像/设计稿哈希不变；未提交、推送。
+
+## 2026-10-27 本地重建的导出依赖修复
+
+- 用户要求重新构建；基线main=8e33432（PR #5已合并且已pull）。首次标准导出全量453/453通过，但Windows包遗漏餐厅员工类TDRestaurantCrew，实际EXE启动超时；隔离诊断确认缺失类导致解析失败。
+- 唯一写入者：本任务Agent（集成角色）；分支integration/phase-4-wave-export-crew。锁定export_presets.cfg、tools/export.ps1以及本记录、PROJECT_STATE。仅补运行依赖与导出门禁/超时日志，不修改员工或其他玩法。
+- AC-BUILD-001：员工脚本进入运行包且资源清单校验通过；AC-BUILD-002：标准导出全量、真实EXE启动退出三次与菜单输入检查通过；AC-BUILD-003：玩家档不接触，三份原始资料哈希不变。三项工程PASS：最终pre-export-20261027-153400为453/453、15186断言，436运行资源、EXE启动退出3次和29项输入检查均通过。第二轮中断未计通过，首轮失败证据保留。
+- 状态DELIVERED_LOCAL，写入锁释放；图形/音频与人工试玩本轮未执行，不提交、不推送。构建期间新增的其他角色素材与来源目录保持原样，不包含在本轮修改/运行包中。
+
 ## 2026-10-27 habitat与远端员工更新的集成
 
 - 用户授权推送；origin/main=466b9d2，原基线c54fc86，本地已验收修改先保存为5ee38e9。集成者唯一处理冲突和共享入口；保留D038等级、D039住所移动音乐和远端员工/工厂变更，不强推、不直接合并main。

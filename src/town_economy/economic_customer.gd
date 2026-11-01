@@ -23,6 +23,8 @@ func snapshot() -> Dictionary:
 static func validate(raw: Variant) -> TDOutcome:
 	if not raw is Dictionary or raw.get("schema_version") != 1:
 		return TDOutcome.new(false, "INVALID_CUSTOMER_VERSION")
+	if raw.has("character_id"):
+		if not raw.character_id is String or raw.character_id.is_empty() or str(raw.get("id",""))!="character:"+raw.character_id or not raw.get("display_name") is String or raw.display_name.is_empty(): return TDOutcome.new(false,"INVALID_CHARACTER_CUSTOMER")
 	if raw.has("household_id") and (not raw.household_id is String or raw.household_id.strip_edges().is_empty() or raw.household_id.length()>120):
 		return TDOutcome.new(false, "INVALID_HOUSEHOLD_ID")
 	for field: String in ["id", "group_id", "home_town_id", "origin_id"]:

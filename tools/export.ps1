@@ -25,9 +25,11 @@ function Run-Process([string]$Exe, [string]$Name, [string[]]$Arguments) {
   [void]$process.Start()
   $output = $process.StandardOutput.ReadToEndAsync()
   $errors = $process.StandardError.ReadToEndAsync()
-  if (-not $process.WaitForExit(90000)) { $process.Kill($true); throw "$Name timeout" }
+  $timedOut = -not $process.WaitForExit(90000)
+  if ($timedOut) { $process.Kill($true); $process.WaitForExit() }
   $text = $output.GetAwaiter().GetResult() + $errors.GetAwaiter().GetResult()
   [IO.File]::WriteAllText((Join-Path $evidence "$Name.log"), $text)
+  if ($timedOut) { throw "$Name timeout; see $evidence/$Name.log" }
   if ($process.ExitCode -ne 0 -or $text -match '(?m)^\s*(SCRIPT ERROR|ERROR):|Parse Error:|ObjectDB.*leaked') {
     throw "$Name failed exit=$($process.ExitCode); see $evidence"
   }
@@ -40,10 +42,26 @@ try {
   try {
     $names = @($archive.Entries | ForEach-Object { $_.FullName })
     foreach ($name in $names) {
-      if ($name -notmatch '^(src/|\.godot/|assets/audio/(casual|service|cooking)\.wav(\.import)?$|assets/(kitchen/(recipe-icons/)?|town/)[^/]+\.png(\.import)?$|content/(dev_samples|cooking_prototype|cooking_system|service_content|restaurant|phase3_world|pantry|ingredient_index|research/recipe_atlas|research/runtime_recipes|town_economy/economy|markets/kitchen_stock|brand/progression)\.json$|project\.binary$)') { throw "Non-runtime resource exported: $name" }
+      if ($name -notmatch '^(src/|\.godot/|assets/characters/(aling/archive/2026-10-29/aling|ash-priest/archive/2026-10-29/ash-priest)-(idle-four-directions|dialogue-halfbody)\.png(\.import)?$|assets/characters/(aling/aling|ash-priest/ash-priest)-walk-four-directions-v1\.png(\.import)?$|assets/characters/protagonist/protagonist-((idle|walk)-four-directions-v1|dialogue-halfbody-pose-pixel-v7)\.png(\.import)?$|assets/audio/(casual|service|cooking)\.wav(\.import)?$|assets/(kitchen/(recipe-icons/)?|town/|story/)[^/]+\.png(\.import)?$|content/(story/opening|characters/roster|dev_samples|cooking_prototype|cooking_system|service_content|restaurant|phase3_world|pantry|ingredient_index|research/recipe_atlas|research/runtime_recipes|town_economy/(economy|meal_schedule)|towns/chinese_layout|markets/kitchen_stock|brand/progression)\.json$|project\.binary$)') { throw "Non-runtime resource exported: $name" }
     }
     $names | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'runtime-manifest.json') -Encoding utf8
 	if ('content/town_economy/economy.json' -notin $names) { throw 'Missing exported economy configuration' }
+    $crewResource = 'src/restaurant/restaurant_crew.gd'
+    if ($crewResource -notin $names -and ($crewResource + '.remap') -notin $names) { throw 'Missing exported restaurant crew script' }
+    $guestResource = 'src/restaurant/guest_visit.gd'
+    if ($guestResource -notin $names -and ($guestResource + '.remap') -notin $names) { throw 'Missing exported guest visit script' }
+    foreach ($resource in @('assets/story/arrival-props-v1.png.import','src/story/arrival_cutscene.gd','src/story/arrival_cutscene.tscn','assets/story/arrival-hero-v1.png.import','assets/story/arrival-aling-v2.png.import','assets/story/arrival-coast-v1.png.import','src/town/harbor.gd','assets/town/harbor-v1.png.import','src/story/story_guide.gd','src/story/cutscene_view.gd','src/story/quest_path.gd','src/story/quest_trail.gd','src/story/opening_script.gd','content/story/opening.json','assets/story/aling-emotions-corrections-v1.png.import','assets/story/cinematic-actors-v1.png.import','assets/story/hero-emotions-v1.png.import','assets/story/aling-emotions-v1.png.import','assets/story/chen-emotions-v1.png.import','assets/story/opening-actions-v1.png.import','assets/story/opening-actions-extra-v1.png.import','assets/story/opening-backgrounds-v1.png.import','assets/story/opening-props-v1.png.import','assets/characters/aling/aling-walk-four-directions-v1.png.import','assets/characters/ash-priest/ash-priest-walk-four-directions-v1.png.import','assets/town/town-sprites-v3.png.import','assets/town/residential-houses-v2.png.import','assets/town/ground-materials-v4.png.import','src/world/npc_gait.gd','assets/town/residential-houses-v1.png.import','src/town/town_scenery.gd','src/world/interaction_range.gd','assets/town/ground-materials-v3.png.import','src/town/planned_town.gd','src/town/map_migration.gd','src/platform/daylight.gd','src/world/environment_art.gd','content/towns/chinese_layout.json','content/town_economy/meal_schedule.json','assets/town/town-sprites-v2.png.import','assets/town/diner-props-v2.png.import','assets/kitchen/kitchen-background-v2.png.import','src/platform/day_clock.gd','src/characters/character_roster.gd','content/characters/roster.json','assets/characters/protagonist/protagonist-dialogue-halfbody-pose-pixel-v7.png.import','src/story/story_art.gd','src/story/opening.gd','src/ui/dialogue.gd','src/ui/dialogue_view.gd','src/kitchen/prep_guide.gd')) {
+      if ($resource -notin $names -and ($resource + '.remap') -notin $names) { throw "Missing exported story resource: $resource" }
+    }
+    foreach ($pose in @('idle','walk')) {
+      if (('assets/characters/protagonist/protagonist-' + $pose + '-four-directions-v1.png.import') -notin $names) { throw "Missing exported protagonist $pose atlas" }
+    }
+    foreach ($character in @('aling','ash-priest')) {
+      foreach ($kind in @('idle-four-directions','dialogue-halfbody')) {
+        $resource = "assets/characters/$character/archive/2026-10-29/$character-$kind.png.import"
+        if ($resource -notin $names) { throw "Missing selected story art: $resource" }
+      }
+    }
 	foreach ($resource in @('src/platform/game_music.gd','src/town/cottage_world.gd','src/world/chef_art.gd','assets/audio/casual.wav.import','assets/audio/service.wav.import','assets/audio/cooking.wav.import','content/brand/progression.json','src/business/level_progression.gd','src/ui/level_rewards_view.gd','content/markets/kitchen_stock.json','src/business/food_stock.gd','src/ui/ingredient_icon.gd')) {
 	  if ($resource -notin $names -and ($resource + '.remap') -notin $names) { throw "Missing exported stock resource: $resource" }
 	}

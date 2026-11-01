@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-28",
+  "user_request": "把指定v4人物改为托腮姿势，保持上一张图的构图和细像素画风",
+  "generator": "built-in image_gen",
+  "generation_id": "exec-de945e26-8623-4dca-b732-9c730b3ffc1e",
+  "references": [
+    {
+      "file": "protagonist-dialogue-halfbody-pixel-v4.png",
+      "role": "用户本轮指定的脸型、五官与人物形象；与所附exec-2581c576原图字节一致"
+    },
+    {
+      "file": "protagonist-dialogue-halfbody-pose-cute-v5.png",
+      "role": "上一张图的托腮姿势、构图、服装位置和细像素画风"
+    }
+  ],
+  "output": "protagonist-dialogue-halfbody-pose-pixel-v6.png",
+  "sha256": "2d59ee4dc5dad51422caeafce3cc7bf3059114bc7fd85854241b709a9586bb2e",
+  "dimensions": [
+    1254,
+    1254
+  ],
+  "transparent_background": true,
+  "prompt": "Use case: identity-preserve / compositing / style-transfer.\nCreate ONE edited transparent half-body pixel portrait using these TWO images with distinct roles:\nIMAGE 1 (coarser pixels, arms lowered) is the CHARACTER AND FACE reference the user specifically wants to change. Preserve its cute facial identity: relatively slim lower cheeks, short softly tapered chin, large round amber eyes with straightforward friendly gaze, small smile with tiny fang, modest cheek blush, the same forehead/bangs relationship and cute proportions.\nIMAGE 2 (fine pixels, finger at chin) supplies the EXACT POSE, COMPOSITION, FRAMING AND FINE PIXEL TECHNIQUE. This is the layout to follow.\n\nTASK: depict the character/face of IMAGE 1 in the precise chin-touching pose and half-body composition of IMAGE 2, redrawn at IMAGE 2's finer pixel density. Do not simply return image 2 unchanged: the face should retain image 1's eye shape, cute simple expression and gently slim facial outline. Keep its existing eye-to-face proportions; do not exaggerate eye size, make it glamorous, or give it a sharp mature face.\n\nPOSE AND LAYOUT to copy from IMAGE 2: same head tilt and camera angle, same shoulders/torso lean; hand on screen-right raised with index finger touching beside the chin, remaining fingers bent in the same arrangement, elbow bent; hand on screen-left resting across the brown pouch by the waist. Same crop below waist, same character scale and silhouette placement within the square canvas. Keep face clear. One character, two natural hands, no extra fingers.\n\nPreserve the shared design: cream tilted chef cap, single flame tuft, gold-yellow and red shaggy hair with recognizable original locks, amber eyes, white shirt with pink fold shadows and red cuffs, red tie with two gold bars, cream apron, brown waist belt/pouch, red-and-gold flame patch and black pan behind the back. Position the costume and back pan as in IMAGE 2.\n\nFINE PIXEL ART: match the size of pixel clusters, deliberate fine stair-stepped edges, line weight, shading detail and palette treatment of IMAGE 2 throughout the entire image including the new face. Do NOT carry over the large coarse blocks of IMAGE 1. Do NOT turn into smooth vector art or ordinary anime painting. Do not use blur or a mosaic filter. Preserve fine hand-pixelled contours and crisp discrete color steps.\n\nOutput one transparent RGBA PNG, same square dimensions and framing as IMAGE 2, genuine alpha background. No comparison sheet, labels, writing, UI, frame, scenery or painted checkerboard.",
+  "verification": {
+    "png_decode": "PASS",
+    "rgba_transparency": "PASS",
+    "pose_face_and_style_visual_review": "PASS",
+    "human_art_acceptance": "PENDING",
+    "game_checks": "NOT_RUN_ASSET_ONLY"
+  },
+  "status": "DELIVERED_LOCAL_ART_REVIEW_PENDING"
+}

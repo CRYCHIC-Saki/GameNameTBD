@@ -265,6 +265,7 @@ func test_real_three_days_save_restart_and_custom_menu() -> void:
 		app.return_to_menu(); await get_tree().process_frame; app.enter_shop(true); view=app.shop_view; kitchen=view.kitchen; kitchen.auto_advance=false
 		assert_eq(JSON.parse_string(JSON.stringify(view.shop.snapshot())),JSON.parse_string(JSON.stringify(previous)))
 		view.next_day(); assert_eq(view.shop.snapshot().day,day+1)
+		assert_true(view.kitchen.lanes[0].snapshot().session_id.begins_with(view.shop.day_namespace()),"隔日更换厨房身份，开门不再重建")
 
 func test_pause_cancel_and_late_input_dont_consume_a_new_order() -> void:
 	var id: String=prepare_order("service.tomato_egg")
@@ -522,6 +523,8 @@ func test_actual_perfect_steam_requires_research_but_historical_unlock_survives_
 	view.shop.close_early(); kitchen.advance(.01)
 	var plan:=view.shop.save_plan("第一份汽锅鸡做法",dish.custom_plan)
 	assert_true(plan.ok,plan.code)
+	assert_eq(view.save_boundary().code,"KITCHEN_BUSY","日结不会偷偷清掉未交付的菜")
+	station("kitchen.steamer");station("kitchen.trash")
 	assert_true(view.save_boundary().ok)
 	app.return_to_menu(); await get_tree().process_frame; app.enter_shop(true); view=app.shop_view; kitchen=view.kitchen; kitchen.auto_advance=false
 	assert_true(view.shop.is_unlocked("service.qiguoji")); view.next_day()

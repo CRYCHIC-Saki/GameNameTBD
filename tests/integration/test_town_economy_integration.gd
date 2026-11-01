@@ -152,7 +152,7 @@ func test_zero_customers_utilities_debt_and_income_repayment_are_exact() -> void
 	assert_eq(shop.visitor_forecast().max_visitors,0)
 	assert_true(shop.world_adjustment(-int(shop.snapshot().money_cents),"fixture:no-cash","测试隔离现金条件").ok)
 	assert_true(shop.open_day().ok)
-	shop.advance(float(shop.catalog.config.settings.day_sec)+1)
+	shop.advance(shop.business_close_sec()+1)
 	assert_eq(shop.snapshot().phase,"SETTLED")
 	assert_true(shop.active_orders().is_empty())
 	assert_eq(int(profile.commerce.state.day_stats.admitted),0)
@@ -201,7 +201,7 @@ func test_v1_migration_keeps_cash_and_research_without_retrospective_fees() -> v
 	assert_eq(restored.research.snapshot(),profile.research.snapshot())
 	assert_eq(int(restored.commerce.state.debt_cents),0)
 	assert_true(restored.commerce.state.books.is_empty())
-	assert_eq(int(restored.snapshot().schema_version),4)
+	assert_eq(int(restored.snapshot().schema_version),6)
 	assert_eq(restored.progression.progress().total_xp,0,"Historical economic migration does not invent level XP")
 	var corrupt:=restored.snapshot();corrupt.economy.competitors.chengdu[0].erase("ingredients")
 	var before:=restored.snapshot();assert_false(restored.restore(corrupt).ok);assert_eq(restored.snapshot(),before)
@@ -247,18 +247,18 @@ func test_factory_clock_freezes_in_pause_and_research_overlay() -> void:
 	shell.profile_root="res://artifacts/economy-clock/%d"%Time.get_ticks_usec()
 	shell.preferences_path=shell.profile_root+"/settings.json"
 	add_child_autofree(shell)
-	assert_true(shell.create_game("slot-01","时钟测试").ok)
+	assert_true(shell.create_game("slot-01","时钟测试").ok);shell.guide.dialogue.finish_now()
 	var world:=shell.profile.world
 	var plot: Dictionary=world.town_map.plots.filter(func(p:Dictionary)->bool:return p.kind=="factory_lot")[0]
 	assert_true(world.build_factory(plot.id).ok)
 	var id: String=TDTownMap.products_of(plot.supply)[0].id
 	assert_true(shell.profile.world_transaction(world.produce_factory.bind(plot.id,id,1,1),"工厂生产").ok)
-	shell._process(.01)
+	shell.kitchen_view.kitchen.advance(.01)
 	var active:=world.factory_jobs.duplicate(true)
-	shell.show_pause();shell._process(10)
+	shell.show_pause();shell.kitchen_view.kitchen.advance(10)
 	assert_eq(world.factory_jobs,active)
-	shell._close_dialog();shell.open_atlas();shell._process(10)
+	shell._close_dialog();shell.open_atlas();shell.kitchen_view.kitchen.advance(10)
 	assert_eq(world.factory_jobs,active,"Research temporarily unpauses its own scene, not the background factory")
-	shell.close_atlas();shell._process(.01)
+	shell.close_atlas();shell.kitchen_view.kitchen.advance(.01)
 	assert_ne(world.factory_jobs,active)
 	shell.go_title();get_tree().paused=false

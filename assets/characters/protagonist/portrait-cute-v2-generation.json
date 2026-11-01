@@ -1,0 +1,35 @@
+{
+  "date": "2026-10-28",
+  "user_feedback": "半身立绘和原稿风格差异有点大，希望保留可爱风格",
+  "scope": "半身对话立绘风格修订；四向站姿和行走图集不变",
+  "generator": "built-in image_gen",
+  "generation_id": "exec-f0bd01f4-d6b2-426e-8c8f-e6c1207c2ee0",
+  "output": "protagonist-dialogue-halfbody-cute-v2.png",
+  "sha256": "3b874c1d834505106c89b79b19df81b3a6be52547f0d50ed4752bede6a47a140",
+  "dimensions": [
+    1254,
+    1254
+  ],
+  "format": "RGBA PNG",
+  "transparent_background": true,
+  "reference": "doc/source/characters/protagonist/design-clean-original.png",
+  "previous_portrait": "protagonist-dialogue-halfbody-v1.png",
+  "design_changes": [
+    "更接近原稿的圆脸、大圆眼、短下巴和大头小身比例",
+    "简化阴影与材质细节，减轻像素效果",
+    "双手放在围裙前，采用柔和可爱的表情",
+    "保留厨师帽、火焰发色、红领带、围裙、刀鞘、背锅"
+  ],
+  "prompt": "Use case: identity-preserve / style-transfer.\nAsset: one transparent waist-up dialogue portrait of the EXACT original character shown in the attached clean concept art. The original drawing is the PRIMARY AND ONLY visual authority. The user says the previous portrait drifted too far from the design and wants the original cute style preserved. Translate this original directly into a very light micro-pixel dialogue illustration.\n\nHighest priority: match the original's SOFT CUTE CHIBI ANIME drawing style and face, not a mature detailed RPG portrait. Keep the same large round head, wide soft rounded cheeks, extremely short rounded chin, tiny nose, big open round amber-orange eyes with simple cream highlights, thin simple eyebrows, tiny smiling mouth with one tiny fang, and soft pink circular blush. Preserve the original innocent playful confidence. Small shoulders and compact torso; head including hair is noticeably wider than shoulders. Preserve original head-to-body proportions as if cropping the original into a waist-up portrait. Do NOT elongate the face or neck. Do NOT give her narrow angular eyes, sharp eyebrows, dramatic eyeliner, seductive/sly eyes, realistic anatomy, detailed lips, or an adult-fashion pose. No finger touching cheek or lips.\n\nIdentity/costume: the exact short fluffy flame-colored hair silhouette from the reference, broad golden yellow upper bangs over red undersides and red tips, one upright small red/yellow flame-shaped tuft; large soft cream floppy chef cap tilted to HER RIGHT (viewer-left in front view); the original white/pale pink collared shirt, bright red necktie with two tiny horizontal yellow bars, cream apron, brown belt and brown knife pouch on HER RIGHT (viewer-left), red/yellow flame emblem on HER LEFT apron (viewer-right). Black frying pan behind her back, with handle extending diagonally DOWN toward HER LEFT as in the original. Do not swap these sides. Do not invent jewelry or other accessories.\n\nPose/composition: friendly nearly front-facing waist-up portrait, just a slight turn or gaze toward screen-right for placement on the LEFT of a dialogue box. Head upright with only a tiny playful tilt. Shoulders relaxed, both arms low, small hands resting naturally together at apron waist, no weapon held out. The same simple gentle smile as the reference. Crop below the waist to include the belt and top of flame patch/knife pouch. Entire chef cap and flame tuft fully visible, at least 7% clear transparent margin above. Comfortable transparent margins at sides. A single character only. The face and big round eyes should be the clear focus. Keep the neck very short and torso compact.\n\nStyle: affectionate, adorable, warm, clean flat-color Japanese chibi character art closely matching the supplied sketch. Just a touch of deliberate fine pixel stair-steps around edges for micro-pixel game dialogue art, around 256 logical-pixel-detail, not chunky block art. Use a few simple flat color regions and gentle two-tone pink shading. Original vivid yellow/red hair with creamy highlights, ivory skin, pastel peach apron. NO high-detail dither shading, no gritty texture, no realistic material rendering, no densely shaded strands, no ornate dark outlines. Do not transform it into a different artist's mature anime illustration. Fidelity to the original simple cute face matters more than displaying pixel effects.\n\nOutput: square transparent PNG with actual alpha. No drawn checkerboard, black/white/color background, frame, dialogue box, text, arrows, labels, logos or watermark. No legs/full body. This is the separate portrait asset only.",
+  "verification": {
+    "png_decode": "PASS",
+    "dimensions": "1254x1254",
+    "transparent_top_corners": "PASS_ALPHA_0",
+    "visual_inspection": "PASS",
+    "originals_and_v1_hashes": "PASS_UNCHANGED",
+    "game_checks": "NOT_RUN_ASSET_ONLY",
+    "human_art_acceptance": "PENDING",
+    "dialogue_runtime_integration": "NOT_DONE"
+  },
+  "status": "DELIVERED_LOCAL_ART_REVIEW_PENDING"
+}

@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "decision": "D053",
+  "generator": "image_gen.imagegen",
+  "date": "2026-10-31",
+  "source": "doc/source/无敌厨神_角色情绪动作.md + 无敌厨神！.docx",
+  "originals": "read-only; generated outputs copied from Codex generated_images, never overwritten",
+  "style": "可爱像素2D，沿用已有角色身份；背景与道具分层动画",
+  "runtime": "AtlasTexture regions; alpha threshold .05 for visual bounds; no on-disk edits of generated PNGs; happy Aling/Chen use originals",
+  "prompt_note": "前七项为生成需求摘要，不冒充逐字工具输入；最后一项保留完整实际提示词。",
+  "assets": [
+    {
+      "file": "hero-emotions-v1.png",
+      "original_generated_file": "exec-c7c35b55-b2d2-4d20-ac70-a2f9a3b12697.png",
+      "references": [
+        "assets/characters/protagonist/protagonist-dialogue-halfbody-pose-pixel-v7.png"
+      ],
+      "prompt_summary": "3×2透明六情绪：平静叉腰、高兴握拳露虎牙、惊讶双手抱刀、疑惑托下巴、愤怒前倾握刀、难过垂肩。保持红黄头发/厨帽/围裙身份。"
+    },
+    {
+      "file": "aling-emotions-v1.png",
+      "original_generated_file": "exec-2b62c843-8e41-45b3-a353-83de5f6bfa9f.png",
+      "references": [
+        "assets/characters/aling/archive/2026-10-29/aling-dialogue-halfbody.png"
+      ],
+      "prompt_summary": "3×2透明六情绪，保持蓝发长辫、月牙、斗篷、乌鸦及账本。高兴仍实际采用原默认立绘，疑惑/难过由修订图替换。"
+    },
+    {
+      "file": "chen-emotions-v1.png",
+      "original_generated_file": "exec-7e7fee44-7f91-471d-b30f-8d6d3fcbfb54.png",
+      "references": [
+        "assets/characters/ash-priest/archive/2026-10-29/ash-priest-dialogue-halfbody.png"
+      ],
+      "prompt_summary": "3×2透明六情绪，保持原白发少女/围裙身份。平静手搭围裙、惊讶举勺、疑惑挠后脑、愤怒汤勺斜抱、难过捏围裙；高兴实际采用原默认。"
+    },
+    {
+      "file": "opening-backgrounds-v1.png",
+      "original_generated_file": "exec-5934a1d4-d0df-43fc-9a2d-c6cd9432a24d.png",
+      "references": [],
+      "prompt_summary": "2×2可爱中式像素CG背景：港口车站、食材铺、旧小炒摊室内、第一桌。供分层动效，不替换正式地图/装修。"
+    },
+    {
+      "file": "opening-props-v1.png",
+      "original_generated_file": "exec-8494e51a-e5d9-486d-a595-20e30788b43b.png",
+      "references": [],
+      "prompt_summary": "透明道具：长途车、三圈美食地图、黑汤碗、罩布、番茄鸡蛋调料、金框无脸权威剪影与喇叭、筷子鸡蛋盘、厨师证。"
+    },
+    {
+      "file": "opening-actions-v1.png",
+      "original_generated_file": "exec-bf581063-298c-4075-97e2-ba5f17264c70.png",
+      "references": [
+        "assets/characters/protagonist/protagonist-dialogue-halfbody-pose-pixel-v7.png",
+        "assets/characters/aling/archive/2026-10-29/aling-dialogue-halfbody.png",
+        "assets/characters/ash-priest/archive/2026-10-29/ash-priest-dialogue-halfbody.png"
+      ],
+      "prompt_summary": "透明4×2动作：主角按胃、阿铃翻账本/伸手拦/拉排风/握筷、主角握锅柄/厨师证、老陈抱臂。各角色身份沿用原图。"
+    },
+    {
+      "file": "aling-emotions-corrections-v1.png",
+      "original_generated_file": "exec-00473bff-9921-43db-b678-6eced991e16f.png",
+      "references": [
+        "assets/characters/aling/archive/2026-10-29/aling-dialogue-halfbody.png"
+      ],
+      "prompt_summary": "修正两情绪：疑惑指尖点账本封面；难过手臂伸直垂下握书。宽透明留白，完整保留长辫。"
+    },
+    {
+      "file": "opening-actions-extra-v1.png",
+      "original_generated_file": "exec-bfcff5bc-fd2a-4a15-af9b-e834516c0c6d.png",
+      "references": [
+        "assets/characters/protagonist/protagonist-dialogue-halfbody-pose-pixel-v7.png",
+        "assets/characters/aling/archive/2026-10-29/aling-dialogue-halfbody.png"
+      ],
+      "prompt_summary": "两列透明动作：主角惊讶放下黑碗、阿铃高兴拍下钱币。",
+      "exact_prompt": "Create a transparent pixel-art dialogue action sheet for a Chinese cozy cooking RPG, two separate equal-width columns, one row, ample transparent gutter, no text, no outlines around panels. Same high fidelity cute pixel style, character identity and clothing as the two provided references, waist-up portraits, all hands/hair inside their own panel with wide margins. LEFT: the red/yellow flame-haired chef girl from reference 1, white chef hat, beige apron, white shirt and red tie. Startled but defiant, lowering a small black soup bowl with both hands toward an unseen table at waist level, NOT wielding a knife, do not show table. RIGHT: the blue-haired purple/gold-cloaked girl from reference 2, raven on shoulder, crescent ornaments, long braid fully visible inside right panel. Smiling decisive expression, leaning slightly forward, one open palm firmly placing a few gold coins at the bottom of the frame as if slapping payment on table, other hand holding closed ledger at her hip. No background or floor/table. Preserve original silhouettes and palette; sharp square pixel edges, no gradients, no photorealism. Both characters fully isolated on transparent background."
+    }
+  ]
+}

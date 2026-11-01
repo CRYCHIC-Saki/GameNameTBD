@@ -8,6 +8,7 @@ static var _validation_catalog: TDTownCatalog
 static func capture(world: TDPhase3Session) -> Dictionary:
 	var data := world.export_phase4()
 	data.schema_version = 1
+	data.map_version=world.map_version
 	for field: String in EXTRA:
 		var value: Variant = world.get(field)
 		data[field] = value.duplicate(true) if value is Dictionary or value is Array else value
@@ -26,7 +27,9 @@ static func validate(raw: Variant) -> TDOutcome:
 		_validation_template=capture(defaults)
 		_validation_catalog=defaults.catalog
 	var expected := _validation_template
+	if not TDServiceCatalog.integer(raw.get("map_version",1),1,2): return TDOutcome.new(false,"INVALID_MAP_VERSION")
 	for field: String in expected:
+		if field=="map_version": continue
 		if not raw.has(field): return TDOutcome.new(false,"INVALID_WORLD",field)
 		var value: Variant = raw[field]
 		if expected[field] is int:
@@ -38,7 +41,7 @@ static func validate(raw: Variant) -> TDOutcome:
 	if raw.day<1 or raw.san>100 or raw.open_hour>24 or raw.close_hour>24 or raw.free_spent>24 or raw.day_phase not in ["morning","evening"]: return TDOutcome.new(false,"INVALID_WORLD_CLOCK")
 	if raw.home_size not in ["small","medium","large","huge","quarter"] or raw.home_w>41 or raw.home_h>41: return TDOutcome.new(false,"INVALID_WORLD_SIZE")
 	if raw.home_built and (raw.home_venue not in ["chinese","western"] or raw.home_w<1 or raw.home_h<1): return TDOutcome.new(false,"INVALID_WORLD_HOME")
-	if raw.branch_open and (_validation_catalog.town(raw.branch_town).is_empty() or raw.branch_w<1 or raw.branch_h<1 or raw.branch_x+raw.branch_w>41 or raw.branch_y+raw.branch_h>41): return TDOutcome.new(false,"INVALID_WORLD_BRANCH")
+	if raw.branch_open and (_validation_catalog.town(raw.branch_town).is_empty() or raw.branch_w<1 or raw.branch_h<1 or raw.branch_x+raw.branch_w>(73 if int(raw.get("map_version",1))==2 else 41) or raw.branch_y+raw.branch_h>(73 if int(raw.get("map_version",1))==2 else 41)): return TDOutcome.new(false,"INVALID_WORLD_BRANCH")
 	for flag: Variant in raw.factory_built.values():
 		if not flag is bool: return TDOutcome.new(false,"INVALID_WORLD_FACTORY")
 	for field: String in ["prices","branch_stock","wage_paid","branch_wage_paid","home_skill","branch_skill"]:

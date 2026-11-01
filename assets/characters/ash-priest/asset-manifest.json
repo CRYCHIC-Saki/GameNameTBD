@@ -1,0 +1,500 @@
+{
+  "schema": 1,
+  "character_id": "ash-priest",
+  "display_name": "灰烬司祭",
+  "personal_name": "NOT_PROVIDED",
+  "date": "2026-10-29",
+  "status": "DELIVERED_LOCAL_USER_CONFIRMED_ARCHIVE",
+  "generator": "built-in image_gen",
+  "character_brief": "食材铺老板，“灰烬司祭”。坚信自己掌握着圣餐的奥秘，对客人十分热情。",
+  "scope": "角色四向静态像素小人与半身微像素立绘；无玩法或运行时接入",
+  "references": [
+    {
+      "file": "design-annotated-original.jpg",
+      "sha256": "3915d5291b1d2d37f5a8ea9375a42ffaaffed1e74245a42beb89c931d0289d98",
+      "source_filename": "codex-clipboard-63329b23-eca1-4e98-874e-64b755f70e08.jpg",
+      "byte_identical": true,
+      "path": "doc/source/characters/ash-priest/design-annotated-original.jpg",
+      "role": "用户带标注形象原稿；部件参考"
+    },
+    {
+      "file": "design-clean-original.png",
+      "sha256": "32784dcb674004a51ea602d8085350e4aa6a62a4efefdc0f0733dafd1302072f",
+      "source_filename": "codex-clipboard-4bd7924b-a9e4-40a4-a340-3b8cb9bcc903.png",
+      "byte_identical": true,
+      "path": "doc/source/characters/ash-priest/design-clean-original.png",
+      "role": "用户无标注形象原稿；身份与配色主参考"
+    }
+  ],
+  "style_references": [
+    {
+      "path": "assets/characters/protagonist/protagonist-idle-four-directions-v1.png",
+      "sha256": "169c2ed07230794e57d7d92369211794f10b57dbffb648515768a5b005292409"
+    },
+    {
+      "path": "assets/characters/protagonist/protagonist-dialogue-halfbody-pose-pixel-v7.png",
+      "sha256": "9b45e97bc035faabc6fc7f20c93d33e48508f915ca49900d33492e816f1e2f0f"
+    },
+    {
+      "path": "assets/characters/aling/archive/2026-10-29/aling-dialogue-halfbody.png",
+      "sha256": "42e5e42d71caedebea76b421eb3bfb232b6d80389aade638ea271ba79cfb2eed"
+    },
+    {
+      "path": "assets/characters/aling/archive/2026-10-29/aling-idle-four-directions.png",
+      "sha256": "c06575b689ec94addabe9b23a2bc1738c0c6e73431ce888b3f8cf79ee3613933",
+      "role": "四向小人v2的粗像素块与细节密度参考"
+    }
+  ],
+  "identity_elements": [
+    "白发与浅粉阴影、金橙眼睛、圆润可爱脸型、热情笑容",
+    "红色镂空拱形冠帽、中央竖梁与火焰方牌",
+    "长柄铜色汤勺权杖",
+    "红色长袖与外裙、米白褶边围裙及层叠裙摆",
+    "火焰领饰与金色系带、金手镯",
+    "左腰悬挂的木框算盘：穿杆与金黄算珠、红系绳及金穗",
+    "印有淡红线格与符号、带不规则边缘的进货单纸披风",
+    "粉色长袜与红色搭带鞋（全身小人）"
+  ],
+  "sprite_atlas": {
+    "file": "ash-priest-idle-four-directions-v2.png",
+    "sha256": "749be053ccf283f5448b06a01760246b6bf6bfd01d46a3f945317d8822610032",
+    "size": [
+      1254,
+      1254
+    ],
+    "pixel_format": "Format32bppArgb",
+    "corner_alpha": [
+      0,
+      0,
+      1,
+      0
+    ],
+    "regions": [
+      {
+        "id": "front",
+        "region_xywh": [
+          0,
+          0,
+          627,
+          627
+        ],
+        "visible_bounds_local_xywh": [
+          183,
+          17,
+          407,
+          609
+        ]
+      },
+      {
+        "id": "back",
+        "region_xywh": [
+          627,
+          0,
+          627,
+          627
+        ],
+        "visible_bounds_local_xywh": [
+          42,
+          17,
+          404,
+          609
+        ]
+      },
+      {
+        "id": "left",
+        "region_xywh": [
+          0,
+          627,
+          627,
+          627
+        ],
+        "visible_bounds_local_xywh": [
+          212,
+          6,
+          380,
+          608
+        ]
+      },
+      {
+        "id": "right",
+        "region_xywh": [
+          627,
+          627,
+          627,
+          627
+        ],
+        "visible_bounds_local_xywh": [
+          71,
+          6,
+          359,
+          608
+        ]
+      }
+    ],
+    "layout": [
+      2,
+      2
+    ],
+    "cell_size": [
+      627,
+      627
+    ],
+    "frames_per_direction": 1,
+    "animation": "idle_static",
+    "directions": [
+      {
+        "id": "front",
+        "region_xywh": [
+          0,
+          0,
+          627,
+          627
+        ],
+        "visible_bounds_local_xywh": [
+          183,
+          17,
+          407,
+          609
+        ],
+        "facing": "down"
+      },
+      {
+        "id": "back",
+        "region_xywh": [
+          627,
+          0,
+          627,
+          627
+        ],
+        "visible_bounds_local_xywh": [
+          42,
+          17,
+          404,
+          609
+        ],
+        "facing": "up"
+      },
+      {
+        "id": "left",
+        "region_xywh": [
+          0,
+          627,
+          627,
+          627
+        ],
+        "visible_bounds_local_xywh": [
+          212,
+          6,
+          380,
+          608
+        ],
+        "facing": "left"
+      },
+      {
+        "id": "right",
+        "region_xywh": [
+          627,
+          627,
+          627,
+          627
+        ],
+        "visible_bounds_local_xywh": [
+          71,
+          6,
+          359,
+          608
+        ],
+        "facing": "right"
+      }
+    ],
+    "filter_recommendation": "nearest",
+    "pivot_note": "图格内人物、汤勺和披风占宽不同；接入时以角色脚底确定枢轴，不用整格中心。",
+    "revision": "v2"
+  },
+  "dialogue_portrait": {
+    "file": "ash-priest-dialogue-halfbody-v2.png",
+    "sha256": "b8572d0f8597635d9b86da3485eb6c33169c072000de67400a93376991cd7171",
+    "size": [
+      1254,
+      1254
+    ],
+    "pixel_format": "Format32bppArgb",
+    "corner_alpha": [
+      0,
+      0,
+      1,
+      0
+    ],
+    "regions": [
+      {
+        "id": "portrait",
+        "region_xywh": [
+          0,
+          0,
+          1254,
+          1254
+        ],
+        "visible_bounds_local_xywh": [
+          171,
+          35,
+          1046,
+          1194
+        ]
+      }
+    ],
+    "pose": "slight three-quarter toward screen-left, both hands holding ladle staff, cheerful open smile",
+    "crop": "upper hips; whole crown, ladle bowl, abacus and tassel visible",
+    "revision": "v2"
+  },
+  "alpha": "Generated 32-bit RGBA copied byte-for-byte; each v2 file corner alpha [0,0,1,0]. Some near-transparent edge/background pixels retain alpha 1/255; no threshold cleanup, resizing or scripted image editing.",
+  "verification": {
+    "archive_byte_identity": "PASS_2_OF_2",
+    "png_metadata": "PASS; both 1254x1254 RGBA",
+    "visual_inspection": "四向像素块明显加大，发梢、衣褶与配饰用较大色块简化；半身更贴近原稿眼形、较小笑容、宽发束与平涂色块；冠帽、汤勺、算盘与纸披风保留。用户观感待确认。",
+    "human_art_acceptance": "USER_CONFIRMED_KEEP_ARCHIVED_ATTACHMENTS",
+    "engine_tests": "NOT_RUN_ASSET_ONLY",
+    "runtime_integration": "NOT_DONE",
+    "acceptance_scope": "用户要求保留本次上传的两张附件；运行时接入仍未完成。"
+  },
+  "generation_record": "revision-v2-generation.json",
+  "previous_versions": [
+    {
+      "version": "v1",
+      "sprite_atlas": {
+        "file": "ash-priest-idle-four-directions-v1.png",
+        "sha256": "7c97e9fa73933065d7eb8867e11437244b93cb4b3ee482e4f72ac2fbdce6f05e",
+        "size": [
+          1254,
+          1254
+        ],
+        "pixel_format": "Format32bppArgb",
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "regions": [
+          {
+            "id": "front",
+            "region_xywh": [
+              0,
+              0,
+              627,
+              627
+            ],
+            "visible_bounds_local_xywh": [
+              207,
+              18,
+              374,
+              600
+            ]
+          },
+          {
+            "id": "back",
+            "region_xywh": [
+              627,
+              0,
+              627,
+              627
+            ],
+            "visible_bounds_local_xywh": [
+              43,
+              18,
+              380,
+              594
+            ]
+          },
+          {
+            "id": "left",
+            "region_xywh": [
+              0,
+              627,
+              627,
+              627
+            ],
+            "visible_bounds_local_xywh": [
+              239,
+              3,
+              349,
+              607
+            ]
+          },
+          {
+            "id": "right",
+            "region_xywh": [
+              627,
+              627,
+              627,
+              627
+            ],
+            "visible_bounds_local_xywh": [
+              65,
+              3,
+              346,
+              607
+            ]
+          }
+        ],
+        "layout": [
+          2,
+          2
+        ],
+        "cell_size": [
+          627,
+          627
+        ],
+        "frames_per_direction": 1,
+        "animation": "idle_static",
+        "directions": [
+          {
+            "id": "front",
+            "region_xywh": [
+              0,
+              0,
+              627,
+              627
+            ],
+            "visible_bounds_local_xywh": [
+              207,
+              18,
+              374,
+              600
+            ],
+            "facing": "down"
+          },
+          {
+            "id": "back",
+            "region_xywh": [
+              627,
+              0,
+              627,
+              627
+            ],
+            "visible_bounds_local_xywh": [
+              43,
+              18,
+              380,
+              594
+            ],
+            "facing": "up"
+          },
+          {
+            "id": "left",
+            "region_xywh": [
+              0,
+              627,
+              627,
+              627
+            ],
+            "visible_bounds_local_xywh": [
+              239,
+              3,
+              349,
+              607
+            ],
+            "facing": "left"
+          },
+          {
+            "id": "right",
+            "region_xywh": [
+              627,
+              627,
+              627,
+              627
+            ],
+            "visible_bounds_local_xywh": [
+              65,
+              3,
+              346,
+              607
+            ],
+            "facing": "right"
+          }
+        ],
+        "filter_recommendation": "nearest",
+        "pivot_note": "图格内人物、汤勺和披风占宽不同；接入时以角色脚底确定枢轴，不用整格中心。"
+      },
+      "dialogue_portrait": {
+        "file": "ash-priest-dialogue-halfbody-v1.png",
+        "sha256": "dd4805805f0706090dae07195421527143d3e46d4630e209cd2b6d869ee8ba4d",
+        "size": [
+          1254,
+          1254
+        ],
+        "pixel_format": "Format32bppArgb",
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "regions": [
+          {
+            "id": "portrait",
+            "region_xywh": [
+              0,
+              0,
+              1254,
+              1254
+            ],
+            "visible_bounds_local_xywh": [
+              206,
+              94,
+              968,
+              1121
+            ]
+          }
+        ],
+        "pose": "slight three-quarter toward screen-left, both hands holding ladle staff, cheerful open smile",
+        "crop": "upper hips; whole crown, ladle bowl, abacus and tassel visible"
+      },
+      "generation_record": "generation-prompts.json",
+      "status": "SUPERSEDED_AFTER_USER_FEEDBACK",
+      "feedback": "小人像素颗粒仍不足；半身立绘需更遵从原稿画风。"
+    }
+  ],
+  "current_revision": "v2",
+  "revised_on": "2026-10-29",
+  "user_corrections": [
+    "相比前两个角色需要再像素化一点",
+    "立绘再遵从一点原稿的画风"
+  ],
+  "selected_archive": {
+    "date": "2026-10-29",
+    "selection": "USER_CONFIRMED_KEEP_ATTACHED_IMAGES",
+    "files": [
+      {
+        "role": "sprite",
+        "file": "archive/2026-10-29/ash-priest-idle-four-directions.png",
+        "source_filename": "codex-clipboard-e1ac689e-bfed-4c70-b5f9-8eead0336777.png",
+        "sha256": "7b9875c2015d61af28f8cca325e951b16b41c11532ab2d9c7587c8fe4d7e4273",
+        "size": [
+          1254,
+          1254
+        ],
+        "pixel_format": "Format32bppArgb",
+        "byte_identical_to_attachment": true,
+        "corresponding_existing_file": "ash-priest-idle-four-directions-v2.png",
+        "existing_sha256": "749be053ccf283f5448b06a01760246b6bf6bfd01d46a3f945317d8822610032"
+      },
+      {
+        "role": "portrait",
+        "file": "archive/2026-10-29/ash-priest-dialogue-halfbody.png",
+        "source_filename": "codex-clipboard-74cff561-66cb-440e-9602-f2c6614b74cb.png",
+        "sha256": "864e6a8e43c5e657b9bee68bf7e030de4ec7701362a69bdff1f2d20905ffff75",
+        "size": [
+          1254,
+          1254
+        ],
+        "pixel_format": "Format32bppArgb",
+        "byte_identical_to_attachment": true,
+        "corresponding_existing_file": "ash-priest-dialogue-halfbody-v2.png",
+        "existing_sha256": "b8572d0f8597635d9b86da3485eb6c33169c072000de67400a93376991cd7171"
+      }
+    ],
+    "record": "archive/2026-10-29/archive-record.json",
+    "runtime_integration": "NOT_DONE",
+    "note": "本次用户附件按原字节归档，作为后续素材基准；附件与制作文件哈希不同，未以旧生成文件代替，也未覆盖旧版。"
+  }
+}

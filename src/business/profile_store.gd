@@ -62,3 +62,17 @@ func latest() -> String:
 	for row: Dictionary in slots():
 		if row.ok and int(row.updated_at)>stamp: stamp=int(row.updated_at);id=row.slot_id
 	return id
+
+func backup_map_migration(id: String) -> TDOutcome:
+	if not valid_id(id): return TDOutcome.new(false,"INVALID_SLOT")
+	var source:=path_for(id)
+	var checked:=load_slot(id)
+	if not checked.ok: return checked
+	var destination:=source+".before-map-v2.bak"
+	if FileAccess.file_exists(destination):
+		# Never replace the first original. A prior interrupted migration can retry.
+		if FileAccess.get_sha256(source)==FileAccess.get_sha256(destination): return TDOutcome.new(true,"MIGRATION_BACKUP_EXISTS")
+		destination=source+".before-map-v2."+FileAccess.get_sha256(source).substr(0,12)+".bak"
+	if not FileAccess.file_exists(destination) and DirAccess.copy_absolute(source,destination)!=OK: return TDOutcome.new(false,"MIGRATION_BACKUP_FAILED")
+	if FileAccess.get_sha256(source)!=FileAccess.get_sha256(destination): return TDOutcome.new(false,"MIGRATION_BACKUP_MISMATCH")
+	return TDOutcome.new(true,"MIGRATION_BACKUP_READY","",{"path":destination})

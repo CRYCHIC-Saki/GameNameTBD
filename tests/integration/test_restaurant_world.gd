@@ -253,18 +253,22 @@ func test_business_guest_follows_the_shop_order_through_leaving() -> void:
 		guard += 1
 	assert_eq(guest.phase, "wait_serve")
 	assert_true(guest.dish_name.contains("等上菜"))
-	var elapsed := float(shop.snapshot().elapsed_sec)
+	var elapsed := world._visit_seconds
 	shop._s.orders[0].status = "SERVED"
 	shop._s.orders[0].score = {"satisfaction": 91.0}
 	shop._s.orders[0].prepaid_cents = 1200
 	world._sync_business_guests()
 	assert_eq(guest.phase, "eat")
 	assert_true(guest.dish_name.contains("91"))
-	shop._s.elapsed_sec = elapsed + 6.0
+	world._visit_seconds = elapsed + 6.0
 	world._sync_business_guests()
 	assert_eq(guest.phase, "pay")
 	assert_true(guest.dish_name.contains("结账"))
-	shop._s.elapsed_sec = elapsed + 9.0
+	world._place_seated(guest)
+	assert_true(guest.seated, "Formal Shop payment stays at the table")
+	var dining_seat := world.layout.piece(guest.seat_id)
+	assert_eq(guest.position, world.layout.cell_center(world.layout.sit_cell(dining_seat)))
+	world._visit_seconds = elapsed + 9.0
 	world._sync_business_guests()
 	assert_eq(guest.phase, "leave")
 	guard = 0
@@ -306,7 +310,7 @@ func test_unhired_floor_posts_wait_for_the_player_and_do_not_charge_again() -> v
 		world._sync_business_guests()
 		guard += 1
 	assert_eq(guest.phase, "wait_serve")
-	var elapsed := float(shop.snapshot().elapsed_sec)
+	var elapsed := world._visit_seconds
 	shop._s.orders[0].status = "SERVED"
 	shop._s.orders[0].score = {"satisfaction": 91.0}
 	shop._s.orders[0].prepaid_cents = 1200
@@ -319,10 +323,10 @@ func test_unhired_floor_posts_wait_for_the_player_and_do_not_charge_again() -> v
 	assert_true(world.request_interaction())
 	world._sync_business_guests()
 	assert_eq(guest.phase, "eat")
-	shop._s.elapsed_sec = elapsed + 6.0
+	world._visit_seconds = elapsed + 6.0
 	world._sync_business_guests()
 	assert_eq(guest.phase, "pay")
-	shop._s.elapsed_sec = elapsed + 9.0
+	world._visit_seconds = elapsed + 9.0
 	world._sync_business_guests()
 	assert_eq(guest.phase, "pay")
 	assert_true(world.request_interaction())
@@ -357,15 +361,15 @@ func test_hired_greeter_runner_and_cashier_carry_the_visit() -> void:
 		if str((person as Dictionary).label) == "迎宾":
 			saw_greeter = true
 	assert_true(saw_greeter)
-	var elapsed := float(shop.snapshot().elapsed_sec)
+	var elapsed := world._visit_seconds
 	shop._s.orders[0].status = "SERVED"
 	shop._s.orders[0].score = {"satisfaction": 80.0}
 	world._sync_business_guests()
 	assert_eq(guest.phase, "eat")
-	shop._s.elapsed_sec = elapsed + 6.0
+	world._visit_seconds = elapsed + 6.0
 	world._sync_business_guests()
 	assert_eq(guest.phase, "pay")
-	shop._s.elapsed_sec = elapsed + 9.0
+	world._visit_seconds = elapsed + 9.0
 	world._sync_business_guests()
 	assert_eq(guest.phase, "leave")
 

@@ -1,0 +1,35 @@
+{
+  "tool": "built-in image_gen",
+  "date": "2026-10-30",
+  "purpose": "D051 original sources unchanged",
+  "assets": [
+    {
+      "key": "aling_walk",
+      "path": "F:/MyGameTBD/assets/characters/aling/archive/2026-10-29/aling-idle-four-directions.png",
+      "prompt": "Use the attached image as the EXACT character identity and pixel style reference. Generate a NEW transparent walking sprite sheet of this same cute blue-haired purple-clothed girl with crow, gold trim and boots. Keep all costume, colors, face, body proportions and accessories. EXACTLY 8 separate full-body sprites in a uniform 4 columns by 2 rows grid. Columns LEFT TO RIGHT: facing DOWN(front), UP(back), LEFT, RIGHT. Top row: left foot forward/right arm forward. Bottom row: opposite stride, right foot forward/left arm forward. Each row must show clearly different opposite legs, subtle arm swing and cloth movement, body upright, feet visible, same scale and fixed camera. DO NOT repeat idle poses. Crisp chunky 16-bit pixel clusters, no smoothing. Plenty of transparent gutter and margin within each equal cell; no overlapping sprites, no shadows, no text, no labels, no borders. All feet in each row share a baseline. Transparent RGBA canvas, landscape 3:2.",
+      "output": "assets/characters/aling/aling-walk-four-directions-v1.png"
+    },
+    {
+      "key": "chen_walk",
+      "path": "F:/MyGameTBD/assets/characters/ash-priest/archive/2026-10-29/ash-priest-idle-four-directions.png",
+      "prompt": "Use the attached image as the EXACT character identity and pixel style reference. Generate a NEW transparent walking sprite sheet of this same cute white-haired character with tall red flame headdress, red cream robe and wooden spoon/staff. Keep all costume, face, colors, proportions and accessories, do not change gender or age. EXACTLY 8 separate full-body sprites in a uniform 4 columns by 2 rows grid. Columns LEFT TO RIGHT: facing DOWN(front), UP(back), LEFT, RIGHT. Top row: left foot forward. Bottom row: opposite stride, right foot forward. Clearly show alternating shoes below moving robe, subtle free-arm swing, staff remains held correctly. Body upright, exact same scale and fixed camera. DO NOT repeat idle poses. Crisp chunky 16-bit pixel clusters, no smoothing. Plenty of transparent gutter inside each equal cell; no overlap, no shadows, no text, no labels or borders. Feet share a baseline for each row. Transparent RGBA canvas, landscape 3:2.",
+      "output": "assets/characters/ash-priest/ash-priest-walk-four-directions-v1.png"
+    },
+    {
+      "key": "town_atlas",
+      "prompt": "Authentic low-resolution 16-bit pixel art for a cute Chinese town game: broad clean pixel clusters, restrained palette (warm cream, muted jade/olive green, blue gray, warm wood, tiny vermilion accents), hard outlines, flat 2-3 tone shading. No photographic texture, stippling, painted detail, gradients, soft shading, blur or anti-aliasing. Consistent frontal elevated orthographic RPG view: horizontal eaves/ridges, vertical walls, parallel sides, constant width front and back, NO vanishing points, NO trapezoidal footprints, NO diamond isometric rotation. Roof top visible but no perspective shrinkage. All objects share this exact camera and pixel density. Create one transparent game sprite atlas with EXACTLY 16 isolated objects, uniform 4x4 grid, margins within each cell. Each object should look authored at about 64x64 logical pixels enlarged with nearest-neighbor; simple readable silhouettes. ROW1: cozy two-storey Chinese diner with blank wood sign, small one-storey cottage, green-awning vegetable stall, round leafy deciduous tree. ROW2: small competing Chinese noodle shop, traditional warehouse workshop with a chimney, bamboo cluster, small open Chinese pavilion. ROW3: modest Chinese bank with blank sign, small country bus shelter, simple red Chinese arch gate, standing wood lantern. ROW4: wooden construction scaffold with crates, red-awning food snack stall, potted green plant, small wooden bench. All buildings face directly toward viewer with horizontal roofs; no text/logos/people. Ground only tiny contact shadows, no ground squares. Complete alpha-transparent empty background.",
+      "output": "assets/town/town-sprites-v3.png"
+    },
+    {
+      "key": "residential_atlas",
+      "prompt": "Authentic low-resolution 16-bit pixel art for a cute Chinese town game: broad clean pixel clusters, restrained palette (warm cream, muted jade/olive green, blue gray, warm wood, tiny vermilion accents), hard outlines, flat 2-3 tone shading. No photographic texture, stippling, painted detail, gradients, soft shading, blur or anti-aliasing. Consistent frontal elevated orthographic RPG view: horizontal eaves/ridges, vertical walls, parallel sides, constant width front and back, NO vanishing points, NO trapezoidal footprints, NO diamond isometric rotation. Roof top visible but no perspective shrinkage. All objects share this exact camera and pixel density. Create transparent game sprite atlas, EXACTLY FOUR separate home objects in uniform 2x2 grid with generous margins. Top left: one modest family home, side shed, laundry and water jar. Top right: two adjoining family houses with separate doors. Bottom left: compact enclosed courtyard with three home roofs and a CLOSED wooden front gate. Bottom right: compact enclosed garden courtyard with two homes, bamboo and laundry, CLOSED front gate. Each compound designed at about 96x96 logical pixels enlarged without smoothing. All roof ridges and wall edges strictly parallel/horizontal, front-facing, NO trapezoid yards, no diamond view, no shrinking rear house. Closed courts have rectangular footprint. Plain cream walls, blue-gray roofs, warm wood. No restaurant/shop signage, no text, no people, no scenery or rectangular background ground tile. Real alpha transparency.",
+      "output": "assets/town/residential-houses-v2.png"
+    },
+    {
+      "key": "ground_atlas",
+      "prompt": "Generate a seamless-material atlas for a cute 16-bit Chinese village pixel game. EXACTLY 4 equal square quadrants, each filled edge to edge with flat overhead texture, no borders. TOP LEFT: quiet muted olive-jade green grass with sparse broad pixel tufts, mostly calm flat green, NOT yellow/noisy. TOP RIGHT: Chinese blue-gray flagstone paving, large rectangular stone SLABS in staggered brick layout, thin subtle dark gaps, restrained 3-tone flat stone, absolutely NO rounded pebbles/cobblestones. BOTTOM LEFT: warm muted beige packed courtyard earth, extremely sparse small flat patches, no noise. BOTTOM RIGHT: muted teal-blue calm water with sparse horizontal pixel ripples. ALL four textures identical pixel density: look authored as 64x64 logical pixels per quadrant and enlarged nearest-neighbor. Broad pixel clusters and very limited palette, crisp pixel edges, NO realistic texture, gradients, shading depth, perspective, text or objects. Avoid tile-center motif, make each quadrant seamless/repeating. Opaque full square atlas.",
+      "output": "assets/town/ground-materials-v4.png"
+    }
+  ],
+  "human_acceptance": "PENDING"
+}

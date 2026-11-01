@@ -1,0 +1,146 @@
+{
+  "schema": 1,
+  "revision": "v2",
+  "date": "2026-10-28",
+  "generator": "built-in image_gen",
+  "status": "DELIVERED_LOCAL_ART_ACCEPTANCE_PENDING",
+  "user_corrections": [
+    "像素小人需要更接近主角的像素颗粒",
+    "腰间为账本，底部不能画成封口的盒子",
+    "钥匙由乌鸦嘴叼住，不是耳饰",
+    "人物稍微显瘦一些"
+  ],
+  "inputs": {
+    "sprite_target": "aling-idle-four-directions-v1.png",
+    "portrait_target": "aling-dialogue-halfbody-v1.png",
+    "identity_reference": "doc/source/characters/aling/design-clean-original.png",
+    "sprite_style_reference": "assets/characters/protagonist/protagonist-idle-four-directions-v1.png"
+  },
+  "outputs": [
+    {
+      "file": "aling-idle-four-directions-v2.png",
+      "sha256": "ad6b2374aa49f519f2c771ee48f0fa7ea99ee97fe73a14906ab70925f68bbc7d",
+      "width": 1254,
+      "height": 1254,
+      "pixel_format": "Format32bppArgb",
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "regions": [
+        {
+          "id": "front",
+          "region_xywh": [
+            0,
+            0,
+            627,
+            627
+          ],
+          "visible_bounds_local_xywh": [
+            180,
+            30,
+            385,
+            593
+          ]
+        },
+        {
+          "id": "back",
+          "region_xywh": [
+            627,
+            0,
+            627,
+            627
+          ],
+          "visible_bounds_local_xywh": [
+            69,
+            30,
+            382,
+            594
+          ]
+        },
+        {
+          "id": "left",
+          "region_xywh": [
+            0,
+            627,
+            627,
+            627
+          ],
+          "visible_bounds_local_xywh": [
+            226,
+            16,
+            275,
+            578
+          ]
+        },
+        {
+          "id": "right",
+          "region_xywh": [
+            627,
+            627,
+            627,
+            627
+          ],
+          "visible_bounds_local_xywh": [
+            111,
+            16,
+            308,
+            578
+          ]
+        }
+      ]
+    },
+    {
+      "file": "aling-dialogue-halfbody-v2.png",
+      "sha256": "0bd8b21e341ad2b2d712ee381f16093d9bfdc44ad6a5529310b9cdba5464d041",
+      "width": 1254,
+      "height": 1254,
+      "pixel_format": "Format32bppArgb",
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "regions": [
+        {
+          "id": "portrait",
+          "region_xywh": [
+            0,
+            0,
+            1254,
+            1254
+          ],
+          "visible_bounds_local_xywh": [
+            113,
+            24,
+            1079,
+            1230
+          ]
+        }
+      ]
+    }
+  ],
+  "runs": [
+    {
+      "generation_id": "exec-8a48a2ea-a022-4451-b630-4352fb466c3a",
+      "output": "aling-idle-four-directions-v2.png",
+      "prompt": "Use case: style-transfer / identity-preserve\nRevise the NPC sprite sheet based on user feedback. Image1 is the EDIT TARGET (A Ling four-view sheet). Image2 is the existing chef protagonist sprite sheet, PIXEL STYLE REFERENCE ONLY. Image3 is A Ling original costume reference. Preserve the NPC identity and all four views, but genuinely REBUILD the sprite artwork on a visibly coarser pixel grid instead of leaving the current finely detailed pixels.\nRequired changes:\n1. MUCH CLEARER GAME PIXELS matching the protagonist. Each full-body figure should look designed on a roughly 48x88 logical pixel grid, displayed enlarged with crisp nearest-neighbor square pixel blocks (about 6 screen pixels per logical pixel at this sheet scale). This is a rendering target, not text to print. All contour steps, eye pixels, hair highlights and folds must use this same chunky grid. Use compact deliberate clusters, dark one-logical-pixel stepped outlines, only 2-3 tones per material, about 32-40 colors. Remove microscopic edge noise, dense hair strands, smooth curved outlines, tiny highlights and fine gradient shading. Readable retro 16-bit RPG small sprites, NOT a high-res anime drawing with pixelated outlines. Detail density must be NO FINER than image2; simplify outfit ornaments to readable few-pixel symbols.\n2. Make the girl SLIGHTLY SLIMMER in all four views: taper cheeks, narrow shoulders/torso/waist and sleeves by roughly 10-12%, reduce the wide skirt flare modestly, maintain cute approximately three-head proportions and total height. Not adult glamour, not drastic thinness. Keep the same idle poses.\n3. Critical identity correction: the GOLD KEY IS HELD IN THE CROW'S BEAK, NEVER an earring. Remove any key attached to hair, ears or neck. One key per crow. In FRONT and RIGHT-profile, turn the perched crow's HEAD slightly outward away from girl's face and show its beak visibly gripping the key's ROUND BOW/RING, with the short shaft and teeth dangling in open transparent space. Keep a visible gap between key and girl's ear so there is no possible earring reading. The crow's body stays on her anatomical RIGHT shoulder. In BACK/LEFT views, use correct natural occlusion; don't invent an extra crow or floating key to force visibility.\n4. Hip accessory is a thin practical ACCOUNT LEDGER BOOK. Brown flat covers, gold border, visible exposed CREAM PAPER page edges at right and BOTTOM, spine only at one side. No thick brown box walls, no bottom lip enclosing pages, no clasp, no pouch. Front cover may use small gold 密令 marks but don't sacrifice clear coarse pixels to render text.\nKeep: deep cobalt hair, violet eyes, high ponytail, SINGLE braid on anatomical LEFT with crescent tie and tassel, white headband and forehead crescent, golden feather on anatomical RIGHT, central crescent collar clasp, purple/gold ruffled mantle and gold wing motifs, white blouse, violet skirt, pale ruffled socks, navy/gold boots. Crow and ledger remain on anatomical RIGHT, not mirrored to the other side. LEFT profile shows nearby left braid and hides most far-side crow/book, as in image1.\nExactly 2x2 layout: upper-left FRONT facing viewer, upper-right BACK without face, lower-left strict LEFT profile looking left, lower-right strict RIGHT profile looking right. Same scale and row baseline, all four silhouettes fully within their own cells with clear gaps. Transparent RGBA background, no floor, no cast shadows, no captions, no grid lines. Do NOT copy chef identity or gear. All four sprites are cute game sprites on one consistently coarse pixel grid.",
+      "transparent_background": true
+    },
+    {
+      "generation_id": "exec-564a405b-88fb-426e-bb02-0a6f33f981a3",
+      "output": "aling-dialogue-halfbody-v2.png",
+      "prompt": "Use case: precise-object-edit / identity-preserve\nImage1 is the EDIT TARGET: A Ling's current fine-pixel half-body dialogue portrait. Image2 is the user's original design, for identity only. Revise image1 according to these EXACT user corrections while preserving its cute fine-pixel art, violet-blue-gold palette, gently crossed arms, three-quarter direction, overall portrait composition, shoulder crow, long braid, ornaments and transparent background.\nA. KEY BELONGS TO CROW, NOT EAR.\nCompletely remove the gold key hanging beside her ear/hair in image1. Her ear has NO key earring. The black crow must visibly hold ONE small brass key in its BEAK. For unambiguous readability, turn ONLY the crow's head a little outward toward screen-left, away from her face, while keeping its body perched on the same screen-left shoulder. Draw the gray beak clamping through the key's circular bow/ring; the small shaft and teeth hang down just outside the beak in empty space, clearly connected to bird and well separated from girl's face/hair/ear. No chain to ear, no floating key, no extra key. Cute natural crow anatomy.\nB. WAIST OBJECT MUST BE A THIN PAPER LEDGER, NOT A BOX.\nReplace the thick box-like object at screen-left hip with a THIN, slightly flexed brown-covered bound ACCOUNT NOTEBOOK. Same brown/gold color, gold front border, vertical cover characters 密令, similar location/size, attached unobtrusively at waist. Strong book construction: front cover and back cover are TWO thin flat sheets; spine only along LEFT edge; a shallow cream paper block between covers, about one third of the current thickness. BOTH the RIGHT fore-edge AND BOTTOM edge show exposed fine cream PAPER PAGE LINES ending freely at the edges. Especially remove the thick brown enclosure / wooden bottom lip at the bottom. NO brown wall around right or lower page edge, NO enclosed tray, NO clasp, NO metal corners, NO pouch. Slightly separate the lower cover tip / small curled paper corner so it immediately reads as flexible bound paper. This is a practical delivery-address ledger, not a heavy magic book or chest. Keep the entire notebook including its lower paper edge inside the portrait with a little breathing room.\nC. MAKE THE GIRL A LITTLE SLIMMER.\nSubtly taper face/cheeks and jaw, lengthen the face a touch, and narrow shoulders, upper arms, waist and torso by approximately 10 percent. Reduce puffiness of sleeves a little. Preserve natural anatomy, youthful cute expression and recognizable facial features; do not turn her into an adult fashion model, do not make a skeletal face. Maintain the crossed-arm pose and large expressive violet eyes with dark pupils and small natural upper-side catchlights.\nKEEP all other important elements: golden feather hair ornament, white headband and gold crescent, blue high ponytail, ONE long blue side braid with gold crescent tie/tassel, purple gold-ruffled mantle, paired gold feather/wing emblems, crescent collar clasp, pale blouse, violet skirt. Keep rich crisp fine pixel cluster shading and visible stair-step contours like image1; NOT smooth vector or painted illustration and NOT chunky mosaic (coarser pixels were requested for the small sprite sheet only). No captions, background, frame, scenery or additional objects. Real transparent RGBA.",
+      "transparent_background": true
+    }
+  ],
+  "notes": [
+    "原稿与v1成品未改写；生成式修订，不保证其余区域逐像素不变。",
+    "48×88网格与约10%收窄仅为生成提示目标；实际PNG1254×1254，未做网格或比例的机械保证。",
+    "当前设定以用户本次纠正为准：乌鸦叼钥匙；历史v1提示中的key earring是误读，不得继续沿用。",
+    "只做素材，未接入NPC或对话系统，Godot测试NOT_RUN_ASSET_ONLY。"
+  ]
+}

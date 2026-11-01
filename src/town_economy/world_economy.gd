@@ -13,6 +13,9 @@ var expansion: TDBusinessExpansion
 var _daily_interest: Dictionary = {}
 ## Negative means "not set": player_store keeps map attractiveness. The live shell writes layout effect.
 var interior_effect: float = -1.0
+var character_candidate: Callable
+var meal_schedule := TDMealSchedule.new()
+var event_minute: float = -1.0
 const SOCIETY_FIELDS: Array[String] = ["society","expansion","legacy_archive","tax_due_cents","today_interest_cents"]
 const FIRM_FIELDS: Array[String] = ["owner_id","name","parcel_id","capacity","open_day","status","cost_basis","consumed_cents","wage_expense_cents","tax_cents","tax_due_cents","profitable_reviews","last_profit_cents","travel_minutes","basket_index"]
 
@@ -24,6 +27,8 @@ func _init(base_costs: Dictionary = {}, home: String = "chengdu", seed_value: in
 	config=parser.data
 	error=validate_config(config)
 	if not error.ok: return
+	if not meal_schedule.error.ok:
+		error=meal_schedule.error;return
 	costs=base_costs.duplicate(true)
 	if home not in config.active_towns: home="chengdu"
 	society=TDCommunitySociety.new(config,config.active_towns,config.groups,day)
@@ -72,9 +77,9 @@ func cash_audit(player_cash: int) -> Dictionary:
 	var expected:=int(society.state.initial_cash_cents)+int(society.state.external_net_cents)
 	return {"actual_cents":actual,"expected_cents":expected,"difference_cents":actual-expected,"bank_difference_cents":int(society.bank.audit().difference_cents)}
 
-func configure_parcels(town: String, plots: Array, parcels: Array) -> TDOutcome:
+func configure_parcels(town: String, plots: Array, parcels: Array, layout_version: int = 1) -> TDOutcome:
 	if town not in config.active_towns: return TDOutcome.new(false,"UNKNOWN_TOWN")
-	var view:=TDEconomicGeography.new();view.configure(town,plots,state.cells)
+	var view:=TDEconomicGeography.new();view.configure(town,plots,state.cells,layout_version)
 	return expansion.register(town,parcels,view,state.competitors[town])
 
 static func validate_config(raw: Variant) -> TDOutcome:
@@ -149,8 +154,8 @@ func source_factor(town: String, item: String) -> float:
 func snapshot() -> Dictionary:
 	return state.duplicate(true)
 
-func attach_map(plots: Array) -> void:
-	geography.configure(state.home,plots,state.cells)
+func attach_map(plots: Array, layout_version: int = 1) -> void:
+	geography.configure(state.home,plots,state.cells,layout_version)
 
 func configure_cell(raw: Dictionary) -> TDOutcome:
 	var checked:=TDEconomicCell.validate(raw)
@@ -158,7 +163,7 @@ func configure_cell(raw: Dictionary) -> TDOutcome:
 	if raw.town_id not in config.active_towns: return TDOutcome.new(false,"UNKNOWN_TOWN")
 	if state.economy_open: return TDOutcome.new(false,"NOT_AT_BOUNDARY")
 	state.cells[raw.id]=raw.duplicate(true)
-	geography.configure(state.home,geography._plots,state.cells)
+	geography.configure(state.home,geography._plots,state.cells,geography._layout_version)
 	return TDOutcome.new(true,"CELL_UPDATED")
 
 func reputation(group: String, channel: String) -> float:
@@ -321,7 +326,14 @@ func decor_match_for(attractiveness: float) -> float:
 	var delta := clampf((interior_effect - 30.0) / 80.0, -0.25, 0.25)
 	return clampf(base + delta, 0.0, 1.0)
 
-func forecast(menu: Array) -> Dictionary:
+func forecast(menu: Array, from_minute: float = -1.0) -> Dictionary:
+	var available: int=int(config.opportunities_per_day)
+	var periods: Dictionary={}
+	if from_minute>=0:
+		available=0
+		for event: Dictionary in meal_events():
+			if float(event.minute)<from_minute: continue
+			available+=1;periods[event.period]=int(periods.get(event.period,0))+1
 	var expected: float=0
 	var excluded_share: float=0
 	var by_recipe: Dictionary={}
@@ -335,24 +347,70 @@ func forecast(menu: Array) -> Dictionary:
 			candidates.append(player_store(menu,0,actual))
 			for row: Dictionary in TDEconomicDemand.choices(actual,candidates,config.outside_utility,config.menu_tau):
 				if row.store_id!="player": continue
-				var visits:=float(config.opportunities_per_day)*share*float(row.probability)
+				var visits:=float(available)*share*float(row.probability)
 				expected+=visits;by_recipe[row.recipe_id]=float(by_recipe.get(row.recipe_id,0))+visits
-	return {"day":int(state.day),"expected_visitors":expected,"min_visitors":maxi(0,floori(expected-1.8*sqrt(expected))),"max_visitors":mini(int(config.opportunities_per_day),ceili(expected+1.8*sqrt(expected))),"by_recipe":by_recipe,"excluded_budget_share":excluded_share,"reasons":["当前菜单超出约%.0f%%客群的预算上限。"%(100*excluded_share),"预算、价格、距离和竞争共同决定到店意向。","区间是估计，存在零客；缺料和排队会继续降低实际下单。"]}
+	return {"day":int(state.day),"expected_visitors":expected,"min_visitors":maxi(0,floori(expected-1.8*sqrt(expected))),"max_visitors":mini(int(config.opportunities_per_day),ceili(expected+1.8*sqrt(expected))),"by_recipe":by_recipe,"meal_opportunities":periods,"from_minute":from_minute,"excluded_budget_share":excluded_share,"reasons":["当前菜单超出约%.0f%%客群的预算上限。"%(100*excluded_share),"预算、价格、距离和竞争共同决定到店意向。","区间是估计，存在零客；缺料和排队会继续降低实际下单。"]}
 
 func begin_day() -> void:
 	state.economy_open=true;state.last_operated_day=int(state.day)
 
 func arrivals(slot: int, menu: Array, waiting: int, capacity: int, templates: Array, patience: float) -> Array:
 	if slot<=int(state.day_stats.slot) or slot>=int(config.slots_per_day): return []
-	var result: Array=[]
 	var start: int=floori(float(slot)*int(config.opportunities_per_day)/int(config.slots_per_day))
 	var finish: int=floori(float(slot+1)*int(config.opportunities_per_day)/int(config.slots_per_day))
 	state.day_stats.slot=slot
+	return _arrival_range(start,finish,slot,menu,waiting,capacity,templates,patience)
+
+func meal_events() -> Array:
+	return meal_schedule.events(int(config.opportunities_per_day),int(state.seed),int(state.day),str(state.home))
+
+func skip_closed_before(minute: float) -> void:
+	var events:=meal_events()
+	while int(state.day_stats.opportunities)<events.size():
+		var index: int=int(state.day_stats.opportunities)
+		if float(events[index].minute)>=minute: break
+		var group:=_group((index*37+int(state.day)*7)%100)
+		var family:=society.identity(state.home,group.id,index)
+		group=spending_group(group,state.home,index)
+		var choice:=TDEconomicDemand.pick(TDEconomicDemand.choices(group,_firms(state.home,group),config.outside_utility,config.menu_tau),unit("choice:%s:%d:%d"%[state.home,state.day,index]))
+		state.day_stats.opportunities+=1
+		if choice.store_id!="outside" and _sell_npc(state.home,choice.store_id,family): state.day_stats.competitor+=1
+		else: state.day_stats.outside+=1
+
+func next_meal_minute() -> float:
+	var events:=meal_events();var index: int=int(state.day_stats.opportunities)
+	return float(events[index].minute) if index<events.size() else INF
+
+func arrivals_at(minute: float, menu: Array, waiting: int, capacity: int, templates: Array, patience: float) -> Array:
+	var result: Array=[]
+	var events:=meal_events()
+	while int(state.day_stats.opportunities)<events.size():
+		var index: int=int(state.day_stats.opportunities)
+		if float(events[index].minute)>minute+0.00001: break
+		event_minute=float(events[index].minute)
+		var slot: int=clampi(floori((event_minute-480.0)/1080.0*int(config.slots_per_day)),0,int(config.slots_per_day)-1)
+		state.day_stats.slot=slot
+		result.append_array(_arrival_range(index,index+1,slot,menu,waiting+result.size(),capacity,templates,patience))
+	event_minute=-1.0
+	return result
+
+func _arrival_range(start: int, finish: int, slot: int, menu: Array, waiting: int, capacity: int, templates: Array, patience: float) -> Array:
+	var result: Array=[]
 	for index: int in range(start,finish):
 		var group:=_group((index*37+int(state.day)*7)%100)
 		var person:=customer(group,index%64,templates)
+		if character_candidate.is_valid():
+			var resolved: Dictionary=character_candidate.call(person.snapshot(),templates,int(config.society.families_per_group))
+			if resolved.is_empty(): state.day_stats.opportunities+=1;state.day_stats.outside+=1;continue
+			person=TDEconomicCustomer.new(resolved)
+			if not person.error.ok: state.day_stats.opportunities+=1;state.day_stats.outside+=1;continue
 		var family: String=person.snapshot().household_id
 		group=spending_group(group,state.home,index)
+		if person.snapshot().has("character_id"):
+			group=group.duplicate(true)
+			var taste: Dictionary=person.snapshot().taste
+			for key: String in taste:
+				if float(taste[key][1])>float(taste[str(group.preferred_taste)][1]): group.preferred_taste=key
 		var candidates:=_firms(state.home,group)
 		candidates.append(player_store(menu,waiting+result.size(),group,person.snapshot().origin_id,person.id))
 		var compared:=TDEconomicDemand.choices(group,candidates,config.outside_utility,config.menu_tau)
@@ -374,7 +432,9 @@ func arrivals(slot: int, menu: Array, waiting: int, capacity: int, templates: Ar
 		if not society.reserve(family,int(dish.price_cents),intent.snapshot().opportunity_id).ok:
 			state.day_stats.capacity_rejected+=1;continue
 		state.day_stats.admitted+=1
-		result.append({"person":person.snapshot(),"intent":intent.snapshot(),"template":templates[int(group.customer_template)%templates.size()].duplicate(true),"reference_cents":int(dish.reference_cents)})
+		var template: Dictionary=templates[int(group.customer_template)%templates.size()].duplicate(true)
+		template.requirements=person.snapshot().declared_requirements
+		result.append({"person":person.snapshot(),"intent":intent.snapshot(),"template":template,"reference_cents":int(dish.reference_cents)})
 	return result
 
 func _sell_npc(town: String, id: String, family_id: String) -> bool:
@@ -421,7 +481,10 @@ func record_visit(order: Dictionary) -> Dictionary:
 	return review.duplicate(true)
 
 func cooking_time(seconds: float) -> void:
-	if state.economy_open and is_finite(seconds) and seconds>0: state.day_stats.cooking_seconds+=seconds
+	if not is_finite(seconds) or seconds<=0: return
+	if int(state.last_settled_day)==int(state.day):
+		state.after_hours_seconds=float(state.get("after_hours_seconds",0.0))+seconds
+	else: state.day_stats.cooking_seconds+=seconds
 
 func sync_costs(ledger: Array) -> void:
 	for index: int in range(int(state.cost_cursor),ledger.size()):
@@ -453,10 +516,12 @@ func sync_costs(ledger: Array) -> void:
 				var used:=mini(-quantity,int(stock.units))
 				var spent:=int(stock.value_cents) if used==int(stock.units) else roundi(float(stock.value_cents)*used/maxi(1,int(stock.units)))
 				stock.units-=used;stock.value_cents-=spent
-				if int(event.day)==int(state.day): state.cost_consumed+=spent
+				if int(event.day)==int(state.day):
+					if int(state.last_settled_day)==int(state.day): state.after_hours_cost_cents=int(state.get("after_hours_cost_cents",0))+spent
+					else: state.cost_consumed+=spent
 	state.cost_cursor=ledger.size()
 
-func settle(ledger: Array, receipts: int) -> Dictionary:
+func settle(ledger: Array, receipts: int, opened_today: bool = true) -> Dictionary:
 	if int(state.last_settled_day)==int(state.day): return state.books.back().duplicate(true) if not state.books.is_empty() else {}
 	sync_costs(ledger)
 	var bank_day:=society.bank.accrue(int(state.day))
@@ -465,7 +530,7 @@ func settle(ledger: Array, receipts: int) -> Dictionary:
 	_simulate_remaining()
 	society.finish_day(int(state.day))
 	for town: String in config.active_towns: expansion.review(town,state.competitors[town],society,int(state.day))
-	var utility: int=roundi(float(config.fees.opening_cents)+int(state.day_stats.admitted)*float(config.fees.guest_cents)+float(state.day_stats.cooking_seconds)*float(config.fees.cooking_second_cents))
+	var utility: int=roundi((float(config.fees.opening_cents) if opened_today else 0.0)+int(state.day_stats.admitted)*float(config.fees.guest_cents)+float(state.day_stats.cooking_seconds)*float(config.fees.cooking_second_cents))
 	var rent: int=0 if state.lease.owned else int(state.lease.daily_cents)
 	# A wage paid after yesterday's settlement belongs to the next business day.
 	# The ledger settlement marker makes this boundary survive save/reload without
@@ -587,7 +652,11 @@ func advance_day(expected: int) -> TDOutcome:
 	for group: Dictionary in config.groups:
 		for channel: String in ["food","service","value"]:
 			state.reputation[group.id][channel][0]*=0.98;state.reputation[group.id][channel][1]*=0.98
+	var carry_cost:=int(state.get("after_hours_cost_cents",0))
+	var carry_seconds:=float(state.get("after_hours_seconds",0.0))
 	_reset_day();_stock_competitors()
+	state.cost_consumed=carry_cost;state.day_stats.cooking_seconds=carry_seconds
+	state.after_hours_cost_cents=0;state.after_hours_seconds=0.0
 	return TDOutcome.new(true,"NEXT_ECONOMY_DAY")
 
 func restore(raw: Dictionary) -> TDOutcome:
@@ -641,10 +710,12 @@ func validate_save(raw: Variant) -> TDOutcome:
 	var legacy: bool=int(raw.schema_version)==1
 	var towns: Array=TDTownCatalog.PLAYABLE_IDS if legacy else config.active_towns
 	for field: String in state:
+		if field in ["after_hours_cost_cents","after_hours_seconds"]: continue
 		if legacy and field in SOCIETY_FIELDS: continue
 		if not raw.has(field): return TDOutcome.new(false,"MISSING_ECONOMY_FIELD",field)
 	if not legacy and not raw.legacy_archive is Dictionary: return TDOutcome.new(false,"INVALID_LEGACY_ARCHIVE")
 	if not _safe_tree(raw): return TDOutcome.new(false,"INVALID_ECONOMY_DATA")
+	if not TDServiceCatalog.integer(raw.get("after_hours_cost_cents",0),0,1000000000) or not TDEconomicCustomer.finite_range(raw.get("after_hours_seconds",0.0),0,10000000): return TDOutcome.new(false,"INVALID_AFTER_HOURS_COST")
 	for field: String in ["day","seed","shipping_serial","debt_cents","last_settled_day","last_operated_day","cost_cursor","cost_consumed"]:
 		if not TDServiceCatalog.integer(raw[field],0,1000000000): return TDOutcome.new(false,"INVALID_ECONOMY_NUMBER",field)
 	if int(raw.day)<1 or int(raw.last_settled_day) not in [int(raw.day)-1,int(raw.day)] or raw.home not in towns or not raw.routes is Array or not raw.books is Array or raw.books.size()>28: return TDOutcome.new(false,"INVALID_ECONOMY_DAY")
