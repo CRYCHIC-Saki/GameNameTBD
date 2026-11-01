@@ -20,6 +20,13 @@ const STATIONS: Array[Dictionary] = [
 const INTERACTION_RADIUS: float = 88.0
 const DOOR_POS := Vector2(640, 700)
 var service_door: bool = false
+var day_minute: float=720.0
+
+func set_day_minute(value: float) -> void:
+	day_minute=value
+	self_modulate=TDDaylight.sample(value,true).tint
+	if _player!=null: _player.modulate=self_modulate
+	if has_node("Background"): $Background.modulate=self_modulate
 var _controls_enabled: bool = true
 var _player: TDKitchenPlayer
 var _prompt: Label
@@ -36,7 +43,7 @@ var single_fridge: bool = false
 var pot_contents: Array=[]
 var crew: TDRestaurantCrew
 const CHEF_SPRITE := preload("res://assets/kitchen/chef-v1.png")
-const COOK_POSTS: Array[Vector2] = [Vector2(588, 360), Vector2(720, 360)]
+const COOK_POSTS: Array[Vector2] = [Vector2(640, 400), Vector2(850, 400)]
 var _staff_nodes: Array[Node2D] = []
 var _crew_time: float = 0.0
 var order_shop: TDShopSession
@@ -44,10 +51,14 @@ var order_shop: TDShopSession
 func stations() -> Array[Dictionary]:
 	if not single_fridge: return STATIONS.duplicate(true)
 	var result: Array[Dictionary]=[]
-	result.append({"id":"kitchen.fridge","position":Vector2(245,290),"visual":Vector2(245,173),"name":"大冰箱","kind":"fridge"})
+	result.append({"id":"kitchen.fridge","position":Vector2(200,330),"visual":Vector2(200,270),"name":"大冰箱","kind":"fridge"})
 	result.append({"id":"kitchen.trash","position":Vector2(310,590),"visual":Vector2(245,585),"name":"垃圾桶","kind":"trash"})
 	for station: Dictionary in STATIONS:
-		if station.get("kind")!="supply": result.append(station.duplicate(true))
+		if station.get("kind")!="supply":
+			var item:=station.duplicate(true)
+			var columns: Dictionary={"kitchen.board":420.0,"kitchen.stove.left":640.0,"kitchen.stove.right":850.0,"kitchen.steamer":1060.0}
+			if columns.has(item.id): item.position=Vector2(columns[item.id],330);item.visual=Vector2(columns[item.id],270)
+			result.append(item)
 	return result
 
 
@@ -55,13 +66,14 @@ func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_player = $Player as TDKitchenPlayer
 	$Background.z_index = -10
+	$Background.scale=Vector2(1280.0/$Background.texture.get_width(),800.0/$Background.texture.get_height())
 	_player.z_index = 1
 	_make_hud()
 	_hud.z_index=2
 	_near_prompt=TDUI.label("[ E ]",20,TDUI.ORANGE); _near_prompt.size=Vector2(72,30); _near_prompt.autowrap_mode=TextServer.AUTOWRAP_OFF; _near_prompt.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER; _hud.add_child(_near_prompt)
 	for station: Dictionary in stations():
 		var label := TDUI.label(str(station_names.get(station.id,station.name)), 16, TDUI.ORANGE)
-		label.position = (station.get("visual",station.position+Vector2(0,-120)) as Vector2) + Vector2(-60,15)
+		label.position = (station.get("visual",station.position+Vector2(0,-120)) as Vector2) + Vector2(-60,8)
 		label.size = Vector2(120,28); label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		_hud.add_child(label)
 		if station.get("kind") == "serve":
@@ -131,19 +143,28 @@ func _exit_tree() -> void:
 	if is_instance_valid(_player):
 		_player.set_controls_enabled(false)
 
+func station_bounds(station: Dictionary) -> Rect2:
+	if not single_fridge: return Rect2(station.position,Vector2.ZERO)
+	if station.id=="kitchen.dining": return Rect2(DOOR_POS-Vector2(44,12),Vector2(88,24))
+	if station.id=="kitchen.serve": return Rect2(924,514,232,102)
+	if station.id=="kitchen.trash": return Rect2(205,515,80,70)
+	var x: float=float(station.position.x)
+	var half_width: float=110 if station.id=="kitchen.fridge" else 90
+	return Rect2(x-half_width,200,half_width*2,80)
+
 func _station_at_player() -> Dictionary:
 	if not is_instance_valid(_player):
 		return {}
 	var best: Dictionary = {}
-	var shortest: float = INTERACTION_RADIUS
+	var shortest: float = 96.0 if single_fridge else INTERACTION_RADIUS
 	if service_door and is_instance_valid(_player):
-		var door_distance := _player.position.distance_to(DOOR_POS)
-		if door_distance <= shortest and _player.faces_target(DOOR_POS):
+		var door_distance := TDInteractionRange.distance(_player.position,Rect2(DOOR_POS-Vector2(44,12),Vector2(88,24)))
+		if door_distance <= shortest:
 			shortest = door_distance
 			best = {"id": "kitchen.dining", "position": DOOR_POS, "name": "餐厅门口", "visual": DOOR_POS + Vector2(0, -80)}
 	for station: Dictionary in stations():
-		var distance: float = _player.position.distance_to(station["position"] as Vector2)
-		if distance <= shortest and _player.faces_target(station.position):
+		var distance: float = TDInteractionRange.distance(_player.position,station_bounds(station))
+		if distance <= shortest:
 			shortest = distance
 			best = station
 	return best
@@ -287,60 +308,23 @@ func _draw() -> void:
 			draw_string(_hud.get_theme_default_font(), DOOR_POS + Vector2(-40, -28), "餐厅", HORIZONTAL_ALIGNMENT_LEFT, 80, 16, TDUI.ORANGE)
 	if single_fridge and _hud!=null:
 		for i: int in pot_contents.size():
-			var box:=Rect2(435+i*270,215,252,76)
+			var box:=Rect2(530+i*220,350,210,62)
 			draw_rect(box,Color("172b24")); draw_rect(box,Color("c5a46c"),false,2)
 			draw_colored_polygon(PackedVector2Array([box.position+Vector2(124,0),box.position+Vector2(144,-18),box.position+Vector2(153,0)]),Color("172b24"))
 			draw_string(_hud.get_theme_default_font(),box.position+Vector2(10,23),str(pot_contents[i].title),HORIZONTAL_ALIGNMENT_LEFT,232,17,TDUI.ORANGE)
-			draw_string(_hud.get_theme_default_font(),box.position+Vector2(10,50),str(pot_contents[i].materials),HORIZONTAL_ALIGNMENT_LEFT,232,16,TDUI.INK)
+			draw_string(_hud.get_theme_default_font(),box.position+Vector2(10,46),str(pot_contents[i].materials),HORIZONTAL_ALIGNMENT_LEFT,232,16,TDUI.INK)
 	if _simmer_label!=null: _simmer_label.visible=simmer_meters.is_empty()
 	for i: int in simmer_meters.size():
 		var r:=Rect2(24,654-i*78,342,22)
 		draw_rect(Rect2(r.position-Vector2(4,33),Vector2(350,59)),Color("1d3028"))
 		draw_rect(r,Color("263c32")); draw_rect(Rect2(r.position+Vector2(3,3),Vector2(269*float(simmer_meters[i].ratio),16)),Color("92ae76"))
 		if _hud!=null: draw_string(_hud.get_theme_default_font(),r.position+Vector2(5,-10),"%s  ·  稳定 %d%%  ·  %.1fs"%[simmer_meters[i].name,roundi(float(simmer_meters[i].ratio)*100),float(simmer_meters[i].remaining_sec)],HORIZONTAL_ALIGNMENT_LEFT,-1,16,TDUI.INK)
-	# A real serving island: shadow, cabinet body, raised worktop, drawers and legs.
-	draw_rect(Rect2(913,532,258,97),Color(0,0,0,.28))
-	draw_rect(Rect2(930,556,220,59),Color("34534b"))
-	draw_rect(Rect2(924,518,232,48),Color("704834"))
-	draw_rect(Rect2(929,521,222,33),Color("bb925e"))
-	for line: int in 5: draw_line(Vector2(936,526+line*6),Vector2(1147,526+line*6),Color("9e764d"),2)
-	for x: int in [936,1045]:
-		draw_rect(Rect2(x,566,100,39),Color("527265")); draw_rect(Rect2(x+36,574,26,4),Color("c8ab70"))
-	for x: int in [938,1126]: draw_rect(Rect2(x,607,14,13),Color("3a3029"))
 	for station: Dictionary in stations():
-		var point: Vector2 = station.get("visual",station.position-Vector2(0,120))
-		point.y += 26
-		match str(station.get("kind","")):
-			"trash":
-				draw_rect(Rect2(point-Vector2(31,64),Vector2(62,62)),Color("526d61"))
-				draw_rect(Rect2(point-Vector2(36,70),Vector2(72,11)),Color("9aaca0"))
-				for x: int in [-16,0,16]: draw_line(point+Vector2(x,-53),point+Vector2(x,-12),Color("263f35"),4)
-			"fridge":
-				draw_rect(Rect2(point-Vector2(93,133),Vector2(186,137)),Color("253b3e"))
-				draw_rect(Rect2(point-Vector2(85,128),Vector2(170,127)),Color("81aaa0"))
-				for x: int in [-78,4]:
-					draw_rect(Rect2(point+Vector2(x,-121),Vector2(74,111)),Color("c1d5bc"))
-					draw_rect(Rect2(point+Vector2(x+8,-105),Vector2(57,35)),Color("98b4a2"))
-					draw_rect(Rect2(point+Vector2(x+8,-58),Vector2(7,32)),Color("4d7974"))
-				draw_rect(Rect2(point+Vector2(-81,0),Vector2(162,7)),Color("456864"))
-			"supply":
-				draw_rect(Rect2(point - Vector2(40,62),Vector2(80,52)),Color("98633f"))
-				draw_rect(Rect2(point - Vector2(34,56),Vector2(68,34)),Color("563d2c"))
-				for index: int in 3:
-					if station.id.ends_with("beef"):
-						draw_rect(Rect2(point+Vector2(-31+index*23,-48),Vector2(19,19)),Color("9b5142"))
-						draw_line(point+Vector2(-30+index*23,-44),point+Vector2(-17+index*23,-34),Color("d59a82"),3)
-					else: draw_circle(point + Vector2(-22 + index * 22,-38),9,Color("e56c48") if station.id.ends_with("tomato") else Color("f5df9c"))
-			"board":
-				draw_rect(Rect2(point - Vector2(50,52),Vector2(100,45)),Color("704b39"))
-				draw_rect(Rect2(point - Vector2(42,48),Vector2(84,30)),Color("d1a76b"))
-				draw_rect(Rect2(point + Vector2(8,-44),Vector2(28,5)),Color("dce7d8"))
-				if _context.get("board_occupied",false): draw_circle(point + Vector2(-18,-32),10,Color("e26b48"))
-			"steamer":
-				draw_rect(Rect2(point - Vector2(36,62),Vector2(72,47)),Color("bd965e"))
-				for index: int in 4: draw_line(point + Vector2(-32,-55+index*10),point + Vector2(32,-55+index*10),Color("715538"),3)
-			"serve":
-				draw_circle(Vector2(1040,537),20,Color("4d5147")); draw_circle(Vector2(1040,533),19,Color("e8e4cc")); draw_arc(Vector2(1040,533),15,0,TAU,32,Color("b0b9a4"),2)
+		var feet: Vector2=station.get("visual",station.position-Vector2(0,70))
+		var index: int={"fridge":4,"board":5,"steamer":7,"serve":8,"trash":9,"supply":14}.get(str(station.get("kind","")),6)
+		if station.id=="kitchen.serve": feet=Vector2(1040,615)
+		TDEnvironmentArt.draw_prop(self,index,feet,220 if index in [4,8] else (120 if index==9 else 180))
+	for at: Vector2 in [Vector2(135,95),Vector2(1145,95)]: TDDaylight.glow(self,at,float(TDDaylight.sample(day_minute,true).lamps),55)
 	if is_instance_valid(_player) and not _context.get("hand",{}).is_empty():
 		var hand: Dictionary = _context.hand
 		var point: Vector2 = _player.position + Vector2(0,-116)

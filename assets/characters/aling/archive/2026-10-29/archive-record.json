@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "character_id": "aling",
+  "display_name": "阿铃",
+  "archived_on": "2026-10-29",
+  "request": "把这两个归档",
+  "operation": "byte-identical copy of both user attachments; no image generation or editing",
+  "status": "USER_CONFIRMED_KEEP_ATTACHED_IMAGES",
+  "files": [
+    {
+      "role": "portrait",
+      "file": "archive/2026-10-29/aling-dialogue-halfbody.png",
+      "source_filename": "codex-clipboard-8f8ea53d-2fa3-4a3d-93b3-b6878d9c96d3.png",
+      "sha256": "42e5e42d71caedebea76b421eb3bfb232b6d80389aade638ea271ba79cfb2eed",
+      "size": [
+        1254,
+        1254
+      ],
+      "pixel_format": "Format32bppArgb",
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "byte_identical_to_attachment": true,
+      "corresponding_existing_file": "aling-dialogue-halfbody-v3.png",
+      "same_size_as_existing": true,
+      "different_argb_pixels": 50939,
+      "pixel_identical_to_existing": false
+    },
+    {
+      "role": "sprite",
+      "file": "archive/2026-10-29/aling-idle-four-directions.png",
+      "source_filename": "codex-clipboard-94f14206-1f16-445e-9a45-71fcc7ff1880.png",
+      "sha256": "c06575b689ec94addabe9b23a2bc1738c0c6e73431ce888b3f8cf79ee3613933",
+      "size": [
+        1254,
+        1254
+      ],
+      "pixel_format": "Format32bppArgb",
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "byte_identical_to_attachment": true,
+      "corresponding_existing_file": "aling-idle-four-directions-v2.png",
+      "same_size_as_existing": true,
+      "different_argb_pixels": 44014,
+      "pixel_identical_to_existing": false
+    }
+  ],
+  "verification": "每张归档PNG的SHA-256与对应用户附件一致；历史成品未覆盖。",
+  "runtime_integration": "NOT_DONE"
+}

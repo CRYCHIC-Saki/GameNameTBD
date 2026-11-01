@@ -1,5 +1,48 @@
 # 项目架构与接入边界
 
+## D054 海港开篇场景
+TDArrivalCutscene是可编辑AnimationPlayer/只读姿势资产组成的局部舞台；TDDialogue仍唯一拥有播放秒数。时间轴取样不触发经营效果，世界相机不被覆盖；TDDialogueView保持初遇对白时的末镜并冻结/跳过当前段。Shell只在first_entry同步隐藏地图后装配Guide.begin_arrival，完成信号一次恢复同一场景；旧读取仍小屋。昵称输入发意图给Opening，不创建第二个存档。东缘海岸不改有效产权网格；NPC预留停点属于原Roster运行显示状态，不改变经济身份。
+
+
+## D053-R2 连续场景演出
+
+TDDialogue的CG段由tick自动推进，剩余时间仅跨相邻CG，普通行/UI/选择处停；保留唯一完成/取消回执。TDDialogueView全屏切换TDCutsceneView与原对话框；CG仅有暂停/跳本段按钮，拒绝普通点击/长按透传。TDCutsceneView消费秒数，使用只读全身姿势图集、既有步态、独立道具运动与镜头切换，拟音同时间点触发。没有新增Autoload、经济状态或存档。
+
+## D053 剧情呈现与真实厨房接线
+
+TDOpeningScript只读加载带源段号的对白/CG配置；TDOpening保存章节与教程任务状态。TDDialogue管理行、打字和演出时间，TDDialogueView/TDStoryArt/TDCutsceneView只负责双立绘、暗淡、图层动效。TDStoryGuide由正式Shell创建/清理，装配对话、日记、跟随目标与导航，不拥有库存/经济、也不创建独立NPC。
+
+真实ShopView出餐将持盘交给可选story_delivery，只有对应章节/番茄炒蛋进入只读Scorer；成功后清理原工位，奖励仍经Shell调用原Shop幂等令牌。FullKitchen在操作边界调用可选tutorial_gate，返回实际已推进秒数；教学冻结期间不推进营业/全天时间。导航仅查询原Map/Layout/物理工位，既不移动人物也不改碰撞。角色与场景资源都显式列入导出清单，测试/生成说明不入包。
+
+## D051 显示步态与餐厅尺度
+
+TDNpcGait是每个显示实例独有的轻量RefCounted，只消费实际投影位移和停止/冻结标记；不保存、不消耗经济随机、不创建第二套NPC身份。Town/Restaurant各自在原显示入口维护与清理，常驻角色通过TDStoryArt只读图集显示，普通食客/员工仍用原通用外观。员工以稳定ID关联步态，动作文案不作身份。
+
+餐厅格距、project/pick、玩家逆投影共享同一常数；保留布局格坐标、家具实例及所有权。相机跟随与装修全景属于视图，账本查询原收银台位置，重建后同步交互和绘制；没有新增经济容量或保存版本。独立新环境图集以原AtlasTexture缓存接入，不另建场景/地块管理器。
+
+## D049 显示层与活动细化
+
+复用CharacterRoster runtime实现停驻/巡游及跨时段推进，未新增NPC经济身份或持久化模型。TDInteractionRange为纯几何查询；TDTownScenery按地图几何缓存地表和少量街边陈设，显示底座bounds也交给Town建立真实碰撞，避开道路/交互并在后续建造时让位。经营产权与建造有效性仍由原Map/Commerce决定，美术随机只做坐标哈希。外缘交互、日常对话优先级与时钟参数详见CONTRACTS D049。
+
+## D048 地图与时间接入
+
+现有Profile依旧装配World、Shop、Commerce、CharacterRoster。地图版本和纯地形定义进入World；迁移候选由MapMigration生成，持久化仍归ProfileStore。地块产权/报价属于Commerce，地图只呈现已存在的稳定ID。
+
+全天用餐计划是一个每天约44项的小数组，五镇后台仍聚合模拟；常驻NPC继续复用原画像和家庭资金，不为每个机会创建场景。新增地形无逐格节点；静态碰撞按连续行合并，背景底图缓存。厨房、营业、世界钟表复用FullKitchen既有单调时间信号，防止三套逐帧时间漂移。
+
+本轮没有引入Autoload、并行存档账、TileMap二次权威或新的NPC数据模型。
+
+
+## D047：临时来访、常驻角色和全天时间
+
+普通食客继续由Shop订单派生TDRestaurantGuest，持有原TDEconomicCustomer和TDMealIntent只读快照；离店销毁Node与活画像，不删除订单证据或社会家庭账。三套通用像素衣着/帽子/眼镜按稳定身份选择，问口味/评价只读订单。正式用餐展示秒独立于营业秒，结束营业后仍能离店。
+
+Profile组合TDCharacterRoster（配置定义、持久关系、临时路线分开）及TDWorldDayClock。经济机会生成器仅通过candidate边界把已绑定家庭的一次机会变成character:ID，继续走原选店、预算预留、库存与交付流程，不额外刷单。Town使用同一角色位置，入店后隐藏；Restaurant确认begin_visit，真正离店才finish_visit，避免取消订单时重复显示。道路BFS只在目标/地图改变时计算；远镇不创建这些角色Node。
+
+GameShell注入真实经过秒、冻结剧情/主动暂停，隐藏小镇也更新两名角色。02:00由上层协调ShopView实际食物回收/报废、Shop原取消与日结、访客清理、整包安全保存和小屋入口。clock闭日游标阻止重入；写盘失败保留旧有效档和可重试的内存日结。完整QTE仍不支持现场保存。
+
+Dialogue用story/interaction表现类型与story/resident/guest上下文；View只显示两个肖像及active_side，完成回执由Town/Restaurant分别送主线或关系规则。剧情选择先显示玩家发言再显示NPC回答；普通聊天不能触发Opening.resolve。schema5追加characters，旧1–4只初始化新状态，不回填历史好感。
+
 ## D040：共享主角视觉
 
 TDChefArt只缓存原站姿和补绘迈步图集的AtlasTexture；8张迈步图与4张原站姿形成四向4拍循环，不写模板或存档。TDKitchenPlayer在真实移动/道路限制后，将位移逆变换回屏幕距离推进实例步态；站立、受阻和禁用输入回原站姿。Sprite2D按贴图比例和底部脚点显示，餐厅自绘读取同一facing/walk_frame并做既有投影及遮挡排序，不另计动画时间。NPC绘制保持旧资源，没有新增节点管理器或Autoload。

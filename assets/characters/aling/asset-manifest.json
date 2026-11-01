@@ -1,0 +1,487 @@
+{
+  "schema": 1,
+  "character_id": "aling",
+  "display_name": "阿铃",
+  "date": "2026-10-28",
+  "status": "DELIVERED_LOCAL_USER_CONFIRMED_ARCHIVE",
+  "generator": "built-in image_gen",
+  "scope": "原稿归档、四向静态小人与半身微像素立绘；未接入NPC/对话运行时",
+  "character_brief": "阿铃：跑腿少女，“夜鸦密使”。随身带着写满密令的账本，所谓密令大多是送货地址。",
+  "references": [
+    {
+      "path": "doc/source/characters/aling/design-annotated-original.jpg",
+      "sha256": "cde3d9880cfad2fa7024d64405b22127a0d366de0865446c47aadcf9f68dc9c1",
+      "role": "用户带标注设计原稿；只读形象参考"
+    },
+    {
+      "path": "doc/source/characters/aling/design-clean-original.png",
+      "sha256": "ae1035c8c8b5ff5844c0c1d1c507c7ee6d507a229b3fdfdd806a79dacddd99eb",
+      "role": "用户无标注设计原稿；角色身份与颜色主参考"
+    },
+    {
+      "path": "doc/source/characters/aling/character-brief-original.jpg",
+      "sha256": "5a9388f4d0476594dd481462f8a28b7e56bedf3a1ce1a8c0750f821a76df07e3",
+      "role": "用户角色设定原图；阿铃、跑腿少女、夜鸦密使、账本与送货地址"
+    }
+  ],
+  "style_references": [
+    {
+      "path": "assets/characters/protagonist/protagonist-idle-four-directions-v1.png",
+      "sha256": "169c2ed07230794e57d7d92369211794f10b57dbffb648515768a5b005292409",
+      "role": "仅四向小人画风、比例与图集布局"
+    },
+    {
+      "path": "assets/characters/protagonist/protagonist-dialogue-halfbody-pose-pixel-v7.png",
+      "sha256": "9b45e97bc035faabc6fc7f20c93d33e48508f915ca49900d33492e816f1e2f0f",
+      "role": "仅已选v7半身像可爱风格、细像素与色块表现"
+    }
+  ],
+  "identity_elements": [
+    "深蓝发、紫色眼睛",
+    "头箍月牙、领口月牙、辫尾月牙",
+    "角色右侧金羽毛、肩上乌鸦；金钥匙由乌鸦嘴叼住，人物无钥匙耳饰",
+    "角色左侧长辫",
+    "紫色金边披肩、金羽翼纹饰、白衬衫、紫裙",
+    "右腰棕色金边薄册密令账本；右侧和底部露出纸页，仅一侧装订书脊，无盒式包边",
+    "褶边袜、蓝金系带短靴（全身小人）"
+  ],
+  "sprite_atlas": {
+    "file": "aling-idle-four-directions-v2.png",
+    "sha256": "ad6b2374aa49f519f2c771ee48f0fa7ea99ee97fe73a14906ab70925f68bbc7d",
+    "size": [
+      1254,
+      1254
+    ],
+    "layout": [
+      2,
+      2
+    ],
+    "cell_size": [
+      627,
+      627
+    ],
+    "frames_per_direction": 1,
+    "animation": "idle_static",
+    "filter_recommendation": "nearest",
+    "bounds_measurement_alpha_threshold": 128,
+    "directions": [
+      {
+        "id": "front",
+        "region_xywh": [
+          0,
+          0,
+          627,
+          627
+        ],
+        "visible_bounds_local_xywh": [
+          180,
+          30,
+          385,
+          593
+        ],
+        "facing": "down"
+      },
+      {
+        "id": "back",
+        "region_xywh": [
+          627,
+          0,
+          627,
+          627
+        ],
+        "visible_bounds_local_xywh": [
+          69,
+          30,
+          382,
+          594
+        ],
+        "facing": "up"
+      },
+      {
+        "id": "left",
+        "region_xywh": [
+          0,
+          627,
+          627,
+          627
+        ],
+        "visible_bounds_local_xywh": [
+          226,
+          16,
+          275,
+          578
+        ],
+        "facing": "left"
+      },
+      {
+        "id": "right",
+        "region_xywh": [
+          627,
+          627,
+          627,
+          627
+        ],
+        "visible_bounds_local_xywh": [
+          111,
+          16,
+          308,
+          578
+        ],
+        "facing": "right"
+      }
+    ],
+    "pivot_note": "四格留白与鸟/辫子延伸不同；运行时应按角色脚底确定枢轴，不能把整格中心当脚点。尚未测定运行时枢轴。",
+    "corner_alpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "pixel_style": "相较v1加大可见像素块、减少细碎阴影，继续参照主角四向图；提示中的48×88仅为视觉网格目标，未宣称输出是严格原生网格。",
+    "revision": "v2",
+    "generation_record": "revision-v2-generation.json"
+  },
+  "dialogue_portrait": {
+    "file": "aling-dialogue-halfbody-v3.png",
+    "sha256": "e912a1de4b79d342a92bcbe2a1601cec050d5f22dd8257d7fba4ad8158e75dfa",
+    "size": [
+      1254,
+      1254
+    ],
+    "visible_bounds_xywh": [
+      112,
+      23,
+      1085,
+      1231
+    ],
+    "crop": "half-body through upper hips; lower skirt reaches bottom edge",
+    "pose": "original gently folded arms",
+    "corner_alpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "pixel_format": "Format32bppArgb",
+    "revision": "v3",
+    "generation_record": "portrait-v3-generation.json"
+  },
+  "alpha": "Current sprite v2 and portrait v3 are generated RGBA PNGs preserved byte-for-byte; all four corners alpha 0. No scripted image editing.",
+  "verification": {
+    "archive_byte_identity": "PASS_3_OF_3",
+    "visual_inspection": "半身v3下颌转折与下巴更圆润，保留细像素、三分之四转头、抱臂、稍瘦身形、乌鸦叼钥匙及底部露纸页薄账本；四向v2文件未改。用户美术确认仍PENDING。",
+    "png_metadata": "PASS; both 1254x1254 RGBA",
+    "engine_tests": "NOT_RUN_ASSET_ONLY",
+    "runtime_integration": "NOT_DONE",
+    "human_art_acceptance": "USER_CONFIRMED_KEEP_ARCHIVED_ATTACHMENTS",
+    "acceptance_scope": "本次上传的两张附件按原样归档保留；不等同运行时接入验收。"
+  },
+  "generation_record": "portrait-v3-generation.json",
+  "previous_versions": [
+    {
+      "version": "v1",
+      "sprite_atlas": {
+        "file": "aling-idle-four-directions-v1.png",
+        "sha256": "8591128c4429e490ec1d233b0a2d27cbdc03c297931d38c78cd8204208bc3d21",
+        "size": [
+          1254,
+          1254
+        ],
+        "layout": [
+          2,
+          2
+        ],
+        "cell_size": [
+          627,
+          627
+        ],
+        "frames_per_direction": 1,
+        "animation": "idle_static",
+        "filter_recommendation": "nearest",
+        "bounds_measurement_alpha_threshold": 128,
+        "directions": [
+          {
+            "id": "front",
+            "facing": "down",
+            "region_xywh": [
+              0,
+              0,
+              627,
+              627
+            ],
+            "visible_bounds_local_xywh": [
+              187,
+              38,
+              376,
+              576
+            ]
+          },
+          {
+            "id": "back",
+            "facing": "up",
+            "region_xywh": [
+              627,
+              0,
+              627,
+              627
+            ],
+            "visible_bounds_local_xywh": [
+              63,
+              39,
+              380,
+              575
+            ]
+          },
+          {
+            "id": "left",
+            "facing": "left",
+            "region_xywh": [
+              0,
+              627,
+              627,
+              627
+            ],
+            "visible_bounds_local_xywh": [
+              234,
+              15,
+              270,
+              581
+            ]
+          },
+          {
+            "id": "right",
+            "facing": "right",
+            "region_xywh": [
+              627,
+              627,
+              627,
+              627
+            ],
+            "visible_bounds_local_xywh": [
+              103,
+              15,
+              329,
+              581
+            ]
+          }
+        ],
+        "pivot_note": "四格留白与鸟/辫子延伸不同；运行时应按角色脚底确定枢轴，不能把整格中心当脚点。尚未测定运行时枢轴。",
+        "corner_alpha": [
+          0,
+          0,
+          1,
+          1
+        ]
+      },
+      "dialogue_portrait": {
+        "file": "aling-dialogue-halfbody-v1.png",
+        "sha256": "4afb29d9ee5e9eb476ea7e84461d0ea65924f43ab73dcb98261c40c3a3058343",
+        "size": [
+          1254,
+          1254
+        ],
+        "visible_bounds_xywh": [
+          55,
+          31,
+          1137,
+          1223
+        ],
+        "crop": "half-body through upper hips; lower skirt reaches bottom edge",
+        "pose": "original gently folded arms",
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "generation_record": "generation-prompts.json",
+      "status": "SUPERSEDED_AFTER_USER_FEEDBACK",
+      "corrections": "用户指出小人像素颗粒不够、账本底部像封口盒子、钥匙应由乌鸦叼着而非耳饰、人物需更显瘦。v1图片和原提示保留作历史，不代表当前设定。"
+    },
+    {
+      "version": "v2",
+      "sprite_atlas": {
+        "file": "aling-idle-four-directions-v2.png",
+        "sha256": "ad6b2374aa49f519f2c771ee48f0fa7ea99ee97fe73a14906ab70925f68bbc7d",
+        "size": [
+          1254,
+          1254
+        ],
+        "layout": [
+          2,
+          2
+        ],
+        "cell_size": [
+          627,
+          627
+        ],
+        "frames_per_direction": 1,
+        "animation": "idle_static",
+        "filter_recommendation": "nearest",
+        "bounds_measurement_alpha_threshold": 128,
+        "directions": [
+          {
+            "id": "front",
+            "region_xywh": [
+              0,
+              0,
+              627,
+              627
+            ],
+            "visible_bounds_local_xywh": [
+              180,
+              30,
+              385,
+              593
+            ],
+            "facing": "down"
+          },
+          {
+            "id": "back",
+            "region_xywh": [
+              627,
+              0,
+              627,
+              627
+            ],
+            "visible_bounds_local_xywh": [
+              69,
+              30,
+              382,
+              594
+            ],
+            "facing": "up"
+          },
+          {
+            "id": "left",
+            "region_xywh": [
+              0,
+              627,
+              627,
+              627
+            ],
+            "visible_bounds_local_xywh": [
+              226,
+              16,
+              275,
+              578
+            ],
+            "facing": "left"
+          },
+          {
+            "id": "right",
+            "region_xywh": [
+              627,
+              627,
+              627,
+              627
+            ],
+            "visible_bounds_local_xywh": [
+              111,
+              16,
+              308,
+              578
+            ],
+            "facing": "right"
+          }
+        ],
+        "pivot_note": "四格留白与鸟/辫子延伸不同；运行时应按角色脚底确定枢轴，不能把整格中心当脚点。尚未测定运行时枢轴。",
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "pixel_style": "相较v1加大可见像素块、减少细碎阴影，继续参照主角四向图；提示中的48×88仅为视觉网格目标，未宣称输出是严格原生网格。"
+      },
+      "dialogue_portrait": {
+        "file": "aling-dialogue-halfbody-v2.png",
+        "sha256": "0bd8b21e341ad2b2d712ee381f16093d9bfdc44ad6a5529310b9cdba5464d041",
+        "size": [
+          1254,
+          1254
+        ],
+        "visible_bounds_xywh": [
+          113,
+          24,
+          1079,
+          1230
+        ],
+        "crop": "half-body through upper hips; lower skirt reaches bottom edge",
+        "pose": "original gently folded arms",
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "generation_record": "revision-v2-generation.json",
+      "status": "PORTRAIT_SUPERSEDED_SPRITE_STILL_CURRENT",
+      "corrections": "用户指出半身像下巴偏尖，与主角v7立绘风格不一致；本轮仅修订半身脸部，四向v2继续使用。"
+    }
+  ],
+  "current_revision": "v3",
+  "user_corrections": [
+    "像素小人需要更接近主角的像素颗粒",
+    "腰间为账本，底部不能画成封口的盒子",
+    "钥匙由乌鸦嘴叼住，不是耳饰",
+    "人物稍微显瘦一些",
+    "2026-10-29：半身立绘下巴偏尖；参照主角v7柔和可爱脸型，调整圆润的下颌与下巴，保持稍瘦比例。"
+  ],
+  "revised_on": "2026-10-29",
+  "selected_archive": {
+    "date": "2026-10-29",
+    "selection": "USER_CONFIRMED_KEEP_ATTACHED_IMAGES",
+    "files": [
+      {
+        "role": "portrait",
+        "file": "archive/2026-10-29/aling-dialogue-halfbody.png",
+        "source_filename": "codex-clipboard-8f8ea53d-2fa3-4a3d-93b3-b6878d9c96d3.png",
+        "sha256": "42e5e42d71caedebea76b421eb3bfb232b6d80389aade638ea271ba79cfb2eed",
+        "size": [
+          1254,
+          1254
+        ],
+        "pixel_format": "Format32bppArgb",
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "byte_identical_to_attachment": true,
+        "corresponding_existing_file": "aling-dialogue-halfbody-v3.png",
+        "same_size_as_existing": true,
+        "different_argb_pixels": 50939,
+        "pixel_identical_to_existing": false
+      },
+      {
+        "role": "sprite",
+        "file": "archive/2026-10-29/aling-idle-four-directions.png",
+        "source_filename": "codex-clipboard-94f14206-1f16-445e-9a45-71fcc7ff1880.png",
+        "sha256": "c06575b689ec94addabe9b23a2bc1738c0c6e73431ce888b3f8cf79ee3613933",
+        "size": [
+          1254,
+          1254
+        ],
+        "pixel_format": "Format32bppArgb",
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "byte_identical_to_attachment": true,
+        "corresponding_existing_file": "aling-idle-four-directions-v2.png",
+        "same_size_as_existing": true,
+        "different_argb_pixels": 44014,
+        "pixel_identical_to_existing": false
+      }
+    ],
+    "record": "archive/2026-10-29/archive-record.json",
+    "runtime_integration": "NOT_DONE",
+    "note": "以本次用户上传附件的原字节副本为归档基准；附件与此前生成PNG的文件哈希及部分ARGB值不同，未用旧成品替代附件，也未覆盖旧成品。"
+  }
+}

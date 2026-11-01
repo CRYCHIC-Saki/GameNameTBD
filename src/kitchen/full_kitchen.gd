@@ -20,6 +20,7 @@ var auto_advance: bool = true
 # A research host drives the same kitchen, while owning return/completion navigation.
 var lesson_mode: bool = false
 var before_input: Callable
+var tutorial_gate: Callable
 var world: TDKitchenWorld
 var lanes: Array[TDCookingLane] = []
 var day_san: float = -1.0
@@ -218,7 +219,7 @@ func advance(seconds: float) -> void:
 
 func _advance_span(seconds: float) -> void:
 	var business_delta: float = seconds if is_finite(seconds) and seconds >= 0 and not shared_clock.paused else 0.0
-	if guided_controls: _advance_guided(seconds)
+	if guided_controls: business_delta=_advance_guided(seconds)
 	else:
 		for lane: TDCookingLane in lanes: lane.advance(seconds)
 		if handling.board != null: prep.advance(seconds)
@@ -238,28 +239,31 @@ func _sync_mouse_ownership() -> bool:
 			lane.thermal_progress = lane.thermal_qte.update().data
 	return reserved
 
-func _advance_guided(seconds: float) -> void:
-	if not is_finite(seconds) or seconds < 0 or shared_clock.paused: return
+func _advance_guided(seconds: float) -> float:
+	if not is_finite(seconds) or seconds < 0 or shared_clock.paused: return 0.0
 	var remaining: float = seconds
+	var consumed: float=0.0
 	var active: Array = lanes.duplicate()
 	if handling.board != null: active.append(prep)
 	for iteration: int in 1024:
 		for lane: TDCookingLane in active: lane.advance(0)
+		if tutorial_gate.is_valid() and not bool(tutorial_gate.call()): return consumed
 		_sync_mouse_ownership()
-		if remaining <= .000000001: return
+		if remaining <= .000000001: return consumed
 		var span: float = remaining
 		for lane: TDCookingLane in active: span = minf(span,lane.next_boundary_sec())
 		if span <= .000000001:
-			push_error("Guided scheduler failed to advance"); return
+			push_error("Guided scheduler failed to advance"); return consumed
 		var working: int=0
 		for lane: TDCookingLane in active:
 			if lane.qte!=null or lane.thermal_qte!=null: working+=1
 		if working>0: work_advanced.emit(span*working)
 		for lane: TDCookingLane in active: lane.advance(span)
 		if handling.hand != null and handling.hand_kind == "ingredient": handling.hand.advance_time(span)
-		shared_clock.advance(span); remaining -= span
-		if remaining <= .000000001: return
+		shared_clock.advance(span); remaining -= span;consumed+=span
+		if remaining <= .000000001: return consumed
 	push_error("Guided scheduler exceeded bounded event count")
+	return consumed
 
 func _input(event: InputEvent) -> void:
 	if _closed: return

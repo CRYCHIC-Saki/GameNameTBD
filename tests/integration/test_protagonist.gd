@@ -12,7 +12,7 @@ func before_each() -> void:
 	add_child_autofree(app)
 	shell = app.game_shell
 	shell.automatic_time = false
-	assert_true(shell.create_game("slot-01").ok)
+	assert_true(shell.create_game("slot-01").ok);shell.guide.dialogue.finish_now()
 	await wait_physics_frames(2)
 
 func after_each() -> void:
@@ -60,16 +60,16 @@ func test_real_move_plays_full_cycle_release_and_solid_wall_return_to_idle() -> 
 	await wait_physics_frames(2)
 	assert_eq(body.walk_frame, -1)
 	assert_same(body.animation_texture(), TDChefArt.texture(Vector2i.DOWN))
-	body.position = Vector2(115, 440)
-	Input.action_press("world_left")
+	body.position = Vector2(640, 310)
+	Input.action_press("world_up")
 	await wait_physics_frames(30)
 	var blocked_at := body.position
-	assert_eq(body.walk_frame, -1, "Held key against a wall must not walk in place")
+	assert_eq(body.walk_frame, -1, "Held key against a straight wall must not walk in place")
 	await wait_physics_frames(4)
-	assert_almost_eq(body.position.x, blocked_at.x, .01)
-	assert_gt(body.position.x, 96.0, "Kitchen wall still blocks the real body")
-	Input.action_release("world_left")
-	assert_eq(body.facing, Vector2i.LEFT)
+	assert_almost_eq(body.position.y, blocked_at.y, .01)
+	assert_gt(body.position.y, 280.0, "New visible countertop blocks the real feet")
+	Input.action_release("world_up")
+	assert_eq(body.facing, Vector2i.UP)
 
 func test_pause_modal_and_hidden_room_do_not_advance_animation_or_move_body() -> void:
 	shell.travel("kitchen")

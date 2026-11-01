@@ -1,12 +1,35 @@
 # GameNameTBD · 小镇食堂
 
+## 海港开篇预览（D054）
+新建空槽会先播放抵达海港的开场，初遇对白结束后进入港口地图；已有存档继续从小屋读取。独立预览可打开 `src/story/arrival_preview.tscn` 后F6，或锁定Godot运行该场景；时间轴在 `src/story/arrival_cutscene.tscn` 的AnimationPlayer中编辑。专项：`pwsh -NoProfile -File tools/check.ps1 -Suite arrival-coast`。资源绑定和动作限制见 `assets/story/arrival-bindings.md`，工程结果见 `docs/phases/story-expansion.md`。
+
+
+D053：序章使用三位角色的六种情绪/专用动作与分层CG。**J**打开任务与操作手册，**T**切换地面引路，**B**查番茄炒蛋做法；跟随阿铃时落后她会停下等你。不开门即可完成试做，必须E端菜送到出餐台后才进入真实评价。第一次QTE会暂停讲解，失误仍能继续剧情。已完成旧档可在J中回顾，无重复奖励。试玩与来源见[story-expansion.md](docs/phases/story-expansion.md)，专项 `pwsh -File tools/check.ps1 -Suite story-expansion`，完整构建 `pwsh -File tools/export.ps1`。
+
+D054覆盖旧河道港口位置：河口港现位于小镇东部海岸，沿公共道路抵达海边栈桥，靠近候船棚按E。新档演出后从这里开始；跨镇乘船仍等待后续剧情/目的地开放，客运和食材货运分别管理。
+
+D052：取消房屋、商铺和居民区整片土色底板，草地连续衔接，保留建筑自带台阶与内院。复验 `pwsh -File tools/check.ps1 -Suite residential`，范围及实机证据见docs/phases/town-polish.md D052。
+
+D051：小镇采用石板路和正交正面青瓦建筑，NPC有按真实移动推进的四向步态；餐厅通道更宽、镜头跟随人物，菜谱/装修等改为分散的墙挂物，账本在真实收银台上。专项 `pwsh -File tools/check.ps1 -Suite visual-unity`，完整构建仍 `pwsh -File tools/export.ps1`。范围、图形记录及人工待验收见docs/phases/town-polish.md D051；完整素材提示见assets/town/visual-unity-v3-generation.json。
+
+D050居民区：食堂西北、玩家小屋附近的“青瓦巷”有沿街民居和封闭小院，靠近青瓦民居/竹庭人家按E查看告示。小屋仍是个人休息和保存处。专项检查 `pwsh -File tools/check.ps1 -Suite residential`；完整Windows打包 `pwsh -File tools/export.ps1`；范围与实测见docs/phases/town-polish.md D050。住宅素材和完整生成提示见assets/town/residential-houses-v1-generation.json。
+
+D049地图/NPC/周边交互修正：专项命令 `pwsh -File tools/check.ps1 -Suite town-polish`，完整检查 `pwsh -File tools/check.ps1`，本地Windows打包 `pwsh -File tools/export.ps1`。Godot版本仍依dependencies.lock.json，启动src/app/main.tscn或build/TownDiner.exe；近期范围/人工试玩见docs/phases/town-polish.md。
+
+本轮D048更新：附近建筑按E交互，地图扩为宽路中式街区；客流以早餐/午餐/晚餐为主，营业持续至主动打烊或02:00。菜单牌可查看开门后剩余时段预估。旧档首次读取会先备份再迁入新地图。开发验证入口：`pwsh -File tools/check.ps1 -Suite town-renewal`；完整检查与Windows导出仍使用`pwsh -File tools/export.ps1`。验收与试玩说明见[小镇更新](docs/phases/town-renewal.md)。
+
+
+D047：林夏已移除，普通食客与常驻人物分开。阿铃、老陈按全天时间活动，完成每日闲聊或真实用餐会改变好感；剧情采用双立绘，日常聊天保留原布局。08:00起，现实1秒推进游戏1分钟；02:00自动收摊回小屋，原料/切配品冷藏，已开火食品报废，床上进入次日。专项检查：`pwsh -File tools/check.ps1 -Suite characters`；本地构建：`pwsh -File tools/export.ps1`；报告与5步试玩见 [characters.md](docs/phases/characters.md)。
+
+D046：不开店也可在原厨房做菜。老陈赠料改为可用的一份番茄炒蛋材料，旧微量礼包自动补差一次；阿铃和老陈使用素材库指定人物。开门、打烊不清空锅料；保存/睡觉前先归还原料、出餐或清理成品，不保存QTE现场。专项：`pwsh -File tools/check.ps1 -Suite story`；标准构建：`pwsh -File tools/export.ps1`。从新档跟阿铃找到老陈，结束尝羹/拒绝对话，直接回厨房不开门做番茄炒蛋，再去找阿铃。详细验收与缺失素材见 [story-kitchen.md](docs/phases/story-kitchen.md)。
+
 新增D040主角：小镇、餐厅、厨房和小屋使用指定的火焰发色厨师形象，四向迈步与实际移动同步，松键或撞墙回站姿。R1放大厨房/小镇角色；R2修复餐厅非正交投影重复计距造成的动画快放，实际走速保持。专项：`pwsh -File tools/check.ps1 -Suite protagonist`；真实图形预览：用锁定Godot运行 `--path . --script res://tools/protagonist_probe.gd`，结果写入artifacts/protagonist-stride-r2，使用隔离存档。素材及补帧提示见 [主角素材](assets/characters/protagonist/README.md)，验收见 [protagonist.md](docs/phases/protagonist.md)。
 
 本次 D039：修复餐厅穿墙与斜向速度，角色四向转身并面向建筑交互；新增独立小屋，日结到床休息和保存，后续读档回床边；三首休闲/营业/做菜BGM替换持续节拍器。详见 [本次验收与试玩](docs/phases/habitat.md)。专项：`pwsh -File tools/check.ps1 -Suite habitat`。
 
 新增 **D037库存与熟练制作**：市场/工厂只出售已解锁可制作菜谱的主料，调料全部开放，按瓶/袋购买。冰箱仅展示持有库存，沿用工厂四类并显示图标、余量和保质期；到期损耗记账，切配退回保留到期日。M6长按按实际用量扣调料，耗尽时变灰禁用。手工制作分≥80按实际分累积，达到400后装好锅料按F可选自动制作，完成后E端盘；自动仍耗料、占锅、耗时，不增加手艺。QTE与评分容差已放宽，建议数值待试玩。验证和五步试玩见 [kitchen-stock.md](docs/phases/kitchen-stock.md)。专项：`pwsh -File tools/check.ps1 -Suite stock`，真实厨房：`-Suite service`，完整导出：`pwsh -File tools/export.ps1`。
 
-当前入口已更新为 **D033：单店游戏流程与六槽存档**。主菜单为“开始游戏 / 继续游戏 / 载入存档 / 设置 / 退出游戏”，新档从中式食堂门口开始。完整 Phase 4 未完成；本轮验收、失败记录与人工待测见 [game-shell.md](docs/phases/game-shell.md)。
+当前入口已更新为 **D033：单店游戏流程与六槽存档**。主菜单为“开始游戏 / 继续游戏 / 载入存档 / 设置 / 退出游戏”，新档出生顺序已由D054更新为先播港口开篇、再进入海港地图。完整 Phase 4 未完成；本轮验收、失败记录与人工待测见 [game-shell.md](docs/phases/game-shell.md)。
 
 新增 **D036五镇社会经济**：成都、巴黎、东京、曼谷、墨西哥城对应菜谱树五菜系；新档只开本地商路，其余等剧情推荐接口。320家庭实际领薪、消费、储蓄，店铺收款有家庭付款方；正利润缴税，亏损不缴利润税。商业街的钱庄可按E办理存取/限额贷款，账本分开本金、利息和税费。NPC在商业街挂牌地块投资、施工、开分店，不拆住房或占玩家/工厂用地。旧13镇存档显式迁移，已付货运保留，旧日不追税。数值仍待人工试玩；范围与验证见 [world-economy.md](docs/phases/world-economy.md)。
 
@@ -183,3 +206,7 @@ CI配置在 `.github/workflows/check.yml`，推送和Pull Request调用同一 `t
 - `docs/SOURCES.md`：原始资料索引与指纹。原始文件保留在 `doc/source/`。
 
 工程与玩家验收分开：最新本地检查证据见docs/PROJECT_STATE.md；真实键鼠/耳机同步、反馈可理解性与好玩程度仍待人工试玩。当前仅完成已授权的Phase4切片，协作配置不代表新功能阶段开工。
+
+### D053-R2 连续演出
+
+剧本演出自动全屏播放，普通点击/长按不会跳镜头；右上角可暂停或只跳本段，普通对白仍点击阅读。新档从阿铃序章体验，已完成旧档可J回顾（不重复奖励）。实际录制预览：`artifacts/cg-revision/preview.html`，102秒无声录制；游戏内有拟音，正式角色配音未制作。专项复查：`pwsh -NoProfile -File tools/check.ps1 -Suite story-expansion`；完整检查及导出：`pwsh -NoProfile -File tools/export.ps1`。

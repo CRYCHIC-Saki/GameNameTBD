@@ -1,0 +1,685 @@
+{
+  "schema": 1,
+  "source": "doc/source/无敌厨神！.docx",
+  "source_sha256": "785e44c86416256481e03e4ae9ef1c78d0014f3f9a3fa27712c8dff021a5a50b",
+  "scenes": {
+    "intro": [
+      {
+        "kind": "cg",
+        "cg": "arrival",
+        "paragraphs": [
+          11,
+          12,
+          13
+        ],
+        "duration": 14.0,
+        "text": "长途车驶走。玩家背着锅，展开一张边角磨白的美食地图。\n地图上的河口镇被圈了三遍，旁边写着：“百国商船汇聚，天下千味之港。”\n郑重地踏过镇口的白线。"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          14
+        ],
+        "speaker": "玩家",
+        "portrait": "hero",
+        "emotion": "happy",
+        "action": "",
+        "text": "终于到了。吾之舌啊，准备迎接万国料理的洗礼！"
+      },
+      {
+        "kind": "cg",
+        "cg": "hungry",
+        "paragraphs": [
+          15
+        ],
+        "duration": 6.0,
+        "text": "肚子响了一声。他把手按在胃上。"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          16
+        ],
+        "speaker": "玩家",
+        "portrait": "hero",
+        "emotion": "calm",
+        "action": "",
+        "text": "……封印已经撑不住了。"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          17
+        ],
+        "speaker": "阿铃",
+        "portrait": "aling",
+        "emotion": "calm",
+        "action": "",
+        "text": "背锅的旅人，止步！",
+        "display_kind": "offscreen"
+      },
+      {
+        "kind": "cg",
+        "cg": "messenger",
+        "paragraphs": [
+          18
+        ],
+        "duration": 10.0,
+        "text": "少女站在一只木箱上，披风被海风吹得猎猎作响。她翻开账本。"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          19
+        ],
+        "speaker": "阿铃",
+        "portrait": "aling",
+        "emotion": "calm",
+        "action": "",
+        "text": "夜鸦密使阿铃，奉命截获一名携带黑铁重器的异乡人。报上你的真名与来意！"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          20
+        ],
+        "speaker": "玩家",
+        "portrait": "hero",
+        "emotion": "happy",
+        "action": "enter_name",
+        "text": "见习厨师，{hero}。为尝遍此地美食而来！"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          21
+        ],
+        "speaker": "阿铃",
+        "portrait": "aling",
+        "emotion": "calm",
+        "action": "",
+        "text": "原来是巡礼者。命运的指针恰好指向陈司祭的食材铺，他今日正在分赐圣餐。随我来，趁你的封印还没彻底破裂。"
+      }
+    ],
+    "soup": [
+      {
+        "kind": "cg",
+        "cg": "soup_stall",
+        "paragraphs": [
+          28,
+          29
+        ],
+        "duration": 6.0,
+        "text": "老陈戴着围裙，双手举起汤勺。身后的金边画像上，至味卿罗厄以双刀交叉于胸前。\n摊前的居民端着碗，神情庄严。"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          30
+        ],
+        "speaker": "老陈",
+        "portrait": "chen",
+        "emotion": "happy",
+        "action": "",
+        "text": "欢迎，饥饿的灵魂！此乃遵照至味卿圣典烹成的“黎明圣羹”！"
+      },
+      {
+        "kind": "cg",
+        "cg": "black_soup",
+        "paragraphs": [
+          31
+        ],
+        "duration": 7.0,
+        "text": "他盛出一碗浓黑的汤。焦硬的蛋块浮在糖浆般的汤面上，碗边结着一圈盐。"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          32
+        ],
+        "speaker": "玩家",
+        "portrait": "hero",
+        "emotion": "puzzled",
+        "action": "",
+        "text": "请教司祭，这里面……"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          33
+        ],
+        "speaker": "老陈",
+        "portrait": "chen",
+        "emotion": "happy",
+        "action": "",
+        "text": "九勺盐，九勺糖！烈火煎至漆黑，再以冰水封存！九重苦难，方得一口升华！"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          34
+        ],
+        "speaker": "玩家",
+        "portrait": "hero",
+        "emotion": "puzzled",
+        "action": "",
+        "text": "这套咒式，真的有必要施加在鸡蛋身上吗？"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          35
+        ],
+        "speaker": "阿铃",
+        "portrait": "aling",
+        "emotion": "calm",
+        "action": "",
+        "text": "莫被外表迷惑。夜鸦已连续七日接受此羹的试炼。"
+      }
+    ],
+    "after_taste": [
+      {
+        "kind": "cg",
+        "cg": "reflection",
+        "paragraphs": [
+          38,
+          39,
+          40,
+          41
+        ],
+        "duration": 9.0,
+        "text": "玩家僵住。周围的海风声骤然消失。\n碗里的倒影仍在微笑，尽管他没有笑。\n一个贴着耳朵的声音说：“好吃。”\n下一瞬，摊前所有居民同时开口。"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          42
+        ],
+        "speaker": "众居民",
+        "portrait": "crowd",
+        "emotion": "calm",
+        "action": "",
+        "text": "至味降临，吾舌无憾！"
+      },
+      {
+        "kind": "ui",
+        "paragraphs": [
+          43,
+          44
+        ],
+        "text": "SAN：{san_before} → {san_after}。\n你察觉了异常。SAN 会影响感知与后续料理表现；本次变化不改变操作难度。"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          45
+        ],
+        "speaker": "玩家",
+        "portrait": "hero",
+        "emotion": "surprised",
+        "action": "把碗放下",
+        "text": "诸位的舌头，正在遭受某种灭绝性的攻击。"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          46
+        ],
+        "speaker": "老陈",
+        "portrait": "chen",
+        "emotion": "happy",
+        "action": "",
+        "text": "何等精确！圣典将此称作“味蕾的涅槃”！再来一碗？"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          47
+        ],
+        "speaker": "玩家",
+        "portrait": "hero",
+        "emotion": "surprised",
+        "action": "",
+        "text": "别加了！这根本……难吃得足以毁灭一个纪元！"
+      },
+      {
+        "kind": "cg",
+        "cg": "intervene",
+        "paragraphs": [
+          48
+        ],
+        "duration": 5.0,
+        "text": "居民纷纷看向他。阿铃伸手拦在两人之间。"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          49
+        ],
+        "speaker": "阿铃",
+        "portrait": "aling",
+        "emotion": "calm",
+        "action": "",
+        "text": "异乡人，你向圣餐提出了决斗。依照夜鸦的规矩，挑战者必须拿出自己的供物。"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          50
+        ],
+        "speaker": "玩家",
+        "portrait": "hero",
+        "emotion": "calm",
+        "action": "",
+        "text": "我会的菜还不多。不过，番茄炒蛋，我练了整整一个冬天。"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          51
+        ],
+        "speaker": "阿铃",
+        "portrait": "aling",
+        "emotion": "surprised",
+        "action": "忽然停顿",
+        "text": "番茄……炒蛋？"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          52
+        ],
+        "speaker": "玩家",
+        "portrait": "hero",
+        "emotion": "puzzled",
+        "action": "",
+        "text": "你吃过？"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          53
+        ],
+        "speaker": "阿铃",
+        "portrait": "aling",
+        "emotion": "puzzled",
+        "action": "",
+        "text": "儿时的记忆里似乎有这么一道。鸡蛋要嫩，番茄有一点甜。后来……那段记录遗失了。"
+      },
+      {
+        "kind": "cg",
+        "cg": "ledger",
+        "paragraphs": [
+          54
+        ],
+        "duration": 3.0,
+        "text": "她用力合上账本。"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          55
+        ],
+        "speaker": "阿铃",
+        "portrait": "aling",
+        "emotion": "happy",
+        "action": "",
+        "text": "跟我来！夜鸦尚有一座沉睡的祭坛，今日准许你将其唤醒！"
+      }
+    ],
+    "awaken": [
+      {
+        "kind": "cg",
+        "cg": "uncover",
+        "paragraphs": [
+          60
+        ],
+        "duration": 7.0,
+        "text": "四张两人桌，一只旧冰箱，一口灶。阿铃把罩布猛地掀开，灰尘在阳光里翻涌。"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          61
+        ],
+        "speaker": "阿铃",
+        "portrait": "aling",
+        "emotion": "calm",
+        "action": "",
+        "text": "家里闲置的摊位。炉火仍在等待继承者。"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          62
+        ],
+        "speaker": "玩家",
+        "portrait": "hero",
+        "emotion": "happy",
+        "action": "握住锅柄",
+        "text": "回应我吧，沉睡的赤焰！"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          63
+        ],
+        "speaker": "阿铃",
+        "portrait": "aling",
+        "emotion": "calm",
+        "action": "拉开排风开关",
+        "text": "排烟结界，展开！夜鸦拒绝被油烟吞噬！"
+      },
+      {
+        "kind": "cg",
+        "cg": "supplies",
+        "paragraphs": [
+          64
+        ],
+        "duration": 6.0,
+        "text": "老陈跟来，将番茄、鸡蛋和调料放上桌。"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          65
+        ],
+        "speaker": "老陈",
+        "portrait": "chen",
+        "emotion": "happy",
+        "action": "",
+        "text": "挑战者的第一份粮秣，由灰烬司祭供给。让我见识你的异端之火！"
+      },
+      {
+        "kind": "ui",
+        "paragraphs": [
+          66
+        ],
+        "text": "获得试做食材一份。番茄炒蛋为主角已掌握的基础菜谱，本段无需研发。"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          67
+        ],
+        "speaker": "阿铃",
+        "portrait": "aling",
+        "emotion": "calm",
+        "action": "",
+        "text": "听好，赤焰之手。我要大块番茄、嫩鸡蛋，略带甜味。若你把它献祭成焦炭，夜鸦会如实记入史书。"
+      }
+    ],
+    "verdict_good": [
+      {
+        "kind": "cg",
+        "cg": "tasting",
+        "paragraphs": [
+          85
+        ],
+        "duration": 6.0,
+        "text": "阿铃端坐，双手握筷。老陈抱臂，等待裁决。"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          87
+        ],
+        "speaker": "阿铃",
+        "portrait": "aling",
+        "emotion": "surprised",
+        "action": "吃下一口",
+        "text": "封存的记录……回来了。"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          88
+        ],
+        "speaker": "玩家",
+        "portrait": "hero",
+        "emotion": "calm",
+        "action": "",
+        "text": "如何？"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          89
+        ],
+        "speaker": "阿铃",
+        "portrait": "aling",
+        "emotion": "happy",
+        "action": "",
+        "text": "我小时候，母亲也会这样炒。她总说……"
+      }
+    ],
+    "verdict_bad": [
+      {
+        "kind": "cg",
+        "cg": "tasting",
+        "paragraphs": [
+          85
+        ],
+        "duration": 6.0,
+        "text": "阿铃端坐，双手握筷。老陈抱臂，等待裁决。"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          91
+        ],
+        "speaker": "阿铃",
+        "portrait": "aling",
+        "emotion": "puzzled",
+        "action": "认真嚼完",
+        "text": "此番供物尚有破绽。但这股蛋香……吾似乎在很久以前，追踪过它。"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          92
+        ],
+        "speaker": "玩家",
+        "portrait": "hero",
+        "emotion": "calm",
+        "action": "",
+        "text": "下次，吾将补全这一式！"
+      }
+    ],
+    "verdict_tail": [
+      {
+        "kind": "cg",
+        "cg": "broadcast",
+        "paragraphs": [
+          94
+        ],
+        "duration": 5.0,
+        "text": "街口广播响起。画像旁的喇叭传出低沉而温柔的男声。"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          95
+        ],
+        "speaker": "罗厄",
+        "portrait": "luo",
+        "emotion": "calm",
+        "action": "",
+        "text": "河口的眷属们，午间圣宴已启。吾乃至味卿罗厄，统御万味之人。谨记，唯有吾赐之味，值得渴求。"
+      },
+      {
+        "kind": "cg",
+        "cg": "hesitate",
+        "paragraphs": [
+          96
+        ],
+        "duration": 4.0,
+        "text": "阿铃的筷子停在半空。"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          97
+        ],
+        "speaker": "阿铃",
+        "portrait": "aling",
+        "emotion": "calm",
+        "action": "",
+        "text": "……这道菜，缺少圣餐的恩典。"
+      },
+      {
+        "kind": "cg",
+        "cg": "eat_again",
+        "paragraphs": [
+          98
+        ],
+        "duration": 6.0,
+        "text": "她看向盘子，却又夹起一块鸡蛋。广播继续，她的手仍没有停。"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          99
+        ],
+        "speaker": "老陈",
+        "portrait": "chen",
+        "emotion": "calm",
+        "action": "望着已经见底的盘子",
+        "text": "夜鸦，你的筷子似乎背叛了你的誓言。"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          100
+        ],
+        "speaker": "阿铃",
+        "portrait": "aling",
+        "emotion": "happy",
+        "action": "把钱拍在桌上",
+        "text": "吾决定继续审判。下一次，备足一整盘！"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          101
+        ],
+        "speaker": "玩家",
+        "portrait": "hero",
+        "emotion": "angry",
+        "action": "看着钱，又看向画像",
+        "text": "你们天天吃那种东西，却连这一口都觉得有罪？"
+      },
+      {
+        "kind": "cg",
+        "cg": "certificate",
+        "paragraphs": [
+          102
+        ],
+        "duration": 6.0,
+        "text": "他把自己的见习厨师证压在桌上，抹平卷起的边角。"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          103
+        ],
+        "speaker": "玩家",
+        "portrait": "hero",
+        "emotion": "calm",
+        "action": "",
+        "text": "那我就留在这里。先从这口锅开始，让这条街重新闻到饭香。"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          104
+        ],
+        "speaker": "玩家",
+        "portrait": "hero",
+        "emotion": "angry",
+        "action": "",
+        "text": "至味卿，记住今日！向你宣战的，是尚未毕业的赤焰之手！"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          105
+        ],
+        "speaker": "阿铃",
+        "portrait": "aling",
+        "emotion": "happy",
+        "action": "翻开账本，郑重记下",
+        "text": "见习厨师一名，旧灶一口，同盟者一人。夜鸦见证，讨伐军于此成立！"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          106
+        ],
+        "speaker": "老陈",
+        "portrait": "chen",
+        "emotion": "happy",
+        "action": "",
+        "text": "好！灰烬司祭愿为双方供给粮秣。无论谁赢，食材绝不可赊账！"
+      }
+    ],
+    "setup": [
+      {
+        "kind": "ui",
+        "paragraphs": [
+          108
+        ],
+        "text": "将“番茄炒蛋”加入菜单，保留参考售价；查看所需材料，按菜补齐下一份库存。完成后可为小摊命名。"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          109
+        ],
+        "speaker": "阿铃",
+        "portrait": "aling",
+        "emotion": "calm",
+        "action": "",
+        "text": "明日有外海商船入港。那些漂泊的厨师，每个人都声称自己握着改变世界的食谱。"
+      },
+      {
+        "kind": "line",
+        "paragraphs": [
+          110
+        ],
+        "speaker": "玩家",
+        "portrait": "hero",
+        "emotion": "happy",
+        "action": "",
+        "text": "那就让他们来。我会端着盘子，逐一发起挑战！"
+      },
+      {
+        "kind": "ui",
+        "paragraphs": [
+          111
+        ],
+        "text": "下一任务：点燃第一日。开门营业，完成一轮经营；打烊后，与阿铃商议拜访港口厨师。"
+      },
+      {
+        "kind": "cg",
+        "cg": "sign",
+        "paragraphs": [
+          113
+        ],
+        "duration": 7.0,
+        "text": "阿铃将写着“讨伐军本部”的纸贴上摊位。海风吹过，纸的一角卷起，露出底下旧招牌的三个字：“家常菜”。"
+      },
+      {
+        "kind": "cg",
+        "cg": "fire",
+        "paragraphs": [
+          114
+        ],
+        "duration": 4.0,
+        "text": "镜头停在灶火上。"
+      }
+    ]
+  },
+  "arrival_source": "doc/source/无敌厨神_第一场演出动画提示词_v01.txt",
+  "arrival_source_sha256": "6ecdbbdbf93fac03bcd5c25bc0daa89ce8714fe4190786ae89a6ba84de5764e5"
+}

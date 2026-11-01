@@ -2,6 +2,8 @@ class_name TDTownMap
 extends RefCounted
 
 const SIZE := 41
+var extent: int = 41
+var layout_version: int = 1
 const CENTER := 20
 const FACTORY_SLOTS := 8
 const FACTORY_CELL := 2
@@ -112,6 +114,10 @@ static func seed_of(town_id: String) -> int:
 	return value
 
 func build(catalog: TDTownCatalog, seed_value: int, _home_size: String = "small", place_diner: bool = false, reserve: Dictionary = {}, built_factories: Array = [], diner_span: Vector2i = Vector2i.ZERO, home_venue: String = "") -> void:
+	if layout_version==2:
+		TDPlannedTown.populate(self,catalog,place_diner,reserve,built_factories,diner_span,home_venue)
+		return
+	extent=SIZE
 	var rng := TDBusinessRandom.new(seed_value)
 	_grow_roads(rng)
 	plots = []
@@ -150,8 +156,8 @@ func build(catalog: TDTownCatalog, seed_value: int, _home_size: String = "small"
 		var row: Dictionary = tier
 		_place("market", String(row["name"]), int(row["w"]), int(row["h"]), used, rng, row)
 	var serial := 1
-	for y in SIZE:
-		for x in SIZE:
+	for y in extent:
+		for x in extent:
 			if is_road(x, y) or used.has(Vector2i(x, y)):
 				continue
 			var name := _house_name(rng, serial)
@@ -185,8 +191,8 @@ func choose_cottage() -> Dictionary:
 	for plot:Dictionary in plots:
 		if plot.id=="player_diner": goal=Vector2(plot.x+plot.w*.5,plot.y+plot.h*.5)
 	var best:Dictionary={};var score:float=INF
-	for y:int in SIZE-1:
-		for x:int in SIZE-1:
+	for y:int in extent-1:
+		for x:int in extent-1:
 			var at:=Vector2i(x,y)
 			if not _empty_home_square(at,available): continue
 			var door:=_approach(x,y,2,2)
@@ -232,7 +238,7 @@ func validate_cottage(raw:Variant) -> TDOutcome:
 	for key:Variant in raw:
 		if key not in ["id","x","y","w","h","approach_x","approach_y"]: return TDOutcome.new(false,"INVALID_COTTAGE")
 	for key:String in ["x","y","approach_x","approach_y"]:
-		if not TDServiceCatalog.integer(raw.get(key),0,SIZE-1): return TDOutcome.new(false,"INVALID_COTTAGE")
+		if not TDServiceCatalog.integer(raw.get(key),0,extent-1): return TDOutcome.new(false,"INVALID_COTTAGE")
 	var at:=Vector2i(raw.x,raw.y);var door:=Vector2i(raw.approach_x,raw.approach_y)
 	if not _empty_home_square(at) or not _adjacent_home(at,door) or not _connected_roads().has(door): return TDOutcome.new(false,"PROTECTED_COTTAGE_LOCATION")
 	return TDOutcome.new(true,"VALID")
@@ -285,6 +291,13 @@ func build_economic_layout(catalog: TDTownCatalog, seed_value: int) -> TDOutcome
 	return TDOutcome.new(false,"NO_CONNECTED_ECONOMIC_LAYOUT")
 
 func commercial_parcels() -> Array:
+	if layout_version==2:
+		var planned: Array=[]
+		for p: Dictionary in plots:
+			if str(p.id) not in ["competitor","commercial_street"]: continue
+			for i: int in 3:
+				planned.append({"id":"%s:shop:%d"%[p.id,i],"parent_id":str(p.id),"x":int(p.x)+1+i*5,"y":int(p.y)+1,"w":3,"h":3,"approach_x":int(p.x)+2+i*5,"approach_y":int(p.y)+4,"tradable":p.id=="commercial_street","initial_store_index":i if p.id=="competitor" else -1,"capacity":12})
+		return planned
 	# Carve shop units only inside already designated commercial property.
 	# Housing, diner/factory lots, roads and the player's existing branch are never candidates.
 	var result: Array=[]
@@ -332,16 +345,21 @@ func apply_commercial_occupancy(ownership: Dictionary) -> TDOutcome:
 		if str(parent.id)!="commercial_street" or maxi(int(parent.w),int(parent.h))<11 or mini(int(parent.w),int(parent.h))<2: continue
 		var vertical: bool=int(parent.h)>int(parent.w)
 		var at:=Vector2i(int(parent.x)+(1 if vertical else 9),int(parent.y)+(9 if vertical else 1))
+		if layout_version==2: at=Vector2i(int(parent.x)+15,int(parent.y)+1)
 		var door:=at+(Vector2i(-1,0) if vertical else Vector2i(0,-1))
-		plots.push_front({"id":"commercial_street:bank","economic_service_id":"bank","kind":"bank","name":"街坊钱庄","x":at.x,"y":at.y,"w":2 if vertical else 1,"h":1 if vertical else 2,"approach_x":door.x,"approach_y":door.y,"enabled":true,"walkable":false,"pool":0,"budget_shift":0,"foreign_scale":1.0})
+		if layout_version==2: door=at+Vector2i(1,3)
+		plots.push_front({"id":"commercial_street:bank","economic_service_id":"bank","kind":"bank","name":"街坊钱庄","x":at.x,"y":at.y,"w":3 if layout_version==2 else (2 if vertical else 1),"h":3 if layout_version==2 else (1 if vertical else 2),"approach_x":door.x,"approach_y":door.y,"enabled":true,"walkable":false,"pool":0,"budget_shift":0,"foreign_scale":1.0})
 	return TDOutcome.new(true,"COMMERCIAL_MAP_UPDATED")
 
 func is_walkable(x: int, y: int) -> bool:
-	if x < 0 or y < 0 or x >= SIZE or y >= SIZE:
+	if x < 0 or y < 0 or x >= extent or y >= extent:
 		return false
 	if is_road(x, y):
 		return true
 	var plot:=plot_at(x,y)
+	if layout_version==2:
+		if plot.is_empty(): return bool(terrain_at(Vector2i(x,y)).walkable)
+		return bool(plot.get("economic_courtyard",false)) or plot.get("kind")=="diner_lot"
 	return String(plot.get("id", "")) == "player_diner" or bool(plot.get("economic_courtyard",false))
 
 func plot_at(x: int, y: int) -> Dictionary:
@@ -363,10 +381,11 @@ func plot_at(x: int, y: int) -> Dictionary:
 	return {}
 
 func can_place(x: int, y: int, width: int, height: int) -> bool:
-	if width <= 0 or height <= 0 or x < 0 or y < 0 or x + width > SIZE or y + height > SIZE:
+	if width <= 0 or height <= 0 or x < 0 or y < 0 or x + width > extent or y + height > extent:
 		return false
 	for cy in height:
 		for cx in width:
+			if layout_version==2 and not terrain_at(Vector2i(x+cx,y+cy)).buildable: return false
 			if is_road(x + cx, y + cy):
 				return false
 			var plot := plot_at(x + cx, y + cy)
@@ -652,6 +671,7 @@ func _place_home_diner(span: Vector2i, used: Dictionary, venue: String) -> void:
 		else:
 			return
 	var spot := _corner_near_center(lot, width, height)
+	if layout_version==2: spot=Vector2i(int(lot.x+lot.w-width),int(lot.y+lot.h-height))
 	var title := "西餐厅" if venue == "western" else "中餐厅"
 	_commit_overlap("player_diner", title, spot.x, spot.y, width, height, used, {"id": "player_diner", "size": "quarter", "venue": venue})
 
@@ -674,8 +694,8 @@ func _lot_spot(width: int, height: int, used: Dictionary, prefer_hub: bool) -> V
 	var best_distance := 9999
 	if width <= 0 or height <= 0:
 		return best
-	for y in range(0, SIZE - height + 1):
-		for x in range(0, SIZE - width + 1):
+	for y in range(0, extent - height + 1):
+		for x in range(0, extent - width + 1):
 			if not _fits(Vector2i(x, y), width, height, used):
 				continue
 			if not _touches_road(x, y, width, height):
@@ -694,8 +714,8 @@ func _lot_spot(width: int, height: int, used: Dictionary, prefer_hub: bool) -> V
 	if best.x >= 0 or not prefer_hub:
 		return best
 	best_distance = 9999
-	for y in range(0, SIZE - height + 1):
-		for x in range(0, SIZE - width + 1):
+	for y in range(0, extent - height + 1):
+		for x in range(0, extent - width + 1):
 			if not _fits(Vector2i(x, y), width, height, used):
 				continue
 			if not _touches_road(x, y, width, height):
@@ -758,8 +778,8 @@ func _place(kind: String, title: String, width: int, height: int, used: Dictiona
 			for orient: Vector2i in orientations:
 				if _try_place(kind, title, road, normal, orient.x, orient.y, used, extra):
 					return
-	for y in range(1, SIZE - height):
-		for x in range(1, SIZE - width):
+	for y in range(1, extent - height):
+		for x in range(1, extent - width):
 			if _fits(Vector2i(x, y), width, height, used):
 				_commit(kind, title, x, y, width, height, used, extra)
 				_connect(Vector2i(x, y), width, height)
@@ -782,7 +802,7 @@ func _try_place(kind: String, title: String, road: Vector2i, normal: Vector2i, w
 	return false
 
 func _fits(origin: Vector2i, width: int, height: int, used: Dictionary) -> bool:
-	if origin.x < 0 or origin.y < 0 or origin.x + width > SIZE or origin.y + height > SIZE:
+	if origin.x < 0 or origin.y < 0 or origin.x + width > extent or origin.y + height > extent:
 		return false
 	for y in height:
 		for x in width:
@@ -845,6 +865,9 @@ func _touches(origin: Vector2i, width: int, height: int) -> bool:
 	return false
 
 func _approach(x: int, y: int, width: int, height: int) -> Vector2i:
+	if layout_version==2:
+		for at: Vector2i in [Vector2i(x+width/2,y+height),Vector2i(x+width/2,y-1),Vector2i(x-1,y+height/2),Vector2i(x+width,y+height/2)]:
+			if is_road(at.x,at.y): return at
 	var best := Vector2i(CENTER, CENTER)
 	var best_distance := 9999
 	var found := false
@@ -871,8 +894,12 @@ func _road_cells() -> Array:
 	return cells
 
 func _inside(cell: Vector2i) -> bool:
-	return cell.x >= 0 and cell.y >= 0 and cell.x < SIZE and cell.y < SIZE
+	return cell.x >= 0 and cell.y >= 0 and cell.x < extent and cell.y < extent
 
 func _house_name(rng: TDBusinessRandom, serial: int) -> String:
 	var faces := ["青瓦", "白墙", "红门", "木窗", "窄巷", "天台"]
 	return "%s住户%d" % [faces[int(rng.unit() * float(faces.size())) % faces.size()], serial]
+
+func terrain_at(at: Vector2i) -> Dictionary:
+	if layout_version==2: return TDPlannedTown.terrain(at,is_road(at.x,at.y))
+	return {"terrain_type":"plain","elevation":1,"surface_type":"stone" if is_road(at.x,at.y) else "grass","walkable":is_walkable(at.x,at.y),"buildable":not is_road(at.x,at.y)}

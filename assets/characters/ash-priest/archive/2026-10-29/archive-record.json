@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "character_id": "ash-priest",
+  "display_name": "灰烬司祭",
+  "archived_on": "2026-10-29",
+  "request": "把这两张归档",
+  "operation": "Byte-identical copies of both user attachments; no image generation or editing.",
+  "status": "USER_CONFIRMED_KEEP_ATTACHED_IMAGES",
+  "files": [
+    {
+      "role": "sprite",
+      "file": "archive/2026-10-29/ash-priest-idle-four-directions.png",
+      "source_filename": "codex-clipboard-e1ac689e-bfed-4c70-b5f9-8eead0336777.png",
+      "sha256": "7b9875c2015d61af28f8cca325e951b16b41c11532ab2d9c7587c8fe4d7e4273",
+      "size": [
+        1254,
+        1254
+      ],
+      "pixel_format": "Format32bppArgb",
+      "byte_identical_to_attachment": true,
+      "corresponding_existing_file": "ash-priest-idle-four-directions-v2.png",
+      "existing_sha256": "749be053ccf283f5448b06a01760246b6bf6bfd01d46a3f945317d8822610032"
+    },
+    {
+      "role": "portrait",
+      "file": "archive/2026-10-29/ash-priest-dialogue-halfbody.png",
+      "source_filename": "codex-clipboard-74cff561-66cb-440e-9602-f2c6614b74cb.png",
+      "sha256": "864e6a8e43c5e657b9bee68bf7e030de4ec7701362a69bdff1f2d20905ffff75",
+      "size": [
+        1254,
+        1254
+      ],
+      "pixel_format": "Format32bppArgb",
+      "byte_identical_to_attachment": true,
+      "corresponding_existing_file": "ash-priest-dialogue-halfbody-v2.png",
+      "existing_sha256": "b8572d0f8597635d9b86da3485eb6c33169c072000de67400a93376991cd7171"
+    }
+  ],
+  "verification": "归档文件SHA-256与本次用户附件逐一一致，既有制作文件继续保留。",
+  "runtime_integration": "NOT_DONE"
+}

@@ -3,6 +3,7 @@ extends RefCounted
 
 var catalog := TDTownCatalog.new()
 var town_map := TDTownMap.new()
+var map_version: int = 1
 var supply := TDSupplyBook.new()
 var recipes := TDRecipeBook.new()
 var ingredients := TDIngredientBook.new()
@@ -1279,10 +1280,10 @@ func open_branch_in_town(target_id: String, size_id: String = "small") -> TDOutc
 	if not moved.ok:
 		return moved
 	var claimed := TDOutcome.new(false, "BLOCKED", "这张地图上找不到能放下这家店的空地。")
-	for y in TDTownMap.SIZE:
+	for y in town_map.extent:
 		if claimed.ok:
 			break
-		for x in TDTownMap.SIZE:
+		for x in town_map.extent:
 			claimed = claim_branch(size_id, Vector2i(x, y))
 			if claimed.ok:
 				break
@@ -1593,6 +1594,7 @@ func take_over() -> TDOutcome:
 
 func export_phase4() -> Dictionary:
 	return {
+		"map_version": map_version,
 		"day": day,
 		"money": money,
 		"town_id": town_id,
@@ -1630,6 +1632,7 @@ func export_phase4() -> Dictionary:
 	}
 
 func import_phase4(data: Dictionary) -> void:
+	map_version=int(data.get("map_version",1))
 	day = int(data.get("day", day))
 	money = int(data.get("money", money))
 	town_id = String(data.get("town_id", town_id))
@@ -1667,6 +1670,7 @@ func import_phase4(data: Dictionary) -> void:
 	_rebuild_map()
 
 func _rebuild_map() -> void:
+	town_map.layout_version=map_version
 	var reserve := {}
 	if branch_open and town_id == branch_town:
 		reserve = {"x": branch_x, "y": branch_y, "w": branch_w, "h": branch_h, "size": branch_size, "name": "分店"}

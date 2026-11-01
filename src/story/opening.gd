@@ -4,6 +4,15 @@ extends RefCounted
 ## Choices change the next lines. They do not create a second shop order.
 
 var beat: String = ""
+var hero_name: String=""
+var script_version: int = 2
+var tracked: bool = true
+var recipe_viewed: bool = false
+var tutorials: Array[String] = []
+var completed_scenes: Array[String] = []
+var served_dish_id: String = ""
+var assessment: Dictionary = {}
+var setup_seen: bool = false
 var tasted: bool = false
 var paid: bool = false
 var owe_pay: bool = false
@@ -29,6 +38,9 @@ func waiting_cook() -> bool:
 	return beat == "cook"
 
 func begin() -> void:
+	hero_name=""
+	tracked=true;recipe_viewed=false;tutorials.clear();completed_scenes.clear()
+	served_dish_id="";assessment.clear();setup_seen=false;script_version=2
 	beat = "arrive"
 	tasted = false
 	paid = false
@@ -49,37 +61,68 @@ func note_plate(completion: float) -> void:
 	score = clampi(int(round(completion)), 0, 100)
 	good = score >= GOOD_SCORE
 
-func quest(ready: bool, board: Dictionary = {}) -> String:
+func quest(_ready: bool, board: Dictionary = {}) -> String:
 	match beat:
-		"arrive":
-			return "任务：寻找传说中的美味。阿铃在离店门几步的路上，面向她按 E。WASD 移动。"
-		"follow":
-			return "任务：跟随阿铃去食材铺。沿路能看到港口的船和菜馆招牌。到了以后与老陈交谈。"
-		"soup":
-			return "任务：与老陈交谈。黎明圣羹就在他的勺里。"
-		"cook":
-			if score < 0:
-				return "任务：冰箱里有老陈给的一份。回店做番茄炒蛋：大块番茄、嫩蛋、略甜。"
-			return "任务：番茄炒蛋已经出锅。去店门外找阿铃，让她审判。完成度 %d。" % score
+		"arrive": return "寻找传说中的美味 · 靠近阿铃按 E，听她介绍这座小镇。"
+		"follow": return "跟随阿铃前往老陈的食材铺；落后时她会等你。"
+		"soup": return "与老陈交谈，了解黎明圣羹。"
+		"bowl": return "靠近老陈旁边的汤碗，按 E 尝一口。"
+		"return": return "跟随阿铃回食堂，唤醒沉睡的灶火。"
+		"awaken": return "走进食堂，和阿铃一起揭开旧摊的罩布。"
+		"cook": return "按 B 打开菜谱，查看番茄炒蛋的做法。" if not recipe_viewed else "大块番茄、嫩鸡蛋、略甜。完成制作后端菜送到出餐台。"
+		"verdict": return "回到餐厅第一张桌旁，听阿铃的品尝评价。"
 		"founded":
-			if _served(ready, board):
-				return "任务：今日这一轮已经做完。与阿铃商议港口的厨师。"
-			var gap := _stall_gap(board)
-			if gap != "":
-				return gap
-			return "任务：点燃第一日。开门营业，做完一轮，打烊后再与阿铃商议。"
-		_:
-			return ""
+			if served: return "第一轮营业已结束。去店外与阿铃商议拜访港口厨师。"
+			var gap:=_stall_gap(board)
+			return gap if gap!="" else "在营业牌开门，经营一轮后打烊，再与阿铃商议。"
+		_: return "第一口异端 · 已完成。港口后续剧情尚未编写。" if finished() else ""
+
+func scene_for(who: String) -> String:
+	if beat=="arrive" and who=="aling": return "intro"
+	if beat=="soup" and who=="chen": return "soup"
+	return ""
+
+func complete_scene(id: String, completed: bool=true) -> Dictionary:
+	if not completed or id in completed_scenes: return {}
+	var expected: Dictionary={"intro":"arrive","soup":"soup","after_taste":"bowl","awaken":"awaken","verdict_good":"verdict","verdict_bad":"verdict","setup":"founded"}
+	if not expected.has(id) or expected[id]!=beat: return {}
+	completed_scenes.append(id)
+	match id:
+		"intro": beat="follow"
+		"soup": beat="bowl"
+		"after_taste":
+			beat="return";tasted=true
+			return {"san":-5}
+		"awaken":
+			beat="cook"
+			if not supplied: owe_pack=true;return {"grant":true}
+		"verdict_good","verdict_bad":
+			beat="founded"
+			if not paid: owe_pay=true;return {"pay":true}
+		"setup": setup_seen=true
+	return {}
+
+func arrive_escort() -> void:
+	if beat=="follow": beat="soup"
+	elif beat=="return": beat="awaken"
+
+func accept_trial(dish: Dictionary, rating: Dictionary) -> TDOutcome:
+	if served_dish_id!="": return TDOutcome.new(false,"ALREADY_SERVED")
+	if beat!="cook" or dish.get("state")!="plated": return TDOutcome.new(false,"NOT_TRIAL_PLATE")
+	if not str(dish.get("recipe_id","")).ends_with("tomato_egg"): return TDOutcome.new(false,"WRONG_TRIAL_DISH","阿铃等的是番茄炒蛋。")
+	if not validate_state({"assessment":rating}).ok or not rating.has("satisfaction"): return TDOutcome.new(false,"INVALID_SCORE")
+	served_dish_id=str(dish.get("session_id",""))
+	if served_dish_id.is_empty(): return TDOutcome.new(false,"INVALID_DISH")
+	assessment=rating.duplicate(true);score=roundi(float(rating.satisfaction));good=score>=GOOD_SCORE
+	beat="verdict"
+	return TDOutcome.new(true,"STORY_SERVED","已把这盘菜交给阿铃。",assessment.duplicate(true))
 
 func talk(who: String, hero: String, ready: bool, san: int, board: Dictionary = {}) -> TDDialogue:
-	var name := hero.strip_edges()
-	if name.is_empty():
-		name = "见习厨师"
-	var lines := TDDialogue.new()
-	if who == "chen":
-		_chen(lines, name, san)
-	elif who == "aling":
-		_aling(lines, name, ready, board)
+	var scene_id:=scene_for(who)
+	if scene_id!="": return TDOpeningScript.conversation(scene_id,hero,san)
+	var lines:=TDDialogue.new();lines.story_layout(hero,who)
+	lines.context={"kind":"story_hint"}
+	lines.add_line("阿铃" if who=="aling" else "老陈",who,quest(ready,board))
 	return lines
 
 func resolve(picks: Array, ready: bool = false) -> Dictionary:
@@ -129,6 +172,9 @@ func note_served() -> void:
 		opened = false
 
 func clear() -> void:
+	hero_name=""
+	tracked=true;recipe_viewed=false;tutorials.clear();completed_scenes.clear()
+	served_dish_id="";assessment.clear();setup_seen=false
 	beat = ""
 	tasted = false
 	paid = false
@@ -147,7 +193,10 @@ func export_state() -> Dictionary:
 	if beat.is_empty():
 		return {}
 	return {
-		"chapter": "opening",
+		"chapter": "opening", "hero_name":hero_name, "script_version":2, "tracked":tracked,
+		"recipe_viewed":recipe_viewed,"tutorials":tutorials.duplicate(),
+		"completed_scenes":completed_scenes.duplicate(),"served_dish_id":served_dish_id,
+		"assessment":assessment.duplicate(true),"setup_seen":setup_seen,
 		"beat": beat,
 		"tasted": tasted,
 		"paid": paid,
@@ -165,10 +214,15 @@ func export_state() -> Dictionary:
 
 func restore(data: Dictionary) -> void:
 	var next := String(data.get("beat", ""))
-	if next not in ["arrive", "follow", "soup", "cook", "founded", "done"]:
+	if next not in ["arrive", "follow", "soup", "bowl", "return", "awaken", "cook", "verdict", "founded", "done"]:
 		beat = ""
 		return
 	beat = next
+	hero_name=str(data.get("hero_name",""))
+	tracked=bool(data.get("tracked",true));recipe_viewed=bool(data.get("recipe_viewed",false))
+	tutorials.assign(data.get("tutorials",[]));completed_scenes.assign(data.get("completed_scenes",[]))
+	served_dish_id=str(data.get("served_dish_id",""));assessment=data.get("assessment",{}).duplicate(true)
+	setup_seen=bool(data.get("setup_seen",false))
 	tasted = bool(data.get("tasted", false))
 	paid = bool(data.get("paid", false))
 	owe_pay = bool(data.get("owe_pay", false))
@@ -183,129 +237,9 @@ func restore(data: Dictionary) -> void:
 	doubted = bool(data.get("doubted", false))
 	score = int(data.get("score", -1))
 	good = bool(data.get("good", false))
+	# Earlier saves inferred a plate merely by leaving the kitchen. Do not invent a delivered meal.
+	if int(data.get("script_version",1))<2 and beat=="cook": score=-1;good=false
 
-func _aling(lines: TDDialogue, hero: String, ready: bool, board: Dictionary = {}) -> void:
-	if beat == "arrive":
-		_page(lines, "【漫画 1】午后的河口镇车站。长途车驶远。背锅的见习厨师展开磨白的地图，河口镇被圈了三圈，旁边写着：百国商船汇聚，天下千味之港。")
-		_page(lines, "【漫画 2】他踏过镇口的白线，手按在胃上。披风少女站在木箱上，海风掀起斗篷，账本已经翻开。阿铃、老陈、罗厄这一版先用主人公的厨师图代替。")
-		lines.add_line("阿铃", "aling", "背锅的旅人，止步！夜鸦密使阿铃，奉命截获一名携带黑铁重器的异乡人。报上你的真名与来意！")
-		lines.add_choice([{
-			"id": "name",
-			"label": "我是%s，为尝遍此地美食而来。" % hero,
-			"speaker": "阿铃",
-			"portrait": "aling",
-			"text": "原来是巡礼者。随我来。沿路有港口的船，也有各国菜馆的招牌。趁你的封印还没彻底破裂。",
-		}])
-		return
-	if beat == "follow":
-		lines.add_line("阿铃", "aling", "跟上。食材铺就在前面。船和招牌先看，圣餐不能等。")
-		return
-	if beat == "soup":
-		lines.add_line("阿铃", "aling", "陈司祭就在这口锅后面。夜鸦已连续七日接受黎明圣羹的试炼。先听他说。")
-		return
-	if beat == "cook" and score < 0:
-		lines.add_line("阿铃", "aling", "家里闲置的摊位：四张两人桌，一只旧冰箱，一口灶。我要大块番茄、嫩鸡蛋，略带甜味。")
-		lines.add_line("阿铃", "aling", "到冰箱按 E 取番茄，砧板按 E 放下，选大块。番茄和鸡蛋放进同一口锅，灶台按 F。调味按住，到量松开。失误不必重来。")
-		return
-	if beat == "cook":
-		if good:
-			lines.add_line("阿铃", "aling", "（吃下一口）封存的记录……回来了。完成度 %d。我小时候，母亲也会这样炒。她总说，鸡蛋要嫩，番茄有一点甜。" % score)
-		else:
-			lines.add_line("阿铃", "aling", "（认真嚼完）此番供物尚有破绽。完成度 %d。但这股蛋香……吾似乎在很久以前，追踪过它。下次补全这一式。" % score)
-		_page(lines, "【漫画 3】阿铃坐在第一张桌前。老陈抱臂。盘子上是这一炉的真实结果：完成度 %d。" % score)
-		lines.add_line("罗厄", "luo", "河口的眷属们，午间圣宴已启。吾乃至味卿罗厄。谨记，唯有吾赐之味，值得渴求。")
-		lines.add_line("阿铃", "aling", "……这道菜，缺少圣餐的恩典。")
-		lines.add_line("老陈", "chen", "夜鸦，你的筷子似乎背叛了你的誓言。盘子已经见底了。")
-		lines.add_line("阿铃", "aling", "（把钱拍在桌上）吾决定继续审判。下一次，备足一整盘！")
-		lines.add_choice([
-			{
-				"id": "defy",
-				"label": "至味卿，记住今日！向你宣战的是赤焰之手！",
-				"speaker": "阿铃",
-				"portrait": "aling",
-				"text": "见习厨师一名，旧灶一口，同盟者一人。夜鸦见证，讨伐军于此成立！招牌先写着家常菜。粮秣照价，绝不赊账。",
-			},
-			{
-				"id": "doubt",
-				"label": "也许他们的舌头，真的不一样。",
-				"speaker": "阿铃",
-				"portrait": "aling",
-				"text": "你已经吃出了破绽。夜鸦仍要你留下。讨伐军先记在这本账上，粮秣照价，绝不赊账。",
-			},
-		])
-		return
-	if beat == "founded":
-		if not board.is_empty() and not _served(ready, board):
-			var gap := _stall_gap(board)
-			if gap != "":
-				lines.add_line("阿铃", "aling", gap)
-				return
-			lines.add_line("阿铃", "aling", "菜单和下一份材料都在。开门，做完一轮，打烊后再来。小摊可以改个名字。")
-			lines.add_choice([
-				{
-					"id": "sign_home",
-					"label": "招牌就写家常菜。",
-					"speaker": "阿铃",
-					"portrait": "aling",
-					"text": "家常菜。夜鸦把讨伐军本部的纸压在这四个字上面。",
-				},
-				{
-					"id": "sign_army",
-					"label": "写成讨伐军本部。",
-					"speaker": "阿铃",
-					"portrait": "aling",
-					"text": "讨伐军本部。底下那张旧纸，仍是家常菜。",
-				},
-			])
-			return
-		if not _served(ready, board):
-			lines.add_line("阿铃", "aling", "明日有外海商船入港。那些漂泊的厨师，每个人都声称自己握着改变世界的食谱。先点燃第一日：开门，做完一轮，打烊后再来找我。")
-			return
-		_page(lines, "【漫画 4】海风掀起「讨伐军本部」的纸。底下旧招牌写着三个字：家常菜。灶火还亮着。")
-		lines.add_line("阿铃", "aling", "第一日的灶火还在。港口那些厨师已经靠岸了。你要端着盘子，逐一去挑战他们吗？")
-		lines.add_choice([{
-			"id": "port",
-			"label": "让他们来。我会逐一发起挑战。",
-			"speaker": "阿铃",
-			"portrait": "aling",
-			"text": "讨伐军本部，今晚先记到这里。下一章是港口，现在还没有他们的剧本。",
-		}])
-		return
-	lines.add_line("阿铃", "aling", "夜鸦的账本还开着。下一艘船靠岸之前，先把这家常菜的火守住。")
-
-func _chen(lines: TDDialogue, hero: String, san: int) -> void:
-	if beat == "arrive":
-		lines.add_line("老陈", "chen", "饥饿的灵魂，先让夜鸦把你的名字记下。圣餐不会分给无名的人。")
-		return
-	if beat == "follow" or beat == "soup":
-		_page(lines, "【漫画】食材铺门口。老陈举起汤勺，身后是至味卿的金边画像，双刀交叉。居民端着黑碗。焦蛋浮在糖浆上，碗边结着盐。")
-		lines.add_line("老陈", "chen", "欢迎，饥饿的灵魂！此乃遵照至味卿圣典烹成的黎明圣羹！九勺盐，九勺糖！烈火煎至漆黑，再以冰水封存！")
-		var after := maxi(0, san - 5)
-		var taste := "【漫画】海风停了。碗里的倒影在笑。一个贴着耳朵的声音说：好吃。居民同时开口：至味降临，吾舌无憾！SAN：%d → %d。你察觉了异常。这次变化不改操作难度。%s：诸位的舌头，正在遭受某种灭绝性的攻击。这难吃得足以毁灭一个纪元！阿铃：你向圣餐提出了决斗。番茄炒蛋，就用你练过一整个冬天的那一式。" % [san, after, hero]
-		lines.add_choice([
-			{
-				"id": "taste",
-				"label": "尝一口。",
-				"speaker": "老陈",
-				"portrait": "chen",
-				"text": taste,
-			},
-			{
-				"id": "refuse",
-				"label": "别加了。这不能喝。",
-				"speaker": "阿铃",
-				"portrait": "aling",
-				"text": "异乡人，你还没喝，就已经向圣餐提出了决斗。挑战者必须拿出自己的供物。番茄炒蛋，鸡蛋要嫩，番茄有一点甜。跟我来。",
-			},
-		])
-		return
-	if beat == "cook":
-		lines.add_line("老陈", "chen", "试做的一份已经放进你的冰箱：番茄、鸡蛋、油、盐和糖。用完再买，灰烬司祭不赊账。盐和糖，请在该停的时候停手。")
-		return
-	lines.add_line("老陈", "chen", "灰烬司祭愿为双方供给粮秣。无论谁赢，食材绝不可赊账！")
-
-func _page(lines: TDDialogue, text: String) -> void:
-	lines.add_line("漫画", "page", text)
 
 func _served(ready: bool, board: Dictionary) -> bool:
 	if board.has("served"):
@@ -320,3 +254,30 @@ func _stall_gap(board: Dictionary) -> String:
 	if not bool(board.get("stock", false)):
 		return "任务：再备一份番茄、鸡蛋和调料。试做的那一份如果用掉了，就到食材铺买。"
 	return ""
+
+static func validate_state(raw: Variant) -> TDOutcome:
+	if not raw is Dictionary: return TDOutcome.new(false,"INVALID_STORY")
+	if not TDServiceCatalog.integer(raw.get("script_version",1),1,2): return TDOutcome.new(false,"UNSUPPORTED_STORY_VERSION")
+	if raw.get("beat","") not in ["","arrive","follow","soup","bowl","return","awaken","cook","verdict","founded","done"]: return TDOutcome.new(false,"INVALID_STORY_BEAT")
+	for key: String in ["tutorials","completed_scenes"]:
+		if raw.has(key):
+			if not raw[key] is Array or raw[key].size()>40: return TDOutcome.new(false,"INVALID_STORY_PROGRESS")
+			var seen: Dictionary={}
+			for item: Variant in raw[key]:
+				if not item is String or item.is_empty() or seen.has(item): return TDOutcome.new(false,"INVALID_STORY_PROGRESS")
+				seen[item]=true
+	if not raw.get("assessment",{}) is Dictionary: return TDOutcome.new(false,"INVALID_STORY_SCORE")
+	var rating: Dictionary=raw.get("assessment",{})
+	if not rating.is_empty():
+		for key: String in ["satisfaction","quality","harmony"]:
+			if key!="satisfaction" and not rating.has(key): continue
+			var value: Variant=rating.get(key)
+			if not (value is int or value is float) or not is_finite(float(value)) or float(value)<0 or float(value)>100:
+				return TDOutcome.new(false,"INVALID_STORY_SCORE")
+		if not rating.get("reasons",[]) is Array: return TDOutcome.new(false,"INVALID_STORY_SCORE")
+		for reason: Variant in rating.get("reasons",[]):
+			if not reason is Dictionary or not reason.get("message","") is String: return TDOutcome.new(false,"INVALID_STORY_SCORE")
+	for key: String in ["tracked","recipe_viewed","setup_seen","tasted","paid","owe_pay","owe_pack","supplied","opened","served","coached","doubted","good"]:
+		if raw.has(key) and not raw[key] is bool: return TDOutcome.new(false,"INVALID_STORY_PROGRESS")
+	if not raw.get("hero_name","") is String or str(raw.get("hero_name","")).length()>20: return TDOutcome.new(false,"INVALID_STORY_NAME")
+	return TDOutcome.new(true,"VALID")

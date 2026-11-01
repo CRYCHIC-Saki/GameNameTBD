@@ -9,6 +9,10 @@ const DOOR:=Vector2(640,616)
 var player:TDKitchenPlayer
 var camera:Camera2D
 var presented:bool=false
+
+func set_day_minute(value: float) -> void:
+	self_modulate=TDDaylight.sample(value,true).tint
+	if player!=null: player.modulate=self_modulate
 var _hud:CanvasLayer
 var _prompt:Label
 
@@ -35,13 +39,13 @@ func set_presented(value:bool,at_bed:bool=false) -> void:
 		player.face(Vector2.RIGHT if at_bed else Vector2.UP)
 
 func target() -> String:
-	if player.position.distance_to(BED_ANCHOR)<65 and player.faces_target(BED.get_center()): return "rest"
-	if player.position.distance_to(DOOR)<85 and player.faces_target(DOOR): return "town"
+	if TDInteractionRange.distance(player.position,BED)<65: return "rest"
+	if TDInteractionRange.distance(player.position,Rect2(DOOR-Vector2(44,12),Vector2(88,24)))<65: return "town"
 	return ""
 
 func _process(_delta:float) -> void:
 	if not presented: return
-	_prompt.text={"rest":"[ E ] 床 · 保存 / 收工休息","town":"[ E ] 出门去小镇"}.get(target(),"小屋 · WASD 走动 · Shift 疾跑，面向床或门按 E · B 菜谱 · Esc 暂停")
+	_prompt.text={"rest":"[ E ] 床 · 保存 / 收工休息","town":"[ E ] 出门去小镇"}.get(target(),"小屋 · WASD 走动 · Shift 疾跑，靠近床或门按 E · B 菜谱 · Esc 暂停")
 
 func _unhandled_input(event:InputEvent) -> void:
 	if not presented or get_tree().paused or not player.controls_enabled: return

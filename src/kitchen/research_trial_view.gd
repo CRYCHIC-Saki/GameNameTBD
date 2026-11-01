@@ -50,7 +50,7 @@ func _process(_delta:float) -> void:
 		var result:=session.finish(token)
 		if result.ok:
 			_result=result;_cancel_button.hide();_continue.show();_retry_save.hide()
-			_message.text="已保存研习进度 · 研习暂不消耗游戏时间" if result.data.passed else "资格已保留 · 不消耗游戏时间，现在就能再试。"
+			_message.text="本次研习通过 · 请整理厨房后在存档点保存进度" if result.data.passed else "资格已保留 · 不消耗游戏时间，现在就能再试。"
 			if not result.data.passed:
 				_continue.position.x=382;_retry_attempt.show()
 			_show_result()

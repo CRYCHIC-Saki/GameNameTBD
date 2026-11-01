@@ -1,5 +1,9 @@
 class_name TDShopView
 extends Control
+signal active_time_advanced(seconds: float)
+var external_time_boundary: Callable
+var story_delivery: Callable
+
 signal back_requested
 signal pause_requested
 var embedded: bool = false
@@ -13,6 +17,7 @@ var store: TDShopStore
 var kitchen: TDFullKitchen
 var day_san: float = -1.0
 var last_result := TDOutcome.new(true)
+var day_clock_label: Label
 var _title: Label
 var _message: Label
 var _holder: Control
@@ -74,6 +79,7 @@ func _build_shell() -> void:
 	actions.add_child(TDUI.button("暂停 / 恢复",func()->void:pause_requested.emit()))
 	actions.add_child(TDUI.button("返回主界面",request_back))
 	if embedded: actions.hide()
+	day_clock_label=TDUI.label("",22,TDUI.ORANGE);day_clock_label.position=Vector2(1050,110);day_clock_label.size=Vector2(200,36);add_child(day_clock_label)
 	_holder=Control.new(); _holder.position=Vector2(12,174); _holder.size=Vector2(920,575); add_child(_holder)
 	var scroll:=ScrollContainer.new(); scroll.position=Vector2(953,166); scroll.size=Vector2(303,610); scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED; add_child(scroll)
 	_sidebar=VBoxContainer.new(); _sidebar.size_flags_horizontal=Control.SIZE_EXPAND_FILL; _sidebar.add_theme_constant_override("separation",10); scroll.add_child(_sidebar)
@@ -90,7 +96,7 @@ func _make_kitchen() -> void:
 	kitchen.library_path=save_path+".unused-library" # No player recipe write bypasses the business save.
 	kitchen.station_handler=_station
 	kitchen.action_handler=_station_action
-	kitchen.time_boundary=shop.next_boundary
+	kitchen.time_boundary=_next_time_boundary
 	kitchen.single_fridge=true
 	kitchen.z_index=2
 	kitchen.back_requested.connect(request_back); kitchen.pause_requested.connect(func()->void:pause_requested.emit())
@@ -120,11 +126,12 @@ func refresh(force: bool = false) -> void:
 	_title.text="小镇食堂  ·  第 %d 天     ¥ %.2f     人气 %d   店名气 %d" % [state.day,float(state.money_cents)/100.0,state.popularity,fame]
 	var boundary: bool=state.phase in ["PREPARE","SETTLED"]
 	if embedded and _last_phase!=state.phase:
-		_message.text={"PREPARE":"到集市采购，再回餐厅营业牌确认菜单与价格。","OPEN":"营业中 · 按订单备菜，做好的菜交到出餐台 · B 查看菜谱","DRAINING":"已停止接新客，请处理最后的订单。","SETTLED":"今天打烊了。回餐厅查看账本，休息后迎接新一天。"}.get(state.phase,"")
+		_message.text={"PREPARE":"厨房随时可用 · E 取放 · F 开灶 · 营业牌确认菜单与价格后迎客。","OPEN":"营业中 · 按订单备菜，做好的菜交到出餐台 · B 查看菜谱","DRAINING":"已停止接新客，请处理最后的订单。","SETTLED":"已打烊，仍可练习做菜。原料放回冰箱，成品出餐或清理后去小屋保存、休息。"}.get(state.phase,"")
 	_open_button.disabled=state.phase!="PREPARE" or _load_blocked
 	_save_button.disabled=not boundary or _load_blocked
 	_next_button.disabled=state.phase!="SETTLED" or _load_blocked
-	_page.visible=boundary and not embedded; _holder.visible=not boundary or embedded
+	# The legacy debug planner must also let the player clear a leftover dish.
+	_page.visible=boundary and not embedded and checkpoint_ready().ok; _holder.visible=not _page.visible
 	if state.phase=="SETTLED" and _last_phase!="SETTLED":
 		_close_popup()
 		_message.text="今日结束，请看收益总结。"
@@ -178,6 +185,8 @@ func _summary_page(column: VBoxContainer, report: Dictionary) -> void:
 	var reason := "今日已结算"
 	if str(report.reason) == "early":
 		reason = "提前打烊"
+	elif str(report.reason) == "night":
+		reason = "凌晨02:00收摊"
 	elif str(report.reason) == "time":
 		reason = "营业时间结束"
 	column.add_child(TDUI.label("第 %d 天 · %s" % [int(report.day), reason], 22, TDUI.ORANGE))
@@ -236,7 +245,7 @@ func _summary_page(column: VBoxContainer, report: Dictionary) -> void:
 func _orders_panel(state: Dictionary) -> void:
 	_empty(_sidebar)
 	_sidebar.add_child(TDUI.label("等候订单 · %d / %d"%[shop.active_orders().size(),service.config.settings.max_orders],24,TDUI.ORANGE))
-	var clock_text: String="筹备不计时" if state.phase=="PREPARE" else ("今日已结算" if state.phase=="SETTLED" else ("停止接客 · 完成剩余订单" if state.phase=="DRAINING" else "营业剩余 %d 秒" % maxi(0,int(service.config.settings.day_sec)-int(state.elapsed_sec))))
+	var clock_text: String="筹备中 · 尚未营业" if state.phase=="PREPARE" else ("今日已结算" if state.phase=="SETTLED" else ("停止接客 · 完成剩余订单" if state.phase=="DRAINING" else "营业中 · 主动打烊或02:00收摊" if shop.day_minute_reader.is_valid() else "营业剩余 %d 秒" % maxi(0,int(service.config.settings.day_sec)-int(state.elapsed_sec))))
 	_sidebar.add_child(TDUI.label(clock_text,17))
 	_sidebar.add_child(TDUI.label("同菜先到先服务；不同菜可乱序出餐。",14,TDUI.MUTED))
 	if shop.crew != null and not shop.crew.duty_line().is_empty():
@@ -284,6 +293,8 @@ func buy_kit(id: String, missing_only: bool = true) -> TDOutcome:
 	_show(result); refresh(true); return result
 
 func save_boundary() -> TDOutcome:
+	var ready:=checkpoint_ready()
+	if not ready.ok: return ready
 	if embedded:
 		return boundary_save.call() if boundary_save.is_valid() else TDOutcome.new(false,"NO_STORAGE")
 	if _load_blocked: return TDOutcome.new(false,"LOAD_BLOCKED")
@@ -298,14 +309,16 @@ func save_boundary() -> TDOutcome:
 func open_day() -> void:
 	if get_tree().paused or _load_blocked: return
 	var saved:=save_boundary()
-	if not saved.ok: return
-	_make_kitchen(); _show(shop.open_day()); refresh(true)
+	if not saved.ok and saved.code!="KITCHEN_BUSY": _show(saved); return
+	_show(shop.open_day()); _sync_usage(); refresh(true)
 
 func next_day() -> void:
 	if get_tree().paused: return
 	var result:=save_boundary()
 	if not result.ok: return
-	_show(shop.next_day(int(shop.snapshot().day))); refresh(true)
+	result=shop.next_day(int(shop.snapshot().day))
+	if result.ok: _make_kitchen()
+	_show(result); refresh(true)
 
 func _apply_context(lane: TDCookingLane, context: Dictionary) -> TDOutcome:
 	var profile: TDCookingCatalog=shop.profile_for(context)
@@ -317,7 +330,7 @@ func _station(id: String) -> void:
 
 func _station_action(id: String, action: String) -> void:
 	if get_tree().paused: return
-	if shop.snapshot().phase not in ["OPEN","DRAINING"]: _station_done(TDOutcome.new(false,"NOT_OPEN")); return
+	if not shop.kitchen_available(): _station_done(TDOutcome.new(false,"KITCHEN_UNAVAILABLE")); return
 	if id=="kitchen.trash": _trash(); return
 	if id=="kitchen.serve": _serve(); return
 	if id=="kitchen.fridge":
@@ -367,7 +380,7 @@ func _begin_manual(lane: TDCookingLane, station_id: String) -> void:
 	else: _station_done(result)
 
 func start_automatic(index: int) -> TDOutcome:
-	if index<0 or index>=kitchen.lanes.size() or get_tree().paused or shop.snapshot().phase not in ["OPEN","DRAINING"]: return TDOutcome.new(false,"NOT_OPEN")
+	if index<0 or index>=kitchen.lanes.size() or get_tree().paused or not shop.kitchen_available(): return TDOutcome.new(false,"KITCHEN_UNAVAILABLE")
 	var lane: TDCookingLane=kitchen.lanes[index]
 	if not shop.mastery(lane.base_recipe_id).automatic_available: return TDOutcome.new(false,"NOT_MASTERED","手工制作评分80以上可积累手艺，满400后开放。")
 	var dish:=lane.snapshot();var required: Dictionary=service.material_needs(lane.catalog,lane.base_recipe_id,dish.steps)
@@ -487,7 +500,7 @@ func pantry_entries(group: String) -> Array:
 
 func pick_ingredient(id: String) -> TDOutcome:
 	if get_tree().paused: return TDOutcome.new(false,"PAUSED")
-	if shop.snapshot().phase not in ["OPEN","DRAINING"] or not service.config.costs.has(id): return TDOutcome.new(false,"NOT_OPEN")
+	if not shop.kitchen_available() or not service.config.costs.has(id): return TDOutcome.new(false,"KITCHEN_UNAVAILABLE")
 	var context: Dictionary=shop.context_for_ingredients([id])
 	var family: String=shop.family_id(context.recipe_id) if not context.is_empty() else "service.tomato_egg"
 	var amount: float=1.0 if service.is_primary(id) else .1
@@ -525,6 +538,13 @@ func _serve() -> void:
 		var lane: TDCookingLane=kitchen.lanes[index]
 		if kitchen.handling.hand!=lane.session: continue
 		_sync_usage()
+		if story_delivery.is_valid():
+			var story_result: TDOutcome=story_delivery.call(lane.snapshot())
+			if story_result.code!="NOT_STORY_DELIVERY":
+				if story_result.ok:
+					# The story consumed this held plate, without emitting an ordinary order delivery.
+					kitchen.handling.clear_dish();kitchen.close_bench();_reset_pot(lane);_sync_usage();refresh(true)
+				_station_done(story_result);return
 		var item: Dictionary=shop.first_order_for(lane.snapshot())
 		if item.is_empty(): _station_done(TDOutcome.new(false,"NO_MATCHING_ORDER","当前没有客人在等这道菜。")); return
 		var result:=shop.can_deliver(item.id,lane.snapshot())
@@ -546,9 +566,15 @@ func _on_work(seconds: float) -> void:
 	if not _closed and shop!=null and shop.commerce!=null and not get_tree().paused:
 		shop.commerce.cooking_time(seconds)
 
+func _next_time_boundary(seconds: float) -> float:
+	var span: float=shop.next_boundary(seconds)
+	if external_time_boundary.is_valid(): span=minf(span,float(external_time_boundary.call(seconds)))
+	return span
+
 func _on_time(seconds: float) -> void:
 	if _closed or shop==null: return
 	_sync_usage(); shop.advance(seconds,get_tree().paused); _cleanup_terminal(); refresh()
+	active_time_advanced.emit(seconds)
 
 func cancel_order(id: String) -> void:
 	# Retained as an explicit rules/test boundary; order cards expose no buttons.
@@ -556,12 +582,52 @@ func cancel_order(id: String) -> void:
 	_sync_usage(); _show(shop.cancel_order(id)); _cleanup_terminal(); refresh(true)
 
 func _cleanup_terminal() -> void:
-	# Customer departure does not destroy physical food. Only the day boundary clears it.
-	if shop.snapshot().phase=="SETTLED":
-		kitchen.handling.close()
-		kitchen.prep.cancel_operation()
-		for lane: TDCookingLane in kitchen.lanes: lane.cancel_operation()
-		kitchen.close_bench()
+	# Closing the shop is not closing the kitchen. Overnight has its own checkpoint.
+	pass
+
+func checkpoint_ready() -> TDOutcome:
+	if kitchen==null: return TDOutcome.new(true,"KITCHEN_CLEAR")
+	var busy: bool=kitchen.handling.hand!=null or kitchen.handling.board!=null
+	for lane: TDCookingLane in kitchen.lanes+[kitchen.prep]:
+		var dish:=lane.snapshot()
+		busy=busy or lane.qte!=null or lane.thermal_qte!=null or (lane.sheet!=null and lane.sheet.running)
+		busy=busy or (not dish.ingredients.is_empty() and dish.state not in ["delivered","discarded","cancelled"] and lane!=kitchen.prep)
+	if busy: return TDOutcome.new(false,"KITCHEN_BUSY","厨房还有食材或菜品：请将原料/切配品放回冰箱，成品出餐或清理后再保存、休息。进行中的操作不会存档。")
+	return TDOutcome.new(true,"KITCHEN_CLEAR")
+
+func finish_night() -> TDOutcome:
+	# In-flight heat cannot be undone into raw stock.
+	var returned:=0
+	var waste: Dictionary={}
+	kitchen.close_bench();_close_popup();kitchen.prep.cancel_operation()
+	if kitchen.handling.hand_kind=="dish": kitchen.handling.clear_dish()
+	if kitchen.handling.hand!=null:
+		var back:=return_ingredient()
+		if not back.ok: return back
+		returned+=1
+	if kitchen.handling.board!=null:
+		var taken:=kitchen.handling.take_board()
+		if not taken.ok: return taken
+		var back:=return_ingredient()
+		if not back.ok: return back
+		returned+=1
+	for lane: TDCookingLane in kitchen.lanes:
+		var cold:=lane.session.is_cold()
+		var ingredients: Dictionary=lane.snapshot().ingredients
+		lane.cancel_operation()
+		if cold:
+			for id: String in ingredients:
+				var taken:=kitchen.handling.take_ingredient(lane.session,id)
+				if not taken.ok: return taken
+				var back:=return_ingredient()
+				if not back.ok: return back
+				returned+=1
+		else:
+			for food: Dictionary in ingredients.values():
+				waste[food.ingredient_id]=int(waste.get(food.ingredient_id,0))+roundi(float(food.amount)*1000)
+		_reset_pot(lane)
+	shop.note_night_cleanup(returned,waste);_sync_usage()
+	return TDOutcome.new(true,"KITCHEN_CLOSED","原料与切配品已归还%d份，已开火食物按报废处理。"%returned,{"returned":returned,"waste":waste})
 
 func _station_done(result: TDOutcome) -> void:
 	_show(result); _sync_usage(); kitchen.world.set_controls_enabled(true); kitchen.refresh_world(); refresh(true)

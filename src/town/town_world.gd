@@ -1,12 +1,23 @@
 class_name TDTownWorld
 extends Node2D
+var _target_hint: Label
 
 signal back_requested
 signal pause_requested
 signal restaurant_requested
 signal place_requested(kind: String, id: String)
 signal story_effect(effect: Dictionary)
+signal story_requested(who: String)
+var external_story_frozen: bool=false
+var _escort_leg: String=""
+var _escort_waiting: bool=false
 var player_mode: bool = false
+var day_minute: float = 720.0
+
+func set_day_minute(value: float) -> void:
+	day_minute=value
+	self_modulate=TDDaylight.sample(value).tint
+	if _player!=null: _player.modulate=self_modulate
 var transaction_sink: Callable
 var external_factory_clock: bool = false
 var balance_reader: Callable
@@ -18,9 +29,14 @@ var story: TDOpening
 var story_board: Dictionary = {}
 var _escort := Vector2i(-99, -99)
 var _escort_wait: float = 0.0
-const STORY_SPRITE := preload("res://assets/kitchen/chef-v1.png")
+var _escort_facing := Vector2i.DOWN
+var _escort_next:=Vector2i(-99,-99)
+var _npc_gaits: Dictionary={}
 
 const CELL := 48
+const BUILDING_REACH := CELL*0.65
+const PERSON_REACH := CELL*0.85
+const BOWL_REACH := 32.0
 const BAR_HEIGHT := 92.0
 const GLASS := Color(0.07, 0.15, 0.30, 0.78)
 const GLASS_CARD := Color(0.20, 0.36, 0.62, 0.38)
@@ -62,8 +78,7 @@ var _qty_count: int = 1
 var _qty_summary: Label
 var _factory_accent: Color = Color("#ecb36e")
 var _entering_diner: bool = false
-var _caller: TDTownCaller
-var _caller_wait: float = 0.0
+var characters: TDCharacterRoster
 var _talk_layer: CanvasLayer
 var _talk_view: TDDialogueView
 
@@ -116,15 +131,14 @@ func _ready() -> void:
 	if player_mode: spawn_at_home()
 	_set_status(_enter_hint())
 	if player_mode:
-		_boot_caller()
-		_set_status("WASD 走动 · Shift 疾跑 · 面向建筑或林夏按 E · 小屋的床可保存/休息 · B 菜谱 · Esc 暂停")
+		_set_status("WASD 走动 · Shift 疾跑 · 靠近建筑或人物按 E · 小屋的床可保存/休息 · B 菜谱 · Esc 暂停")
 	queue_redraw()
 
 func _process(delta: float) -> void:
 	_follow_camera()
-	if player_mode and not get_tree().paused and not _talk_open():
-		_tick_caller(delta)
+	if player_mode and visible and not get_tree().paused and not _talk_open() and not external_story_frozen:
 		_tick_escort(delta)
+	_refresh_npc_gaits()
 	if not player_mode: _try_enter_diner()
 	if _closed:
 		return
@@ -142,9 +156,16 @@ func _process(delta: float) -> void:
 		_paint_backpack_count()
 	if session != null and session.map_revision != _seen_revision:
 		_seen_revision = session.map_revision
+		if characters!=null: characters.sync_map(session.town_map)
 		if commercial_refresh.is_valid(): commercial_refresh.call()
 		_build_blockers()
 		_keep_player_on_map()
+	if player_mode and _player!=null and _player.controls_enabled:
+		_selected=facing_plot()
+		if _target_hint!=null:
+			var person:=_story_faced() if _selected.is_empty() else ""
+			_target_hint.text="[ E ] "+str(_selected.name) if not _selected.is_empty() else ("[ E ] 和"+("阿铃" if person=="aling" else "老陈")+"交谈" if person!="" else "靠近建筑或人物按 E")
+	if _target_hint!=null and story!=null and story.beat=="bowl" and _player.position.distance_to(bowl_point())<BOWL_REACH: _target_hint.text="[ E ] 尝一口黎明圣羹"
 	queue_redraw()
 
 func _overview_zoom() -> float:
@@ -152,7 +173,7 @@ func _overview_zoom() -> float:
 	var view := get_viewport().get_visible_rect().size
 	if view.x < 8.0 or view.y < 8.0:
 		return 1.0
-	var map_px := float(TDTownMap.SIZE * CELL)
+	var map_px := float(session.town_map.extent * CELL)
 	var usable_height := maxf(1.0, view.y - (80.0 if player_mode else BAR_HEIGHT))
 	return maxf(0.05, minf(view.x / map_px, usable_height / map_px) * 0.96 * 2.0)
 
@@ -162,7 +183,8 @@ func _follow_camera() -> void:
 	var zoom := _overview_zoom()
 	_camera.zoom = Vector2(zoom, zoom)
 	var view := get_viewport().get_visible_rect().size / zoom
-	var map_size := Vector2(TDTownMap.SIZE * CELL, TDTownMap.SIZE * CELL)
+	var map_size := Vector2(session.town_map.extent * CELL, session.town_map.extent * CELL)
+	if player_mode and session.town_map.layout_version==2: map_size.x+=CELL*14
 	var origin := _origin()
 	var half := view * 0.5
 	var target := _player.position + Vector2(0, -70 if player_mode else BAR_HEIGHT * 0.5 / zoom)
@@ -181,13 +203,13 @@ func _draw() -> void:
 		return
 	if player_mode:
 		TDTownArt.draw_world(self,session,_selected)
-		_draw_economic_places()
-		_draw_caller()
+		TDHarbor.draw(self,session.town_map,_origin(),CELL)
+		# Property visuals now use the same atlas renderer.
 		_draw_story()
 		return
 	var origin := _origin()
-	for y in TDTownMap.SIZE:
-		for x in TDTownMap.SIZE:
+	for y in session.town_map.extent:
+		for x in session.town_map.extent:
 			var ground := Rect2(origin + Vector2(x * CELL, y * CELL), Vector2(CELL - 1, CELL - 1))
 			var color := Color("#2c3338")
 			if session.town_map.is_road(x, y):
@@ -219,7 +241,7 @@ func _draw() -> void:
 	if session != null:
 		var shade := TDSanRules.vignette_alpha(float(session.san))
 		if shade > 0.01:
-			draw_rect(Rect2(_origin(), Vector2(TDTownMap.SIZE * CELL, TDTownMap.SIZE * CELL)), Color(0, 0, 0, shade))
+			draw_rect(Rect2(_origin(), Vector2(session.town_map.extent * CELL, session.town_map.extent * CELL)), Color(0, 0, 0, shade))
 
 func _draw_economic_places() -> void:
 	for plot: Dictionary in session.town_map.plots:
@@ -289,6 +311,9 @@ func close() -> void:
 	_close_backpack()
 
 func _interact() -> void:
+	if external_story_frozen: return
+	if story!=null and story.beat=="bowl" and _player.position.distance_to(bowl_point())<BOWL_REACH:
+		story_requested.emit("bowl");return
 	var cell := _player_cell()
 	var plot := session.town_map.plot_at(cell.x, cell.y)
 	if player_mode:
@@ -300,16 +325,16 @@ func _interact() -> void:
 				plot = neighbor
 				break
 	var story_person := _story_faced()
-	if player_mode and story_person != "":
-		_open_talk(story.talk(story_person, hero_name, chapter_ready, session.san, story_board))
-		queue_redraw()
-		return
-	if player_mode and _caller_faced():
-		_open_talk(_caller.conversation())
+	if player_mode and plot.is_empty() and story_person != "":
+		if story!=null and story.started() and not story.finished():
+			if story_requested.has_connections(): story_requested.emit(story_person)
+			else: _open_talk(story.talk(story_person, hero_name, chapter_ready, session.san, story_board))
+		elif characters!=null:
+			_open_talk(characters.conversation(story_person))
 		queue_redraw()
 		return
 	if plot.is_empty():
-		_set_status("前方没有可交互建筑。请走近并转向门口或摊贩。")
+		_set_status("附近没有可交互建筑。请走近建筑或物品的任意一侧。")
 		return
 	_selected = plot
 	var kind := String(plot["kind"])
@@ -379,16 +404,23 @@ func _build_blockers() -> void:
 	body.collision_layer = 16
 	body.collision_mask = 0
 	add_child(body)
-	for y in TDTownMap.SIZE:
-		for x in TDTownMap.SIZE:
-			if session.town_map.is_walkable(x, y):
-				continue
-			var shape := RectangleShape2D.new()
-			shape.size = Vector2(CELL, CELL)
-			var collider := CollisionShape2D.new()
-			collider.shape = shape
-			collider.position = _origin() + Vector2((x + 0.5) * CELL, (y + 0.5) * CELL)
+	# Merge solid horizontal spans, keeping topology exact without thousands of bodies.
+	for y: int in session.town_map.extent:
+		var x: int=0
+		while x<session.town_map.extent:
+			if session.town_map.is_walkable(x,y): x+=1;continue
+			var first: int=x
+			while x<session.town_map.extent and not session.town_map.is_walkable(x,y): x+=1
+			var shape:=RectangleShape2D.new();shape.size=Vector2((x-first)*CELL,CELL)
+			var collider:=CollisionShape2D.new();collider.shape=shape
+			collider.position=_origin()+Vector2((first+x)*.5*CELL,(y+.5)*CELL)
 			body.add_child(collider)
+	# Scene dressing has matching, small visible base collisions, outside all roads and facilities.
+	for item: Dictionary in TDTownScenery.dressing(session.town_map):
+		var bounds: Rect2=item.bounds
+		var shape:=RectangleShape2D.new();shape.size=bounds.size*CELL
+		var collision:=CollisionShape2D.new();collision.shape=shape;collision.position=_origin()+bounds.get_center()*CELL
+		body.add_child(collision)
 
 func _status_bar() -> void:
 	var layer := CanvasLayer.new()
@@ -417,7 +449,7 @@ func _status_bar() -> void:
 	_status.add_theme_color_override("font_color", GLASS_INK)
 	box.add_child(_status)
 	if player_mode:
-		_status.text = "WASD 走动 · Shift 疾跑 · 面向建筑按 E · 小屋的床可保存/休息 · B 菜谱 · Esc 暂停"
+		_status.text = "WASD 走动 · Shift 疾跑 · 靠近建筑按 E · 小屋的床可保存/休息 · B 菜谱 · Esc 暂停"
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
 	box.add_child(row)
@@ -425,6 +457,12 @@ func _status_bar() -> void:
 		row.add_child(_button("返回", func() -> void: back_requested.emit()))
 	_pack_button = _button("背包 0", _open_backpack)
 	row.add_child(_pack_button)
+	if player_mode:
+		_target_hint=TDUI.label("靠近建筑或人物按 E",18)
+		_target_hint.custom_minimum_size=Vector2(500,30)
+		_target_hint.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+		_target_hint.autowrap_mode=TextServer.AUTOWRAP_OFF
+		row.add_child(_target_hint)
 	_paint_backpack_count()
 	_place_status_bar()
 	if not get_viewport().size_changed.is_connected(_place_status_bar):
@@ -436,7 +474,7 @@ func _place_status_bar() -> void:
 	var view := get_viewport().get_visible_rect().size
 	if view.x < 8.0 or view.y < 8.0:
 		return
-	var bar_h := 70.0 if player_mode else BAR_HEIGHT
+	var bar_h := 96.0 if player_mode else BAR_HEIGHT
 	_status_panel.position = Vector2(0, maxf(0.0, view.y - bar_h))
 	_status_panel.size = Vector2(view.x, minf(bar_h, view.y))
 	var box := _status_panel.get_child(0) as Control
@@ -453,8 +491,8 @@ func _keep_player_on_map() -> void:
 		return
 	var best := Vector2i(TDTownMap.CENTER, TDTownMap.CENTER)
 	var distance := INF
-	for y: int in TDTownMap.SIZE:
-		for x: int in TDTownMap.SIZE:
+	for y: int in session.town_map.extent:
+		for x: int in session.town_map.extent:
 			if not session.town_map.is_walkable(x, y):
 				continue
 			var score := Vector2(x, y).distance_squared_to(Vector2(cell))
@@ -485,7 +523,7 @@ func _click_build(mouse: InputEventMouse) -> void:
 	var plot := _plot_under(world)
 	var kind := String(plot.get("kind", ""))
 	if player_mode and str(facing_plot().get("id",""))!=str(plot.get("id","")):
-		_selected=plot;_set_status("请走近并面向这栋建筑，再按 E 交互。");queue_redraw();return
+		_selected=plot;_set_status("靠近这栋建筑的任意一侧，再按 E 交互。");queue_redraw();return
 	if kind == "diner_lot":
 		_selected = plot
 		_open_venue_choice()
@@ -1280,9 +1318,6 @@ func set_presented(value: bool) -> void:
 func spawn_at_home() -> void:
 	spawn_at_plot("player_diner")
 
-func caller_phase() -> String:
-	return _caller.phase if _caller != null else ""
-
 func _talk_open() -> bool:
 	return _talk_view != null and is_instance_valid(_talk_view) and _talk_view.visible
 
@@ -1299,14 +1334,20 @@ func _ensure_talk() -> void:
 	_talk_view.closed.connect(_on_talk_closed)
 
 func _open_talk(next: TDDialogue) -> void:
+	if characters!=null and next.context.get("kind")=="resident": characters.hold(str(next.context.character_id),true)
 	_ensure_talk()
 	_talk_view.present(next)
 	if _player != null:
 		_player.set_controls_enabled(false)
 
 func _on_talk_closed(last_text: String, picks: Array) -> void:
-	if story != null and story.started():
-		var effect := story.resolve(picks, _story_ready())
+	var context: Dictionary=_talk_view.last_context
+	if context.get("kind")=="resident" and characters!=null:
+		characters.hold(str(context.character_id),false)
+		characters.complete_chat(context,_talk_view.last_completed,picks)
+		_set_status("%s · 好感 %d/100"%[characters.definition(str(context.character_id)).name,int(characters.relationship(str(context.character_id)).affection)])
+	elif context.get("kind")=="story" and story != null and story.started():
+		var effect := story.complete_scene(str(context.get("scene","")),_talk_view.last_completed) if context.has("scene") else story.resolve(picks, _story_ready())
 		if not effect.is_empty():
 			story_effect.emit(effect)
 		if not story.finished():
@@ -1329,62 +1370,64 @@ func _story_ready() -> bool:
 		return bool(story_board.served)
 	return chapter_ready
 
-func _story_people() -> Array:
+func _story_positions() -> Array:
 	var people: Array = []
-	if story == null or not story.started() or session == null:
+	if story == null or not story.started() or story.finished() or session == null:
 		return people
-	var market := _plot_of_kind("market")
 	var diner := session._plot_by_id("player_diner")
 	var door := _diner_door()
 	var blocked := {door: true}
-	var market_roads := _open_roads(_rim_roads(market), blocked)
 	var diner_roads := _open_roads(_rim_roads(diner), blocked)
 	var chen := _chen_cell()
 	if chen.x >= 0:
 		blocked[chen] = true
-	var aling := _road_near_door(3)
-	if story.beat == "follow" and _escort.x >= 0:
+	var aling := TDHarbor.GUIDE_STOP if session.town_map.layout_version==2 else _road_near_door(3)
+	if story.beat in ["follow","return"] and _escort.x >= 0:
 		aling = _escort
-	elif story.beat in ["cook", "founded", "done"] and not diner_roads.is_empty():
+	elif story.beat in ["awaken","cook", "verdict", "founded", "done"] and not diner_roads.is_empty():
 		aling = diner_roads[0]
-	elif story.beat == "soup":
-		aling = market_roads[1] if market_roads.size() > 1 else _any_road(blocked)
+	elif story.beat in ["soup","bowl"]:
+		aling = _aling_market_cell()
+	if characters!=null:
+		if story.beat not in ["arrive","follow","return","soup","bowl"]: aling=characters.safe_stop_near(aling,"aling",[chen])
 	people.append({"id": "chen", "name": "老陈", "cell": chen, "color": Color("#8a6238")})
 	people.append({"id": "aling", "name": "阿铃", "cell": aling, "color": Color("#24344a")})
 	return people
 
 func _story_faced() -> String:
-	if _player == null or story == null or not story.started():
-		return ""
-	var near: Array[String] = []
-	for person: Variant in _story_people():
-		var item: Dictionary = person
-		var cell: Vector2i = item.cell
-		if cell.x < 0:
-			continue
-		if Vector2(_player_cell()).distance_to(Vector2(cell)) > 1.45:
-			continue
-		var at := _origin() + (Vector2(cell) + Vector2(0.5, 0.5)) * CELL
-		if _player.faces_target(at):
-			near.append(String(item.id))
-	if story.beat in ["soup", "follow"] and near.has("chen"):
-		return "chen"
-	if near.has("aling"):
-		return "aling"
-	if near.has("chen"):
-		return "chen"
-	return ""
+	if _player==null: return ""
+	var nearest: String="";var distance: float=PERSON_REACH
+	for item: Dictionary in _story_people():
+		var cell: Vector2=item.get("position",Vector2(item.cell))
+		if cell.x<0: continue
+		var at:=_origin()+(cell+Vector2(.5,.5))*CELL
+		var gap:=_player.position.distance_to(at)
+		if gap<distance or (is_equal_approx(gap,distance) and str(item.id)<nearest): nearest=str(item.id);distance=gap
+	return nearest
 
 func _draw_story() -> void:
 	_draw_stall_sign()
+	if story!=null and story.beat=="bowl":
+		var point:=bowl_point()
+		draw_rect(Rect2(point-Vector2(25,18),Vector2(50,27)),Color("805936"))
+		draw_texture_rect(TDStoryArt.prop(2),Rect2(point-Vector2(24,43),Vector2(48,35)),false)
+		draw_string(ThemeDB.fallback_font,point+Vector2(-35,-55),"汤碗 · E",HORIZONTAL_ALIGNMENT_LEFT,-1,16,Color("ffdfa2"))
 	for person: Variant in _story_people():
 		var item: Dictionary = person
 		var cell: Vector2i = item.cell
 		if cell.x < 0:
 			continue
-		var at := _origin() + (Vector2(cell) + Vector2(0.5, 0.62)) * CELL
-		draw_texture_rect(STORY_SPRITE, Rect2(at + Vector2(-18, -56), Vector2(36, 48)), false)
-		draw_string(ThemeDB.fallback_font, at + Vector2(-18, -60), String(item.name), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("#fff6df"))
+		var at := _origin() + (Vector2(item.get("position",Vector2(cell))) + Vector2(0.5, 0.62)) * CELL
+		var facing: Vector2i=_escort_facing if item.id=="aling" and story!=null and story.beat in ["follow","return"] else item.get("facing",Vector2i.DOWN)
+		var gait: TDNpcGait=_npc_gaits.get(str(item.id))
+		var art:=TDStoryArt.sprite(str(item.id),gait.facing if gait!=null and gait.frame>=0 else facing,gait.frame if gait!=null else -1)
+		if art!=null: draw_texture_rect(art,TDStoryArt.fit(art,Rect2(at+Vector2(-36,-72),Vector2(72,72))),false)
+		draw_string(ThemeDB.fallback_font, at + Vector2(-18, -78), String(item.name), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("#fff6df"))
+		if item.id=="aling" and _escort_waiting and story!=null and story.beat in ["follow","return"]:
+			draw_rect(Rect2(at+Vector2(-69,-130),Vector2(138,32)),Color("f6edce"))
+			draw_string(ThemeDB.fallback_font,at+Vector2(-58,-108),"快跟上来",HORIZONTAL_ALIGNMENT_LEFT,-1,20,Color("564332"))
+		if player_mode and facing_plot().is_empty() and _story_faced()==str(item.id):
+			draw_string(ThemeDB.fallback_font,at+Vector2(-16,-98),"[ E ]",HORIZONTAL_ALIGNMENT_LEFT,-1,18,Color("fff0c4"))
 
 func _draw_stall_sign() -> void:
 	if story == null or story.beat not in ["founded", "done"] or session == null:
@@ -1402,8 +1445,15 @@ func _chen_cell() -> Vector2i:
 	var door := _diner_door()
 	var roads := _open_roads(_rim_roads(_plot_of_kind("market")), {door: true})
 	if not roads.is_empty():
-		return roads[0]
+		return characters.safe_stop_near(roads[0],"chen") if characters!=null else roads[0]
 	return _any_road({door: true})
+
+func _aling_market_cell() -> Vector2i:
+	var chen:=_chen_cell()
+	if characters!=null: return characters.safe_stop_near(chen+Vector2i(2,0),"aling",[chen])
+	for at: Vector2i in _rim_roads(_plot_of_kind("market")):
+		if at.distance_to(chen)>=2.0 and at!=_diner_door(): return at
+	return _road_near_door(3)
 
 func _road_near_door(min_distance: int) -> Vector2i:
 	var door := _diner_door()
@@ -1411,8 +1461,8 @@ func _road_near_door(min_distance: int) -> Vector2i:
 	var best_distance := 999999
 	if session == null:
 		return best
-	for y: int in TDTownMap.SIZE:
-		for x: int in TDTownMap.SIZE:
+	for y: int in session.town_map.extent:
+		for x: int in session.town_map.extent:
 			if not session.town_map.is_road(x, y):
 				continue
 			var cell := Vector2i(x, y)
@@ -1427,27 +1477,50 @@ func _road_near_door(min_distance: int) -> Vector2i:
 		return _any_road({door: true})
 	return best
 
+func bowl_point() -> Vector2:
+	var cell:=_chen_cell()
+	for direction: Vector2i in [Vector2i.RIGHT,Vector2i.DOWN,Vector2i.LEFT,Vector2i.UP]:
+		var candidate:=cell+direction
+		if candidate!=_diner_door() and session.town_map.is_road(candidate.x,candidate.y):
+			return _origin()+(Vector2(candidate)+Vector2(.5,.5))*CELL
+	return _origin()+(Vector2(cell)+Vector2(.8,.5))*CELL
+
+func escort_position() -> Vector2:
+	return _origin()+(Vector2(_escort).lerp(Vector2(_escort_next),clampf(_escort_wait/.45,0,1))+Vector2(.5,.5))*CELL
+
 func _tick_escort(delta: float) -> void:
-	if story == null or story.beat != "follow" or session == null:
-		return
-	if _escort.x < 0:
-		_escort = _road_near_door(3)
-	_escort_wait += delta
-	if _escort_wait < 0.45:
-		return
-	_escort_wait = 0.0
-	var goal := _chen_cell()
-	if goal.x < 0:
-		return
-	var step := _step_road(_escort, goal)
-	if step != _escort:
-		_escort = step
-		queue_redraw()
+	if story==null or story.beat not in ["follow","return"] or session==null or external_story_frozen or get_tree().paused: return
+	if _escort_leg!=story.beat:
+		_escort_leg=story.beat
+		_escort=(TDHarbor.GUIDE_STOP if session.town_map.layout_version==2 else _road_near_door(3)) if story.beat=="follow" else _aling_market_cell()
+		_escort_next=_escort;_escort_wait=0;_escort_waiting=false
+	var goal:=_aling_market_cell() if story.beat=="follow" else _road_near_door(3)
+	if goal.x<0: return
+	var remaining:=maxf(0,delta)
+	while remaining>0:
+		var distance:=escort_position().distance_to(_player.position)
+		if distance>CELL*6: _escort_waiting=true
+		elif distance<CELL*4: _escort_waiting=false
+		if _escort_waiting:
+			var offset:=_player.position-escort_position()
+			_escort_facing=Vector2i(signf(offset.x),0) if absf(offset.x)>absf(offset.y) else Vector2i(0,signf(offset.y))
+			break
+		if _escort==goal and _escort_next==_escort:
+			if distance<CELL*3: story.arrive_escort()
+			break
+		if _escort_next==_escort: _escort_next=_step_road(_escort,goal)
+		if _escort_next==_escort: break
+		_escort_facing=_escort_next-_escort
+		var step:=minf(remaining,.05);remaining-=step;_escort_wait+=step
+		if _escort_wait>=.45:
+			_escort_wait-=.45;_escort=_escort_next;_escort_next=_step_road(_escort,goal)
+	queue_redraw()
 
 func _step_road(start: Vector2i, goal: Vector2i) -> Vector2i:
-	if start.distance_to(goal) <= 1.01:
+	if start==goal:
 		return start
 	var door := _diner_door()
+	var occupied:=_chen_cell()
 	var parent := {}
 	var queue: Array[Vector2i] = [start]
 	var seen := {start: true}
@@ -1457,12 +1530,12 @@ func _step_road(start: Vector2i, goal: Vector2i) -> Vector2i:
 		head += 1
 		for step: Vector2i in [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
 			var nxt := here + step
-			if seen.has(nxt) or nxt == door:
+			if seen.has(nxt) or nxt == door or nxt==occupied:
 				continue
 			if nxt != goal and not session.town_map.is_road(nxt.x, nxt.y):
 				continue
 			parent[nxt] = here
-			if nxt == goal or nxt.distance_to(goal) <= 1.01:
+			if nxt == goal:
 				var first := nxt
 				while parent.has(first) and parent[first] != start:
 					first = parent[first]
@@ -1486,8 +1559,8 @@ func _open_roads(cells: Array[Vector2i], blocked: Dictionary) -> Array[Vector2i]
 	return open
 
 func _any_road(blocked: Dictionary) -> Vector2i:
-	for y: int in TDTownMap.SIZE:
-		for x: int in TDTownMap.SIZE:
+	for y: int in session.town_map.extent:
+		for x: int in session.town_map.extent:
 			var cell := Vector2i(x, y)
 			if session.town_map.is_road(x, y) and not blocked.has(cell):
 				return cell
@@ -1510,48 +1583,8 @@ func _rim_roads(plot: Dictionary) -> Array[Vector2i]:
 
 func _dismiss_talk() -> void:
 	if _talk_view != null and is_instance_valid(_talk_view):
+		if characters!=null and _talk_view.talk!=null and _talk_view.talk.context.get("kind")=="resident": characters.hold(str(_talk_view.talk.context.character_id),false)
 		_talk_view.dismiss()
-
-func finish_call() -> void:
-	if _caller == null or _caller.phase != "dining":
-		return
-	_caller.ate = true
-	_caller.meal_done = false
-	_caller.phase = "home"
-
-func _boot_caller() -> void:
-	_caller = TDTownCaller.new()
-	var door := _diner_door()
-	var start := door if door.x >= 0 else Vector2i(1, 1)
-	for y in TDTownMap.SIZE:
-		var found := false
-		for x in TDTownMap.SIZE:
-			if not session.town_map.is_road(x, y):
-				continue
-			if door.x >= 0 and absi(x - door.x) + absi(y - door.y) <= 6:
-				continue
-			start = Vector2i(x, y)
-			found = true
-			break
-		if found:
-			break
-	_caller.boot(start, start)
-
-func _tick_caller(delta: float) -> void:
-	if _caller == null or session == null:
-		return
-	_caller_wait += delta
-	if _caller_wait < 0.45:
-		queue_redraw()
-		return
-	_caller_wait = 0.0
-	var previous := _caller.phase
-	_caller.tick(func(x: int, y: int) -> bool: return session.town_map.is_road(x, y), _diner_door(), shop_open)
-	if _caller.phase != previous and _caller.phase == "dining":
-		_set_status("林夏进了食堂。回店里能看见她点的那一单。")
-	elif _caller.phase != previous and previous == "dining":
-		_set_status(_caller.line())
-	queue_redraw()
 
 func _diner_door() -> Vector2i:
 	var plot := session._plot_by_id("player_diner")
@@ -1575,27 +1608,28 @@ func _diner_door() -> Vector2i:
 				best = Vector2i(x, y)
 	return best
 
-func _caller_faced() -> bool:
-	if _caller == null or _caller.phase == "dining" or _player == null:
-		return false
-	if Vector2(_player_cell()).distance_to(Vector2(_caller.cell)) > 1.45:
-		return false
-	var at := _origin() + (Vector2(_caller.cell) + Vector2(0.5, 0.5)) * CELL
-	return _player.faces_target(at)
-
-func _draw_caller() -> void:
-	if _caller == null or _caller.phase == "dining":
-		return
-	var at := _origin() + (Vector2(_caller.cell) + Vector2(0.5, 0.55)) * CELL
-	draw_rect(Rect2(at + Vector2(-10, -30), Vector2(20, 28)), Color("#e08a3c"))
-	draw_rect(Rect2(at + Vector2(-8, -40), Vector2(16, 12)), Color("#f3d7b0"))
-	draw_string(ThemeDB.fallback_font, at + Vector2(-18, -46), TDTownCaller.NAME, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("#fff6df"))
-
 func facing_plot() -> Dictionary:
-	var cell:=_player_cell()+_player.facing
-	var target:=session.town_map.plot_at(cell.x,cell.y)
-	if target.get("economic_courtyard",false) or target.get("kind","")=="housing": return {}
-	return target
+	# Historical name retained; use the full object perimeter, not a doorway point.
+	if _player==null or session==null: return {}
+	var best: Dictionary={};var shortest: float=BUILDING_REACH
+	var facilities: Array=session.town_map.plots.duplicate()
+	var harbor:=TDHarbor.facility(session.town_map)
+	if not harbor.is_empty(): facilities.append(harbor)
+	for p: Dictionary in facilities:
+		if not TDInteractionRange.facility(p): continue
+		var bounds:=TDInteractionRange.plot_bounds(p,CELL,_origin())
+		var at:=TDInteractionRange.closest(_player.position,bounds)
+		var distance: float=_player.position.distance_to(at)
+		if distance>shortest: continue
+		if is_equal_approx(distance,shortest) and not best.is_empty() and str(p.id)>str(best.id): continue
+		var clear: bool=true
+		for step: int in range(1,5):
+			var point:=_player.position.lerp(at,step/5.0)
+			var cell:=Vector2i((point-_origin())/CELL)
+			if not session.town_map.is_walkable(cell.x,cell.y) and not bounds.has_point(point): clear=false;break
+		if clear:
+			best=p.duplicate(true);best.interaction_point=at;shortest=distance
+	return best
 
 func spawn_at_plot(identity:String) -> void:
 	if session == null or _player == null:
@@ -1606,8 +1640,8 @@ func spawn_at_plot(identity:String) -> void:
 	var goal := Vector2i(int(home.x) + int(home.w) / 2, int(home.y) + int(home.h))
 	var best := Vector2i(TDTownMap.CENTER, TDTownMap.CENTER)
 	var distance: float = INF
-	for y: int in TDTownMap.SIZE:
-		for x: int in TDTownMap.SIZE:
+	for y: int in session.town_map.extent:
+		for x: int in session.town_map.extent:
 			if not session.town_map.is_road(x, y):
 				continue
 			var at := Vector2i(x, y)
@@ -1621,6 +1655,11 @@ func spawn_at_plot(identity:String) -> void:
 	_player.face(_origin()+Vector2(home.x+home.w*.5,home.y+home.h*.5)*CELL-_player.position)
 	_player.velocity = Vector2.ZERO
 	_follow_camera()
+
+func spawn_at_harbor() -> void:
+	if _player==null or session.town_map.layout_version!=2: return
+	_player.position=_origin()+(Vector2(TDHarbor.ARRIVAL)+Vector2(.5,.5))*CELL
+	_player.velocity=Vector2.ZERO;_player.face(Vector2.LEFT);_follow_camera()
 
 class FactoryMill extends Control:
 	var phase: float = 0.0
@@ -1770,3 +1809,34 @@ class FactoryDrag extends PanelContainer:
 
 class FactoryIcon extends TDIngredientIcon:
 	pass
+
+func sync_characters(seconds: float, orders: Array = [], minute_from: float = -1.0) -> void:
+	if characters==null or session==null: return
+	if characters.runtime.is_empty(): characters.sync_map(session.town_map)
+	characters.pinned.clear()
+	for person: Dictionary in _story_positions(): characters.pinned[str(person.id)]=person.cell
+	characters.advance(seconds,orders,minute_from)
+	queue_redraw()
+
+func _story_people() -> Array:
+	var people: Array=characters.visible_people() if characters!=null else _story_positions()
+	if story!=null and story.beat in ["follow","return"] and _escort.x>=0 and _escort_next.x>=0:
+		for person: Dictionary in people:
+			if person.id=="aling": person.position=Vector2(_escort).lerp(Vector2(_escort_next),clampf(_escort_wait/.45,0,1));person.facing=_escort_facing
+	return people
+
+func _refresh_npc_gaits() -> void:
+	if not is_visible_in_tree(): _npc_gaits.clear();return
+	var live: Dictionary={}
+	for person: Dictionary in _story_people():
+		var id: String=str(person.id);live[id]=true
+		var point: Vector2=Vector2(person.get("position",Vector2(person.cell)))*CELL
+		if not _npc_gaits.has(id):
+			var gait:=TDNpcGait.new();gait.reset(point,person.get("facing",Vector2i.DOWN));_npc_gaits[id]=gait
+		var frozen: bool=get_tree().paused or story_dialogue_open()
+		_npc_gaits[id].sample(point,frozen)
+	for id: String in _npc_gaits.keys():
+		if not live.has(id): _npc_gaits.erase(id)
+
+func story_dialogue_open() -> bool:
+	return external_story_frozen or (_talk_open() and _talk_view.talk!=null and _talk_view.talk.presentation=="story")

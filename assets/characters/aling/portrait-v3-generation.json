@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "date": "2026-10-29",
+  "revision": "portrait-v3",
+  "generator": "built-in image_gen",
+  "status": "DELIVERED_LOCAL_ART_ACCEPTANCE_PENDING",
+  "request": "下巴太尖，与主角立绘风格不一致；以柔和圆润的下颌和下巴保持可爱统一风格。",
+  "edit_target": "assets/characters/aling/aling-dialogue-halfbody-v2.png",
+  "style_reference": "assets/characters/protagonist/protagonist-dialogue-halfbody-pose-pixel-v7.png",
+  "output": {
+    "file": "aling-dialogue-halfbody-v3.png",
+    "sha256": "e912a1de4b79d342a92bcbe2a1601cec050d5f22dd8257d7fba4ad8158e75dfa",
+    "size": [
+      1254,
+      1254
+    ],
+    "pixel_format": "Format32bppArgb",
+    "corner_alpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "visible_bounds_xywh": [
+      112,
+      23,
+      1085,
+      1231
+    ]
+  },
+  "runs": [
+    {
+      "generation_id": "exec-b4e89a1c-73ef-44ec-b577-4ff5101384e0",
+      "selected": false,
+      "reason": "首轮下颌转折调整不够明显，继续局部修正",
+      "transparent_background": true,
+      "prompt": "Use case: precise-object-edit\nEdit image 1 ONLY: this is A Ling's current v2 transparent fine-pixel half-body portrait.\nImage 2 is the game's approved protagonist v7 portrait, used ONLY as a reference for the soft cute cheek/jaw/chin shape and face rendering. Do not copy the protagonist's identity, eyes, outfit, colors, pose or accessories.\nUser correction: A Ling's chin looks too pointed/sharp and does not belong to the same portrait style as the protagonist. The previous request for a slightly slim face must NOT be interpreted as a V-line chin. Make a small, visible correction to the LOWER FACE ONLY.\nReplace the abrupt straight narrowing jaw strokes and angular chin corners in image1 with a soft gently curving oval/U-shaped lower face contour like image2. Slightly shorten the projecting bottom of the chin and broaden ONLY the last small chin section, rounding its corners; join cheeks to chin with smooth-feeling stepped pixel arcs, not a triangular point. The resulting chin should feel short, small and softly rounded, and the cheeks transition naturally into it. Preserve the overall modestly slender face and cute youthful proportions; do not inflate the cheeks into a round baby face, do not widen the entire head. Match image2's soft simple face shading, without sharp jaw shadow.\nPreserve the existing violet eyes and their size/location, expression, tiny nose, smile, blush, bangs, head angle, neck, hair, and body. Only minimal adjacent skin/shading adjustments as necessary to make the new jawline look natural. Keep existing fine pixel scale, palette ramps, stair-step outlines; not smooth vector or airbrush.\nInvariants: same square framing, same waist-up crop and gently crossed arms, same slimmer shoulders/waist from v2, same deep-blue hair/high ponytail/single long braid, gold crescent ornaments and gold feather, purple/gold mantle, white blouse, skirt. The crow on screen-left is STILL holding the gold key in its BEAK away from the girl's ear. No key earring. Hip ledger remains the same THIN brown book with gold 密令 cover and exposed CREAM PAPER PAGE EDGES at right and bottom, not a closed-bottom box. Keep full notebook and braid, crow's pose, all accessories, background alpha and composition intact. Do not redraw or simplify these objects. No new accessories, text or scenery. Preserve true transparent RGBA.\nGoal: A Ling's face should look like it was drawn by the same pixel portrait artist as image2, through a subtle rounded-chin correction, while remaining recognizable as A Ling from image1."
+    },
+    {
+      "generation_id": "exec-579459e6-efb1-4f7e-bd72-714984fb5fce",
+      "selected": true,
+      "transparent_background": true,
+      "prompt": "Use case: precise-object-edit\nImage1 is the edit target, A Ling's half-body pixel portrait. Image2 is the approved chef protagonist portrait, reference for a softer cute lower face ONLY.\nThe last edit did NOT round A Ling's jaw enough. Make the requested face-shape correction VISIBLY READABLE, not a virtually identical image.\nEdit only the lower cheek/jaw/chin silhouette and the immediately adjacent skin/neck area. On image1 the bottom face is a hard polygon: a long straight diagonal on the viewer-right jaw runs down to an angular corner, then a short straight bottom. REPLACE this entire geometric jaw shape with a soft ROUND OVAL U-curve. No long 45-degree bevel, no angular corners, no V or pointed tip. Use short successive stepped pixel arcs forming a gently convex cheek, flowing continuously into a WIDER ROUNDED chin. Bring the lowest chin contour slightly UP (shorter lower face) and round out the lower-cheek contour subtly. This will make the chin visibly short and soft like image2 rather than tapered and sharp. Use a broad shallow rounded arc, not a squared-off flat bottom. Preserve a modestly slim overall face; the fullness is only enough to remove the pointed jaw.\nKeep her original violet eye shape, eyebrows, mouth expression and hair position. Keep her neck and jaw anatomically connected after the correction. The same cute fine-pixel technique, clearly stepped pixels, no smoothing filter. Do not change full-head size or turn her into a baby. Do not copy chef colors or identity.\nAbsolutely preserve original three-quarter head turn, folded arms, slight body slimness, square composition, braid, ponytail, crescent/feather ornaments, clothing colors, shoulder crow and the gold key firmly held in crow's beak (no earring), and thin waist ledger with exposed cream paper on its right AND bottom edges. Do not redraw or reinterpret these objects. Maintain the pixel art, no vector gloss, no thickening the book, no extra objects. Transparent RGBA.\nThe main visual outcome is a NOTICEABLY SOFTER, GENTLY ROUNDED LOWER FACE in the same art family as the protagonist, with all other content kept."
+    }
+  ],
+  "verification": {
+    "file_copy_hash": "PASS",
+    "rgba_dimensions": "PASS",
+    "visual_review": "下颌与下巴圆润化；既有关键配饰保留",
+    "human_art_acceptance": "PENDING",
+    "runtime_integration": "NOT_DONE",
+    "engine_tests": "NOT_RUN_ASSET_ONLY"
+  },
+  "notes": [
+    "本次仅请求半身像脸型调整，四向小人v2保持原字节。",
+    "原稿、主角v7与阿铃历史v1/v2图保持原字节。",
+    "使用生成式编辑，未宣称脸部以外逐像素不变。"
+  ]
+}

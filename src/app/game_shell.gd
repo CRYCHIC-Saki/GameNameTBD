@@ -7,6 +7,7 @@ var profile_root: String="user://profiles"
 var preferences_path: String="user://player-settings.json"
 var legacy_shop_path: String="user://shop-v1.json"
 var legacy_research_path: String="user://research-v1.json"
+var guide: TDStoryGuide
 var profile: TDGameProfile
 var slots: TDProfileStore
 var preferences: TDPlayerPreferences
@@ -40,6 +41,8 @@ var _toast: String=""
 var _toast_until: int=0
 var _title_notice: Label
 var _entry_busy: bool=false
+var _night_closing: bool=false
+var _story_frozen: bool=false
 
 func _ready() -> void:
 	process_mode=Node.PROCESS_MODE_ALWAYS
@@ -85,32 +88,39 @@ func _build_title() -> void:
 
 func _process(_delta: float) -> void:
 	if _quitting: return
+	var story_frozen:=profile!=null and town!=null and town.story_dialogue_open()
+	if story_frozen!=_story_frozen:
+		_story_frozen=story_frozen
+		if kitchen_view!=null: kitchen_view.set_paused(_story_frozen or get_tree().paused)
+		if restaurant!=null: restaurant.story_frozen=_story_frozen
 	if music!=null:
 		var cooking:bool=kitchen_view!=null and kitchen_view.kitchen.music_audible()
 		if atlas!=null and atlas.trial!=null and atlas.trial.lesson!=null: cooking=atlas.trial.lesson.kitchen.music_audible()
-		music.select_context("silent" if cooking else ("service" if profile!=null and not profile.at_boundary() else "casual"),get_tree().paused)
+		var opening_film: bool=guide!=null and guide.presenting() and guide.dialogue.talk.context.get("scene")=="intro"
+		music.select_context("silent" if cooking else ("service" if profile!=null and not profile.at_boundary() else "casual"),get_tree().paused or (_story_frozen and not opening_film) or (opening_film and guide.dialogue.presentation_paused))
 	if profile==null: return
 	if restaurant!=null and restaurant.layout!=null and profile.commerce!=null and profile.world!=null and profile.world.catalog!=null:
 		profile.commerce.interior_effect=float(TDEconomyMath.decor_of(restaurant.layout.pieces(),profile.world.catalog.wildcards).effect)
-	# Factory work follows the same paused active-game clock in every room.
-	if automatic_time and atlas==null and not get_tree().paused: profile.world.tick_factories(_delta)
+	# Kitchen emits the single monotonic active-game time, even when its room is hidden.
+	var minute: float=profile.characters.clock.minute
+	if town!=null: town.set_day_minute(minute)
+	if cottage!=null: cottage.set_day_minute(minute)
+	if restaurant!=null and restaurant._iso!=null: restaurant._iso.set_day_minute(minute)
+	if kitchen_view!=null and kitchen_view.kitchen!=null: kitchen_view.kitchen.world.set_day_minute(minute)
 	var state:=profile.shop.snapshot()
 	_hud.text="%s  ·  第 %d 天    ¥ %.2f    %s"%[profile.title,state.day,float(state.money_cents)/100.0,{"PREPARE":"筹备中","OPEN":"营业中","DRAINING":"等待最后的客人","SETTLED":"今日已打烊"}.get(state.phase,state.phase)]
 	_hud.text+="    Lv.%d"%int(profile.progression.progress().level)
+	_hud.text+="    "+profile.characters.clock.label()
+	if kitchen_view!=null: kitchen_view.day_clock_label.text=profile.characters.clock.label()+" · 全天时间"
 	if Time.get_ticks_msec()<_toast_until: _hud.text+= "  ·  "+_toast
-	_hud_layer.visible=location!="kitchen" and atlas==null
+	_hud_layer.visible=location!="kitchen" and atlas==null and not (guide!=null and guide.presenting())
 	if town!=null:
 		town.shop_open=state.phase in ["OPEN","DRAINING"]
 		town.chapter_ready=state.phase=="SETTLED" or int(state.day)>=2
 		_fill_story_board(state)
 	_story_purse()
 	_story_supplies()
-	if restaurant!=null and town!=null:
-		restaurant.caller_name=TDTownCaller.NAME
-		if restaurant.caller_left:
-			restaurant.caller_left=false
-			town.finish_call()
-		restaurant.caller_inside=town.caller_phase()=="dining"
+	profile.characters.observe_orders(state.orders)
 	if state.phase!=_last_phase:
 		_last_phase=state.phase
 		profile.world.day=int(state.day)
@@ -120,7 +130,7 @@ func _process(_delta: float) -> void:
 			elif state.phase=="SETTLED": profile.story.note_served()
 		if state.phase=="SETTLED":
 			var result:=save_game()
-			if not result.ok: _message("自动保存失败："+result.code)
+			if not result.ok: _message(result.message if result.code=="KITCHEN_BUSY" else "自动保存失败："+result.code)
 			elif not profile.progression.snapshot().recent.is_empty():
 				var growth: Dictionary=profile.progression.snapshot().recent.back()
 				if int(growth.day)==int(state.day) and not growth.rewards.is_empty():
@@ -137,8 +147,16 @@ func _input(event: InputEvent) -> void:
 	# Esc closes a modal even while its text field owns keyboard focus.
 	if event.is_action_pressed("pause") and not event.is_echo() and _modal!=null:
 		_close_dialog();get_viewport().set_input_as_handled();return
+	if guide!=null and guide.presenting():
+		if event.is_action_pressed("pause") and not event.is_echo(): guide.dialogue.toggle_presentation_pause()
+		if event.is_action_pressed("pause") or event.is_action_pressed("recipe_book") or event.is_action_pressed("quest_journal"): get_viewport().set_input_as_handled()
+		return
 	var focus:=get_viewport().gui_get_focus_owner()
 	if focus is LineEdit or focus is TextEdit: return
+	if guide!=null and event.is_action_pressed("quest_journal") and not event.is_echo():
+		guide.show_journal();get_viewport().set_input_as_handled();return
+	if guide!=null and event.is_action_pressed("quest_track") and not event.is_echo() and _modal==null and atlas==null:
+		profile.story.tracked=not profile.story.tracked;get_viewport().set_input_as_handled();return
 	if event.is_action_pressed("recipe_book") and not event.is_echo() and profile!=null and _modal==null:
 		if atlas!=null: close_atlas()
 		elif _modal==null: open_atlas()
@@ -184,6 +202,7 @@ func _close_dialog() -> void:
 	_lock_controls(true)
 
 func _lock_controls(value: bool) -> void:
+	value=value and not (guide!=null and guide.presenting())
 	if cottage!=null:
 		cottage.player.set_controls_enabled(value and location=="cottage")
 		cottage.set_process_unhandled_input(value and location=="cottage")
@@ -265,7 +284,13 @@ func load_game(id: String) -> TDOutcome:
 	var result:=next.restore(saved.data)
 	if not result.ok: next.close();return _outcome(result)
 	next.persistence=slots.save_slot
+	if next.map_migrated_on_load:
+		var backup:=slots.backup_map_migration(id)
+		if not backup.ok: next.close();return _outcome(backup)
+		var migrated_save:=next.save()
+		if not migrated_save.ok: next.close();return _outcome(migrated_save)
 	_activate(next)
+	if next.map_migrated_on_load: _message(result.message+"原档已留迁移前备份。")
 	return result
 
 func continue_game() -> void:
@@ -280,29 +305,41 @@ func _recover_slot(id: String, temporary: bool) -> void:
 
 func _activate(next: TDGameProfile,first_entry:bool=false) -> void:
 	_close_dialog();_dispose_game();profile=next;_generation+=1
+	_story_supply_checked=false
+	_story_frozen=false;_night_closing=false
 	_title_screen.hide();_last_phase=str(profile.shop.snapshot().phase)
 	town=TDTownWorld.new();town.player_mode=true;town.session=profile.world
 	town.transaction_sink=profile.world_transaction;town.external_factory_clock=true
 	town.balance_reader=func()->int:return int(profile.shop.snapshot().money_cents)
 	town.commercial_refresh=profile.sync_commercial_map
 	town.hero_name=profile.title;town.story=profile.story;town.story_effect.connect(_apply_story)
+	town.characters=profile.characters
 	town.restaurant_requested.connect(func()->void:travel("restaurant"));town.place_requested.connect(_place);town.pause_requested.connect(show_pause);add_child(town)
 	restaurant=TDRestaurantWorld.new();restaurant.player_mode=true;restaurant.floor_service=true;restaurant.session=profile.world;restaurant.layout=profile.layout;restaurant.business=profile.shop
+	restaurant.characters=profile.characters
 	restaurant.object_requested.connect(_object);restaurant.pause_requested.connect(show_pause);add_child(restaurant)
+	restaurant.restore_visit_boundary()
 	cottage=TDCottageWorld.new();cottage.object_requested.connect(_object);add_child(cottage)
 	kitchen_view=TDShopView.new();kitchen_view.embedded=true;kitchen_view.shop=profile.shop;kitchen_view.day_san=profile.world.san;kitchen_view.boundary_save=save_game
 	kitchen_view.save_path=profile_root.path_join(profile.slot_id+"-runtime")
 	kitchen_view.back_requested.connect(func()->void:travel("restaurant"));kitchen_view.pause_requested.connect(show_pause);add_child(kitchen_view)
 	kitchen_view.kitchen.auto_advance=automatic_time
+	kitchen_view.active_time_advanced.connect(_on_active_time)
+	kitchen_view.external_time_boundary=_world_time_boundary
+	profile.kitchen_checkpoint=kitchen_view.checkpoint_ready
+	town.sync_characters(0.0,profile.shop.snapshot().orders)
+	guide=TDStoryGuide.new();guide.shell=self;add_child(guide)
 	travel("town" if first_entry else "cottage",not first_entry)
+	if first_entry:
+		town.spawn_at_harbor();guide.begin_arrival()
 
 func travel(destination: String,at_bed:bool=false) -> TDOutcome:
+	if profile!=null and profile.characters.clock.closed_day==profile.characters.clock.day and destination!="cottage": return _outcome(TDOutcome.new(false,"NIGHT_CLOSED","今天已结束，请先在床上休息。"))
 	if profile==null or destination not in ["town","restaurant","kitchen","cottage"]: return TDOutcome.new(false,"INVALID_DESTINATION")
 	if destination in ["town","cottage"] and not profile.can_leave_shop(): return _outcome(TDOutcome.new(false,"SHOP_OPEN","营业中不能离店，请先处理订单并打烊。"))
 	if _modal!=null: _close_dialog()
 	var previous_location:=location
 	if destination=="kitchen": _coach_story_kitchen()
-	if previous_location=="kitchen": _note_story_plate()
 	location=destination
 	town.set_presented(destination=="town")
 	cottage.set_presented(destination=="cottage",at_bed)
@@ -319,18 +356,8 @@ func travel(destination: String,at_bed:bool=false) -> TDOutcome:
 	return TDOutcome.new(true,"ARRIVED")
 
 func _note_story_plate() -> void:
-	if profile==null or profile.story==null or not profile.story.waiting_cook() or kitchen_view==null:
-		return
-	for lane: TDCookingLane in kitchen_view.kitchen.lanes:
-		var dish: Dictionary=lane.snapshot()
-		var recipe:=str(dish.get("recipe_id",""))
-		if not recipe.ends_with("tomato_egg"):
-			continue
-		if str(dish.get("state","")) not in ["plated","delivered","completed"]:
-			continue
-		var attrs: Variant=dish.get("dish_attributes",{})
-		if attrs is Dictionary:
-			profile.story.note_plate(float((attrs as Dictionary).get("completion",0.0)))
+	# Compatibility entry: leaving a room does not submit a plate.
+	pass
 
 func _apply_story(effect: Dictionary) -> void:
 	if profile==null or profile.story==null:
@@ -362,28 +389,49 @@ func _fill_story_board(state: Dictionary) -> void:
 		"served": profile.story.served,
 	}
 
+var _story_supply_checked: bool=false
+
 func _story_supplies() -> void:
-	if profile==null or profile.story==null or profile.story.supplied or not profile.story.owe_pack:
+	if _story_supply_checked: return
+	if profile==null or profile.story==null or not (profile.story.supplied or profile.story.owe_pack):
 		return
 	if not profile.at_boundary():
 		return
-	var inventory: Dictionary=profile.shop.snapshot().inventory
-	var pack: Dictionary={}
-	for id: String in ["tomato","egg","vegetableoil","salt","sugar"]:
-		if inventory.has(id):
-			pack[id]=1
-	if pack.is_empty():
-		profile.story.mark_supplied()
-		return
-	var token:="story-chen-pack:%s"%str(profile.shop.snapshot().get("run_id",""))
+	var state:=profile.shop.snapshot()
+	var token:="story-chen-pack-v2:%s"%str(state.run_id)
+	if state.seen.has(token): profile.story.mark_supplied();_story_supply_checked=true;return
+	var pack:=profile.service.material_needs(profile.service.cooking,"service.tomato_egg")
+	# Give a usable recipe, including the actual oil/starch IDs. Seasoning has
+	# a little tolerance for a beginner holding past the target (AI-054).
+	for id: String in pack:
+		if not profile.service.is_primary(id): pack[id]=ceili(float(pack[id])*1.25)
+	# Repair the original 0.001-portion grant without minting another full reward.
+	for event: Dictionary in state.ledger:
+		if event.reference=="story-chen-pack:%s"%str(state.run_id):
+			for id: String in event.inventory_delta:
+				if pack.has(id): pack[id]=maxi(0,int(pack[id])-int(event.inventory_delta[id]))
+	for id: String in pack.keys():
+		if int(pack[id])==0: pack.erase(id)
 	var sent:=profile.shop.receive_supply(pack,token,0)
 	if sent.ok or sent.code=="DUPLICATE":
 		profile.story.mark_supplied()
+		_story_supply_checked=true
 		if sent.ok:
-			_message("老陈把试做的一份放进了冰箱。这一份不另收费。")
+			var rows: Array[String]=[]
+			for id: String in pack: rows.append("%s × %.3f"%[_ingredient_name(id),float(pack[id])/1000.0])
+			_message("老陈赠料已入库（免费）："+"、".join(rows)+"。不开门也能进厨房试做。")
 	elif sent.code!="NOT_AT_BOUNDARY" and _story_pay_note!=sent.code:
 		_story_pay_note=sent.code
 		_message("试做食材还没入库："+sent.code)
+
+func _consume_story_plate() -> void:
+	if kitchen_view==null or profile.story.paid or not profile.story.owe_pay: return
+	for lane: TDCookingLane in kitchen_view.kitchen.lanes:
+		var dish:=lane.snapshot()
+		if str(dish.recipe_id).ends_with("tomato_egg") and dish.state=="plated":
+			if kitchen_view.kitchen.handling.hand==lane.session: kitchen_view.kitchen.handling.clear_dish()
+			kitchen_view._reset_pot(lane);kitchen_view._sync_usage()
+			return
 
 func _coach_story_kitchen() -> void:
 	if profile==null or profile.story==null or kitchen_view==null:
@@ -431,6 +479,11 @@ func _object(action: String) -> void:
 
 func _place(kind: String, id: String) -> void:
 	if kind=="cottage": travel("cottage")
+	elif kind=="harbor": show_harbor()
+	elif kind in ["urban_village","rich_district"]:
+		var box:=_dialog("居民区 · "+str(profile.world._plot_by_id(id).get("name","青瓦巷")))
+		box.add_child(TDUI.label("青瓦屋檐下，几户街坊围着小院生活。巷道通往集市和食堂。",22))
+		box.add_child(TDUI.label("院门里是街坊的家。沿街走走，也许会遇到熟悉的人。",18,TDUI.MUTED))
 	elif kind in ["commercial_street","bank"]: show_bank()
 	elif kind=="competitor": show_competitor(id)
 	elif kind=="market":
@@ -446,7 +499,7 @@ func _place(kind: String, id: String) -> void:
 		var box:=_dialog("街坊告示")
 		var plot:Dictionary=profile.world._plot_by_id(id)
 		if not plot.is_empty():
-			profile.commerce.attach_map(profile.world.town_map.plots)
+			profile.commerce.attach_map(profile.world.town_map.plots,profile.world.map_version)
 			var site:=profile.commerce.geography.cell(Vector2i(int(plot.x),int(plot.y)))
 			var quote:=profile.commerce.geography.parcel_quote(id)
 			box.add_child(TDUI.label("地块参考总价 ¥%.2f · 日租报价 ¥%.2f\n可见度 %.0f%% · 区位吸引力 %.0f%%\n报价不是当前租约；自有主店免现金房租。"%[float(quote.land_value_cents)/100,float(quote.rent_quote_cents_per_day)/100,100*float(site.visibility),100*float(site.attractiveness)],18))
@@ -463,13 +516,23 @@ func _place(kind: String, id: String) -> void:
 		if pool!=0 or shift!=0:
 			box.add_child(TDUI.label("这个功能区计入客流：人数 %+d，预算 %+d。客人进店时仍会和竞品比较装修、价格和等待。"%[pool,shift],18))
 
+func show_harbor() -> void:
+	var box:=_dialog("河口港 · 候船告示",true)
+	box.add_child(TDUI.label("河风送来桅杆和缆绳的声音。载着食材的船只在这里靠岸。",23))
+	box.add_child(TDUI.label("向东远行的厨师，将在这里与小镇相遇。",21))
+	var status:=TDHarbor.departure_request("paris",str(profile.commerce.state.home),[],{})
+	box.add_child(TDUI.label(status.message+" 目前还不能乘船出发。",20,TDUI.MUTED))
+	box.add_child(TDUI.label("从这里沿石板路向西，经过河畔商街便能回到食堂。",18))
+
 func show_market() -> void:
 	if not profile.can_leave_shop(): _outcome(TDOutcome.new(false,"SHOP_OPEN","营业中不能采购。"));return
 	var box:=_dialog("街口菜摊 · 现货采购")
 	if profile.shop.snapshot().phase=="SETTLED":
 		box.add_child(TDUI.label("今天已经打烊。回店休息后，明早再来挑新鲜食材。",20));return
 	var forecast:=profile.shop.visitor_forecast()
-	box.add_child(TDUI.label("今日预计 %d—%d 位客人 · 买好食材后回店挂牌营业"%[forecast.min_visitors,forecast.max_visitors],20,TDUI.ORANGE))
+	box.add_child(TDUI.label("用餐高峰 08–10 / 11–13 / 17–19 · 少量错峰
+持续营业至主动打烊或02:00；错过的时段不补客。",17,TDUI.MUTED))
+	box.add_child(TDUI.label("从现在开门预计 %d—%d 位客人 · 买好食材后回店挂牌营业"%[forecast.min_visitors,forecast.max_visitors],20,TDUI.ORANGE))
 	for id: String in profile.shop.spoiled_today():
 		box.add_child(TDUI.label("今日过期：%s %.2f%s，已清理。"%[_ingredient_name(id),float(profile.shop.spoiled_today()[id])/1000,profile.shop.stock_info(id).unit],17,TDUI.ORANGE))
 	for id: String in profile.shop.purchase_ids():
@@ -536,7 +599,7 @@ func _ingredient_name(id: String) -> String:
 	return id
 
 func show_menu() -> void:
-	profile.commerce.attach_map(profile.world.town_map.plots)
+	profile.commerce.attach_map(profile.world.town_map.plots,profile.world.map_version)
 	var state:=profile.shop.snapshot()
 	var box:=_dialog("今日菜单 · 营业牌")
 	if state.phase in ["OPEN","DRAINING"]:
@@ -558,10 +621,11 @@ func show_menu() -> void:
 		var stock:=TDUI.label("有料" if profile.shop.menu_available(id) else "缺料 / 售罄",17,TDUI.MUTED)
 		stock.custom_minimum_size.x=125;stock.autowrap_mode=TextServer.AUTOWRAP_OFF;row.add_child(stock)
 	box.add_child(TDUI.label("确认菜单和价格后开门。缺料菜自动停售，营业期间不能离店补货。",17,TDUI.MUTED))
+	box.add_child(TDUI.label("用餐高峰 08–10 / 11–13 / 17–19 · 少量错峰\n持续营业至主动打烊或02:00；错过的时段不补客。",17,TDUI.MUTED))
 	var demand:=TDUI.label("",18,TDUI.ORANGE);box.add_child(demand)
 	var forecast_update:=func()->void:
 		var estimated:=profile.shop.visitor_forecast()
-		demand.text="备足材料时预计 %d—%d 位客人；预算、路程、排队和竞争会影响实际到店。"%[estimated.min_visitors,estimated.max_visitors]
+		demand.text="从现在开门、备足材料预计 %d—%d 位客人；预算、路程、排队和竞争会影响实际到店。"%[estimated.min_visitors,estimated.max_visitors]
 		if estimated.has("excluded_budget_share") and float(estimated.excluded_budget_share)>0:
 			demand.text+="\n目前没有约%.0f%%客群买得起的菜，可试着加入较低价菜品。"%(100*float(estimated.excluded_budget_share))
 	forecast_update.call()
@@ -570,14 +634,56 @@ func show_menu() -> void:
 	box.add_child(TDUI.button("确认菜单，开门营业",start_day))
 
 func start_day() -> TDOutcome:
+	if profile.characters.clock.minute>=TDWorldDayClock.END_MINUTE: return _outcome(TDOutcome.new(false,"NIGHT_CLOSED","今天已经结束，请到床上休息。"))
 	var saved:=save_game()
-	if not saved.ok: return _outcome(saved)
+	if not saved.ok and saved.code!="KITCHEN_BUSY": return _outcome(saved)
 	var result:=profile.shop.open_day()
 	if result.ok:
-		kitchen_view._make_kitchen();kitchen_view.kitchen.auto_advance=automatic_time;kitchen_view.refresh(true)
+		kitchen_view._sync_usage();kitchen_view.refresh(true)
 		profile.world.day_phase="service"
 		_close_dialog();_lock_controls(true)
+		if saved.code=="KITCHEN_BUSY": result.message="开门营业！备好的食材已保留；本次未覆盖安全存档，打烊整理厨房后再保存。"
 	return _outcome(result)
+
+func _world_time_boundary(seconds: float) -> float:
+	if profile==null: return seconds
+	var left: float=TDWorldDayClock.END_MINUTE-profile.characters.clock.minute
+	return minf(seconds,left) if left>0.0000001 else seconds
+
+func _on_active_time(seconds: float) -> void:
+	if not automatic_time or profile==null or atlas!=null or get_tree().paused or (town!=null and town.story_dialogue_open()): return
+	profile.world.tick_factories(seconds)
+	advance_world_time(seconds)
+
+func advance_world_time(seconds: float) -> void:
+	if profile==null or get_tree().paused or atlas!=null or (town!=null and town.story_dialogue_open()): return
+	var before: float=profile.characters.clock.minute
+	var due:=profile.characters.clock.advance(seconds)
+	if town!=null: town.sync_characters(maxf(0.0,profile.characters.clock.minute-before),profile.shop.snapshot().orders,before)
+	if due: finish_night()
+
+func finish_night() -> TDOutcome:
+	if profile==null or _night_closing: return TDOutcome.new(false,"BUSY")
+	var clock:=profile.characters.clock
+	if clock.closed_day==clock.day: return TDOutcome.new(true,"NIGHT_ALREADY_CLOSED")
+	if clock.minute<TDWorldDayClock.END_MINUTE: return TDOutcome.new(false,"NOT_NIGHT")
+	_night_closing=true
+	_close_dialog()
+	if atlas!=null: close_atlas()
+	town._dismiss_talk();restaurant._dismiss_talk()
+	var cleaned:=kitchen_view.finish_night()
+	if not cleaned.ok: _night_closing=false;return _outcome(cleaned)
+	var settled:=profile.shop.close_for_night()
+	if not settled.ok: _night_closing=false;return _outcome(settled)
+	profile.characters.observe_orders(profile.shop.snapshot().orders)
+	restaurant.finish_night()
+	clock.closed_day=clock.day
+	travel("cottage",true)
+	var saved:=save_game()
+	_night_closing=false
+	if not saved.ok: return _outcome(TDOutcome.new(false,saved.code,"02:00已收尾回小屋，但保存失败，请在床边重试保存。"))
+	_message("已到02:00，收摊回小屋。"+cleaned.message+"日结已保存，睡觉进入下一天。")
+	return TDOutcome.new(true,"NIGHT_CLOSED")
 
 func show_ledger() -> void:
 	var box:=_dialog("食堂账本")
@@ -895,9 +1001,9 @@ func request_title() -> void:
 	if profile==null: return
 	if profile.at_boundary():
 		var result:=save_game()
-		if not result.ok: _outcome(result);return
-		go_title();return
-	var box:=_dialog("离开本次营业？",true)
+		if result.ok: go_title();return
+		if result.code!="KITCHEN_BUSY": _outcome(result);return
+	var box:=_dialog("放弃未保存的进度？",true)
 	box.add_child(TDUI.label("未保存的订单、做菜和营业奖励会一同回退到最近边界存档。",20))
 	box.add_child(TDUI.button("确认返回主菜单",go_title))
 
@@ -905,11 +1011,11 @@ func request_quit() -> void:
 	if _quitting: return
 	if profile==null: _finish_quit();return
 	var box:=_dialog("退出游戏",true)
-	box.add_child(TDUI.label("营业中退出将回到最近边界存档。筹备或日结阶段会先保存。",20))
+	box.add_child(TDUI.label("营业中或厨房尚有食物时，退出会放弃未保存进度，回到最近安全存档。筹备/日结且厨房整理完毕时会先保存。",20))
 	box.add_child(TDUI.button("确认退出",func()->void:
 		if profile.at_boundary():
 			var result:=save_game()
-			if not result.ok: _outcome(result);return
+			if not result.ok and result.code!="KITCHEN_BUSY": _outcome(result);return
 		_finish_quit()))
 
 func _finish_quit() -> void:
@@ -926,6 +1032,7 @@ func go_title() -> void:
 
 func _dispose_game() -> void:
 	close_atlas();_pause(false)
+	if guide!=null: guide.close();remove_child(guide);guide.queue_free();guide=null
 	for scene: Node in [town,restaurant,kitchen_view,cottage]:
 		if is_instance_valid(scene): scene.close();remove_child(scene);scene.queue_free()
 	town=null;restaurant=null;kitchen_view=null;cottage=null;_rest_busy=false
@@ -1030,6 +1137,7 @@ func import_legacy() -> TDOutcome:
 		next.research.inherit_legacy(inherited)
 	next.research.save_sink=next._research_candidate
 	if old_shop.ok: next.initialize_legacy_commerce()
+	next.characters.migrate(int(next.shop.snapshot().day),next.shop.snapshot().phase=="SETTLED")
 	next.initialize_progression(true)
 	var home_result:=next.initialize_residence()
 	if not home_result.ok: next.close();return _outcome(home_result)

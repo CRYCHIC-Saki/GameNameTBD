@@ -291,6 +291,9 @@ func toggle_pause() -> void:
 func _notification(what: int) -> void:
 	if game_shell!=null and is_inside_tree() and _menu.visible:
 		if what==NOTIFICATION_WM_CLOSE_REQUEST: game_shell.request_quit();return
+		if what==NOTIFICATION_APPLICATION_FOCUS_OUT and game_shell.guide!=null and game_shell.guide.presenting():
+			if not game_shell.guide.dialogue.presentation_paused: game_shell.guide.dialogue.toggle_presentation_pause()
+			return
 		if what==NOTIFICATION_APPLICATION_FOCUS_OUT and game_shell.atlas!=null:
 			game_shell.atlas.set_paused(true);get_tree().paused=true;return
 		if what==NOTIFICATION_APPLICATION_FOCUS_OUT and game_shell.profile!=null and not get_tree().paused and game_shell.atlas==null:

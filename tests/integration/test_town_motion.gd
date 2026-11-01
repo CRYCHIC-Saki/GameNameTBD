@@ -6,7 +6,7 @@ func before_each() -> void:
 	app=load("res://src/app/main.tscn").instantiate()
 	app.settings_path="res://artifacts/movement-tests/%d/settings.json"%Time.get_ticks_usec()
 	add_child_autofree(app);shell=app.game_shell;shell.automatic_time=false
-	assert_true(shell.create_game("slot-01").ok)
+	assert_true(shell.create_game("slot-01").ok);shell.guide.dialogue.finish_now()
 	shell.travel("restaurant")
 	await wait_physics_frames(2)
 
@@ -79,9 +79,10 @@ func test_real_input_and_repeated_room_switches_keep_passages_clear() -> void:
 		shell.travel("restaurant");room.teleport_player(Vector2i(6,8));await wait_physics_frames(2)
 		var before:=room.player_position()
 		Input.action_press("world_right");await wait_physics_frames(12);Input.action_release("world_right")
-		assert_gt(room.player_position().x,before.x+30.0,"WASD moves in a clear passage")
 		var old_screen:=TDRestaurantIsoView.project(before.x/64.0,before.y/64.0)
 		var new_screen:=TDRestaurantIsoView.project(room.player_position().x/64.0,room.player_position().y/64.0)
+		# The room grid can change display scale; walking speed is a screen-space contract.
+		assert_gt(new_screen.x,old_screen.x+30.0,"WASD moves in a clear passage on screen")
 		assert_almost_eq(new_screen.y,old_screen.y,.1,"D moves horizontally on screen")
 		get_tree().paused=true;before=room.player_position()
 		Input.action_press("world_down");await wait_physics_frames(3);Input.action_release("world_down")

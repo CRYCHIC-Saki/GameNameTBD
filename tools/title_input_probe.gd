@@ -74,7 +74,9 @@ func run() -> void:
 	await click("从这里开始",shell._modal_box)
 	check(shell.profile!=null,"empty slot created a playable profile")
 	if failed: await capture("failure");await finish();return
-	check(shell.location=="town" and shell.profile.slot_id=="slot-01","new slot spawns outside restaurant")
+	check(shell.location=="town" and shell.profile.slot_id=="slot-01","new slot starts in harbor film")
+	check(shell.guide.presenting() and not shell.town.visible and shell.town._player_cell()==TDHarbor.ARRIVAL,"film precedes playable harbor map")
+	shell.guide.dialogue.finish_now()
 	check(not paused,"creation resumes game")
 	await capture("new-game")
 	var first:=FileAccess.get_file_as_bytes(shell.slots.path_for("slot-01"))
@@ -85,6 +87,7 @@ func run() -> void:
 	check(shell.profile!=null,"second empty slot creates another profile")
 	if failed: await finish();return
 	check(shell.profile.slot_id=="slot-02","slot selection keeps stable identity")
+	shell.guide.dialogue.finish_now()
 	check(FileAccess.get_file_as_bytes(shell.slots.path_for("slot-01"))==first,"first slot remains untouched")
 	check(shell.profile.buy({"egg":1000}).ok,"second profile can buy inventory")
 	check(shell.save_game().ok,"second profile saves")
@@ -131,7 +134,12 @@ func check_room_movement() -> void:
 	room.teleport_player(Vector2i(6,8));await physics_frames(2)
 	var before:=room.player_position()
 	Input.action_press("world_right");await physics_frames(12);Input.action_release("world_right")
-	check(room.player_position().x>before.x+30,"real movement input crosses the clear aisle")
+	# Match the player's screen-speed contract even when the interior grid is enlarged.
+	var old_screen:=TDRestaurantIsoView.project(before.x/layout.cell_px,before.y/layout.cell_px)
+	var after:=room.player_position()
+	var travel:=TDRestaurantIsoView.project(after.x/layout.cell_px,after.y/layout.cell_px)-old_screen
+	print("EXPORTED_ROOM_TRAVEL screen=",travel)
+	check(travel.x>30.0 and absf(travel.y)<.1,"real movement input crosses the clear aisle horizontally on screen")
 	await capture("restaurant-clear-aisle")
 	shell.travel("kitchen");await physics_frames(2)
 	var kitchen:=shell.kitchen_view.kitchen.world

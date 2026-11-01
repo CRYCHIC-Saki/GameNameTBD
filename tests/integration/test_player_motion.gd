@@ -118,7 +118,7 @@ func test_sprint_is_shared_by_all_rooms_and_cannot_bypass_modal_pause_or_hidden_
 	add_child_autofree(app)
 	var shell := app.game_shell
 	shell.automatic_time = false
-	assert_true(shell.create_game("slot-01").ok)
+	assert_true(shell.create_game("slot-01").ok);shell.guide.dialogue.finish_now()
 	for destination: String in ["town","cottage","kitchen","restaurant"]:
 		assert_true(shell.travel(destination).ok)
 		var body: TDKitchenPlayer

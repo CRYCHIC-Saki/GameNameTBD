@@ -1,5 +1,77 @@
 # 公共契约：v3完整烹饪，兼容v1/v2历史入口
 
+## D054 接口修订（工程验收通过，人工待试玩）
+TDArrivalCutscene为本地场景，sample_segment(id,seconds)仅取样AnimationPlayer可编辑轨道，读取不发世界效果；暂停/跳过/重播由原TDDialogue拥有播放进度。TDDialogueView在intro对白期间保留上一段末画面，不提前露阿铃；切段不重播跨过的音效。TDStoryGuide装配新档开篇，整场结束一次恢复港口控制，旧档不自动重播。TDHarbor稳定ID/ANCHOR不变，位置变海岸；无新的旅行许可或经济授权。CharacterRoster.safe_stop_near扩展reserved可选参数，停点避让只影响显示层，无新的经济身份。
+
+
+## D053-R2 连续演出（优先于旧CG点击规则）
+
+TDDialogue保留对话序列权威，但cg是自动时间段；tick仅消费有限非负秒，跨CG可携带剩余时间，到普通行/选择/UI即停，不把余时或长按穿透。末尾CG自动完成；skip_cg只推进当前片段，skip仍是显式整段剧情跳过且保持旧选择门槛。cg_paused只冻结呈现时间，世界仍由StoryGuide冻结；取消不发完成效果。View隐藏Gal框，整屏场景动画另有暂停/跳过本段控制，运行文本不显示原始动作说明。TDCutsceneView按外部时间取样，运动/帧/镜头/音效使用同一秒基准，无自己的游戏钟表、库存和存档。
+
+## D053｜剧情增量契约
+
+D053-R1：TDHarbor ID=harbor.hekou，return anchor=harbor.hekou.arrival，接近点(54,45)。facility仅layout2返回虚拟公共设施，候船棚边界(53,43,3,1)在原水域；Town四周距离判定统一纳入，Shell展示告示，禁止把它写成产权地块。`departure_request(destination,home,unlocked_passenger_routes,arrival_anchor_map,shop_open)`只返回schema1请求或INVALID_DESTINATION/SHOP_OPEN/PASSENGER_ROUTE_LOCKED/DESTINATION_NOT_READY；不扣钱、不推进日历、不直接传送、不读取货运routes。未来由剧情提供客运开放状态、场景装配者注册真实arrival anchor并在安全边界处理请求。当前生产不注册目的地，UI明确尚未通航。
+
+Opening拥有按段剧情/教程/任务进度；Dialogue只读消费带emotion/action/cg的行，完成/取消回执经Shell路由。ShopView提供可选剧情出餐消费者，必须在真实持盘/正确菜/可交付状态下调用；剧情评价只读独立Scorer，Shop仍唯一钱物账。奖励复用原幂等令牌。导航只读地图/布局/工位，不改位置或碰撞；CG/教程冻结统一时间源，不使用额外经营时钟。Profile原story子对象追加可选v2字段，不新增独立存档。
+
+- `TDOpening.complete_scene(scene,completed=true)`：仅当前阶段对应场景完成才转移/返回效果；取消、重发、未知场景不产生效果。`arrive_escort()`只推进follow/return，`accept_trial(dish,rating)`只接受cook阶段真实plated番茄炒蛋及非空session_id。重复已交付返回ALREADY_SERVED；错误菜WRONG_TRIAL_DISH；非法结果INVALID_SCORE，不改状态。
+- `story`追加可选script_version(1/2)、hero_name(≤20字)、tracked/recipe_viewed/setup_seen布尔、tutorials和completed_scenes去重字符串数组、served_dish_id、只读assessment副本。TDGameProfile载入时先校验；未知版本/坏类型不静默丢弃。原整体schema6和现有日边界条件保持。旧cook无真实交付ID的推测分不沿用。
+- `TDDialogue.add_line`增加末尾可选mood/pose/display_kind，不改变旧调用；`add_cg`以秒为单位，非帧计时。UI纯显示字幕；剧情effects仅完成回执触发。`story_replay`无scene效果键，不能重扣SAN/重领物资。
+- `TDFullKitchen.tutorial_gate:Callable`为可选无参bool回调，在每次真实工序边界激活后执行。false暂停并返回已消费秒数，外层仅用该秒数推进统一世界；不得直接完成QTE或设置分数。只在首次剧情厨房启用；返回/Esc不记录教程完成，确认才记录。
+- `TDShopView.story_delivery(dish)->TDOutcome`：NOT_STORY_DELIVERY才回落普通订单流程；成功清理原持盘/锅，不另发ordinary delivery，不直接结算营业额。评分复用CustomerScorer；后续剧情付款仍走原story-aling令牌。
+- `TDStoryGuide`随Shell槽创建与销毁；deferred展示回调在关闭后失效。J/T/B走InputMap，文本框输入先拦截，模态/剧情/暂停不允许底层移动。寻路返回当前场景的可达点列，目标隔墙时止于最近可达外缘；汤碗选择老陈身边道路格，护送不添加实体阻挡。
+
+## D051｜NPC位移步态与空间表现
+
+- 新NPC步态为纯显示状态，每显示实例独有，输入实际屏幕位移、停止/冻结标记；提供facing/frame，零位移回站姿，暂停保留当前姿态，不以Time.get_ticks_msec推进、不耗经济随机。TDStoryArt.sprite(who,facing,walk_frame=-1)向后兼容，原站姿为过渡拍，新增独立步态图集只读缓存。剧情护送也提供连续显示位置。
+- 餐厅project/pick与玩家motion_transform、客人步态统一使用同一投影常数，放宽格距不改layout原坐标、家具数量或存档格式；靠近物件意图仍由原Shell接收，显示/碰撞/交互用同一位置源。账本附着真实收银台，不重复造柜台。
+- 新石板/建筑/住宅图集独立文件；所有原图只读。风格与光照是表现层，不改地图/道路/产权/经济随机。明确加入导出白名单及资源审计，生成描述/探针不入发布包。
+- 覆盖D050素材分区：residential-houses-v2.png并非等分象限，使用实测RESIDENTIAL_REGIONS及区域内透明边界，不改变draw_residential接口。员工显示条目的actor_id由原crew稳定ID或既有岗位ID提供，标签改变不重置步态；步态不写存档。
+
+## D050｜住宅视觉组装与居民区告示
+
+- TDTownArt.housing_groups(map)返回独立Array[Dictionary]，条目at为Vector2i格坐标、size为1/2/3格正方形边长。按y/x稳定聚合原housing，排除实际小屋2×2和已被建筑占用的格；缓存键包含布局版本/plots/cottage，调用者修改返回值不污染缓存。该结果不写回Map，不代表经济家庭或可购住宅。
+- TDEnvironmentArt.residential(index:0..3)缓存只读AtlasTexture，来源residential-houses-v1.png四等分象限；各象限只在运行时裁透明边，不修改源PNG。draw_residential按包围矩形约束宽高、底部对齐。住房余格表现为带瓦顶附房，保持原实体碰撞；庭院闭门，无新增可进入室内。
+- urban_village/rich_district的已有place意图由Shell显示居民区告示，复用暂停/关闭/恢复控制；player_cottage仍走真实小屋入口。无扣钱/改产权/新增经营人口，原经济住宅距离不变。仅原道路可达位置四周按E，不要求面朝门。
+- 新PNG及.import必须通过导出资源存在性检查，生成描述/开发探针/测试不得入包。Profile schema6和布局版本2不变，无新增存档迁移。
+
+## D049｜交互外缘、常驻活动与地图装饰
+
+- TDInteractionRange只做closest/distance/plot_bounds/facility纯几何；facing_plot保留兼容名，返回最近可达建筑/设施外缘，附只读interaction_point（世界像素）。1.1格，同距稳定ID；排除非设施住宅/总院落，短段不能穿过别栋楼或河。提示与E使用同一查询。镇上设施优先NPC闲聊；餐厅保留实际迎宾/端盘/收银优先，随后设施，再日常对话。厨房正式工位用实际台面外缘96px，历史试验工位保留88px点范围；小屋床按整床外缘。原意图信号不变。
+- CharacterRoster配置schema1向后兼容新增可选activity（stand/roam，缺省roam）、radius_tiles（3–12，缺省7）、rest_sec（1–120，缺省12）；增加landmark/station区域。meal仍只代表真实经济机会的用餐资格，与活动地点分离。正式配置不把无订单角色安排到餐厅门口。
+- runtime增加activity_key/dwell；仍非持久状态，不新增NPC类/钱包。按道路寻路，停点距设施外缘>1.5格，巡游目标至少相隔4格；只在切换目标/地图时寻路，地表查询/候选停点缓存。visible_people.position是格坐标插值副本，cell仍是已完成路径节点；wait只计当前步。hold冻结角色而不累积旧时间；剧情pin优先并放在安全停点，护送仍走原任务路径。实际订单继续原observe_orders/can_enter/begin_visit/finish_visit接口。
+- advance(seconds,orders,minute_from=-1)支持注入起始游戏分钟：由Shell捕获原分钟并按时段边界切片；默认-1兼容固定时刻测试调用。计时不由渲染帧数决定，长段与分段空闲日程一致。02:00仍复用原收尾，不延伸日长。
+- TDTownScenery缓存一张1752×1752地表（每格24px，放大2倍）和少量装饰列表；只读新图集按四象限运行时取样，不覆盖原图。装饰只放在道路外、设施交互范围外，显示底座与真实碰撞共用bounds（格坐标）。不写经济地块/产权，后续真实建筑覆盖附近时装饰自动消隐并重建碰撞；无需存档迁移。布局/道路/产权仍由原Map管理，装饰不参与NPC道路寻路或经营随机。
+- 新src/world/interaction_range.gd、src/town/town_scenery.gd及assets/town/ground-materials-v3.png须显式入导出包；开发截图、生成描述和原始资料排除。
+
+## D048｜地图版本、地形与全天用餐
+
+- `TDPlannedTown`读取只读`content/towns/chinese_layout.json`，布局schema2、extent73；`TDTownMap.layout_version`保留旧生成器1，只为兼容验证和旧独立入口。道路、可通行、可建造分开：river/hill不可走建，bridge可走不可建；main院地可走，建筑实体仍碰撞。地形字段`terrain_type/elevation/surface_type/buildable/walkable`由坐标导出；经济覆盖不能把水面变成路。每格不分配Node/Resource，经济查询仍稀疏缓存。
+- `TDWorldSnapshot.map_version`默认1，Profile schema6要求2，旧包1–5先完整按原几何验证。`TDMapMigration.convert`返回独立候选，不修改入参；按稳定ID重定位主店/小屋/分店/商业单元，保留历史地价、产权版本、库存和进度。迁移时重算位置相关路程；未映射覆盖值留在`map_migration.archived_cell_overrides`。ProfileStore复制原封包至`.before-map-v2.bak`并核对SHA256；重名异内容用摘要后缀，失败不得激活新游戏。成功备份后复用既有临时写入/校验/原子替换，不触碰真实档测试。
+- `TDMealSchedule.events(count,seed,day,town)`产生按minute排序的只读副本。配置schema1，三峰高斯+少量均匀错峰，范围480–1559；时间随机独立于经济/QTE/视觉随机。总机会数仍由旧经济配置决定；`day_stats.opportunities`仍是已处理连续前缀，保留原家庭预算、选店和竞争交易。
+- 正式Shop通过`day_minute_reader`注入世界钟表。开门记录`_opening_minute`，`skip_closed_before`只消化已错过的背景机会；下一事件按真实分钟换算成营业秒。`arrivals_at`给常驻角色提供该事件分钟，长帧不能用帧末分钟替代。菜单/市场预测只含剩余时段，不保证实际订单。
+- FullKitchen单调时间→`ShopView.active_time_advanced`→Shell全天钟表/厂商，ShopView先结算本片营业，午夜边界再清理保存；Shell不另按帧推进。主动暂停/剧情/研习沿用同一冻结策略。手动注入测试可以关闭自动计时；真实UI/QTE仍使用原微秒计时与输入时钟。
+- `facing_plot`保留方法名兼容调用，但正式行为是最近可达入口，距离不依赖朝向，等距按稳定ID。NPC对话优先时建筑高亮退让，人物显示E；工位/餐厅/小屋复用原意图信号，不在显示层改账。
+- `TDEnvironmentArt`缓存只读图集区域，`TDTownArt`缓存底图，`TDDaylight.sample`仅根据注入分钟插值；不生成额外游戏时间或随机消费。导出只允许运行图像/配置，开发截图/文档不打包。
+
+
+## D047 角色、日程及双布局对话
+
+- 临时食客仍使用TDEconomicCustomer（只读画像）、TDMealIntent（单餐意向）、Shop订单与TDRestaurantGuest（可销毁显示实例）。离店释放活对象，账单快照与背景家庭账保留。取消/超时不等迎宾/收银，日结后的用餐显示秒独立于营业秒，暂停同步。
+- TDCharacterRoster由Profile装配，content/characters/roster.json为只读定义；稳定character ID、家庭绑定、特性/设定/日程与关系状态分离。候选生成自己的character:ID画像和真实订单，不抢普通食客身份；预算/收付款仍属于原经济与Shop。路径仅在目标或地图变化时计算，隐藏场景继续推进，剧情位置优先；解除剧情位置后重算原目标。begin_visit/finish_visit保护进出店过程，取消订单在实际离店前不重现镇上；restore_visit_boundary不重放存档中的终态订单。
+- Profile schema5追加characters schema1（clock、records），旧1–4档显式初始化，不回填历史好感；六槽使用同一ProfileStore。08:00至次日02:00、分钟单位、现实秒注入；终点强制收尾一次，日结落盘后床推进次日。未保存成功不得显示成功。不开店的午夜收尾不收开门基础费，旧真实耗料/工位费/租约与欠费继续走原账。
+- TDDialogue.presentation=story/interaction，context区分story/resident/guest。剧情左右人物及active_side只影响表现，主角选项发言先于NPC回复；取消不增加日聊好感。日常回调不能经过Opening.resolve。last_completed/last_context为只读回执。
+
+
+## D046 剧情厨房边界
+
+- `TDShopSession.kitchen_available()`覆盖四个合法经营阶段；消费仍要求当前日namespace、正整数单位、整笔库存充分、唯一token。开门立即重新同步厨房分配，不重新创建CookingSession；只有经清理的隔日才重建。
+- `TDShopView.checkpoint_ready()`返回KITCHEN_CLEAR或KITCHEN_BUSY及可执行提示。`TDGameProfile.kitchen_checkpoint`由shell装配，`save/next_day`检查，禁止实物丢失；研究候选返回BUFFERED_UNTIL_KITCHEN_CLEAR留在内存。不会将进行中QTE冒充可持久化数据。开门遇KITCHEN_BUSY仍可开门，保留本次实物、旧安全档并提示。
+- 剧情礼包事务v2和旧v1都以run_id作身份；v2从真实菜谱需求扣除旧礼包已记账数量一次；主料单位1000，调料余量AI-054。领取失败保留欠发标记，不能把空礼包说成已发。`supplied`旧档由账本v2令牌验证/补齐。
+- 经济schema2新增可选`after_hours_cost_cents`（整数分、非负）及`after_hours_seconds`（真实工位秒、非负有限数）。缺项兼容为0；SETTLED后的支出计这里，advance_day转到cost_consumed/cooking_seconds并清零。已日结books不变；无顾客时不生成订单、收入或虚假费用人数。
+- `TDStoryArt`只提供只读AtlasTexture缓存；chen→ash-priest，aling→aling，方向DOWN/UP/LEFT/RIGHT。采用2026-10-29 selected archive原PNG，导出显式白名单四图与脚本。罗厄/漫画占位与正式人物图区分，未提供罗厄专属图。
+
+
 > fa172f7整合保留原契约；D042-DECOR为远端原装修D042，本地D042仍指移动。AI-050-DIALOGUE指远端对话字速，AI-050仍指本地疾跑；不互相覆盖。
 
 ## D042 移动输入与碰撞契约

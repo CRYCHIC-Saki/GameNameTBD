@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-28",
+  "user_feedback": "v2像是原稿换动作；要求保留原稿可爱风格及人物形象，重新绘制像素游戏半身立绘",
+  "generator": "built-in image_gen",
+  "generation_id": "exec-0d9ad094-1ae1-42a7-8091-2e5c9b7e2f6e",
+  "output": "protagonist-dialogue-halfbody-pixel-v3.png",
+  "sha256": "449a7583da0fd17327da0b7d18796d0a0628ea188b7f0bbb773b78bcf466c815",
+  "dimensions": [
+    1254,
+    1254
+  ],
+  "format": "RGBA PNG",
+  "transparent_background": true,
+  "reference": "doc/source/characters/protagonist/design-clean-original.png",
+  "prompt": "Use case: style-transfer.\nCreate a NEW hand-pixelled, waist-up dialogue portrait for a pixel-art farming RPG, using the supplied original drawing ONLY for character identity, cute proportions and costume. Change the drawing medium decisively to TRUE LOW-RESOLUTION PIXEL ART. It must immediately read as a videogame pixel portrait, with large visible square pixel clusters, not a smooth illustration.\n\nPIXEL CONSTRUCTION IS ESSENTIAL:\nImagine painting manually on a strict 128x128 pixel transparent canvas, with the portrait occupying about 96x112 pixels. Show this enlarged 8x with nearest-neighbor pixels. EVERY visible contour, eye, highlight, shadow and color edge follows the same chunky square grid. One-pixel stepped dark burgundy outlines; coherent 2x2, 3x3 and larger pixel clusters; limited approximately 32-color palette; at most 3 discrete shades per material. Eyes about 8x11 logical pixels each. Face about 40x36 logical pixels, round with a very short chin. No continuous smooth curves or tiny subpixel drawing. Do not copy the original vector-like line art. No anti-aliasing, no airbrush, no gradients, no painterly strokes, no blur, no pixel-noise filter. Make each logical square pixel clearly visible at the output size, including on the FACE and EYES. This is lovingly hand-placed pixel art, not a posterized or mosaic-filtered illustration. The reference's cute appeal must be expressed through pixel shapes.\n\nSUBJECT: this exact adorable fire-themed chef girl, with the original friendly confident small smile and tiny fang, large round amber eyes with SIMPLE square white highlights, round cheek silhouette and small pink pixel blush. Keep short neck, big head, compact narrow shoulders. Do not give her mature angular facial proportions, slanted alluring eyes, detailed lashes, a tiny long chin, or a glamorous pose. Preserve the original playful personality.\nCostume identity: fluffy golden-yellow and vivid red flame hair in broad readable locks; small upright flame-shaped tuft; large soft cream chef cap tipped to HER RIGHT / viewer-left; white collared shirt with pale pink shading and red cuff accents; bright red tie with two tiny gold bars; cream apron; brown belt and knife pouch on HER RIGHT / viewer-left, red-yellow flame patch on HER LEFT / viewer-right. Round charcoal pan carried behind the back. Simplify these into a charming, readable limited-palette game design. Do not add accessories.\n\nCOMPOSITION: a single waist-up half-body portrait, front-facing with a subtle turn toward screen-right; suitable for the LEFT side of a dialogue box. Warm relaxed expression, arms down and relaxed at her sides, hands not near face. Crop immediately below belt/upper apron, enough to show the pouch top and flame emblem. Head INCLUDING cap and flame tuft is completely inside canvas with 8 logical pixels of transparent headroom. Keep 8 logical pixels of transparent side margins; portrait stands upright and centered. No full body, legs, additional poses, comparison sheets or other characters.\n\nOUTPUT: square PNG with genuine transparent alpha. No scenery, floor, background color, drawn checkerboard, border, UI, text or watermark. Produce the pixel-art asset itself. The finished image should resemble a cute 16-bit farming-RPG dialogue portrait redrawn from the reference, visibly constructed of crisp square pixels.",
+  "treatment": "圆脸、大眼、短下巴及原服装身份保留；面部、头发、衣物都用明显方形像素块、阶梯轮廓及分层色块重绘。",
+  "note": "提示中的128x128为像素画面细节目标；实际生成文件1254x1254，不冒称已导出严格128x128或32色调色板文件。未使用脚本缩放、量化或改写图片。",
+  "previous_revision_feedback": {
+    "v1": "用户反馈与原稿风格差异过大",
+    "v2": "用户反馈像原稿换动作，像素画法不足；未通过用户验收"
+  },
+  "verification": {
+    "png_decode": "PASS",
+    "rgba_transparency": "PASS",
+    "visible_pixel_style_review": "PASS",
+    "game_checks": "NOT_RUN_ASSET_ONLY",
+    "human_art_acceptance": "PENDING"
+  },
+  "status": "DELIVERED_LOCAL_ART_REVIEW_PENDING"
+}

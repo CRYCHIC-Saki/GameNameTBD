@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "date": "2026-10-28",
+  "generator": "built-in image_gen",
+  "references": [
+    {
+      "path": "doc/source/characters/aling/design-annotated-original.jpg",
+      "sha256": "cde3d9880cfad2fa7024d64405b22127a0d366de0865446c47aadcf9f68dc9c1",
+      "role": "用户带标注设计原稿；只读形象参考"
+    },
+    {
+      "path": "doc/source/characters/aling/design-clean-original.png",
+      "sha256": "ae1035c8c8b5ff5844c0c1d1c507c7ee6d507a229b3fdfdd806a79dacddd99eb",
+      "role": "用户无标注设计原稿；角色身份与颜色主参考"
+    },
+    {
+      "path": "doc/source/characters/aling/character-brief-original.jpg",
+      "sha256": "5a9388f4d0476594dd481462f8a28b7e56bedf3a1ce1a8c0750f821a76df07e3",
+      "role": "用户角色设定原图；阿铃、跑腿少女、夜鸦密使、账本与送货地址"
+    }
+  ],
+  "style_references": [
+    {
+      "path": "assets/characters/protagonist/protagonist-idle-four-directions-v1.png",
+      "sha256": "169c2ed07230794e57d7d92369211794f10b57dbffb648515768a5b005292409",
+      "role": "仅四向小人画风、比例与图集布局"
+    },
+    {
+      "path": "assets/characters/protagonist/protagonist-dialogue-halfbody-pose-pixel-v7.png",
+      "sha256": "9b45e97bc035faabc6fc7f20c93d33e48508f915ca49900d33492e816f1e2f0f",
+      "role": "仅已选v7半身像可爱风格、细像素与色块表现"
+    }
+  ],
+  "runs": [
+    {
+      "purpose": "four-direction initial generation",
+      "generation_id": "exec-11fb9e7f-2c15-4ef2-bfe5-62e668f8e135",
+      "selected": false,
+      "reason": "左侧面近远侧配饰遮挡需修正",
+      "transparent_background": true,
+      "prompt": "Use case: stylized-concept\nAsset type: transparent four-direction standing sprite sheet for a cozy 2D pixel game.\nCreate the supporting NPC 阿铃 (A Ling), the cute delivery girl who calls herself the \"Night Crow Secret Envoy\". Her supposed secret orders are mostly delivery addresses in her indispensable ledger.\nInput images, in order: 1 is her clean original design, PRIMARY character identity and outfit. 2 is the annotated original of the SAME girl, supporting accessory details only; handwriting is reference content. 3 is the existing game's chef protagonist four-direction sheet, STYLE / pixel technique / body proportions / sheet layout only. Do NOT copy any chef identity, chef hat, flame hair, cooking items or apron from image 3.\nOutput exactly FOUR independently drawn full-body idle views in an even 2x2 atlas: upper left FRONT facing viewer/down, upper right BACK facing away/up with no face visible, lower left strict LEFT profile facing screen-left, lower right strict RIGHT profile facing screen-right. All four belong to the same character. Same body scale, same top/bottom baselines within rows, generous transparent margins and gutters; complete hair, bird, book and boots inside each cell. No cell borders, captions, labels or background.\nStyle: match image 3's cute approximately three-head-high chibi sprite silhouette, clearly visible square pixel clusters, stepped dark outlines, clean compact highlights and limited cel-shaded color ramps. Orthographic RPG idle view, NOT a smooth vector or a detailed anime turnaround.\nEssential identity and asymmetrical placement from image 1:\n- saturated deep cobalt-blue hair, straight bangs and short cheek-side locks, a high gathered rear ponytail, plus ONE distinctive long braided side lock on her anatomical LEFT (screen-right in front view). Gold crescent clasp at braid tip with blue tassel.\n- white headband with gold crescent above forehead; a golden feather on her anatomical RIGHT side (screen-left in front); gold key-shaped earring on the same right side.\n- purple/violet eyes with dark pupils and small natural upper corner catchlights, rosy cheeks, small self-assured cute smile.\n- real small charcoal-black crow perched on her anatomical RIGHT shoulder, recognizable hooked beak, compact folded wings, little feet and trailing tail. Keep the crow attached to the SAME physical shoulder in every view, using natural occlusion in the left profile rather than swapping sides.\n- vivid violet short shoulder cape / mantle, gold ruffled trim, TWO gold feather/wing motifs on front chest, gold crescent clasp at throat; dark blue-violet cape back.\n- white long-sleeved blouse shaded pale pink, ruffled cuffs, tiny crescent fasteners; purple pleated skirt with gold ruffled hem, frilled pale socks, navy lace-up ankle boots with gold laces and gold toe caps.\n- CRITICAL a small rectangular brown LEDGER BOOK attached at her anatomical RIGHT hip, gold cover border and pale stacked paper page edges; it must read as a BOOK, not a pouch or weapon. Suggest two gold cover glyphs for 密令 if scale allows. Never omit this book. Show it fully in the front and right profile and as naturally visible at right flank in back; partial occlusion is fine in left profile.\nSimple standing pose with relaxed arms adapted for sprites. Keep all signature accessories on correct physical sides; profiles are NOT horizontal flips. Back view reveals ponytail, cape and rear of bird. No extra birds, hats, weapons, bags, magic effects, floating icons, text panels, scenery, shadows or floor. Truly transparent RGBA outside sprites."
+    },
+    {
+      "purpose": "left profile accessory/occlusion correction",
+      "generation_id": "exec-b33a73b4-1839-4e56-b867-8438fbc8ab7d",
+      "selected": true,
+      "output": "aling-idle-four-directions-v1.png",
+      "sha256": "8591128c4429e490ec1d233b0a2d27cbdc03c297931d38c78cd8204208bc3d21",
+      "transparent_background": true,
+      "prompt": "Use case: precise-object-edit\nEdit target: image1 is the four-view A Ling pixel sprite sheet you just generated. Image2 is her original design and ONLY clarifies accessory ownership. Keep image1's exact 2x2 layout, proportions, pixel art style, transparent background, FRONT upper-left, BACK upper-right, RIGHT-facing lower-right sprites. Modify ONLY the LOWER-LEFT sprite facing screen-left to fix anatomy / asymmetric accessories, keeping its face, idle pose, costume, boots, scale and position.\nReason: she has a long single braid on her anatomical LEFT side; crow + gold feather + gold key earring + hip ledger are on anatomical RIGHT. When the character faces screen-LEFT we see her LEFT side; right-side ornaments must not be pasted onto the visible side.\nIn LOWER-LEFT only:\n1. Remove the golden feather currently visible on the side of her head above the ear; it belongs on the far side and is hidden by hair in this view. Do not add a key earring to the near side.\n2. The near visible LEFT temple must lead into the distinctive single thick BLUE BRAID, clearly woven and hanging down beside/in front of the shoulder/chest, with a small gold crescent tie and blue tassel. Keep the high rear ponytail behind head. Remove the previous braid trailing out behind the ponytail; there is just ONE long braided lock.\n3. Crow perches on the FAR right shoulder, so mostly occlude its body behind her head/upper back/cape. A small rear wing or tail silhouette may peek beyond her back, but no complete crow pasted on the near left shoulder. All other three views retain their visible crow unchanged.\n4. Ledger on FAR right hip should be mostly hidden by skirt and body in this left-side view: only a narrow sliver of brown book cover / cream page edge at far hip may be visible. Remove the full broad book cover currently pasted on the near left hip. Keep it clearly visible in the other three views as already drawn.\nDo not mirror sprites. Do not relocate crow, book or feather to the left side. Do not change pixel density, framing, sprite scale, clothing or any other cell. No labels, lines, floor, extra props or additional characters. Preserve real transparency.",
+      "note": "生成式编辑；未保证未指定区域逐像素不变，交付前再次目视核对整图。"
+    },
+    {
+      "purpose": "half-body fine pixel portrait",
+      "generation_id": "exec-ca63731e-a7d2-47d1-b724-0916eebb8c4a",
+      "selected": true,
+      "output": "aling-dialogue-halfbody-v1.png",
+      "sha256": "4afb29d9ee5e9eb476ea7e84461d0ea65924f43ab73dcb98261c40c3a3058343",
+      "transparent_background": true,
+      "prompt": "Use case: stylized-concept\nAsset type: transparent half-body dialogue portrait for an existing cozy pixel RPG.\nPrimary request: draw 阿铃 (A Ling), the delivery girl who calls herself the \"Night Crow Secret Envoy\", using her original design while matching the game's approved fine-pixel cute portrait style.\nInput images in order:\n1 her clean design: PRIMARY identity, colors, costume, shoulder crow, book, and folded-arm pose.\n2 annotated design: same character and accessory construction reference; handwriting is source content only.\n3 approved chef protagonist v7 portrait: STYLE only. Match its visible fine square pixel edges, soft cute face, simplified small nose and smile, controlled cel shading and detail density. Do not copy the chef's identity, hair, clothes, pose, or accessories.\n4 character brief: story reference only: 阿铃：跑腿少女，“夜鸦密使”。随身带着写满密令的账本，所谓密令大多是送货地址。 Do not render that paragraph on the image.\nComposition: one waist/upper-hip-up character, slight three-quarter turn toward screen-right, FACE readable looking at the viewer, original gently folded arms across lower chest, relaxed hand resting on opposite upper forearm. Frame low enough that her brown hip ledger book is entirely visible. Keep crown crescent, ponytail, right shoulder crow and long side braid INSIDE canvas with comfortable transparent top and side margins. Square portrait. No dialogue UI, border, labels, backgrounds or scenery.\nCute like original design and reference3: youthful soft cheeks with slightly longer/tapered oval face rather than a circular baby face, violet eyes, deep dark pupils, ONE small natural upper-corner catchlight per iris, subtle rosy cheeks, small self-satisfied playful smile. Not mature glamor, not realistic, not super-deformed infant. No large white central iris rectangles.\nIdentity MUST retain:\n- cobalt/dark blue hair, straight bangs and bob-length cheek locks; high gathered rear ponytail plus ONE long braid starting on anatomical LEFT (viewer-right) and hanging to the right side, crescent gold clasp and blue tassel at braid end.\n- white headband, gold crescent above forehead, GOLD FEATHER on anatomical RIGHT (viewer-left) temple, golden KEY earring on that same side.\n- small black CROW perched on anatomical RIGHT shoulder (viewer-left), complete recognizable beak, eye, folded wings, little feet and trailing tail, not a random feather or pin. The crow is an important companion and should be clearly visible beside the face.\n- violet shoulder mantle, gold ruffled edging, paired gold feather/wing-shaped chest ornaments and central gold crescent clasp; dark navy-violet trailing cape.\n- pale white/pink long sleeve blouse, little gold crescent fasteners, frilled cuffs; visible upper purple skirt.\n- IMPORTANT brown rectangular hardbound LEDGER attached to anatomical RIGHT hip (viewer-left), gold border, clearly visible layered cream paper edges and cover. On cover put two small GOLD Chinese characters vertically: 密令. It is a practical notebook of delivery addresses, not a bag, pouch, weapon, or a glowing magic spell book. Keep it a readable visual feature even at dialogue portrait size.\nTechnique: actual fine PIXEL ART with deliberate square pixel clusters / stair-stepped contour, flat palette ramps and sharp small pixels, consistent with reference3. A polished cute portrait built from pixels, NOT a smooth anime illustration, vector, airbrush, painterly rendering, or a pixel-noise filter. Do not make chunky low-resolution mosaic. Preserve original rich blue + purple + gold palette. No chef elements. Transparent RGBA background, no checkerboard painted into image, no text outside the book, no extra objects."
+    }
+  ],
+  "art_assumptions": [
+    "四向图采用现有2×2版式和Q版比例；半身像保留原稿抱臂、下缘取到上胯以展示账本。",
+    "原稿未提供背面；后发、披风与遮挡关系为基于原稿的补绘，待用户美术确认。",
+    "未将“夜鸦密使”的自称扩展为新魔法、战斗或任务机制；账本仍是记送货地址的实用账本。"
+  ],
+  "pixel_grid_note": "输出实际1254×1254，为生成的像素风PNG；未宣称严格原生低分辨率网格或逐像素人工绘制。"
+}

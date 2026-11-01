@@ -42,7 +42,7 @@ func test_real_click_start_creates_once_then_reloads_latest_without_slot_dialog(
 	assert_eq(shell.profile.slot_id,"slot-01");assert_eq(shell.location,"town")
 	assert_eq(shell.slots.slots().filter(func(r:Dictionary)->bool:return r.ok).size(),1)
 	shell.go_title()
-	assert_true(shell.create_game("slot-02","第二家食堂").ok)
+	assert_true(shell.create_game("slot-02","第二家食堂").ok);shell.guide.dialogue.finish_now()
 	assert_true(shell.profile.buy({"egg":1000}).ok)
 	assert_true(shell.save_game().ok)
 	var money:int=shell.profile.shop.snapshot().money_cents
@@ -53,7 +53,7 @@ func test_real_click_start_creates_once_then_reloads_latest_without_slot_dialog(
 	assert_eq(shell.profile.shop.available("egg"),1000)
 
 func test_real_click_load_new_empty_slot_and_explicit_load_keep_selection() -> void:
-	assert_true(shell.create_game("slot-01","已有食堂").ok);shell.go_title();await frames()
+	assert_true(shell.create_game("slot-01","已有食堂").ok);shell.guide.dialogue.finish_now();shell.go_title();await frames()
 	var existing:=FileAccess.get_file_as_bytes(shell.slots.path_for("slot-01"))
 	mouse(button("载入存档",shell._title_screen));await frames()
 	assert_null(shell.profile);assert_not_null(shell._modal)

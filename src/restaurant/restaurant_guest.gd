@@ -18,6 +18,11 @@ var quality: float = 0.0
 var review_score: float = -1.0
 var bob: float = 0.0
 var profile: Dictionary = {}
+var dining_profile: TDEconomicCustomer
+var meal_intent: TDMealIntent
+var character_id: String = ""
+var appearance_id: int = 0
+var frozen: bool = false
 var _points: PackedVector2Array = PackedVector2Array()
 var _index: int = 0
 var _stages: Array = []
@@ -146,6 +151,6 @@ func _ready() -> void:
 	add_child(sprite)
 
 func _process(delta: float) -> void:
-	if service_active:
+	if service_active or frozen:
 		return
 	advance(speed * delta)

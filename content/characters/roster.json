@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "parameter_status": "ASSUMPTION_AI_055",
+  "settings": {
+    "chat_gain": 2,
+    "good_meal_score": 80,
+    "bad_meal_score": 40,
+    "good_meal_gain": 3,
+    "bad_meal_gain": -2,
+    "walk_step_sec": 0.35,
+    "friend_at": 20,
+    "close_at": 60
+  },
+  "characters": [
+    {
+      "id": "aling",
+      "name": "阿铃",
+      "portrait": "aling",
+      "town_id": "chengdu",
+      "economic_binding": {
+        "group_id": "value",
+        "family_index": 0,
+        "template_index": 0,
+        "preferred_taste": "sweet"
+      },
+      "traits": [
+        "夜鸦密使",
+        "好奇",
+        "珍惜家常味"
+      ],
+      "biography": "自称夜鸦密使的少女，与主角共同守着小镇食堂。正式身世沿用第一日剧本，以下闲聊为可调样例。",
+      "schedule": [
+        {
+          "from": 480,
+          "until": 660,
+          "zone": "market",
+          "activity": "roam",
+          "radius_tiles": 8,
+          "rest_sec": 10
+        },
+        {
+          "from": 660,
+          "until": 840,
+          "zone": "plaza",
+          "meal": true,
+          "activity": "roam",
+          "radius_tiles": 9,
+          "rest_sec": 12
+        },
+        {
+          "from": 840,
+          "until": 1080,
+          "zone": "landmark",
+          "activity": "stand",
+          "radius_tiles": 7,
+          "rest_sec": 18
+        },
+        {
+          "from": 1080,
+          "until": 1260,
+          "zone": "plaza",
+          "meal": true,
+          "activity": "roam",
+          "radius_tiles": 8,
+          "rest_sec": 12
+        },
+        {
+          "from": 1260,
+          "until": 1560,
+          "zone": "offstage",
+          "activity": "stand",
+          "radius_tiles": 7,
+          "rest_sec": 12
+        }
+      ],
+      "dialogue": {
+        "stranger": [
+          "夜鸦今天先巡视集市。你忙完灶上的事，再来听我的情报。",
+          "先把饭做好。你的名字，夜鸦会慢慢记住。"
+        ],
+        "friend": [
+          "你来了。今天集市那一筐番茄不错，炒的时候别盖住它自己的香味。",
+          "夜鸦允许你问些任务以外的事。比如，今天想吃什么。"
+        ],
+        "close": [
+          "今天没有密令。我只是想来看看你，再吃一口热饭。",
+          "有些家常味会让人记起很久以前的事。能在这里再吃到，我很高兴。"
+        ],
+        "about": "夜鸦密使当然掌握着小镇的消息。不过，今天的第一条消息是：我喜欢嫩蛋和略甜的番茄。"
+      }
+    },
+    {
+      "id": "chen",
+      "name": "老陈",
+      "portrait": "chen",
+      "town_id": "chengdu",
+      "economic_binding": {
+        "group_id": "commuter",
+        "family_index": 1,
+        "template_index": 1,
+        "preferred_taste": "salty"
+      },
+      "traits": [
+        "食材铺老板",
+        "自称灰烬司祭",
+        "热情"
+      ],
+      "biography": "食材铺老板，自称灰烬司祭，热情地向客人解释自己的圣餐。个人称谓沿用现有剧本。",
+      "schedule": [
+        {
+          "from": 480,
+          "until": 720,
+          "zone": "market",
+          "activity": "stand",
+          "radius_tiles": 6,
+          "rest_sec": 16
+        },
+        {
+          "from": 720,
+          "until": 900,
+          "zone": "plaza",
+          "meal": true,
+          "activity": "roam",
+          "radius_tiles": 7,
+          "rest_sec": 14
+        },
+        {
+          "from": 900,
+          "until": 1200,
+          "zone": "market",
+          "activity": "stand",
+          "radius_tiles": 6,
+          "rest_sec": 16
+        },
+        {
+          "from": 1200,
+          "until": 1320,
+          "zone": "station",
+          "activity": "roam",
+          "radius_tiles": 7,
+          "rest_sec": 12
+        },
+        {
+          "from": 1320,
+          "until": 1560,
+          "zone": "offstage",
+          "activity": "stand",
+          "radius_tiles": 7,
+          "rest_sec": 12
+        }
+      ],
+      "dialogue": {
+        "stranger": [
+          "饥饿的灵魂，今天想打听食材，还是谈谈灶上的火？",
+          "灰烬司祭今天的食材已经摆好。看清鲜度再下锅。"
+        ],
+        "friend": [
+          "你最近来得勤，连挑番茄都比以前仔细了。好材料也要有人认真对待。",
+          "今天不讲圣餐，讲盐。少了可以再添，多了可就收不回去了。"
+        ],
+        "close": [
+          "锅先放一放，坐下喝口热水。开店忙，也得记得自己吃饭。",
+          "你做菜越来越有自己的样子。灰烬司祭也愿意偶尔听听你的做法。"
+        ],
+        "about": "我守着这间食材铺。客人把好材料拿回去，能端出一盘热菜，我就高兴。"
+      }
+    }
+  ],
+  "note_activity": "AI-057: meal eligibility does not mean waiting at the restaurant. Roam/stand on safe road positions; real accepted orders alone route to diner."
+}

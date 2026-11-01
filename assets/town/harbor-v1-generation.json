@@ -1,0 +1,11 @@
+{
+  "decision": "D053-R1",
+  "generator": "image_gen.imagegen",
+  "date": "2026-10-31",
+  "source": "用户补充实际港口与未来跨镇交通；剧本11–23/109–111",
+  "file": "harbor-v1.png",
+  "reference": "assets/town/town-sprites-v3.png",
+  "original": "exec-b61294c7-3f97-4d64-998a-e2260df18542.png",
+  "prompt": "Create a transparent sprite atlas with two equal square panels side by side, large empty gutters separating objects. Match the cute Chinese pixel-art town reference, warm wood, blue-grey tiled roofs, restrained chunky square pixels, no perspective vanishing points. LEFT PANEL: one Chinese wooden river cargo ferry, vertically aligned bow pointing up, narrow hull, visible deck, folded cream sail, cabin with curved blue-grey roof, rope and tiny barrels; orthographic overhead oblique game sprite, no water, no ground, full ship inside its panel. RIGHT PANEL: a small Chinese ferry wharf ticket canopy and cargo stack grouped as a horizontal shore prop, front orthographic elevation with a little visible roof, wood posts, hanging red lantern, blank noticeboard, rope coils, 3 crates, and a short stone quay edge. No dirt rectangle, no water, no characters, no letters, no labels. Objects isolated on transparent background; do not overlap or crop.",
+  "notes": "新增图集，原图只读；两艘船及候船棚采用只读AtlasTexture，不改布局/产权/水面通行。"
+}

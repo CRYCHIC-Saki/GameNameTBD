@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-28",
+  "user_feedback": "脸稍微瘦一点",
+  "generator": "built-in image_gen",
+  "generation_id": "exec-2581c576-37b7-44ee-82a8-94e7e046bfc8",
+  "input": "protagonist-dialogue-halfbody-pixel-v3.png",
+  "output": "protagonist-dialogue-halfbody-pixel-v4.png",
+  "sha256": "d74dc5acb317c49b2c4a37909ba43617d8897b7cf69f24f3a774647b1bd9a7b0",
+  "dimensions": [
+    1254,
+    1254
+  ],
+  "transparent_background": true,
+  "prompt": "Use case: precise-object-edit / identity-preserve.\nEdit ONLY the face silhouette of this exact existing pixel-art half-body chef portrait. The user asks: \"Can the face be slightly slimmer?\"\nMake a subtle approximately 8–10% reduction in lower cheek/jaw width. Tuck in each cheek by about one or two of the existing logical pixel blocks and gently taper the lower jaw. Keep the chin SHORT, rounded and cute, not sharp or elongated. Retain the same big amber eyes, eye size and spacing, tiny smile and fang, blush, expression, head tilt, and facial feature placement. This should be recognizable as the same portrait with just a slightly less wide face.\nPreserve the existing coarse pixel grid and clearly visible square pixel blocks, stepped dark outline, palette and shading style. Do not smooth it, add fine detail, or turn it back into vector/anime painting. Keep hair mass, all hair locks, flame tuft, cream chef cap, neck, shoulders, white shirt, red tie, cream apron, pouch, back pan, pose, framing and canvas composition unchanged as closely as possible. Only adjust immediately adjacent hair/skin boundary pixels necessary for the slimmer cheeks. No overall head shrink, no mature makeover, no other design changes.\nPreserve the genuine transparent alpha background. No text, no frame, no background color, no checkerboard. Output one edited transparent PNG.",
+  "change": "两颊和下颌小幅收窄，保留短圆下巴、大眼睛与清晰像素画风。",
+  "verification": {
+    "png_decode": "PASS",
+    "rgba_transparency": "PASS",
+    "visual_inspection": "PASS",
+    "human_art_acceptance": "PENDING",
+    "game_checks": "NOT_RUN_ASSET_ONLY"
+  }
+}

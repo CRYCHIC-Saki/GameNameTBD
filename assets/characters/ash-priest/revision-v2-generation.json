@@ -1,0 +1,160 @@
+{
+  "schema": 1,
+  "revision": "v2",
+  "date": "2026-10-29",
+  "generator": "built-in image_gen",
+  "status": "DELIVERED_LOCAL_ART_ACCEPTANCE_PENDING",
+  "user_corrections": [
+    "相比前两个角色需要再像素化一点",
+    "立绘再遵从一点原稿的画风"
+  ],
+  "outputs": [
+    {
+      "file": "ash-priest-idle-four-directions-v2.png",
+      "sha256": "749be053ccf283f5448b06a01760246b6bf6bfd01d46a3f945317d8822610032",
+      "size": [
+        1254,
+        1254
+      ],
+      "pixel_format": "Format32bppArgb",
+      "corner_alpha": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "regions": [
+        {
+          "id": "front",
+          "region_xywh": [
+            0,
+            0,
+            627,
+            627
+          ],
+          "visible_bounds_local_xywh": [
+            183,
+            17,
+            407,
+            609
+          ]
+        },
+        {
+          "id": "back",
+          "region_xywh": [
+            627,
+            0,
+            627,
+            627
+          ],
+          "visible_bounds_local_xywh": [
+            42,
+            17,
+            404,
+            609
+          ]
+        },
+        {
+          "id": "left",
+          "region_xywh": [
+            0,
+            627,
+            627,
+            627
+          ],
+          "visible_bounds_local_xywh": [
+            212,
+            6,
+            380,
+            608
+          ]
+        },
+        {
+          "id": "right",
+          "region_xywh": [
+            627,
+            627,
+            627,
+            627
+          ],
+          "visible_bounds_local_xywh": [
+            71,
+            6,
+            359,
+            608
+          ]
+        }
+      ]
+    },
+    {
+      "file": "ash-priest-dialogue-halfbody-v2.png",
+      "sha256": "b8572d0f8597635d9b86da3485eb6c33169c072000de67400a93376991cd7171",
+      "size": [
+        1254,
+        1254
+      ],
+      "pixel_format": "Format32bppArgb",
+      "corner_alpha": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "regions": [
+        {
+          "id": "portrait",
+          "region_xywh": [
+            0,
+            0,
+            1254,
+            1254
+          ],
+          "visible_bounds_local_xywh": [
+            171,
+            35,
+            1046,
+            1194
+          ]
+        }
+      ]
+    }
+  ],
+  "runs": [
+    {
+      "generation_id": "exec-31f12054-c68b-4871-b38e-d29aa5b134a0",
+      "output": "ash-priest-idle-four-directions-v2.png",
+      "transparent_background": true,
+      "prompt": "Use case: style-transfer\nImage1 = EDIT TARGET: Ash Priest's current four-view sprite sheet. Image2 = APPROVED A Ling sprite sheet, definitive reference for coarse pixel-block size, compact shading and detail density. Image3 = Ash Priest original character design, identity reference only.\nUser says image1 still has insufficient pixel character compared to the other game characters. Make it VISIBLY MORE PIXELATED: rebuild image1's sprites as deliberate LOW-RES GAME PIXEL ART, reducing internal detail density roughly by half. Use consistently LARGE SQUARE PIXEL CLUSTERS and bold stair steps, like image2 or slightly coarser. Think each figure is hand-drawn at about 56x88 logical pixels then enlarged approximately 6x with nearest-neighbor; this is a visual instruction, do not print it. All hair tips, eyes, hat arches, ladle, dress pleats, beads and contours must share that coarse grid. No tiny hair strands, tiny 1-screen-pixel edge noise, smooth curves, gradients, glow, soft shadows, dithering or painterly highlights. Use only 2 or 3 flat shades per material and a compact palette. Dark red/brown one-logical-pixel outline, no bright red fringe around sprites.\nPreserve the existing character identity and 2x2 layout: top-left FRONT facing viewer/down, top-right BACK with no face, bottom-left strict LEFT looking left, bottom-right strict RIGHT looking right. Each is an independent view, not mirrored. Consistent size and baseline. Leave at least a small transparent gutter around each sprite so no crown touches a neighboring cell; whole crown and shoes visible. Transparent background and transparent crown holes.\nKeep the small slim cute body, friendly amber eyes and smile, rounded chin, white hair with pink shadow clusters, RED HOLLOW ARCH CROWN with central vertical rib and flame square plaque. Preserve red robe, ivory ruffled apron/layered skirt, pink socks, red strap shoes and gold bracelet.\nCritical inventory objects remain recognizable even when simplified:\n- RIGHT-hand copper-orange GIANT SOUP LADLE staff. Dome-shaped ladle bowl on a long straight stem, not a cane or torch.\n- LEFT-hip suspended WOODEN ABACUS with parallel rods and separate GOLD BEAD clusters in an open rectangular wooden frame, red cord and gold tassel. Never replace with a bag/book.\n- PARCHMENT PURCHASE-ORDER CAPE from shoulders to hem, pale ochre paper with just a few simple red ruled bookkeeping marks and irregular paper edges. Back sprite shows paper cape clearly, not cloth wings.\nKeep correct sides from image1: front staff screen-left / abacus screen-right, rear staff screen-right, left-facing profile abacus visible, right-facing profile abacus far-side mostly hidden.\nNo new costume details, no pose redesign, no props copied from A Ling, no extra birds or keys. No text, no borders, no labels or scenery. Clear, attractive, unmistakably coarse game pixel sprites, not a large illustration with a pixel filter.",
+      "reference_paths": [
+        "assets/characters/ash-priest/ash-priest-idle-four-directions-v1.png",
+        "assets/characters/aling/archive/2026-10-29/aling-idle-four-directions.png",
+        "doc/source/characters/ash-priest/design-clean-original.png"
+      ]
+    },
+    {
+      "generation_id": "exec-db4988d3-5036-4586-b71a-3fff035b71a7",
+      "output": "ash-priest-dialogue-halfbody-v2.png",
+      "transparent_background": true,
+      "prompt": "Use case: style-transfer / identity-preserve\nRevise the Ash Priest dialogue portrait so it follows her ORIGINAL DESIGN'S DRAWING STYLE much more closely, while still being genuine fine PIXEL ART for the same game.\nInput1 = USER ORIGINAL clean character design, PRIMARY authority for facial design, head/neck proportions, hair shape, expression, flat palette and line economy.\nInput2 = CURRENT GENERATED HALF-BODY PORTRAIT, edit target and composition/prop-placement reference. It is too glossy, over-detailed and generically anime compared to the original; correct this.\nInput3 = approved A Ling portrait, SECONDARY reference only for fine square-pixel rendering. Never copy its pose, blue hair, face identity or props.\nKeep a square waist/upper-hip-up portrait with BOTH HANDS holding the long copper ladle upright at screen-left, full tall red crown inside top margin, abacus and gold tassel fully visible at lower screen-right, purchase-order cape behind torso. Keep practical framing with at least 35 transparent pixels above crown and below abacus. Crop only lower apron and staff shaft, no full legs.\nSTYLE CORRECTIONS TOWARD ORIGINAL:\n- Restore the original girl's distinct face: modestly slim soft oval with a small rounded chin, original small nose, simpler oval golden-orange eyes and restrained dark upper lash line. Eyes slightly less oversized than current generated portrait, and lower lashes much simpler. Keep dark pupil + one natural small upper catchlight, never a central white square. Do not make a sharp V jaw.\n- Original has a WARM SMALL OPEN SMILE, not the large excited triangular gape of input2. Reduce mouth opening, make it gently sideways-oval like original, keep bright welcoming expression and rosy cheeks. A friendly enthusiastic ingredient-shop owner, not a different bubbly anime mascot.\n- Make head/neck posture closer to the more upright original. Reduce exaggerated diagonal head tilt of input2 a little, keep gentle three-quarter orientation toward screen-left.\n- Restore ORIGINAL HAIR SILHOUETTE: white shoulder-length layered hair, simple sweeping bangs and several broad tapered tufts flowing right. Pale pink underside. FEWER, larger hair masses; remove added small curled ringlets and elaborate individual strands. Flat warm-white highlights, no silver gloss or dramatic rim lighting.\n- Use the ORIGINAL palette and simple cel shading: rich flat crimson/red, warm off-white/cream fabric, pale pink shadow, subdued salmon/copper ladle and peach/tan paper. Two or three clear flat tones per material, minimal highlights and sparse fold lines. Crown should read as original flat red framework, not shiny beveled 3D jewelry; ladle is simply colored metal, not polished gold.\n- Keep simple thin dark-maroon/brown pixel contours and stepped colored fold lines, fewer busy wrinkles. ORIGINAL hand-drawn cute simplicity translated faithfully into fine pixel clusters. Do not merely smooth/trace/crop the source; construct a polished pixel-game half-body portrait.\nPreserve exactly the character-defining components: RED OPEN ARCH CROWN with central vertical rib and flame square plaque; both crown holes transparent; flame neck ornament and gold ties; ivory ruffled shoulder trim/apron and sash over red sleeves; gold wrist bracelet; oversized SOUP LADLE staff; left-hip WOODEN ABACUS with visible rods/gold beads, open spaces, red hanging cord and gold tassel; slightly torn tan PURCHASE-ORDER PAPER CAPE with sparse faded reddish bookkeeping lines/marks.\nNo generic religious replacements or extra jewelry, no floating loose papers, no glow, no scenery, no UI/text/border. Stronger fidelity to the original FACE, EXPRESSION, HAIR and simple flat shading, while keeping unmistakable fine pixel edges and real transparent RGBA.",
+      "reference_paths": [
+        "doc/source/characters/ash-priest/design-clean-original.png",
+        "assets/characters/ash-priest/ash-priest-dialogue-halfbody-v1.png",
+        "assets/characters/aling/archive/2026-10-29/aling-dialogue-halfbody.png"
+      ]
+    }
+  ],
+  "verification": {
+    "copy_hash": "PASS",
+    "metadata": "PASS; 1254x1254 RGBA",
+    "visual_review": "更粗的四向小人像素；半身原稿画风靠拢，主要配饰保留",
+    "human_art_acceptance": "PENDING",
+    "runtime_integration": "NOT_DONE",
+    "engine_tests": "NOT_RUN_ASSET_ONLY"
+  },
+  "notes": [
+    "用户最新要求优先：小人加强像素颗粒，半身保留细像素但提高原稿脸型/眼形/发束/简洁配色的一致性。",
+    "提示中的逻辑网格和细节减半为视觉目标，非测量承诺；实际图片为1254×1254。",
+    "输出原字节保存；原稿、参考和v1未改写。生成式编辑不保证其他区域逐像素不变。",
+    "半身边缘杂点抽样(945,780)/(966,792)/(981,800)为红色alpha1/255残余，保留生成器alpha；两个v2左下角alpha1，其余角0。未通过脚本修改图像。"
+  ]
+}

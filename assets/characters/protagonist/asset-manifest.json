@@ -1,5 +1,13 @@
 {
   "schema": 1,
+  "selected_dialogue_portrait": {
+    "file": "protagonist-dialogue-halfbody-pose-pixel-v7.png",
+    "sha256": "9b45e97bc035faabc6fc7f20c93d33e48508f915ca49900d33492e816f1e2f0f",
+    "selected_on": "2026-10-28",
+    "selection": "USER_CONFIRMED_KEEP_V7",
+    "generation_record": "portrait-pose-pixel-v7-generation.json",
+    "runtime_integration": "NOT_DONE"
+  },
   "character_id": "protagonist",
   "date": "2026-10-27",
   "status": "ASSETS_GENERATED_GAME_INTEGRATION_NOT_REQUESTED",
