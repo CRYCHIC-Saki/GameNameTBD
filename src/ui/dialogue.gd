@@ -121,7 +121,12 @@ func name_hero(value: String) -> bool:
 	var cleaned:=value.strip_edges()
 	if cleaned.is_empty() or cleaned.length()>20 or action!="enter_name": return false
 	body=body.replace(hero_name,cleaned)
-	_beats[_index].text=body;hero_name=cleaned;shown=0
+	_beats[_index].text=body
+	for beat: Dictionary in _beats:
+		if beat.get("kind")=="line":
+			beat.text=str(beat.get("text","")).replace(hero_name,cleaned)
+			if beat.get("portrait")=="hero": beat.speaker=cleaned
+	hero_name=cleaned;speaker_name=cleaned;shown=0
 	return true
 
 func pointer_down() -> void:

@@ -93,12 +93,12 @@ func run() -> void:
 	check(shell.save_game().ok,"second profile saves")
 	var money:int=shell.profile.shop.snapshot().money_cents
 	shell.go_title();await frames()
-	await click("开始游戏",shell._title_screen)
-	check(shell.profile!=null and shell._modal==null,"start enters game without slot chooser")
+	await click("继续游戏",shell._title_screen)
+	check(shell.profile!=null and shell._modal==null,"continue enters game without slot chooser")
 	if failed: await finish();return
-	check(shell.profile.slot_id=="slot-02","start opens most recently saved slot")
+	check(shell.profile.slot_id=="slot-02","continue opens most recently saved slot")
 	check(shell.profile.shop.snapshot().money_cents==money and shell.profile.shop.available("egg")==1000,"inventory and money survived reload")
-	check(shell.slots.slots().filter(func(row:Dictionary)->bool:return row.ok).size()==2,"start did not create a third slot")
+	check(shell.slots.slots().filter(func(row:Dictionary)->bool:return row.ok).size()==2,"continue did not create a third slot")
 	shell.go_title();await frames()
 	await click("载入存档",shell._title_screen)
 	await capture("saved-slots")
@@ -106,6 +106,10 @@ func run() -> void:
 	check(shell.profile!=null,"explicit load works")
 	if shell.profile!=null: check(shell.profile.slot_id=="slot-01","load menu selects the requested older slot")
 	if not failed: await check_room_movement()
+	shell.go_title();await frames()
+	await click("开始游戏",shell._title_screen)
+	check(shell.profile!=null and shell.profile.slot_id=="slot-03","start always creates a new empty slot")
+	check(shell.guide.presenting() and shell.profile.story.beat=="arrive","new start replays opening")
 	await finish()
 
 func physics_frames(count: int) -> void:
@@ -148,3 +152,10 @@ func check_room_movement() -> void:
 	kitchen._player.position=Vector2(640,320)
 	check(kitchen._player.move_and_collide(Vector2(0,-150))!=null,"kitchen counter remains solid")
 	await capture("kitchen-walk")
+	var home_talk:=TDOpeningScript.home_conversation("home_door","赤焰")
+	home_talk.begin()
+	check(not home_talk.full_text().is_empty(),"export includes the homecoming script")
+	# This export smoke checks acquired-room assets; narrative acquisition is tested separately.
+	shell.profile.residence.stage="door";check(shell.profile.unlock_residence().ok,"profile can acquire cottage through its contract")
+	check(shell.travel("cottage",true).ok and shell.cottage.target()=="rest","exported cottage bed and interaction are available")
+	await capture("cottage-bed")

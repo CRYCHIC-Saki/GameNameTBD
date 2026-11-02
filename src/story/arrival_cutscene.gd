@@ -118,6 +118,15 @@ func _draw_actor(who: String, index: int, feet: Vector2, height: float) -> void:
 	var dimensions:=art.get_size()*(height/art.get_height())
 	draw_rect(Rect2(feet+Vector2(-36,-3),Vector2(72,7)),Color(0.14,0.19,0.22,.18))
 	draw_texture_rect(art,Rect2((feet-Vector2(dimensions.x*.5,dimensions.y)).round(),dimensions),false)
+	if who=="aling":
+		# Lettering is a game-rendered cover detail: preserve the source pose atlas.
+		var atlas:=art as AtlasTexture
+		var labels: Array[Vector2]=[Vector2(193,249),Vector2(729,198),Vector2(1247,213),Vector2(232,728),Vector2(743,728),Vector2(1253,727)]
+		var point:=feet-Vector2(dimensions.x*.5,dimensions.y)+(labels[index]-atlas.region.position)*dimensions/atlas.region.size
+		var letter_scale:=height/atlas.region.size.y
+		draw_set_transform_matrix(_view_transform*Transform2D(.22 if index<2 else -.12,Vector2.ONE*letter_scale,0,point))
+		draw_string(ThemeDB.fallback_font,Vector2(-12,0),"密令",HORIZONTAL_ALIGNMENT_LEFT,-1,16,Color("f7d77d"))
+		draw_set_transform_matrix(_view_transform)
 
 func _draw_map() -> void:
 	var art:=TDStoryArt.cropped_view("arrival:map",PROPS,Rect2i(0,0,1030,500))
@@ -128,4 +137,22 @@ func _draw_book(center: Vector2, openness: float) -> void:
 	var index:=0 if openness<.12 else (1 if openness<.85 else 2)
 	var region: Rect2i=[Rect2i(1030,0,506,500),Rect2i(0,500,750,524),Rect2i(750,500,786,524)][index]
 	var art:=TDStoryArt.cropped_view("arrival:book"+str(index),PROPS,region)
-	draw_texture_rect(art,TDStoryArt.fit(art,Rect2(center-Vector2(400,260),Vector2(800,520))),false)
+	var box:=TDStoryArt.fit(art,Rect2(center-Vector2(400,260),Vector2(800,520)))
+	draw_texture_rect(art,box,false)
+	if index<2:
+		var title_at:=box.position+box.size*(Vector2(.34,.22) if index==0 else Vector2(.74,.25))
+		draw_string(ThemeDB.fallback_font,title_at,"密令",HORIZONTAL_ALIGNMENT_LEFT,-1,42 if index==0 else 27,Color("f3d580"))
+	if index==0: return
+	var pages: Array[Rect2]=[Rect2(.16,.20,.31,.56),Rect2(.53,.20,.32,.56)]
+	if index==1: pages.assign([Rect2(.37,.22,.08,.58),Rect2(.515,.22,.10,.58)])
+	for page: int in pages.size():
+		var area:=pages[page]
+		for row: int in 9:
+			var points:=PackedVector2Array()
+			var width: float=area.size.x*(.75+float((row*3+page)%5)*.05)
+			for n: int in 65:
+				var x: float=float(n)/64.0
+				var wave: float=(sin(x*TAU*(7+row%3)+row)+.4*sin(x*TAU*19))*.003
+				var local:=area.position+Vector2(x*width,float(row)/9.0*area.size.y+wave)
+				points.append(box.position+local*box.size)
+			draw_polyline(points,Color("78583d"),1.6 if index==1 else 2.0,false)

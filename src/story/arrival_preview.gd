@@ -14,7 +14,7 @@ func _ready() -> void:
 
 func play(id: String) -> void:
 	var talk: TDDialogue
-	if id=="intro": talk=TDOpeningScript.conversation("intro","玩家",80)
+	if id=="intro": talk=TDOpeningScript.conversation("intro","？？？",80)
 	else:
 		talk=TDDialogue.new();talk.add_cg(id,"",TDArrivalCutscene.SPANS[id])
 	view.present(talk)

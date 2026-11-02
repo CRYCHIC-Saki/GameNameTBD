@@ -41,7 +41,7 @@ func test_new_slot_shows_film_first_then_harbor_once_and_load_remains_cottage() 
 	assert_eq(shell.town._player_cell(),TDHarbor.ARRIVAL)
 	view._process(100);assert_eq(ended.size(),1)
 	assert_true(shell.save_game().ok);shell.go_title();assert_true(shell.load_game("slot-01").ok)
-	assert_eq(shell.location,"cottage");assert_false(shell.guide.presenting());assert_eq(shell.profile.story.hero_name,"海风")
+	assert_eq(shell.location,"town");assert_eq(shell.town._player_cell(),TDHarbor.ARRIVAL);assert_false(shell.guide.presenting());assert_eq(shell.profile.story.hero_name,"海风")
 	shell.go_title()
 	await get_tree().process_frame;await get_tree().process_frame
 

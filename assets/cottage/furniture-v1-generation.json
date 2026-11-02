@@ -1,0 +1,11 @@
+{
+  "asset": "furniture-v1.png",
+  "mode": "new transparent 3x2 sprite atlas; reference style only",
+  "tool": "image_gen.imagegen",
+  "version": "not exposed",
+  "reference": "res://assets/kitchen/kitchen-background-v2.png",
+  "date": "2026-11-01",
+  "sha256": "2d6129bb2bd82d0245b379dda0ca17cb092503fc9c9347b9682250d893fc3871",
+  "prompt": "Create a new game-ready transparent pixel-art furniture sprite atlas for a cozy small Chinese cottage in the same warm, cute, hand-pixelled style and orthographic elevated front view as the reference kitchen. This is a NEW asset sheet, not a scene edit. Image 1536x1024, EXACT 3 columns by 2 rows of equal 512x512 cells, wide transparent gutters, no background, no labels or letters. One fully isolated object centered in each cell, nothing overlaps cells. Top left: a single wooden bed, headboard at top, cream pillow and folded red quilt with small golden diamond embroidery, viewing down towards foot of bed, no canopy. Top middle: low square bedside cabinet with brass handle and a small warm lantern on top. Top right: a Chinese wooden lattice window with blue sky and bamboo visible through panes and cream plaster trim. Bottom left: one decorative wall shelf containing books, ceramic teapot, trailing pothos; clearly wall mounted. Bottom middle: flat oval woven straw rug with simple red border, viewed obliquely from above. Bottom right: small pair of hanging Chinese red lanterns linked to a short horizontal wooden wall bracket. Rich readable silhouettes, consistent pixel density and light from upper left, crisp square pixel clusters, restrained shading, no gradients, no realistic textures, no people. Bed fits within cell leaving 24px gutters. All six components must be usable as individual sprites on a transparent canvas.",
+  "runtime": "Read-only AtlasTexture regions clipped by alpha; originals preserved."
+}
