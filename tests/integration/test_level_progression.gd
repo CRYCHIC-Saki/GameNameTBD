@@ -84,7 +84,7 @@ func test_multi_day_level_reward_and_six_slot_package_are_idempotent() -> void:
 	assert_true(profile.save().ok);assert_true(profile.save().ok)
 	assert_eq(profile.progression.snapshot(),levels);assert_eq(profile.research.snapshot(),research)
 	var loaded:=store.load_slot("slot-01");assert_true(loaded.ok,loaded.code)
-	assert_eq(int(loaded.data.schema_version),6)
+	assert_eq(int(loaded.data.schema_version),7)
 	var restored:=create_profile("slot-03");assert_true(restored.restore(loaded.data).ok)
 	assert_eq(restored.progression.progress(),profile.progression.progress())
 	# The profile deliberately aligns research.world_time with the saved business day.

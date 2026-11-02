@@ -1,5 +1,10 @@
 # 项目架构与接入边界
 
+## D056 落脚故事与存档职责
+住所资格归既有 Profile.residence；它与 Opening 原教学进度并列，确保深夜提前安顿不会把尚未完成的试做覆盖成 done。Guide 只编排邀请/护送/门口对白，Town复用道路跟随、距离停等与原阿铃角色；Shell统一处理房间权限、日末清理及边界保存。没有新管理器或Autoload。
+ProfileStore 的槽删除使用独立文件归档日志，不把坏档解析为正常档后再删。当前活跃 Profile 不能从载入页面删除；开始与继续各自保留不同语义。
+
+
 ## D054 海港开篇场景
 TDArrivalCutscene是可编辑AnimationPlayer/只读姿势资产组成的局部舞台；TDDialogue仍唯一拥有播放秒数。时间轴取样不触发经营效果，世界相机不被覆盖；TDDialogueView保持初遇对白时的末镜并冻结/跳过当前段。Shell只在first_entry同步隐藏地图后装配Guide.begin_arrival，完成信号一次恢复同一场景；旧读取仍小屋。昵称输入发意图给Opening，不创建第二个存档。东缘海岸不改有效产权网格；NPC预留停点属于原Roster运行显示状态，不改变经济身份。
 

@@ -31,7 +31,7 @@ func mouse(target: Button) -> void:
 		var event:=InputEventMouseButton.new();event.button_index=MOUSE_BUTTON_LEFT;event.pressed=down;event.position=at;event.global_position=at
 		get_tree().root.push_input(event,true)
 
-func test_real_click_start_creates_once_then_reloads_latest_without_slot_dialog() -> void:
+func test_real_click_start_creates_once_and_continue_reloads_latest() -> void:
 	mouse(button("开始游戏",shell._title_screen))
 	assert_true(shell._entry_busy);assert_null(shell._modal)
 	assert_string_contains(shell._title_notice.text,"创建")
@@ -47,10 +47,13 @@ func test_real_click_start_creates_once_then_reloads_latest_without_slot_dialog(
 	assert_true(shell.save_game().ok)
 	var money:int=shell.profile.shop.snapshot().money_cents
 	shell.go_title();await frames()
-	mouse(button("开始游戏",shell._title_screen));await frames()
+	mouse(button("继续游戏",shell._title_screen));await frames()
 	assert_null(shell._modal);assert_eq(shell.profile.slot_id,"slot-02")
 	assert_eq(shell.profile.title,"第二家食堂");assert_eq(shell.profile.shop.snapshot().money_cents,money)
 	assert_eq(shell.profile.shop.available("egg"),1000)
+	shell.go_title();await frames()
+	mouse(button("开始游戏",shell._title_screen));await frames()
+	assert_eq(shell.profile.slot_id,"slot-03");assert_eq(shell.profile.story.beat,"arrive")
 
 func test_real_click_load_new_empty_slot_and_explicit_load_keep_selection() -> void:
 	assert_true(shell.create_game("slot-01","已有食堂").ok);shell.guide.dialogue.finish_now();shell.go_title();await frames()
@@ -85,7 +88,7 @@ func test_full_invalid_slots_show_error_on_title_without_creating_or_overwriting
 	for i:int in range(1,7): write_invalid("slot-%02d"%i)
 	mouse(button("开始游戏",shell._title_screen));await frames()
 	assert_null(shell.profile);assert_false(shell._entry_busy)
-	assert_string_contains(shell._title_notice.text,"恢复")
+	assert_string_contains(shell._title_notice.text,"删除")
 	for row:Dictionary in shell.slots.slots(): assert_eq(row.code,"INVALID_JSON")
 
 func test_write_failure_shows_visible_reason_then_retry_works() -> void:
@@ -98,8 +101,23 @@ func test_write_failure_shows_visible_reason_then_retry_works() -> void:
 	assert_string_contains(shell._notice.text,"INTERRUPTED")
 	assert_true(shell._notice.is_visible_in_tree())
 	assert_eq(shell.slots.load_slot("slot-01").code,"INTERRUPTED_SAVE")
+
 	shell.slots.interrupt_at="";shell.show_slots(true);await frames()
 	mouse(button("从这里开始",shell._modal_box));await frames()
 	assert_not_null(shell.profile)
 	if shell.profile!=null: assert_eq(shell.profile.slot_id,"slot-02")
 	assert_eq(shell.slots.load_slot("slot-01").code,"INTERRUPTED_SAVE")
+
+func test_load_menu_delete_confirmation_cancel_and_freed_slot() -> void:
+	assert_true(shell.create_game("slot-01","临海小店").ok);shell.guide.dialogue.finish_now()
+	assert_true(shell.save_game().ok);shell.go_title();await frames()
+	var bytes:=FileAccess.get_file_as_bytes(shell.slots.path_for("slot-01"))
+	shell.show_slots(false);await frames();mouse(button("删除",shell._modal_box));await frames()
+	assert_not_null(button("确认删除",shell._modal_box))
+	mouse(button("取消",shell._modal_box));await frames()
+	assert_eq(FileAccess.get_file_as_bytes(shell.slots.path_for("slot-01")),bytes)
+	mouse(button("删除",shell._modal_box));await frames();mouse(button("确认删除",shell._modal_box));await frames()
+	assert_eq(shell.slots.load_slot("slot-01").code,"NOT_FOUND")
+	assert_null(button("删除",shell._modal_box))
+	shell._close_dialog();mouse(button("开始游戏",shell._title_screen));await frames()
+	assert_eq(shell.profile.slot_id,"slot-01");assert_eq(shell.profile.story.beat,"arrive")

@@ -9,6 +9,8 @@ func before_each() -> void:
 	app.settings_path="res://artifacts/habitat-tests/%d/settings.json"%Time.get_ticks_usec()
 	add_child_autofree(app);shell=app.game_shell;shell.automatic_time=false
 	assert_true(shell.create_game("slot-01").ok);shell.guide.dialogue.finish_now()
+	# These regressions exercise an already acquired cottage; new-slot gating has dedicated tests.
+	shell.profile.residence.stage="door";assert_true(shell.profile.unlock_residence().ok)
 	driver=DRIVER.new();driver.viewport=get_tree().root;driver.kitchen=shell.kitchen_view.kitchen
 	await wait_physics_frames(2)
 
@@ -78,7 +80,7 @@ func test_bed_saves_next_day_once_and_loads_there_with_existing_progress() -> vo
 	assert_false(shell.restaurant.interaction_points().any(func(p:Dictionary)->bool:return p.action=="rest"))
 	var old:=before.duplicate(true);old.schema_version=3;old.erase("residence")
 	var migrated:=TDGameProfile.new();var result:=migrated.restore(old)
-	assert_true(result.ok,result.code);assert_eq(migrated.snapshot().schema_version,6)
+	assert_true(result.ok,result.code);assert_eq(migrated.snapshot().schema_version,7)
 	assert_true(TDLevelProgression.same_value(migrated.research.snapshot(),shell.profile.research.snapshot()));migrated.close()
 	var invalid:=before.duplicate(true);invalid.residence.schema_version=99
 	var unchanged:=shell.profile.snapshot()

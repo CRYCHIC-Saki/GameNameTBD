@@ -75,6 +75,25 @@ static func _view(key: String, source: Texture2D, region: Rect2) -> Texture2D:
 		_views[key]=texture
 	return _views[key]
 
+static func paint_ledger_title(canvas: CanvasItem, art: Texture2D, box: Rect2) -> void:
+	# Original archive bust already says 密令. New mood poses use the same cover title,
+	# at exposed cover coordinates only (never stamped over hands or inner pages).
+	if not art is AtlasTexture: return
+	var atlas:=art as AtlasTexture
+	var point:=Vector2.ZERO;var font_size:=20;var angle:=0.0
+	if atlas.atlas==MOODS.aling:
+		if atlas.region.position.y<500 and atlas.region.position.x<540: point=Vector2(315,380);angle=.15
+		elif atlas.region.position.y>=500 and atlas.region.position.x>530 and atlas.region.position.x<1040: point=Vector2(817,837);font_size=15;angle=.55
+	elif atlas.atlas==ALING_CORRECTIONS:
+		if atlas.region.position.x<880: point=Vector2(543,524);font_size=27;angle=.08
+		else: point=Vector2(1303,768);font_size=24
+	if point==Vector2.ZERO: return
+	var target:=fit(art,box);var scale_factor:=target.size.x/atlas.region.size.x
+	var at:=target.position+(point-atlas.region.position)*scale_factor
+	canvas.draw_set_transform_matrix(Transform2D(angle,Vector2.ONE*scale_factor,0,at))
+	canvas.draw_string(ThemeDB.fallback_font,Vector2.ZERO,"密令",HORIZONTAL_ALIGNMENT_LEFT,-1,font_size,Color("f4d382"))
+	canvas.draw_set_transform_matrix(Transform2D.IDENTITY)
+
 static func fit(texture: Texture2D, box: Rect2) -> Rect2:
 	var scale:=minf(box.size.x/texture.get_width(),box.size.y/texture.get_height())
 	var size:=texture.get_size()*scale

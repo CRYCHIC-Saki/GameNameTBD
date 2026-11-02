@@ -3,6 +3,8 @@ extends RefCounted
 ## First day of 无敌厨神：阿铃、老陈、画像里的罗厄。
 ## Choices change the next lines. They do not create a second shop order.
 
+const TRIAL_RECIPES := ["service.tomato_egg","recipe.tomato_egg","tomato_egg"]
+
 var beat: String = ""
 var hero_name: String=""
 var script_version: int = 2
@@ -72,7 +74,7 @@ func quest(_ready: bool, board: Dictionary = {}) -> String:
 		"cook": return "按 B 打开菜谱，查看番茄炒蛋的做法。" if not recipe_viewed else "大块番茄、嫩鸡蛋、略甜。完成制作后端菜送到出餐台。"
 		"verdict": return "回到餐厅第一张桌旁，听阿铃的品尝评价。"
 		"founded":
-			if served: return "第一轮营业已结束。去店外与阿铃商议拜访港口厨师。"
+			if served: return "第一轮营业已结束。去店外找阿铃，安排今晚的落脚处。"
 			var gap:=_stall_gap(board)
 			return gap if gap!="" else "在营业牌开门，经营一轮后打烊，再与阿铃商议。"
 		_: return "第一口异端 · 已完成。港口后续剧情尚未编写。" if finished() else ""
@@ -109,7 +111,7 @@ func arrive_escort() -> void:
 func accept_trial(dish: Dictionary, rating: Dictionary) -> TDOutcome:
 	if served_dish_id!="": return TDOutcome.new(false,"ALREADY_SERVED")
 	if beat!="cook" or dish.get("state")!="plated": return TDOutcome.new(false,"NOT_TRIAL_PLATE")
-	if not str(dish.get("recipe_id","")).ends_with("tomato_egg"): return TDOutcome.new(false,"WRONG_TRIAL_DISH","阿铃等的是番茄炒蛋。")
+	if dish.get("recipe_id","") not in TRIAL_RECIPES or dish.get("failed_dish",false): return TDOutcome.new(false,"WRONG_TRIAL_DISH","这盘不是番茄炒蛋，请用番茄和鸡蛋在炒锅重新试做。")
 	if not validate_state({"assessment":rating}).ok or not rating.has("satisfaction"): return TDOutcome.new(false,"INVALID_SCORE")
 	served_dish_id=str(dish.get("session_id",""))
 	if served_dish_id.is_empty(): return TDOutcome.new(false,"INVALID_DISH")

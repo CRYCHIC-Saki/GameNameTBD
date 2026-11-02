@@ -1,5 +1,15 @@
 # 项目状态
 
+## 2026-11-02 D055–D056 上传与 main 合并授权
+用户明确授权上传并直接完成 main 合并，覆盖前述本轮“不提交/推送”的历史交付状态。集成分支 integration/phase-4-wave-story-fixes；fetch 后 origin/main=73eb8fc，与起点一致，无新增提交需整合。841验证输入哈希一致，沿用本地571/571、GPU42帧与EXE36项结果；不把复核哈希写成重新执行全量测试。上传代码、运行素材、测试和工程记录；19份本地原始资料改动保留、不上传，构建产物和缓存仍忽略。通过集成PR进入main，远程检查及最终合并状态以GitHub实际结果为准；人工试玩仍PENDING。
+
+## 2026-11-01 D056（DELIVERED_LOCAL_PLAYTEST_PENDING）
+五项修改已实现：开始新档/载入删除、密令封面、CG比例和遮挡、小屋像素家具、阿铃落脚故事及床边锚点。新增schema7兼容旧住所，02:00保留未完教学。专项12/12、追加真实E及移动15/15，最终全量571/571、20284断言、0失败/跳过、exit0；真实GPU42帧已检查，包含护送、门口领钥匙、4种持书情绪。553运行资源及实际EXE启动3×4/菜单移动新档小屋36项PASS。21:41本地EXE/PCK更新，报告story-expansion D056及artifacts/homecoming/final-validation.json。841输入不变，46起点备份及19原始资料完整，335路径所有权PASS。人工PENDING、远程CI NOT_RUN，未提交推送；写入锁释放，下一工作单元是本轮试玩反馈。
+
+
+## 当前增量：D055序章试玩修正（DELIVERED_LOCAL_PLAYTEST_PENDING）
+基线已同步GitHub main 73eb8fc（PR#6）；本地工作分支integration/phase-4-wave-story-fixes，保护19份用户原始资料。八项反馈验收见story-expansion D055。全量564/564、20165断言、GPU18张、550运行资源及实际EXE启动3×4/菜单移动30项PASS。20:00本地EXE已重建，1093验证输入和19份用户原资料未变；写入锁释放。人工试玩PENDING；下一工作单元是本轮试玩反馈，不自动跨阶段，未提交/推送。
+
 ## 2026-11-01 GitHub交付基线
 
 用户本轮授权上传当前可运行版本，覆盖此前各本地交付点的“暂不提交/推送”。目标为integration/phase-4-wave-protagonist，main另经集成审查；不自动合并。已fetch确认origin/main=fa172f7且为当前HEAD祖先，无远端新增提交需要整合。595份已验证输入与D054最终检查一致，沿用556/556和实际导出30项结果；上传代码、运行素材、测试和工程文档，19份本地原始资料改动/新文件保留，不上传build/artifacts。远程CI结果以GitHub实际执行为准，不把本地通过写成远程通过。

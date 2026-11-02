@@ -1,6 +1,7 @@
 class_name TDRestaurantIsoView
 extends Node2D
 
+const PERSON_HEIGHT := 96.0 # AI-064: visual scale only; feet and collision stay fixed.
 const HALF_W := 48.0
 const HALF_H := 24.0
 const ORIGIN := Vector2(620, 48)
@@ -330,8 +331,8 @@ func _person(point: Vector2, _moving: bool, shirt: Color, caption: String, seate
 		var art:=TDStoryArt.sprite(character_id,facing,walk_frame)
 		if art!=null:
 			var ground:=project(grid.x,grid.y)
-			draw_texture_rect(art,TDStoryArt.fit(art,Rect2(ground+Vector2(-35,-70),Vector2(70,70))),false)
-			if caption!="": draw_string(_staff_font(),ground+Vector2(-25,-78),caption,HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color("fff4d2"))
+			draw_texture_rect(art,TDStoryArt.fit(art,Rect2(ground+Vector2(-PERSON_HEIGHT*.5,-PERSON_HEIGHT),Vector2.ONE*PERSON_HEIGHT)),false)
+			if caption!="": draw_string(_staff_font(),ground+Vector2(-25,-PERSON_HEIGHT-8),caption,HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color("fff4d2"))
 			return
 	if not interaction_markers.is_empty() and not staff and shirt==Color("#d86b4a"):
 		var ground:=project(grid.x,grid.y)
@@ -345,6 +346,9 @@ func _person(point: Vector2, _moving: bool, shirt: Color, caption: String, seate
 			draw_rect(plate, shirt, false, 2.0)
 			draw_string(_staff_font(), plate.position + Vector2(4, 16), caption, HORIZONTAL_ALIGNMENT_CENTER, 84, 14, Color("#fff4d2"))
 		return
+	var ground:=project(grid.x,grid.y)
+	draw_set_transform(ground,0,Vector2.ONE*(PERSON_HEIGHT/40.0))
+	at=Vector2(0,drop)
 	if seated:
 		draw_rect(Rect2(at + Vector2(-10, 8), Vector2(20, 5)), Color("#6b4a32"))
 	draw_circle(at + Vector2(0, -10), 6.0, Color("#f2d3b5"))
@@ -362,15 +366,16 @@ func _person(point: Vector2, _moving: bool, shirt: Color, caption: String, seate
 			var swing: float=stride*side*4.0
 			draw_rect(Rect2(at+Vector2(side*4-2,10+swing),Vector2(5,8)),Color("37404b"))
 			draw_rect(Rect2(at+Vector2(side*9-2,-1-swing),Vector2(4,8)),shirt.lightened(.12))
+	draw_set_transform_matrix(Transform2D.IDENTITY)
 	if caption != "":
 		var font := ThemeDB.fallback_font
 		if font != null:
-			draw_string(font, at + Vector2(-20, -28), caption, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("#fff4d2"))
+			draw_string(font, ground + Vector2(-30, -PERSON_HEIGHT-8), caption, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("#fff4d2"))
 
 func chef_rect(point: Vector2) -> Rect2:
 	var grid:=point/float(layout.cell_px)
 	var texture := TDChefArt.texture(player_facing, player_walk_frame)
-	var size := texture.get_size() * 70.0 / texture.get_height()
+	var size := texture.get_size() * PERSON_HEIGHT / texture.get_height()
 	return Rect2(project(grid.x,grid.y) - Vector2(size.x * 0.5, size.y), size)
 
 func _prop(index: int, at: Vector2, width: float) -> void:

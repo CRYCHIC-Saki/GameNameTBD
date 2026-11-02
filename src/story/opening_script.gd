@@ -4,6 +4,13 @@ extends RefCounted
 const PATH := "res://content/story/opening.json"
 static var _data: Dictionary = {}
 
+static func home_conversation(scene: String, hero: String) -> TDDialogue:
+	var talk:=TDDialogue.new();talk.story_layout(hero,"aling");talk.context={"kind":"story","scene":scene}
+	var raw: Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://content/story/homecoming.json"))
+	for row: Dictionary in raw.scenes.get(scene,[]):
+		talk.add_line(hero if row.who=="hero" else "阿铃",row.who,row.text,row.mood)
+	return talk
+
 static func data() -> Dictionary:
 	if _data.is_empty():
 		var parsed: Variant=JSON.parse_string(FileAccess.get_file_as_string(PATH))
@@ -22,6 +29,6 @@ static func conversation(scene: String, hero: String, san: int) -> TDDialogue:
 		if row.kind=="cg": talk.add_cg(str(row.cg),text,float(row.duration))
 		elif row.kind=="ui": talk.add_line("提示","",text,"calm","","ui")
 		else:
-			var speaker: String="玩家" if row.portrait=="hero" else str(row.speaker)
+			var speaker: String=hero if row.portrait=="hero" else str(row.speaker)
 			talk.add_line(speaker,str(row.portrait),text,str(row.emotion),str(row.action),str(row.get("display_kind","line")))
 	return talk
