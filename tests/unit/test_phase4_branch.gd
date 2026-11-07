@@ -252,6 +252,41 @@ func test_branch_culture_price_and_thirty_days_do_not_double_settle() -> void:
 	assert_eq(restored.money, saved_money)
 	assert_false(session.staff_on("prep"))
 
+func test_factory_build_and_panel_use_e_not_the_mouse() -> void:
+	var session := TDPhase3Session.new()
+	assert_true(session.load_default().ok)
+	var factory: Dictionary = session.town_map.factory_lots()[0]
+	var town := TDTownWorld.new()
+	town.session = session
+	town.player_mode = true
+	add_child_autofree(town)
+	await get_tree().process_frame
+	var bounds := TDInteractionRange.plot_bounds(factory, town.CELL, town._origin())
+	var stood := false
+	for at: Vector2 in [Vector2(bounds.position.x - 20, bounds.get_center().y), Vector2(bounds.end.x + 20, bounds.get_center().y), Vector2(bounds.get_center().x, bounds.position.y - 20), Vector2(bounds.get_center().x, bounds.end.y + 20)]:
+		var cell := Vector2i((at - town._origin()) / town.CELL)
+		if not session.town_map.is_walkable(cell.x, cell.y):
+			continue
+		town._player.position = at
+		if str(town.facing_plot().get("id", "")) != str(factory.id):
+			continue
+		stood = true
+		break
+	assert_true(stood, "A walkable side of the factory lot is in reach")
+	town._click_plot(factory)
+	assert_eq(String(session.town_map.plot_at(int(factory.x), int(factory.y)).kind), "factory_lot")
+	town._interact()
+	assert_eq(String(session.town_map.plot_at(int(factory.x), int(factory.y)).kind), "supply_factory")
+	assert_false(town._factory_layer != null and is_instance_valid(town._factory_layer))
+	var built: Dictionary = session._plot_by_id(String(factory.id))
+	assert_eq(str(town.facing_plot().get("id", "")), str(factory.id))
+	town._click_plot(built)
+	assert_false(town._factory_layer != null and is_instance_valid(town._factory_layer))
+	town._interact()
+	assert_true(town._factory_layer != null and is_instance_valid(town._factory_layer))
+	assert_eq(town._factory_plot, String(built.id))
+	town._close_factory_panel()
+
 func test_building_a_factory_keeps_the_map_and_the_player() -> void:
 	var session := TDPhase3Session.new()
 	assert_true(session.load_default().ok)

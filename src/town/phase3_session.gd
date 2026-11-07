@@ -997,7 +997,7 @@ func build_factory(plot_id: String) -> TDOutcome:
 		factory_built.erase(key)
 		return TDOutcome.new(false, "MISSING", "没有这块原料厂空地。")
 	var supply := String(plot.get("supply", ""))
-	return TDOutcome.new(true, "BUILT", "%s建好了，提供%s。点击厂房安排生产。" % [TDTownMap.supply_name(supply, true), TDTownMap.supply_goods(supply)])
+	return TDOutcome.new(true, "BUILT", "%s建好了，提供%s。靠近后按 E 安排生产。" % [TDTownMap.supply_name(supply, true), TDTownMap.supply_goods(supply)])
 
 func factory_level_of(plot_id: String) -> int:
 	return clampi(int(factory_level.get(_factory_key(plot_id), 1)), 1, TDTownMap.FACTORY_LEVEL_MAX)
@@ -1197,7 +1197,7 @@ func click_build_at(cell: Vector2i) -> TDOutcome:
 		return TDOutcome.new(false, "ALREADY", "餐厅已经建在这里。")
 	if kind == "supply_factory":
 		return TDOutcome.new(false, "ALREADY", "%s已经建在这里。" % TDTownMap.supply_name(String(plot.get("supply", "")), true))
-	return TDOutcome.new(false, "INVALID", "点餐厅建设区或原料厂空地才能建设。")
+	return TDOutcome.new(false, "INVALID", "只能在餐厅建设区或原料厂空地上建设。")
 
 func resize_home(size_id: String) -> TDOutcome:
 	if not TDRestaurantSizes.IDS.has(size_id):
@@ -1987,7 +1987,7 @@ func _dish_name(dish_id: String) -> String:
 
 func _branch_line() -> String:
 	if not home_built:
-		return "主店还没建。点餐厅建设区空地建店；点原料厂空地建厂。分店仍在别的小镇划地，同时只开一家。"
+		return "主店还没建。点餐厅建设区空地建店；靠近原料厂空地按 E 建厂。分店仍在别的小镇划地，同时只开一家。"
 	if not branch_open:
 		return "分店还没开。主店在餐厅建设区，默认%s。别的小镇可以自己划地，同时只开一家。" % TDRestaurantSizes.name_of(home_size)
 	var room := TDRestaurantSizes.interior(branch_size)

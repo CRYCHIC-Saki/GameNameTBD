@@ -130,9 +130,15 @@ func _move_projected(motion: Vector2) -> void:
 		var collision := move_and_collide(remaining, false, safe_margin)
 		budget = maxf(0.0, budget - to_screen.basis_xform(position - before).length())
 		if collision == null: break
-		var tangent := to_screen.basis_xform(collision.get_normal().orthogonal()).normalized()
+		var normal := collision.get_normal()
+		var tangent := to_screen.basis_xform(normal.orthogonal()).normalized()
 		var rest := to_screen.basis_xform(collision.get_remainder())
 		remaining = motion_transform.basis_xform(tangent * rest.dot(tangent))
+		# The screen tangent is not perpendicular to the wall in grid space.
+		# Leaving that component in makes the next step re-enter the wall and shake at the door.
+		var into := remaining.dot(normal)
+		if into < 0.0:
+			remaining -= normal * into
 
 func _reset_pose() -> void:
 	_walk_time = 0.0

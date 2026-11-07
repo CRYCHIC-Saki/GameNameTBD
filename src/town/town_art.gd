@@ -94,6 +94,10 @@ static func draw_world(canvas: Node2D, session: TDPhase3Session, selected: Dicti
 			prop(canvas,index,rect.position+Vector2(rect.size.x*.60,rect.size.y-8),minf(240,rect.size.x*.54))
 			prop(canvas,11,rect.position+Vector2(26,rect.size.y-4),42)
 			TDTownScenery.pots(canvas,rect)
+		elif kind=="supply_factory" or kind=="factory_lot":
+			TDTownScenery.shadow(canvas,feet,width)
+			TDEnvironmentArt.draw_factory(canvas,str(p.get("supply","")),feet,width,kind=="factory_lot")
+			TDTownScenery.pots(canvas,rect)
 		elif kind in ["market","snack_street"] and rect.size.x>=240:
 			TDTownScenery.fence(canvas,rect.grow(-3))
 			prop(canvas,6,rect.position+Vector2(rect.size.x-55,75),100)
@@ -106,7 +110,11 @@ static func draw_world(canvas: Node2D, session: TDPhase3Session, selected: Dicti
 				TDTownScenery.fence(canvas,rect.grow(-3))
 				prop(canvas,3,rect.position+Vector2(rect.size.x*.28,rect.size.y-width*.65),width*.48)
 				prop(canvas,6,rect.position+Vector2(rect.size.x*.79,rect.size.y-width*.55),width*.36)
-			prop(canvas,index,feet,width)
+			if kind=="player_diner" and not p.get("construction",false):
+				TDTownScenery.shadow(canvas,feet,width)
+				TDEnvironmentArt.draw_diner(canvas,feet,width)
+			else:
+				prop(canvas,index,feet,width)
 			TDTownScenery.pots(canvas,rect)
 		var active: bool=str(selected.get("id",""))==str(p.id)
 		var label: String="小镇食堂" if p.id=="player_diner" else str(p.name)

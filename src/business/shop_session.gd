@@ -385,6 +385,7 @@ func open_day(random_source: RefCounted = null) -> TDOutcome:
 func advance(seconds: float, paused: bool = false) -> TDOutcome:
 	if not is_finite(seconds) or seconds < 0: return TDOutcome.new(false,"INVALID_TIME")
 	if paused or _s.phase not in ["OPEN","DRAINING"]: return TDOutcome.new(true,"IDLE")
+	tick_crew(seconds)
 	var end: float = float(_s.elapsed_sec)+seconds
 	for iteration: int in 1024:
 		var next: float = end
@@ -512,6 +513,247 @@ func can_deliver(id: String, dish: Dictionary) -> TDOutcome:
 func guest_patience(base: float) -> float:
 	return base * (crew.cook_pace() if crew != null else 1.0)
 
+var _crew_jobs: Dictionary = {}
+var _crew_skip: Dictionary = {}
+var _crew_note: String = ""
+
+func crew_work(person_id: String) -> String:
+	for job: Variant in _crew_jobs.values():
+		var record: Dictionary = job
+		if str(record.get("cook_id", "")) != person_id:
+			continue
+		if bool(record.get("paused", false)):
+			return ""
+		return "缺料" if bool(record.get("blocked", false)) else "做菜"
+	return ""
+
+func take_crew_note() -> String:
+	var text := _crew_note
+	_crew_note = ""
+	return text
+
+func tick_crew(seconds: float) -> void:
+	if crew == null or not is_finite(seconds) or seconds <= 0.0 or _s.phase not in ["OPEN", "DRAINING"]:
+		return
+	var cooks := crew.cooks()
+	if cooks.is_empty():
+		_crew_jobs.clear()
+		return
+	var open_orders := {}
+	for live: Dictionary in _s.orders:
+		if str(live.get("status", "")) in ["WAITING", "COOKING"]:
+			open_orders[str(live.id)] = live
+	var stale: Array[String] = []
+	for job_id: Variant in _crew_jobs.keys():
+		if not open_orders.has(String(job_id)):
+			stale.append(String(job_id))
+	for skipped_id: Variant in _crew_skip.keys():
+		if not open_orders.has(String(skipped_id)):
+			stale.append(String(skipped_id))
+	for stale_id: String in stale:
+		_crew_jobs.erase(stale_id)
+		_crew_skip.erase(stale_id)
+	var busy := {}
+	for record: Variant in _crew_jobs.values():
+		busy[str((record as Dictionary).get("cook_id", ""))] = true
+	var idle_cooks: Array[Dictionary] = []
+	for cook: Dictionary in cooks:
+		if not busy.has(str(cook.get("id", ""))):
+			idle_cooks.append(cook)
+	for item: Dictionary in _s.orders:
+		if idle_cooks.is_empty():
+			break
+		var waiting_id := str(item.get("id", ""))
+		if str(item.get("status", "")) != "WAITING" or _crew_jobs.has(waiting_id) or _crew_skip.has(waiting_id):
+			continue
+		if _hands_on_recipe(family_id(str(item.get("recipe_id", "")))):
+			continue
+		var next_cook: Dictionary = idle_cooks[0]
+		idle_cooks.remove_at(0)
+		var index := _order_index(waiting_id)
+		if index < 0:
+			continue
+		_s.orders[index].status = "COOKING"
+		_crew_jobs[waiting_id] = {"cook_id": str(next_cook.get("id", "")), "left": crew.cook_seconds(str(next_cook.get("id", ""))), "blocked": false, "paused": false}
+	var finished: Array[String] = []
+	for job_key: Variant in _crew_jobs.keys():
+		var order_id := String(job_key)
+		var job: Dictionary = _crew_jobs[order_id]
+		var recipe_id := str(open_orders.get(order_id, {}).get("recipe_id", ""))
+		if _hands_on_recipe(family_id(recipe_id)):
+			job.paused = true
+			continue
+		job.paused = false
+		job.left = float(job.get("left", 0.0)) - seconds
+		if float(job.left) > 0.0:
+			continue
+		var plated := _crew_plate(order_id)
+		if plated.code == "INSUFFICIENT_STOCK":
+			if not bool(job.get("blocked", false)):
+				_crew_note = "后厨缺料，厨师还做不了这单。"
+			job.blocked = true
+			job.left = 1.0
+		elif plated.code == "EARLIER_MATCHING_ORDER":
+			job.left = 0.25
+		elif plated.ok:
+			var who := crew.person(str(job.get("cook_id", "")))
+			var spoken := "%s做好了%s。" % [str(who.get("name", "厨师")), recipe_name(str(plated.data.get("recipe_id", recipe_id)))]
+			_crew_note = spoken if _crew_note.is_empty() else _crew_note + spoken
+			finished.append(order_id)
+		elif plated.code == "GONE":
+			finished.append(order_id)
+		else:
+			_crew_skip[order_id] = true
+			_crew_note = "厨师没能把这单做出餐台。"
+			finished.append(order_id)
+	for done_id: String in finished:
+		_crew_jobs.erase(done_id)
+
+func _hands_on_recipe(family: String) -> bool:
+	if family.is_empty():
+		return false
+	for entry: Dictionary in _kitchen:
+		var dish: Dictionary = entry.get("dish", {})
+		if str(dish.get("recipe_id", "")) != family:
+			continue
+		var foods: Variant = dish.get("ingredients", {})
+		var steps: Variant = dish.get("steps", [])
+		if str(dish.get("state", "")) in ["operating", "plated"]:
+			return true
+		if foods is Dictionary and not (foods as Dictionary).is_empty():
+			return true
+		if steps is Array and not (steps as Array).is_empty():
+			return true
+	return false
+
+func _crew_plate(order_id: String) -> TDOutcome:
+	var item := order(order_id)
+	if item.is_empty() or str(item.get("status", "")) not in ["WAITING", "COOKING"]:
+		return TDOutcome.new(false, "GONE")
+	var family := family_id(str(item.get("recipe_id", "")))
+	var profile := profile_for(item)
+	if profile == null:
+		return TDOutcome.new(false, "NO_PROFILE", "厨师没有这道菜的做法。")
+	var template := catalog.cooking.for_recipe(family)
+	if template.is_empty():
+		return TDOutcome.new(false, "NO_RECIPE", "厨师不会这道菜。")
+	var needs: Dictionary = catalog.material_needs(profile, family, [])
+	var units := {}
+	for ingredient_id: Variant in needs.keys():
+		var amount := int(needs[ingredient_id])
+		if amount <= 0:
+			continue
+		if available(String(ingredient_id)) < amount:
+			return TDOutcome.new(false, "INSUFFICIENT_STOCK", "后厨缺料。")
+		units[String(ingredient_id)] = amount
+	var session := TDCookingSession.new(day_namespace() + "crew:" + order_id, 1, template, {"pc_controls": true})
+	var dish: Dictionary = session.snapshot().to_dict()
+	dish.state = "delivered"
+	dish.dish_id = day_namespace() + "crew-plate:" + order_id
+	if not dish.get("dish_attributes") is Dictionary:
+		return TDOutcome.new(false, "INVALID_DISH", "厨师没有做出可出餐的菜。")
+	_crew_aim(dish, item.get("customer", {}))
+	var preview := can_deliver(order_id, dish)
+	if not preview.ok:
+		return preview
+	if not units.is_empty():
+		var consumed := consume_materials(day_namespace() + "crew-stock:" + order_id, units)
+		if not consumed.ok:
+			return consumed
+	var rows: Array = []
+	for ingredient_id: Variant in units.keys():
+		rows.append({"ingredient_id": String(ingredient_id), "amount": float(units[ingredient_id]) / 1000.0})
+	dish.consumed_ingredients = rows
+	return deliver(order_id, dish)
+
+func _crew_aim(dish: Dictionary, customer: Variant) -> void:
+	var attributes: Dictionary = dish.dish_attributes
+	attributes.completion = 85.0
+	attributes.harmony = 85.0
+	if not customer is Dictionary or not (customer as Dictionary).get("requirements") is Array:
+		return
+	var foods: Dictionary = {}
+	var steps: Array = []
+	var existing: Variant = dish.get("steps", [])
+	if existing is Array:
+		steps = (existing as Array).duplicate()
+	for requirement: Variant in (customer as Dictionary).requirements:
+		if not requirement is Dictionary:
+			continue
+		var ask: Dictionary = requirement
+		var target := _crew_midpoint(ask)
+		if is_nan(target):
+			continue
+		var kind := str(ask.get("kind", ""))
+		match kind:
+			"flavor":
+				var taste := int(ask.get("taste", -1))
+				var slot := int(ask.get("slot", -1))
+				var matrix: Variant = attributes.get("flavor", [])
+				if matrix is Array and taste >= 0 and taste < (matrix as Array).size() and slot >= 0:
+					var row: Variant = (matrix as Array)[taste]
+					if row is Array and slot < (row as Array).size():
+						(row as Array)[slot] = target
+			"temperature":
+				attributes.temperature_c = target
+			"aroma":
+				var tag := str(ask.get("tag", ""))
+				if tag.is_empty():
+					continue
+				if not attributes.get("aroma") is Dictionary:
+					attributes.aroma = {}
+				attributes.aroma[tag] = target
+			"texture":
+				var axis := str(ask.get("axis", ""))
+				if axis in ["A", "B", "C"]:
+					if str(ask.get("ingredient_id", "")).is_empty():
+						if not attributes.get("texture") is Dictionary:
+							attributes.texture = {"A": 0.0, "B": 0.0, "C": 0.0}
+						attributes.texture[axis] = target
+					else:
+						_crew_food(foods, str(ask.ingredient_id)).texture[axis] = target
+			"fine":
+				if not str(ask.get("ingredient_id", "")).is_empty():
+					_crew_food(foods, str(ask.ingredient_id)).fine = clampf(target, 0.0, 1.0)
+			"ingredient":
+				if not str(ask.get("ingredient_id", "")).is_empty():
+					_crew_food(foods, str(ask.ingredient_id)).amount = maxf(target, 0.0)
+			"step":
+				var operation := str(ask.get("operation", ""))
+				if operation.is_empty():
+					continue
+				var have := 0
+				for step: Variant in steps:
+					if step is Dictionary and str((step as Dictionary).get("operation", "")) == operation:
+						have += 1
+				while float(have) + 0.0001 < target:
+					steps.append({"operation": operation, "parameters": {}, "quality": 0.85})
+					have += 1
+	if not foods.is_empty():
+		dish.ingredients = foods
+	dish.steps = steps
+
+func _crew_food(foods: Dictionary, ingredient_id: String) -> Dictionary:
+	if not foods.has(ingredient_id):
+		foods[ingredient_id] = {
+			"ingredient_id": ingredient_id,
+			"fine": 0.5,
+			"amount": 1.0,
+			"texture": {"A": 0.0, "B": 0.0, "C": 0.0},
+		}
+	return foods[ingredient_id]
+
+func _crew_midpoint(requirement: Dictionary) -> float:
+	var has_min := requirement.get("min") is float or requirement.get("min") is int
+	var has_max := requirement.get("max") is float or requirement.get("max") is int
+	if has_min and has_max:
+		return (float(requirement.min) + float(requirement.max)) * 0.5
+	if has_min:
+		return float(requirement.min)
+	if has_max:
+		return float(requirement.max)
+	return NAN
+
 func pay_wage(cents: int, reference: String) -> TDOutcome:
 	if cents <= 0 or reference.is_empty():
 		return TDOutcome.new(false, "INVALID_WAGE", "工资无效。")
@@ -540,7 +782,7 @@ func deliver(id: String, dish: Dictionary) -> TDOutcome:
 		var paid:=commerce.society.pay(item.economic_intent.opportunity_id,requested_tip)
 		if not paid.ok: return paid
 		requested_tip=int(paid.data.tip_cents)
-	if item.status=="WAITING":
+	if item.status in ["WAITING", "COOKING"] and int(item.prepaid_cents) == 0:
 		item.prepaid_cents=int(item.price_cents); _record("prepayment",int(item.price_cents),{},id,{"timing":"delivery"})
 		for food: Dictionary in dish.get("consumed_ingredients",[]): item.used[food.ingredient_id]=int(item.used.get(food.ingredient_id,0))+roundi(float(food.amount)*1000)
 		item.reserved=item.used.duplicate(true)

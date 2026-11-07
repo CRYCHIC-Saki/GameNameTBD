@@ -75,9 +75,9 @@ static func inspect_text(dish: String, customer: String, status: String, phase: 
 		lines.append("选店：" + "；".join(reasons))
 	lines.append("当前装修效果 %.0f。之后进门的客人会把它和竞品、在家吃饭一起比较。" % decor_effect)
 	if crew_line != "":
-		lines.append(crew_line + "。厨师延长新单等待并修正口味，服务员招呼客人并提高小费。")
+		lines.append(crew_line + "。厨师在后厨做完这单，服务员把菜端到桌上。加快、口味修正和小费仍按在岗等级生效。")
 	else:
-		lines.append("还没有雇员。厨师在后厨做菜，服务员在座位旁招呼。")
+		lines.append("还没有雇员。雇了厨师会在后厨做菜，雇了服务员会把菜端到客人桌上。")
 	return "\n".join(lines)
 
 static func _sentence(status: String, phase: String, seconds_left: int, satisfaction: float, net_cents: int, refunded_cents: int) -> String:

@@ -360,10 +360,12 @@ func _interact() -> void:
 		_set_status("餐厅建设区还是空地。点击这块地，选择中餐厅或西餐厅。")
 		return
 	if kind == "factory_lot":
-		_set_status("%s还是空地。点击后建成，提供%s。" % [String(plot.get("name", "原料厂空地")), TDTownMap.supply_goods(String(plot.get("supply", "")))])
+		var built := session.click_build_at(Vector2i(int(plot["x"]), int(plot["y"])))
+		_set_status(built.message if built.message != "" else built.code)
+		queue_redraw()
 		return
 	if kind == "supply_factory":
-		_set_status("%s已建成，提供%s。" % [String(plot.get("name", "原料厂")), TDTownMap.supply_goods(String(plot.get("supply", "")))])
+		_open_factory_panel(plot)
 		return
 	if kind == "player_diner":
 		var size_id := String(plot.get("size", session.home_size))
@@ -519,32 +521,28 @@ func _origin() -> Vector2:
 func _click_build(mouse: InputEventMouse) -> void:
 	if session == null or _player == null:
 		return
-	var world := _world_from_pointer(mouse)
-	var plot := _plot_under(world)
+	_click_plot(_plot_under(_world_from_pointer(mouse)))
+
+func _click_plot(plot: Dictionary) -> void:
 	var kind := String(plot.get("kind", ""))
 	if player_mode and str(facing_plot().get("id",""))!=str(plot.get("id","")):
 		_selected=plot;_set_status("靠近这栋建筑的任意一侧，再按 E 交互。");queue_redraw();return
+	if kind == "factory_lot" or kind == "supply_factory":
+		_selected = plot
+		_set_status("靠近%s，按 E %s。" % [String(plot.get("name", "原料厂")), "建设" if kind == "factory_lot" else "安排生产"])
+		queue_redraw()
+		return
 	if kind == "diner_lot":
 		_selected = plot
 		_open_venue_choice()
-		return
-	if kind == "supply_factory":
-		_selected = plot
-		_open_factory_panel(plot)
 		return
 	if kind == "player_diner" and String(plot.get("id", "")) == "player_diner":
 		_selected = plot
 		_set_status("走到%s上就能进去。" % String(plot.get("name", "餐厅")))
 		return
-	if kind != "factory_lot":
-		if not plot.is_empty() and kind != "housing":
-			_selected = plot
-			_set_status("选中了%s。建设请点空地；功能区仍可用E。" % String(plot.get("name", kind)))
-		return
-	_selected = plot
-	var result := session.click_build_at(Vector2i(int(plot["x"]), int(plot["y"])))
-	_set_status(result.message if result.message != "" else result.code)
-	queue_redraw()
+	if not plot.is_empty() and kind != "housing":
+		_selected = plot
+		_set_status("选中了%s。餐厅建设区请点空地；原料厂请靠近后按 E。" % String(plot.get("name", kind)))
 
 func _world_from_pointer(_mouse: InputEventMouse) -> Vector2:
 	if _camera != null and _camera.has_method("force_update_scroll"):
@@ -613,7 +611,7 @@ func _supply_color(supply: String, built: bool) -> Color:
 func _enter_hint() -> String:
 	if session == null or session.town_map.diner_lot().is_empty():
 		return "小镇已进入，但餐厅建设区没生成。看底部栏能否返回。"
-	return "已进入小镇。点击橙色餐厅建设区，选择中餐厅或西餐厅。原料厂分四类：金色调料、绿色蔬菜、红色肉类、橙色水果，各两块，点击空地建设。"
+	return "已进入小镇。点击橙色餐厅建设区，选择中餐厅或西餐厅。原料厂分四类：金色调料、绿色蔬菜、红色肉类、橙色水果，各两块，靠近空地按 E 建设。"
 
 func _open_venue_choice() -> void:
 	if session == null:

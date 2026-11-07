@@ -146,6 +146,7 @@ func _draw() -> void:
 			if x == 0:
 				_wall(cell, false)
 			_floor_cell(cell)
+	_draw_kitchen_bay()
 	if editing and ghost_size.x > 0 and ghost_size.y > 0:
 		_ghost()
 	if editing:
@@ -199,6 +200,10 @@ func _person_entry(point:Vector2,moving:bool,shirt:Color,caption:String,seated:b
 func _marker(marker: Dictionary) -> void:
 	var point:=project(marker.cell.x+.5,marker.cell.y+.5)
 	var label_y:float=-76
+	if marker.action=="kitchen":
+		var kitchen_edge := _kitchen_door_segment()
+		point = (kitchen_edge[0] + kitchen_edge[1]) * 0.5
+		label_y = -WALL_HEIGHT - 18
 	if marker.action==nearby_action:
 		draw_circle(point+Vector2(0,3),11,Color("f2cf7c"))
 		draw_string(ThemeDB.fallback_font,point+Vector2(-5,8),"E",HORIZONTAL_ALIGNMENT_LEFT,-1,16,Color("5b4735"))
@@ -217,13 +222,6 @@ func _marker(marker: Dictionary) -> void:
 		else:
 			for i: int in 3: draw_rect(Rect2(point+Vector2(-18+i*13,-39),Vector2(10,18)),Color("8ea7a0"))
 		label_y=-65
-	elif marker.action in ["kitchen","town"]:
-		draw_rect(Rect2(point+Vector2(-23,-86),Vector2(46,86)),Color("39281f"))
-		draw_rect(Rect2(point+Vector2(-26,-89),Vector2(52,7)),Color("b57e48"))
-		for x: int in [-23,18]: draw_rect(Rect2(point+Vector2(x,-86),Vector2(5,86)),Color("94653d"))
-		draw_rect(Rect2(point+Vector2(-17,-80),Vector2(34,60)),Color("704b32"))
-		draw_rect(Rect2(point+Vector2(10,-39),Vector2(4,4)),Color("e2ba69"))
-		label_y=-99
 	elif marker.action=="hire":
 		draw_rect(Rect2(point+Vector2(-18,-42),Vector2(36,30)),Color("efe2c4"))
 		draw_rect(Rect2(point+Vector2(-18,-42),Vector2(36,30)),Color("6d5334"),false,2)
@@ -233,7 +231,11 @@ func _marker(marker: Dictionary) -> void:
 		draw_rect(Rect2(point+Vector2(-23,-64),Vector2(46,45)),Color("684d31"))
 		draw_rect(Rect2(point+Vector2(-20,-61),Vector2(40,39)),Color("272f2a"))
 		for line: int in 4: draw_rect(Rect2(point+Vector2(-12,-53+line*7),Vector2(24,2)),Color("dfd2a8"))
-	draw_string(ThemeDB.fallback_font,point+Vector2(-60,label_y),str(marker.name),HORIZONTAL_ALIGNMENT_CENTER,120,14,Color("f8e5b8"))
+	var label_at := point+Vector2(-60,label_y)
+	if marker.action=="town":
+		var edge := _door_segment(Vector2i(int(marker.cell.x),int(marker.cell.y)))
+		label_at=(edge[0]+edge[1])*.5+Vector2(-60,-WALL_HEIGHT-8)
+	draw_string(ThemeDB.fallback_font,label_at,str(marker.name),HORIZONTAL_ALIGNMENT_CENTER,120,14,Color("f8e5b8"))
 
 func _floor_cell(cell: Vector2i) -> void:
 	var points := _quad(cell.x, cell.y, 1, 1)
@@ -251,6 +253,17 @@ func _floor_cell(cell: Vector2i) -> void:
 		draw_polyline(points + PackedVector2Array([points[0]]), mark, 2.4 if editing else 1.4)
 	else:
 		draw_polyline(points + PackedVector2Array([points[0]]), color.darkened(0.25), 1.0)
+	if layout.is_entrance(cell.x, cell.y):
+		var edge := _sill_segment(cell)
+		var span := edge[1] - edge[0]
+		var sill_a := edge[0] + span * 0.18
+		var sill_b := edge[1] - span * 0.18
+		var inward := _door_inward(cell)
+		draw_colored_polygon(PackedVector2Array([sill_a, sill_b, sill_b + inward, sill_a + inward]), Color("8d8274"))
+		var step := _exit_step(cell)
+		if step == Vector2i(0, 1) or step == Vector2i(1, 0):
+			var door_edge := _door_segment(cell)
+			_door_in_wall(door_edge[0], door_edge[1], Vector2(0, -WALL_HEIGHT), _wall_paint(cell, true))
 
 func _ghost() -> void:
 	var points := _quad(ghost_cell.x, ghost_cell.y, ghost_size.x, ghost_size.y)
@@ -258,14 +271,46 @@ func _ghost() -> void:
 	draw_colored_polygon(points, fill)
 	draw_polyline(points + PackedVector2Array([points[0]]), Color("#fff6df"), 2.0)
 
-func _wall(cell: Vector2i, along_north: bool) -> void:
-	if layout.is_entrance(cell.x,cell.y): return # The visible door marker owns this gap.
-	var start := project(float(cell.x), float(cell.y))
-	var finish := project(float(cell.x + (1 if along_north else 0)), float(cell.y + (0 if along_north else 1)))
-	var up := Vector2(0, -WALL_HEIGHT)
-	var quad := PackedVector2Array([start, finish, finish + up, start + up])
+func _exit_step(cell: Vector2i) -> Vector2i:
+	for step: Vector2i in [Vector2i(0, -1), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(1, 0)]:
+		var next := cell + step
+		if next.x < 0 or next.y < 0 or next.x >= layout.columns or next.y >= layout.rows:
+			return step
+		if layout.cell_zone(next.x, next.y) == "facade":
+			return step
+	return Vector2i(0, -1)
+
+func _door_segment(cell: Vector2i) -> PackedVector2Array:
+	var step := _exit_step(cell)
+	var x := float(cell.x)
+	var y := float(cell.y)
+	if step == Vector2i(0, -1):
+		return PackedVector2Array([project(x, 0.0), project(x + 1.0, 0.0)])
+	if step == Vector2i(-1, 0):
+		return PackedVector2Array([project(0.0, y), project(0.0, y + 1.0)])
+	if step == Vector2i(0, 1):
+		return PackedVector2Array([project(x, y + 1.0), project(x + 1.0, y + 1.0)])
+	return PackedVector2Array([project(x + 1.0, y), project(x + 1.0, y + 1.0)])
+
+func _sill_segment(cell: Vector2i) -> PackedVector2Array:
+	var step := _exit_step(cell)
+	var x := float(cell.x)
+	var y := float(cell.y)
+	if step == Vector2i(0, -1):
+		return PackedVector2Array([project(x, y), project(x + 1.0, y)])
+	if step == Vector2i(-1, 0):
+		return PackedVector2Array([project(x, y), project(x, y + 1.0)])
+	if step == Vector2i(0, 1):
+		return PackedVector2Array([project(x, y + 1.0), project(x + 1.0, y + 1.0)])
+	return PackedVector2Array([project(x + 1.0, y), project(x + 1.0, y + 1.0)])
+
+func _door_inward(cell: Vector2i) -> Vector2:
+	var into := -_exit_step(cell)
+	return project(float(into.x) * 0.16, float(into.y) * 0.16) - project(0.0, 0.0)
+
+func _wall_paint(cell: Vector2i, along_north: bool) -> Color:
 	var swatch := TDRestaurantArt.swatch(layout.culture, layout.tier)
-	var color := Color("efdfbb") if layout.culture=="chinese" else Color(String(swatch["accent"]))
+	var color := Color("efdfbb") if layout.culture == "chinese" else Color(String(swatch["accent"]))
 	var paper := layout.finish_at(cell.x, cell.y)
 	if TDRestaurantLayout.WALL_FINISHES.has(paper):
 		color = TDRestaurantArt.finish_color(paper)
@@ -273,6 +318,84 @@ func _wall(cell: Vector2i, along_north: bool) -> void:
 		color = color.darkened(0.28)
 	if layout.tier == "high":
 		color = color.lightened(0.08)
+	return color
+
+func _slab(a: Vector2, b: Vector2, rise: Vector2, color: Color) -> void:
+	draw_colored_polygon(PackedVector2Array([a, b, b + rise, a + rise]), color)
+
+func _door_in_wall(start: Vector2, finish: Vector2, up: Vector2, wall: Color) -> void:
+	var span := finish - start
+	var left_jamb := start + span * 0.18
+	var right_jamb := finish - span * 0.18
+	_slab(start, left_jamb, up, wall)
+	_slab(right_jamb, finish, up, wall)
+	var lintel := up * 0.14
+	_slab(left_jamb + up - lintel, right_jamb + up - lintel, lintel, wall)
+	draw_line(start, left_jamb, Color("543723"), 5.0)
+	draw_line(right_jamb, finish, Color("543723"), 5.0)
+	draw_line(start + up, finish + up, Color("785035"), 5.0)
+	draw_line(left_jamb, left_jamb + up - lintel, Color("4a301c"), 3.0)
+	draw_line(right_jamb, right_jamb + up - lintel, Color("4a301c"), 3.0)
+	var leaf := up - lintel
+	var left := left_jamb + span * 0.02
+	var right := right_jamb - span * 0.02
+	var seam := (left + right) * 0.5
+	_slab(left, seam, leaf * 0.98, Color("8b5a34"))
+	_slab(seam, right, leaf * 0.98, Color("6d4528"))
+	var panel := leaf * 0.62
+	var panel_at := leaf * 0.16
+	_slab(left + span * 0.03 + panel_at, seam - span * 0.015 + panel_at, panel, Color("5c3a22"))
+	_slab(seam + span * 0.015 + panel_at, right - span * 0.03 + panel_at, panel, Color("4a2e1b"))
+	draw_line(seam, seam + leaf * 0.98, Color("3a2416"), 2.0)
+	draw_circle(left.lerp(seam, 0.78) + leaf * 0.48, 2.2, Color("e2ba69"))
+	draw_circle(seam.lerp(right, 0.22) + leaf * 0.48, 2.2, Color("e2ba69"))
+
+func _kitchen_door_segment() -> PackedVector2Array:
+	var x := float(layout.columns - 2)
+	var y := float(layout.rows)
+	return PackedVector2Array([project(x, y), project(x + 1.0, y)])
+
+func _draw_kitchen_bay() -> void:
+	# The kitchen sits in the southeast corner. Its door is a real leaf in the south wall,
+	# with a short run of wall on either side. The room edge already stops the player there.
+	if layout.columns < 3 or layout.rows < 2:
+		return
+	var door_x := layout.columns - 2
+	var up := Vector2(0, -WALL_HEIGHT)
+	var paint := _wall_paint(Vector2i(door_x, layout.rows - 2), true)
+	for dx: int in [-1, 0, 1]:
+		var x: int = door_x + dx
+		if x < 0 or x >= layout.columns:
+			continue
+		var edge := PackedVector2Array([project(float(x), float(layout.rows)), project(float(x + 1), float(layout.rows))])
+		if dx == 0:
+			_door_in_wall(edge[0], edge[1], up, paint)
+			continue
+		_slab(edge[0], edge[1], up, paint)
+		if interaction_markers.is_empty():
+			continue
+		draw_line(edge[0], edge[1], Color("543723"), 7.0)
+		draw_line(edge[0] + up, edge[1] + up, Color("785035"), 6.0)
+
+func _wall_opens_for_door(cell: Vector2i, along_north: bool) -> bool:
+	var door := layout.entrance()
+	if door.x < 0:
+		return false
+	var step := _exit_step(door)
+	if along_north:
+		return cell.y == 0 and step == Vector2i(0, -1) and cell.x == door.x
+	return cell.x == 0 and step == Vector2i(-1, 0) and cell.y == door.y
+
+func _wall(cell: Vector2i, along_north: bool) -> void:
+	var up := Vector2(0, -WALL_HEIGHT)
+	var color := _wall_paint(cell, along_north)
+	if _wall_opens_for_door(cell, along_north):
+		var edge := _door_segment(layout.entrance())
+		_door_in_wall(edge[0], edge[1], up, color)
+		return
+	var start := project(float(cell.x), float(cell.y))
+	var finish := project(float(cell.x + (1 if along_north else 0)), float(cell.y + (0 if along_north else 1)))
+	var quad := PackedVector2Array([start, finish, finish + up, start + up])
 	draw_colored_polygon(quad, color)
 	if not interaction_markers.is_empty():
 		draw_line(start,finish,Color("543723"),7)

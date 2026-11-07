@@ -1,0 +1,10 @@
+{
+  "decision": "D055",
+  "generator": "image_gen",
+  "date": "2026-11-03",
+  "file": "supply-factories-v1.png",
+  "reference": "assets/town/town-sprites-v3.png",
+  "layout": "2x2 equal quadrants: seasoning, vegetable, meat, fruit",
+  "prompt": "Four separate Chinese cozy pixel-art workshops on a transparent background, matching town-sprites-v3: chunky pixels, cream walls, blue-grey tiled roofs, orthographic front view, no people and no writing. Top-left seasoning mill with oil jars and a chimney. Top-right vegetable shed with a green awning and crates of tomatoes, cabbage and potatoes. Bottom-left smokehouse with a red roof, a fish, eggs and a ham. Bottom-right fruit barn with an orange awning, watermelons and lemons.",
+  "notes": "生成结果先是带棋盘格的 JPEG。仅把与外缘连通的浅灰中性像素抠成透明，不改厂房像素。运行时按象限裁透明边。空地用同一张图的淡色。"
+}

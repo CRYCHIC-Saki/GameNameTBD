@@ -59,3 +59,26 @@ func test_mealtime_without_an_order_does_not_send_residents_to_the_door() -> voi
 		assert_eq(people.runtime[id].phase,"town")
 		assert_eq(people.runtime[id].order_id,"")
 	profile.close()
+
+func test_four_supply_factories_use_different_pictures() -> void:
+	var regions: Array[Rect2]=[]
+	for supply: String in ["seasoning","vegetable","meat","fruit"]:
+		var tile:=TDEnvironmentArt.factory(supply)
+		assert_gt(tile.region.size.x,32.0,supply)
+		assert_gt(tile.region.size.y,32.0,supply)
+		for previous: Rect2 in regions:
+			assert_false(previous.intersects(tile.region),supply)
+		regions.append(tile.region)
+	assert_eq(TDEnvironmentArt.factory("seasoning").region,regions[0])
+
+func test_diner_front_has_a_closed_wooden_door() -> void:
+	var tile := TDEnvironmentArt.diner()
+	assert_gt(tile.region.size.x, 64.0)
+	assert_gt(tile.region.size.y, 64.0)
+	var image := tile.atlas.get_image()
+	if image.is_compressed():
+		image.decompress()
+	var door := image.get_pixel(int(tile.region.position.x + tile.region.size.x * 0.5), int(tile.region.position.y + tile.region.size.y * 0.78))
+	assert_gt(door.a, 0.9, "The doorway is solid")
+	assert_gt(door.r, door.b + 0.15, "The doorway is wood, not the open stall")
+	assert_lt(image.get_pixel(2, 2).a, 0.05, "The sheet background stays transparent")

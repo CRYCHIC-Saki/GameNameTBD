@@ -165,6 +165,33 @@ func _assert_walk(cells: Variant) -> void:
 		var previous: Vector2i = path[index - 1]
 		assert_eq(absi(cell.x - previous.x) + absi(cell.y - previous.y), 1)
 
+func test_shop_door_uses_the_north_wall_of_the_entrance() -> void:
+	assert_eq(layout.entrance(), Vector2i(1, 1))
+	var view := TDRestaurantIsoView.new()
+	view.layout = layout
+	assert_true(view._wall_opens_for_door(Vector2i(1, 0), true))
+	assert_false(view._wall_opens_for_door(Vector2i(2, 0), true))
+	var edge: PackedVector2Array = view._door_segment(layout.entrance())
+	assert_eq(edge[0], TDRestaurantIsoView.project(1.0, 0.0))
+	assert_eq(edge[1] - edge[0], TDRestaurantIsoView.project(1.0, 0.0) - TDRestaurantIsoView.project(0.0, 0.0))
+	assert_eq(layout.door_threshold(), Vector2i(1, 0))
+	assert_true(layout.is_walkable(1, 0))
+	assert_false(layout.is_walkable(0, 0))
+	assert_false(layout.is_walkable(2, 0))
+	view.free()
+
+func test_kitchen_door_sits_in_the_south_wall() -> void:
+	var view := TDRestaurantIsoView.new()
+	view.layout = layout
+	var edge: PackedVector2Array = view._kitchen_door_segment()
+	var x := float(layout.columns - 2)
+	var y := float(layout.rows)
+	assert_eq(edge[0], TDRestaurantIsoView.project(x, y))
+	assert_eq(edge[1] - edge[0], TDRestaurantIsoView.project(x + 1.0, y) - TDRestaurantIsoView.project(x, y))
+	assert_gt(TDKitchenWorld.SERVICE_DOOR_RECT.size.y, 50.0)
+	assert_almost_eq(TDKitchenWorld.SERVICE_DOOR_RECT.get_center().x, TDKitchenWorld.DOOR_POS.x, 30.0)
+	view.free()
+
 func _first_cell(zone: String) -> Vector2i:
 	for y in layout.rows:
 		for x in layout.columns:

@@ -9,6 +9,12 @@ func _init(save_path: String, validate: Callable) -> void:
 	path=save_path; validator=validate
 
 func read_file(file_path: String) -> TDOutcome:
+	var parsed:=_parse_file(file_path)
+	if not parsed.ok: return parsed
+	var check: TDOutcome=validator.call(parsed.data)
+	return TDOutcome.new(true,"LOADED","",parsed.data) if check.ok else check
+
+func _parse_file(file_path: String) -> TDOutcome:
 	if not FileAccess.file_exists(file_path): return TDOutcome.new(false,"NOT_FOUND")
 	var file:=FileAccess.open(file_path,FileAccess.READ)
 	if file==null: return TDOutcome.new(false,"READ_FAILED")
@@ -20,9 +26,8 @@ func read_file(file_path: String) -> TDOutcome:
 	if raw.get("schema_version")!=1: return TDOutcome.new(false,"UNSUPPORTED_VERSION")
 	if not raw.get("payload") is String or raw.get("sha256")!=raw.payload.sha256_text(): return TDOutcome.new(false,"CHECKSUM_MISMATCH")
 	if parser.parse(raw.payload)!=OK: return TDOutcome.new(false,"INVALID_JSON")
-	var data: Variant=parser.data
-	var check: TDOutcome=validator.call(data)
-	return TDOutcome.new(true,"LOADED","",data) if check.ok else check
+	if not parser.data is Dictionary: return TDOutcome.new(false,"INVALID_JSON")
+	return TDOutcome.new(true,"PARSED","",parser.data)
 
 func load_game() -> TDOutcome:
 	var result:=read_file(path)
@@ -32,9 +37,9 @@ func load_game() -> TDOutcome:
 	return result
 
 func save_game(data: Dictionary) -> TDOutcome:
-	var check: TDOutcome=validator.call(data)
-	if not check.ok: return check
-	var before:=load_game()
+	# The existing file only needs a structural check. The temp file is fully validated
+	# once after writing, which is the round-trip that must succeed before it can replace it.
+	var before:=_parse_file(path)
 	if not before.ok and before.code!="NOT_FOUND": return before
 	var payload:=JSON.stringify(data)
 	var text:=JSON.stringify({"schema_version":1,"payload":payload,"sha256":payload.sha256_text()})
@@ -45,7 +50,10 @@ func save_game(data: Dictionary) -> TDOutcome:
 	file.flush(); var error:=file.get_error(); file.close()
 	if error!=OK: return TDOutcome.new(false,"WRITE_FAILED")
 	if interrupt_at=="partial_write": return TDOutcome.new(false,"INTERRUPTED")
-	if not read_file(tmp).ok: return TDOutcome.new(false,"READBACK_FAILED")
+	var readback:=read_file(tmp)
+	if not readback.ok:
+		DirAccess.remove_absolute(tmp)
+		return readback
 	if interrupt_at=="after_temp": return TDOutcome.new(false,"INTERRUPTED")
 	if before.ok:
 		if FileAccess.file_exists(path+".bak") and DirAccess.remove_absolute(path+".bak")!=OK: return TDOutcome.new(false,"BACKUP_FAILED")

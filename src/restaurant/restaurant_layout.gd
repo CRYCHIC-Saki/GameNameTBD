@@ -207,13 +207,31 @@ func preview_piece(kind: String, x: int, y: int, rotation: int, style_id: String
 		"piece": built,
 	}
 
+func door_threshold() -> Vector2i:
+	var door := entrance()
+	if door.x < 0:
+		return Vector2i(-1, -1)
+	for step: Vector2i in [Vector2i(0, -1), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(1, 0)]:
+		var next := door + step
+		if next.x < 0 or next.y < 0 or next.x >= columns or next.y >= rows:
+			return Vector2i(-1, -1)
+		if cell_zone(next.x, next.y) == "facade":
+			return next
+	return Vector2i(-1, -1)
+
 func is_walkable(x: int, y: int) -> bool:
-	# Floor zoning controls placement; only walls and occupied furniture block feet.
-	if cell_zone(x,y) not in ["movement","reception","ordering","dining"]:
+	# Guests path on open floor plus the one door cell. The visible wall collision is the room edge.
+	var threshold := door_threshold()
+	var at_door := threshold.x == x and threshold.y == y
+	if not at_door and cell_zone(x, y) not in ["movement", "reception", "ordering", "dining"]:
 		return false
+	return not furniture_blocks(x, y)
+
+func furniture_blocks(x: int, y: int) -> bool:
 	for item: Dictionary in _pieces:
-		if bool(item.blocks) and _contains(item,x,y): return false
-	return true
+		if bool(item.blocks) and _contains(item, x, y):
+			return true
+	return false
 
 func feet_inside(point: Vector2) -> bool:
 	var cell := Vector2i(floori(point.x / float(cell_px)), floori(point.y / float(cell_px)))

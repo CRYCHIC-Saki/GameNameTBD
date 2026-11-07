@@ -9,6 +9,7 @@ const ORDERS_PER_LEVEL := 4
 const PACE_CAP := 0.25
 const NUDGE_CAP := 0.2
 const TIP_CAP := 0.25
+const COOK_SEC := 16.0
 const ROSTER: Array[Dictionary] = [
 	{"id": "cook-he", "role": "cook", "name": "阿禾", "wage_yuan": 23, "buff": "", "blurb": "在后厨做菜。"},
 	{"id": "cook-zhou", "role": "cook", "name": "老周", "wage_yuan": 28, "buff": "faster_service", "blurb": "出餐更快。"},
@@ -94,6 +95,12 @@ func record_served_order() -> Array[String]:
 
 func cook_pace() -> float:
 	return 1.0 + PACE_CAP * _ratio("faster_service")
+
+func cook_seconds(person_id: String) -> float:
+	var pace := 1.0
+	if str(person(person_id).get("buff", "")) == "faster_service":
+		pace = 1.0 + PACE_CAP * float(level_of(person_id)) / float(MAX_LEVEL)
+	return COOK_SEC / pace
 
 func tip_scale() -> float:
 	return 1.0 + TIP_CAP * _ratio("tip")

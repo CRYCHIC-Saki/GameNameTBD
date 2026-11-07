@@ -506,7 +506,7 @@ func _place(kind: String, id: String) -> void:
 		box.add_child(TDUI.label("这里是"+str(profile.world._plot_by_id(id).get("name","小镇街区"))+"。",22))
 		if kind in ["factory_lot","supply_factory","diner_lot"]:
 			box.add_child(TDUI.label("地块管理",20))
-			if kind=="factory_lot": box.add_child(TDUI.button("建设原料厂",func()->void:_outcome(profile.world.build_factory(id))))
+			if kind=="factory_lot": box.add_child(TDUI.label("靠近这块空地，按 E 建设。",18))
 		elif not TDSanRules.recovery(kind).is_empty():
 			var offer:=TDSanRules.recovery(kind)
 			box.add_child(TDUI.label("歇歇脚 · %.0f小时 · %d元 · 精神恢复%d"%[offer.hours,offer.cost,offer.san],18))

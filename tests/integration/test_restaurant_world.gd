@@ -38,9 +38,19 @@ func test_player_walks_the_aisle_and_walls_stop_them() -> void:
 	assert_gt(world.player_position().x, initial.x)
 	world.teleport_player(world.layout.entrance())
 	await get_tree().physics_frame
-	var collision := player.move_and_collide(Vector2(-50, 0))
-	assert_not_null(collision, "The facade wall must stop the player")
-	assert_gt(player.position.x, 64.0)
+	assert_null(player.move_and_collide(Vector2(-40, 0)), "The floor beside the old door is not an air wall")
+	assert_lt(player.position.x, 64.0)
+	world.teleport_player(world.layout.entrance())
+	var collision := player.move_and_collide(Vector2(-160, 0))
+	assert_not_null(collision, "The west wall must stop the player")
+	assert_gt(player.position.x, 0.0)
+	assert_lt(player.position.x, 24.0)
+	world.teleport_player(world.layout.entrance())
+	assert_null(player.move_and_collide(Vector2(0, -50)), "The floor in front of the shop door is open")
+	collision = player.move_and_collide(Vector2(0, -200))
+	assert_not_null(collision, "The shop door still keeps the player inside")
+	assert_gt(player.position.y, 0.0)
+	assert_lt(player.position.y, 32.0)
 	player.set_controls_enabled(false)
 	var held := world.player_position()
 	Input.action_press("world_down")
@@ -229,6 +239,32 @@ func test_waiters_stay_put_until_a_guest_is_waiting_for_food() -> void:
 	guest.phase = "leave"
 	var returning: Array = world._crew_points(0.25)
 	assert_lt((returning[0] as Dictionary).point.distance_to(home), (serving[0] as Dictionary).point.distance_to(home))
+
+func test_waiter_puts_the_ready_plate_on_the_table() -> void:
+	var service := TDServiceCatalog.new()
+	assert_true(service.load_file().ok)
+	var shop := TDShopSession.new(service, "crew-serve", 9)
+	assert_true(shop.buy(shop.offer("service.tomato_egg").stock, "buy").ok)
+	assert_true(shop.open_day().ok)
+	shop.advance(1.0)
+	var order_id := str(shop.active_orders()[0].id)
+	shop._s.orders[0].status = "SERVED"
+	world.business = shop
+	world.player_mode = true
+	assert_true(world.layout.crew.hire("waiter-ning").ok)
+	var seat := world.layout.piece_by_kind("dining_table")
+	var guest := TDRestaurantGuest.new()
+	guest.phase = "wait_serve"
+	guest.seat_id = String(seat["id"])
+	guest.ticket_id = order_id
+	world._guests.add_child(guest)
+	var saw_serve := false
+	for _step in 40:
+		for person: Variant in world._crew_points(0.5):
+			if str((person as Dictionary).label).begins_with("上菜"):
+				saw_serve = true
+	assert_true(saw_serve)
+	assert_true(bool(guest.get_meta("plated", false)))
 
 func test_business_guest_follows_the_shop_order_through_leaving() -> void:
 	var service := TDServiceCatalog.new()

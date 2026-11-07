@@ -528,20 +528,19 @@ static func _validate_social_links(raw: Dictionary) -> TDOutcome:
 	# Rebuild only geometry from the authoritative building snapshot. A valid financial record
 	# cannot relocate a commercial unit into housing or a player/factory lot on load.
 	var world_data:=TDPhase3Session.new()
-	var loaded:=world_data.load_default()
+	var loaded:=world_data.catalog.load_file()
 	if not loaded.ok: return loaded
-	loaded=TDWorldSnapshot.restore(world_data,raw.world)
-	if not loaded.ok: return loaded
+	world_data.import_phase4(raw.world)
 	loaded=_validate_residence(world_data,raw)
 	if not loaded.ok: return loaded
 	for town: String in economy.expansion.parcels:
-		var map:=world_data.town_map if town==economy.home else TDTownMap.new()
-		if town!=economy.home:
-			map.layout_version=int(raw.world.get("map_version",1))
-			var generated:=map.build_economic_layout(world_data.catalog,TDTownMap.seed_of(town))
-			if not generated.ok: return generated
 		var definitions: Dictionary={}
-		for parcel: Dictionary in map.commercial_parcels(): definitions[parcel.id]=parcel
+		if town==economy.home:
+			for parcel: Dictionary in world_data.town_map.commercial_parcels(): definitions[parcel.id]=parcel
+		else:
+			var remote: Variant=TDTownMap.economic_parcels(world_data.catalog,TDTownMap.seed_of(town),int(raw.world.get("map_version",1)))
+			if remote is TDOutcome: return remote
+			definitions=remote
 		for id: String in economy.expansion.parcels[town]:
 			if not definitions.has(id): return TDOutcome.new(false,"PROTECTED_OR_UNKNOWN_PARCEL")
 			var p: Dictionary=economy.expansion.parcels[town][id]

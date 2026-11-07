@@ -270,6 +270,8 @@ func _copy_catalog(catalog: TDTownCatalog) -> void:
 func is_road(x: int, y: int) -> bool:
 	return roads.has(Vector2i(x, y))
 
+static var _economic_parcel_cache: Dictionary = {}
+
 func build_economic_layout(catalog: TDTownCatalog, seed_value: int) -> TDOutcome:
 	# Remote economic regions have no owned player geometry. Reject generated layouts
 	# whose commercial frontage is disconnected, instead of selling unreachable land.
@@ -287,8 +289,24 @@ func build_economic_layout(catalog: TDTownCatalog, seed_value: int) -> TDOutcome
 		for plot: Dictionary in plots:
 			if str(plot.id) not in ["competitor","commercial_street"]: continue
 			if not _touches(Vector2i(plot.x,plot.y),int(plot.w),int(plot.h)) or not reached.has(Vector2i(plot.approach_x,plot.approach_y)): valid=false
-		if valid: return TDOutcome.new(true,"CONNECTED_ECONOMIC_LAYOUT")
+		if valid:
+			var definitions: Dictionary = {}
+			for parcel: Dictionary in commercial_parcels():
+				definitions[parcel.id] = parcel.duplicate(true)
+			_economic_parcel_cache["%d:%d" % [layout_version, seed_value]] = definitions
+			return TDOutcome.new(true,"CONNECTED_ECONOMIC_LAYOUT")
 	return TDOutcome.new(false,"NO_CONNECTED_ECONOMIC_LAYOUT")
+
+static func economic_parcels(catalog: TDTownCatalog, seed_value: int, layout: int = 1) -> Variant:
+	var key := "%d:%d" % [layout, seed_value]
+	if _economic_parcel_cache.has(key):
+		return _economic_parcel_cache[key]
+	var map := TDTownMap.new()
+	map.layout_version = layout
+	var generated := map.build_economic_layout(catalog, seed_value)
+	if not generated.ok:
+		return generated
+	return _economic_parcel_cache.get(key, {})
 
 func commercial_parcels() -> Array:
 	if layout_version==2:

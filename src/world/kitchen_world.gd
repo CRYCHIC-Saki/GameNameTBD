@@ -19,6 +19,8 @@ const STATIONS: Array[Dictionary] = [
 ]
 const INTERACTION_RADIUS: float = 88.0
 const DOOR_POS := Vector2(640, 700)
+# Wooden leaves fill the doorway already painted on the kitchen background. The old mark was a flat outline on the floor.
+const SERVICE_DOOR_RECT := Rect2(556, 724, 176, 64)
 var service_door: bool = false
 var day_minute: float=720.0
 
@@ -247,7 +249,13 @@ func _sync_staff() -> void:
 		var cooks := crew.cooks()
 		for index: int in cooks.size():
 			var cook: Dictionary = cooks[index]
-			wanted.append({"caption": "厨师 %s %d级" % [String(cook["name"]), int(cook.get("level", 1))], "at": cook_point(index, _crew_time), "color": Color("#c46a3a")})
+			var work := ""
+			if order_shop != null:
+				work = order_shop.crew_work(str(cook.id))
+			var caption := "厨师 %s %d级" % [String(cook["name"]), int(cook.get("level", 1))]
+			if work != "":
+				caption = "厨师 %s %s" % [String(cook["name"]), work]
+			wanted.append({"caption": caption, "at": cook_point(index, _crew_time), "color": Color("#c46a3a"), "work": work})
 	while _staff_nodes.size() < wanted.size():
 		var root := Node2D.new()
 		var sprite := Sprite2D.new()
@@ -285,8 +293,10 @@ func _sync_staff() -> void:
 			body.flip_h = true
 		elif step_x > 0.4:
 			body.flip_h = false
-		var cooking := order_shop != null and not order_shop.active_orders().is_empty()
-		body.position.y = -47.0 - (absf(sin(_crew_time * 8.0 + float(index))) * 2.0 if cooking else 0.0)
+		var task := str(info.get("work", ""))
+		var cooking := task == "做菜" or (order_shop != null and not order_shop.active_orders().is_empty())
+		var bob := 6.0 if task == "做菜" else 2.0
+		body.position.y = -47.0 - (absf(sin(_crew_time * 8.0 + float(index))) * bob if cooking else 0.0)
 		var caption := root.get_node("Name") as Label
 		caption.text = String(info.caption)
 		caption.add_theme_color_override("font_color", info.color)
@@ -301,11 +311,25 @@ func _station_hint(id: String) -> String:
 	if single_fridge: return "取放食材 / 端盘 · F 开灶台 · Q 取回"
 	return "放入食材" if hand.get("kind") == "ingredient" else "操作 / 端起成品"
 
+func _draw_service_door() -> void:
+	var frame := SERVICE_DOOR_RECT
+	var leaf_w := frame.size.x * 0.5 - 2.0
+	draw_rect(Rect2(frame.position, Vector2(leaf_w, frame.size.y)), Color("8b5a34"))
+	draw_rect(Rect2(frame.position + Vector2(frame.size.x - leaf_w, 0), Vector2(leaf_w, frame.size.y)), Color("6d4528"))
+	var panel := Vector2(leaf_w - 16.0, frame.size.y * 0.62)
+	var panel_at := frame.position + Vector2(8.0, frame.size.y * 0.16)
+	draw_rect(Rect2(panel_at, panel), Color("5c3a22"))
+	draw_rect(Rect2(frame.position + Vector2(frame.size.x - leaf_w + 8.0, frame.size.y * 0.16), panel), Color("4a2e1b"))
+	var seam := frame.position.x + frame.size.x * 0.5
+	draw_line(Vector2(seam, frame.position.y), Vector2(seam, frame.end.y), Color("3a2416"), 2.0)
+	draw_circle(Vector2(seam - 14.0, frame.position.y + frame.size.y * 0.55), 3.0, Color("e2ba69"))
+	draw_circle(Vector2(seam + 14.0, frame.position.y + frame.size.y * 0.55), 3.0, Color("e2ba69"))
+	if _hud != null:
+		draw_string(_hud.get_theme_default_font(), frame.position + Vector2(frame.size.x * 0.5 - 20.0, -8.0), "餐厅", HORIZONTAL_ALIGNMENT_LEFT, 80, 16, TDUI.ORANGE)
+
 func _draw() -> void:
 	if service_door:
-		draw_rect(Rect2(DOOR_POS + Vector2(-46, -18), Vector2(92, 36)), Color("c5a46c"), false, 3.0)
-		if _hud != null:
-			draw_string(_hud.get_theme_default_font(), DOOR_POS + Vector2(-40, -28), "餐厅", HORIZONTAL_ALIGNMENT_LEFT, 80, 16, TDUI.ORANGE)
+		_draw_service_door()
 	if single_fridge and _hud!=null:
 		for i: int in pot_contents.size():
 			var box:=Rect2(530+i*220,350,210,62)

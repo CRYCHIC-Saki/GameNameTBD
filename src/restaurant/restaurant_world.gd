@@ -152,6 +152,10 @@ func _process(delta: float) -> void:
 		_visit_seconds+=delta
 		_crew_time += delta
 		_sync_business_guests()
+		if business != null:
+			var crew_note := business.take_crew_note()
+			if not crew_note.is_empty():
+				_set_status(crew_note)
 	elif not get_tree().paused and not story_frozen and not player_mode:
 		_tick_service(delta)
 	for guest: TDRestaurantGuest in guest_nodes():
@@ -274,6 +278,16 @@ func player_position() -> Vector2:
 
 func _feet_inside_room(proposed: Vector2) -> bool:
 	return layout != null and layout.feet_inside(proposed)
+
+func _standing_inside_solid(cell: Vector2i) -> bool:
+	if layout == null:
+		return false
+	if cell.x < 0 or cell.y < 0 or cell.x >= layout.columns or cell.y >= layout.rows:
+		return true
+	if layout.furniture_blocks(cell.x, cell.y):
+		return true
+	# Open facade floor is the doorway and the ground in front of the drawn walls.
+	return not layout.is_walkable(cell.x, cell.y) and layout.cell_zone(cell.x, cell.y) != "facade"
 
 func cell_of_player() -> Vector2i:
 	return _cell_at(player_position())
@@ -640,14 +654,18 @@ func _rebuild() -> void:
 	_free_children(_fixtures)
 	for y in layout.rows:
 		for x in layout.columns:
-			if not layout.is_walkable(x, y):
-				var shape := RectangleShape2D.new()
-				shape.size = Vector2(layout.cell_px, layout.cell_px)
-				var collider := CollisionShape2D.new()
-				collider.shape = shape
-				collider.position = layout.cell_center(Vector2i(x, y))
-				_blockers.add_child(collider)
-	# Even a walkable door cell ends at a solid boundary; E owns scene transitions.
+			# Facade cells are drawn as floor. A full-cell body there is an invisible wall
+			# in front of the old door and along the north wall. Furniture still fills its cells.
+			if layout.is_walkable(x, y) or (layout.cell_zone(x, y) == "facade" and not layout.furniture_blocks(x, y)):
+				continue
+			var shape := RectangleShape2D.new()
+			shape.size = Vector2(layout.cell_px, layout.cell_px)
+			var collider := CollisionShape2D.new()
+			collider.shape = shape
+			collider.position = layout.cell_center(Vector2i(x, y))
+			_blockers.add_child(collider)
+	# The drawn north and west walls sit on the room edge. This boundary matches that edge,
+	# including the shop door, so the player can reach the door and cannot leave. E changes scenes.
 	var width:float=layout.columns*layout.cell_px
 	var height:float=layout.rows*layout.cell_px
 	for edge:Rect2 in [Rect2(-32,-32,width+64,32),Rect2(-32,height,width+64,32),Rect2(-32,0,32,height),Rect2(width,0,32,height)]:
@@ -655,7 +673,7 @@ func _rebuild() -> void:
 		rectangle.size=edge.size;wall.shape=rectangle;wall.position=edge.get_center();_blockers.add_child(wall)
 	for item: Variant in layout.pieces():
 		_add_fixture(item)
-	if _player != null and not layout.is_walkable(cell_of_player().x, cell_of_player().y):
+	if _player != null and _standing_inside_solid(cell_of_player()):
 		teleport_player(layout.entrance())
 	_refresh_buttons()
 	queue_redraw()
@@ -1529,6 +1547,7 @@ func _crew_points(delta: float) -> Array:
 		return people
 	var posts: Array[Vector2] = []
 	var jobs: Array[Vector2] = []
+	var seats: Array[TDRestaurantGuest] = []
 	var servers := layout.crew.waiters()
 	for index: int in servers.size():
 		posts.append(_waiter_post(index))
@@ -1537,6 +1556,7 @@ func _crew_points(delta: float) -> Array:
 			continue
 		var cell := approach_cell(guest.seat_id)
 		if layout.is_walkable(cell.x, cell.y):
+			seats.append(guest)
 			jobs.append(layout.cell_center(cell))
 	while _waiter_feet.size() < servers.size():
 		_waiter_feet.append(posts[_waiter_feet.size()])
@@ -1545,11 +1565,17 @@ func _crew_points(delta: float) -> Array:
 	for index: int in servers.size():
 		var server: Dictionary = servers[index]
 		var target: Vector2 = posts[index]
+		var verb := "待命"
 		if index < jobs.size():
 			target = jobs[index]
+			var ready := false
+			if business != null:
+				ready = str(business.order(seats[index].ticket_id).get("status", "")) == "SERVED"
+			verb = "上菜" if ready else "候餐"
 		var current := _waiter_feet[index].move_toward(target, 90.0 * maxf(delta, 0.0))
 		_waiter_feet[index] = current
-		var verb := "招呼" if index < jobs.size() else "待命"
+		if index < seats.size() and verb == "上菜" and current.distance_to(target) <= 36.0:
+			hand_plate(seats[index])
 		people.append({
 			"point": current,
 			"actor_id":str(server.id),
@@ -1560,12 +1586,21 @@ func _crew_points(delta: float) -> Array:
 	var cooks := layout.crew.cooks()
 	for index: int in cooks.size():
 		var cook: Dictionary = cooks[index]
+		var work := ""
+		if business != null:
+			work = business.crew_work(str(cook.id))
+		var stove := _staff_spot(Vector2i(layout.columns - 2, layout.rows - 2), index)
+		if work == "做菜":
+			stove.x += sin(_crew_time * 7.0 + float(index)) * 8.0
+		var cook_label := "后厨 %s%d" % [String(cook["name"]), int(cook.get("level", 1))]
+		if work != "":
+			cook_label = "后厨%s %s%d" % [work, String(cook["name"]), int(cook.get("level", 1))]
 		people.append({
-			"point": _staff_spot(Vector2i(layout.columns - 2, layout.rows - 2), index),
+			"point": stove,
 			"actor_id":str(cook.id),
-			"label": "后厨 %s%d" % [String(cook["name"]), int(cook.get("level", 1))],
+			"label": cook_label,
 			"color": Color("#8a4b32"),
-			"moving": false,
+			"moving": work == "做菜",
 		})
 	var active := _session()
 	if active != null and active.ready and layout != null:
