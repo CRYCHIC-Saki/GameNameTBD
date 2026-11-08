@@ -2,7 +2,7 @@
 [CmdletBinding()]
 param(
   [string]$GodotPath = $env:GODOT_BIN,
-  [ValidateSet('all','content','cooking','qte','platform','scoring','integration','business','service','research','profiles','game','title','movement','commerce','stock','progression','habitat','protagonist','locomotion','story','characters','town-renewal','town-polish','residential','visual-unity','story-expansion','arrival-coast','story-fixes','homecoming')]
+  [ValidateSet('pull-core','pull-scenes','regions','travel-core','travel','branch-core','branches','seated-art','restaurant-feedback','diners','decoration','all','content','cooking','qte','platform','scoring','integration','business','service','research','profiles','game','title','movement','commerce','stock','progression','habitat','protagonist','locomotion','story','characters','town-renewal','town-polish','residential','visual-unity','story-expansion','arrival-coast','story-fixes','homecoming')]
   [string]$Suite = 'all',
   [int]$TimeoutSeconds = 1800,
   [string]$ReportName = ''
@@ -67,6 +67,17 @@ try {
   if ($plugin -notmatch ('version="' + [regex]::Escape($lock.gut.version) + '"')) { throw 'GUT version mismatch' }
 
   $testMap = @{
+    'pull-core' = @('tests/unit/test_restaurant_crew.gd','tests/unit/test_phase4_branch.gd','tests/unit/test_restaurant_layout.gd','tests/unit/test_town_polish.gd','tests/unit/test_research_rules.gd','tests/unit/test_regional_layout.gd','tests/unit/test_region_migration.gd','tests/unit/test_player_branches.gd','tests/unit/test_shop_profiles.gd')
+    'pull-scenes' = @('tests/integration/test_pull_merge.gd','tests/integration/test_restaurant_world.gd','tests/integration/test_diner_flow.gd','tests/integration/test_restaurant_feedback.gd','tests/integration/test_world_travel.gd','tests/integration/test_checkpoint_save.gd','tests/integration/test_branch_panel.gd')
+    'regions' = @('tests/unit/test_regional_layout.gd','tests/unit/test_region_migration.gd')
+    'travel-core' = @('tests/integration/test_world_travel.gd')
+    travel = @('tests/unit/test_regional_layout.gd','tests/unit/test_region_migration.gd','tests/integration/test_world_travel.gd','tests/integration/test_branch_panel.gd','tests/integration/test_checkpoint_save.gd','tests/integration/test_habitat.gd','tests/integration/test_game_shell.gd')
+    'branch-core' = @('tests/unit/test_player_branches.gd','tests/integration/test_branch_panel.gd')
+    branches = @('tests/unit/test_player_branches.gd','tests/integration/test_branch_panel.gd','tests/unit/test_shop_profiles.gd','tests/integration/test_level_progression.gd','tests/integration/test_checkpoint_save.gd','tests/unit/test_town_economy_rules.gd','tests/unit/test_phase4_branch.gd','tests/integration/test_habitat.gd','tests/integration/test_homecoming.gd','tests/integration/test_town_economy_integration.gd','tests/integration/test_town_renewal_world.gd')
+    'seated-art' = @('tests/integration/test_restaurant_feedback.gd','tests/integration/test_diner_flow.gd','tests/integration/test_decoration_ui.gd')
+    'restaurant-feedback' = @('tests/integration/test_restaurant_feedback.gd','tests/integration/test_game_shell.gd','tests/integration/test_level_progression.gd','tests/integration/test_checkpoint_save.gd','tests/unit/test_shop_profiles.gd','tests/integration/test_habitat.gd','tests/integration/test_homecoming.gd','tests/integration/test_player_motion.gd','tests/integration/test_protagonist.gd','tests/integration/test_diner_flow.gd')
+    diners = @('tests/integration/test_diner_flow.gd','tests/unit/test_diner_arrival.gd','tests/unit/test_shop_session.gd','tests/unit/test_guest_visit.gd','tests/unit/test_npc_gait.gd','tests/integration/test_restaurant_world.gd','tests/integration/test_game_shell.gd')
+    decoration = @('tests/unit/test_restaurant_layout.gd','tests/integration/test_restaurant_world.gd','tests/integration/test_decoration_ui.gd')
     'homecoming' = @('tests/integration/test_homecoming.gd','tests/integration/test_title_entry.gd','tests/unit/test_profile_deletion.gd')
     'story-fixes' = @('tests/integration/test_story_playtest_fixes.gd','tests/integration/test_story_kitchen.gd','tests/integration/test_story_expansion.gd','tests/integration/test_arrival_coast.gd','tests/unit/test_opening.gd','tests/unit/test_dialogue.gd','tests/integration/test_protagonist.gd','tests/integration/test_player_motion.gd')
     'arrival-coast' = @('tests/integration/test_arrival_coast.gd','tests/integration/test_story_expansion.gd','tests/unit/test_story_expansion.gd','tests/integration/test_town_polish_world.gd','tests/unit/test_town_polish.gd','tests/integration/test_game_shell.gd','tests/integration/test_habitat.gd','tests/integration/test_title_entry.gd')

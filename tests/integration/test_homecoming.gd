@@ -51,6 +51,7 @@ func test_new_save_keeps_progress_at_harbor_then_story_unlock_saves_at_bed() -> 
 	follow_home();interact_at_home();complete_talk()
 	assert_true(shell.profile.has_residence());assert_eq(shell.location,"cottage")
 	assert_eq(shell.profile.story.beat,"done");assert_eq(shell.profile.unlock_residence().code,"HOME_ALREADY_UNLOCKED")
+	assert_true(shell.save_game().ok) # D059: getting the keys no longer silently saves the slot.
 	shell.go_title();assert_true(shell.load_game("slot-01").ok)
 	assert_eq(shell.location,"cottage");assert_eq(shell.cottage.target(),"rest")
 
@@ -77,6 +78,6 @@ func test_pending_route_restores_harbor_and_legacy_home_is_not_taken_away() -> v
 	var old:=shell.profile.snapshot();old.schema_version=6
 	old.residence={"schema_version":1,"anchor":"cottage_bed","plot":old.residence.plot.duplicate(true)}
 	var restored:=TDGameProfile.new();assert_true(restored.restore(old).ok);assert_true(restored.has_residence())
-	assert_eq(restored.snapshot().schema_version,7);restored.close()
+	assert_eq(restored.snapshot().schema_version,8);restored.close()
 	var bad:=shell.profile.snapshot();bad.residence.anchor="cottage_bed"
 	assert_eq(TDGameProfile.validate_save(bad).code,"INVALID_RESIDENCE_ANCHOR")

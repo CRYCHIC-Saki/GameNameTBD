@@ -28,7 +28,7 @@ static func convert(raw: Dictionary) -> TDOutcome:
 			var map:=planned.town_map if town==data.economy.home else TDTownMap.new()
 			if town!=data.economy.home:
 				map.layout_version=2
-				var built:=map.build_economic_layout(planned.catalog,TDTownMap.seed_of(town))
+				var built:=map.build_economic_layout(planned.catalog,TDTownMap.seed_of(town),1)
 				if not built.ok: return built
 			var definitions: Dictionary={}
 			for parcel: Dictionary in map.commercial_parcels(): definitions[parcel.id]=parcel

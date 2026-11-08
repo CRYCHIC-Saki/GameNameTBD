@@ -1,5 +1,67 @@
 # 当前协作波次
 
+## 2026-11-08 上传D057–D062
+用户已授权上传，root负责现有integration/phase-4-wave-decor-ui提交及非强制推送，不合main。fetch确认基线217cd34未变化。原资料和未接入罗厄素材不暂存、不上传，既有安全备份/stash保留。本次仅整理提交与验证，不改玩法；前述131用例和74图形检查有效，另验证实际待上传的干净副本不依赖本机缓存。远程结果以push回执为准，远程CI不冒称已通过。
+
+待上传135文件；干净副本导入/141资源加载/4移动用例PASS（已有131项子集），正式资料/罗厄34文件留本地。提交清单与测试证据存artifacts/upload-20261108，代码锁释放。
+
+## 2026-11-08 拉取217cd34（INTEGRATED_LOCAL，锁释放）
+用户授权拉取；root为唯一集成者。原HEAD845bf13，当前集成分支快进至origin/main 217cd34。拉取前166个未提交/未跟踪文件逐字节备份至artifacts/pull-20261108-217cd34/worktree，manifest校验；另保留safety-before-pull-217cd34 stash。原资料/罗厄新增素材不提交不上传。
+8份文本冲突逐段合并；共享Shop/ShopView员工入口、Profile地籍校验/TownMap缓存、restaurant表现与统一时钟、导出清单及文档由root写入。远端门/厂交互与本地世界/分店/装修保留，禁止同时运行两套自动出餐。无其他Agent写入。本轮仅拉取整合，不推送或新增产品范围。
+
+最终131/131相关用例、6295断言，导入/加载/测试退出0；GPU74项/22图PASS；协作184路径/diff检查通过。恢复未暂存状态，git未合并条目清空；166原文件均存在，原资料/罗厄34文件逐字节一致。备份和stash保留，未提交推送，未重建EXE（仍D062的19:36包）。全量/远程CI/人工试玩NOT_RUN；证据见PROJECT_STATE和artifacts/pull-20261108-217cd34。
+
+
+## D061-R1最终断点（2026-11-08）
+DELIVERED_LOCAL_PLAYTEST_PENDING，root写入锁已完成并释放。新地图同源、移动、世界图和旧档迁移集成结束；63独立测试、最终8/11子集、591资源、EXE启动3×4/headless94及实际EXE GPU53/17图通过。17:58包更新。原资料和D057–D061未提交内容保留，未提交推送；人工PENDING，远程CI/全量NOT_RUN。唯一只读代理travel_facts无文件写入。
+
+## D061-R1（2026-11-08，IN_PROGRESS）
+root唯一写入regional_layout/travel、Profile/存档迁移/分店地图必要装配、经济地形查询、测试导出与记录。travel_facts只读核查已完成；无其他写入者。保留旧未提交内容，原资料与真实存档只读，不推送。
+
+## D061 五镇旅行（DELIVERED_LOCAL_PLAYTEST_PENDING，2026-11-08）
+root唯一写入新增travel地图/场景/经营托管、Shell/Profile必要接线、InputMap、配置/素材/测试/检查导出与记录。travel_facts只读事实。主镇地籍/厂商核心不重写，保留D057–D060及原资料；起点备份artifacts/travel/baseline。不推送。
+实际新增TravelCatalog/World/MapView，Shell/ShopView/Restaurant及StoryGuide必要接线；Profile无需改schema。27/27、最终8/8、GPU37项/13图、584资源与实际EXE94项通过；14:16本地包更新。协作132路径/diff检查通过，当前锁释放。人工PENDING，未运行全仓全量/远程CI/导出旅行GPU。
+
+
+## D060 分店扩张（DELIVERED_LOCAL_PLAYTEST_PENDING，2026-11-07）
+root 唯一写入：新增 business/branch_network、branch_panel、对应配置/测试/探针，game_profile/shop_session/world_economy/game_shell 的必要装配；检查/导出与工程记录。branch_existing_facts 只读审计已完成。保留本地D057–D059和原始资料，8份起点备份 artifacts/branch-expansion/baseline。用户已确认同镇多店与店长统筹，见 docs/phases/branch-expansion.md。建筑/厂商核心不重写；共享现金仍Shop。未提交推送。
+相关79/79、最终17/17、Compatibility32项/7图、574资源、启动3×4及EXE headless94项通过；21:43本地包更新。人工PENDING、全量/远程CI/EXE分店GPU专项未跑。当前写入锁完成并释放；停在本轮交付点。
+
+## D059-R4 坐姿投影统一（DELIVERED_LOCAL_VISUAL_REVIEW_PENDING，2026-11-06）
+用户仍否定R3腿/凳透视。root唯一写入diner_art/furniture_model/restaurant_iso、坐姿新图、相关测试/工具/导出/记录；7份备份artifacts/d059-r4/baseline。保持前序存档与订单改动，原图只读，不提交推送。本轮用同视角的坐姿组合替代两个投影不一致的独立层，空凳不得重复绘制。
+20/20、1089断言、Compatibility74项/22图、569资源、启动3×4及EXE headless94项PASS；16:53本地包更新，98路径协作及diff检查通过。锁释放；用户视觉PENDING，全量/EXE GPU/远程CI未跑。
+
+## D059-R3 桌凳间距（DELIVERED_LOCAL_PLAYTEST_PENDING，2026-11-06）
+root唯一写入furniture_model、必要坐点呈现、独立桌凳新素材、对应测试/探针/导出与记录；6份基线备份artifacts/d059-r3/baseline。用户要求把凳子远离餐桌；保持人物比例、原始素材和前序玩法/存档成果，不提交推送。
+18/18、724断言、GPU66项/22图、567资源、启动3×4及EXE headless94项PASS，16:31本地包更新，95路径协作/diff检查通过。锁释放，人工PENDING；未跑全量/EXE GPU/远程CI。
+
+## D059-R2 坐姿层次遮挡（DELIVERED_LOCAL_PLAYTEST_PENDING，2026-11-06）
+用户明确上轮修错方向：核心为贴图前后遮挡而非拉长下肢。root唯一写入restaurant的diner_art/furniture_model/restaurant_iso、对应测试/探针/导出与记录；7份起点备份artifacts/d059-r2/baseline。不改原位图，复用v2可爱比例与同向身体/腿部；不改落座点单、移动、保存，不提交推送。
+17/17、712断言、Compatibility66项/22图、565资源、启动3×4及实际EXE headless94项通过；13:54本地包更新，92路径协作和diff检查通过。锁释放，人工PENDING；未跑全量/本轮EXE GPU/远程CI，不沿用旧结果充数。
+
+## D059-R1 坐姿下肢修正（DELIVERED_LOCAL_PLAYTEST_PENDING，2026-11-06）
+root唯一写入坐姿新增v3图集、restaurant的diner_art/furniture_model/restaurant_iso、相关测试/探针/检查导出与记录；8份起点文件备份artifacts/d059-r1/baseline。保留D057–D059所有未提交成果，不改存档/移动/落座订单规则，不操作原图或真实玩家档，不提交推送。用户指出旧坐姿双腿缩在坐垫上，旧臀部对齐测试不足；本轮须同时核对臀部和鞋底并实际渲染验证。
+最终16/16、836断言、GPU50项/22图、565资源、启动3×4、EXE headless/GPU各94项通过，13:25包更新；实际EXE图形18张，stderr空，全部exit0。协作92路径PASS。锁释放；人工PENDING、全量未跑、远程CI NOT_RUN。
+
+## D059 餐厅坐姿、移动与保存反馈（DELIVERED_LOCAL_PLAYTEST_PENDING，2026-11-06）
+root唯一写入 src/world/kitchen_player.gd、src/restaurant/{restaurant_world,restaurant_iso,furniture_model,diner_art}.gd、必要的 app/game_shell 与 business/game_profile 保存接线、相关测试/工具/导出/记录；d059_save_facts仅只读事实核查。保留D057–58未提交成果，起点13文件备份artifacts/d059/baseline。保存规则已确认；追加root唯一写入src/story/story_guide.gd、src/business/shop_view.gd及存档/等级相关测试，整槽显式保存已验收。57/57、GPU50项/22图、565资源、启动3×4及EXE headless/GPU各94项PASS，13:04包更新；当前锁释放，人工PENDING、全量未跑。不接触真实存档或原始资料，不提交推送。
+
+## D058 食客入座点单（DELIVERED_LOCAL_PLAYTEST_PENDING，2026-11-05）
+root唯一写入Shop/Restaurant/CharacterRoster/Shell接线、普通食客美术/呈现、相关测试/导出与工程记录；d058_visit_facts仅只读。沿当前装修集成分支增量，保留全部D057未提交成果，11份起点代码保存在artifacts/diner-flow/baseline。用户已确认自动入座点单、取消手动迎宾门槛。最终相关57/57及余项374/374通过，合并首轮完整通过文件后591独立用例分批覆盖；原全量首轮TIMEOUT不改写。GPU41项/14图、563资源及实际EXE headless/GPU各80项/17图PASS。22:03本地包更新，协作检查71路径通过；锁完成并释放。原资料/玩家存档未操作，未提交推送，人工PENDING。
+
+## D057-R2（2026-11-05）DELIVERED_LOCAL_PLAYTEST_PENDING
+root沿用装修集成分支，唯一写入restaurant模型/Layout/World/Panel、相关测试/图形与EXE探针/工程记录。8份起点文件保留于artifacts/decoration-r2/baseline。本轮修复旋转显示偏心及整屋饰面，不修改真实存档/原始资料，不提交推送；R1未提交成果保留。
+最终33/33、442断言、GPU71项/44图、557运行资源及实际EXE启动3×4/交互65项PASS；20:47:49本地包更新，协作46路径PASS。当前写入锁释放；未跑全量，人工PENDING、远程CI NOT_RUN。
+
+
+## D057-R1（2026-11-05）DELIVERED_LOCAL_PLAYTEST_PENDING
+沿用integration/phase-4-wave-decor-ui；root唯一写入原restaurant Layout/World/Iso/Panel、装修测试、图形/EXE探针和相关记录。此前7份代码与测试保留于artifacts/decoration-r1/baseline；不覆盖原资料或操作真实存档。本轮不推送。新增只读移动预览和直接拖拽，删除复杂菜单/风格栏。
+最终31/31、394断言、GPU22项/16图、557运行资源及实际EXE启动3×4/交互53项PASS。20:17包更新；未跑全量，人工PENDING、远程CI NOT_RUN。写入锁释放，保留全部初版未提交成果。
+
+## 2026-11-05 D057 餐厅装修交互（DELIVERED_LOCAL_PLAYTEST_PENDING）
+用户授权分类卡片、立体半透明放置预览、点击家具弹出转向/删除。基线main 845bf13；integration/phase-4-wave-decor-ui，root唯一写入src/restaurant、对应测试、检查/导出和工程记录；decor_facts_d057仅只读。原始资料19份保留，不操作真实玩家存档。本轮不提交推送。
+最终专项28/28、336断言、GPU19项/14图、557运行资源、实际EXE启动3×4及正式入口交互50项PASS。17:45本地包更新；未运行全量旧571项，人工PENDING，远程CI NOT_RUN。写入锁释放，下一步仅本轮试玩反馈。
+
 ## 2026-11-02 D055–D056 集成上传
 本轮用户已授权上传并合并main。root为集成者，在现有integration/phase-4-wave-story-fixes提交本轮59个工程文件；原始资料19份不暂存。远端起点73eb8fc无新增，841验证输入与D056最终测试一致，所有权检查78路径PASS。保留集成PR及merge commit，禁止强推；GitHub实际检查通过后执行已授权合并。本条修订此前“不提交/推送”，不授权新增玩法或扩展剧情。
 
@@ -276,3 +338,8 @@ IN_PROGRESS。用户报告无障碍处卡住；town角色在既有工作区修�
 餐厅移动最终断点：DELIVERED_LOCAL / ENGINEERING_READY / PLAYTEST_PENDING。专项19/19、最终全量378/378、8318断言、492.291秒，0失败/0跳过/退出0；pre-export-20261023-204745。Windows导出393资源审计通过；隔离检查驱动错误已修复并重跑受影响步骤，headless/GPU各29项、232路径零阻挡、退出0。9张最终GPU截图见artifacts/movement-native-gpu/run-1763109。town19项所有权与integrator75项拓扑通过；核心文件一致。共享锁完成并释放，保留角色工作区；人工PENDING、远程CI NOT_RUN。未动玩家存档，未提交推送，不继续其他Phase4。
 
 2026-10-23上传交接：用户授权提交与推送新增功能/修复。fetch后origin/main=a164b1c，无新增远端提交；按integration/phase-4-wave-game-shell→main准备集成审查，不直接合主分支。集成者仅补上传记录并提交已验收内容，没有其他角色写入；忽略缓存/导出/验证产物，保留两个未跟踪原始文件。复用上述最终验证，人工PENDING；远程CI以GitHub结果为准。功能锁不重新开放。
+## D062 世界分店选址（DELIVERED_LOCAL_PLAYTEST_PENDING，2026-11-08）
+root 唯一写入 src/business/{branch_panel,branch_network}.gd、src/town/travel_map_view.gd、src/app/game_shell.gd 的分店弹窗、对应测试/探针/导出工具与工程记录。travel_facts 仅只读核查，已结束。8 份起点备份见 artifacts/branch-world/baseline；保留之前未提交成果及原始资料，不接触真实玩家存档，不提交推送。
+用户授权在世界地图选择分店位置和矩形范围。五个已配置小镇全部可选，分店不再依赖主店货运商路；菜系研究、合法用地、筹备/日结、资金、店长与主动保存规则保持。世界图仅发送选址意图，报价/开办仍由原 TDPlayerBranches 执行。
+
+D062最终：31独立用例/485断言、591资源、EXE启动3×4/headless94、实际EXE图形53项/11图PASS，全部最终检查exit0；19:36包更新。161路径协作检查PASS。人工PENDING，全量/远程CI未跑；锁释放，不提交推送。

@@ -12,6 +12,9 @@ var profile: TDGameProfile
 var slots: TDProfileStore
 var preferences: TDPlayerPreferences
 var town: TDTownWorld
+var visiting: TDTravelWorld
+var visiting_town: String="chengdu"
+var _map_open: bool=false
 var restaurant: TDRestaurantWorld
 var cottage:TDCottageWorld
 var music:TDGameMusic
@@ -104,6 +107,8 @@ func _process(_delta: float) -> void:
 	# Kitchen emits the single monotonic active-game time, even when its room is hidden.
 	var minute: float=profile.characters.clock.minute
 	if town!=null: town.set_day_minute(minute)
+	if visiting!=null: visiting.set_day_minute(minute)
+	if kitchen_view!=null: kitchen_view.staff_away=location in ["town","voyage","cottage"]
 	if cottage!=null: cottage.set_day_minute(minute)
 	if restaurant!=null and restaurant._iso!=null: restaurant._iso.set_day_minute(minute)
 	if kitchen_view!=null and kitchen_view.kitchen!=null: kitchen_view.kitchen.world.set_day_minute(minute)
@@ -129,8 +134,8 @@ func _process(_delta: float) -> void:
 			if state.phase in ["OPEN","DRAINING"]: profile.story.note_opened()
 			elif state.phase=="SETTLED": profile.story.note_served()
 		if state.phase=="SETTLED":
-			var result:=save_game()
-			if not result.ok: _message(result.message if result.code=="KITCHEN_BUSY" else "自动保存失败："+result.code)
+			var result:=profile.settle_progression()
+			if not result.ok: _message("日结等级结算失败："+result.code)
 			elif not profile.progression.snapshot().recent.is_empty():
 				var growth: Dictionary=profile.progression.snapshot().recent.back()
 				if int(growth.day)==int(state.day) and not growth.rewards.is_empty():
@@ -153,6 +158,10 @@ func _input(event: InputEvent) -> void:
 		return
 	var focus:=get_viewport().gui_get_focus_owner()
 	if focus is LineEdit or focus is TextEdit: return
+	if event.is_action_pressed("world_map") and not event.is_echo() and profile!=null and atlas==null:
+		if _map_open: _close_dialog()
+		elif _modal==null and not (location=="kitchen" and kitchen_view.kitchen.stage.visible): show_world_map()
+		get_viewport().set_input_as_handled();return
 	if guide!=null and event.is_action_pressed("quest_journal") and not event.is_echo():
 		guide.show_journal();get_viewport().set_input_as_handled();return
 	if guide!=null and event.is_action_pressed("quest_track") and not event.is_echo() and _modal==null and atlas==null:
@@ -195,6 +204,7 @@ func _message(text: String) -> void:
 	else: _toast=text;_toast_until=Time.get_ticks_msec()+4000
 
 func _close_dialog() -> void:
+	_map_open=false
 	if is_instance_valid(_modal):
 		remove_child(_modal);_modal.queue_free();_modal=null
 		_pause(_prior_pause)
@@ -203,6 +213,9 @@ func _close_dialog() -> void:
 
 func _lock_controls(value: bool) -> void:
 	value=value and not (guide!=null and guide.presenting())
+	if visiting!=null:
+		visiting.player.set_controls_enabled(value and location=="voyage")
+		visiting.set_process_unhandled_input(value and location=="voyage")
 	if cottage!=null:
 		cottage.player.set_controls_enabled(value and location=="cottage")
 		cottage.set_process_unhandled_input(value and location=="cottage")
@@ -299,13 +312,13 @@ func load_game(id: String) -> TDOutcome:
 	var result:=next.restore(saved.data)
 	if not result.ok: next.close();return _outcome(result)
 	next.persistence=slots.save_slot
-	if next.map_migrated_on_load:
-		var backup:=slots.backup_map_migration(id)
+	if next.map_migrated_on_load or next.region_migrated_on_load:
+		var backup:=slots.backup_map_migration(id,next.region_migrated_on_load)
 		if not backup.ok: next.close();return _outcome(backup)
 		var migrated_save:=next.save()
 		if not migrated_save.ok: next.close();return _outcome(migrated_save)
 	_activate(next)
-	if next.map_migrated_on_load: _message(result.message+"原档已留迁移前备份。")
+	if next.map_migrated_on_load or next.region_migrated_on_load: _message(result.message+"原档已留迁移前备份。")
 	return result
 
 func continue_game() -> void:
@@ -320,6 +333,7 @@ func _recover_slot(id: String, temporary: bool) -> void:
 
 func _activate(next: TDGameProfile,first_entry:bool=false) -> void:
 	_close_dialog();_dispose_game();profile=next;_generation+=1
+	visiting_town=str(profile.commerce.state.home)
 	_story_supply_checked=false
 	_story_frozen=false;_night_closing=false
 	_title_screen.hide();_last_phase=str(profile.shop.snapshot().phase)
@@ -333,6 +347,7 @@ func _activate(next: TDGameProfile,first_entry:bool=false) -> void:
 	restaurant=TDRestaurantWorld.new();restaurant.player_mode=true;restaurant.floor_service=true;restaurant.session=profile.world;restaurant.layout=profile.layout;restaurant.business=profile.shop
 	restaurant.characters=profile.characters
 	restaurant.object_requested.connect(_object);restaurant.pause_requested.connect(show_pause);add_child(restaurant)
+	restaurant.bind_dining_clock()
 	restaurant.restore_visit_boundary()
 	cottage=TDCottageWorld.new();cottage.object_requested.connect(_object);add_child(cottage)
 	kitchen_view=TDShopView.new();kitchen_view.embedded=true;kitchen_view.shop=profile.shop;kitchen_view.day_san=profile.world.san;kitchen_view.boundary_save=save_game
@@ -354,8 +369,9 @@ func travel(destination: String,at_bed:bool=false) -> TDOutcome:
 		if destination!=allowed: return _outcome(TDOutcome.new(false,"NIGHT_CLOSED","今天已结束，请跟随阿铃前往小屋，或在床上休息。"))
 	if profile==null or destination not in ["town","restaurant","kitchen","cottage"]: return TDOutcome.new(false,"INVALID_DESTINATION")
 	if destination=="cottage" and not profile.has_residence(): return _outcome(TDOutcome.new(false,"HOME_LOCKED","小屋还未交到你手中。先完成今日营业，再与阿铃聊聊落脚的事。"))
-	if destination in ["town","cottage"] and not profile.can_leave_shop(): return _outcome(TDOutcome.new(false,"SHOP_OPEN","营业中不能离店，请先处理订单并打烊。"))
 	if _modal!=null: _close_dialog()
+	_clear_visit()
+	visiting_town=str(profile.commerce.state.home)
 	var previous_location:=location
 	if destination=="kitchen": _coach_story_kitchen()
 	location=destination
@@ -496,7 +512,8 @@ func _object(action: String) -> void:
 		"recipes": open_atlas()
 
 func _place(kind: String, id: String) -> void:
-	if kind=="cottage":
+	if id.begins_with("player-branch:"): show_branch()
+	elif kind=="cottage":
 		if profile.residence.stage=="door": guide.present_home("home_door")
 		else: travel("cottage")
 	elif kind=="harbor": show_harbor()
@@ -537,12 +554,71 @@ func _place(kind: String, id: String) -> void:
 			box.add_child(TDUI.label("这个功能区计入客流：人数 %+d，预算 %+d。客人进店时仍会和竞品比较装修、价格和等待。"%[pool,shift],18))
 
 func show_harbor() -> void:
-	var box:=_dialog("河口港 · 候船告示",true)
-	box.add_child(TDUI.label("河风送来桅杆和缆绳的声音。载着食材的船只在这里靠岸。",23))
-	box.add_child(TDUI.label("向东远行的厨师，将在这里与小镇相遇。",21))
-	var status:=TDHarbor.departure_request("paris",str(profile.commerce.state.home),[],{})
-	box.add_child(TDUI.label(status.message+" 目前还不能乘船出发。",20,TDUI.MUTED))
-	box.add_child(TDUI.label("从这里沿石板路向西，经过河畔商街便能回到食堂。",18))
+	if profile==null: return
+	var box:=_dialog("港口 · 小镇间客运",true)
+	box.add_child(TDUI.label("客运免费，即时抵达。旅行不会自动开放菜系、采购商路或分店资格。",19))
+	box.add_child(TDUI.label(kitchen_view.staff_status(),18,TDUI.ORANGE))
+	for id: String in TDTravelCatalog.IDS:
+		if id==visiting_town: continue
+		var row:=TDTravelCatalog.info(id)
+		box.add_child(TDUI.button("前往 "+str(row.name),func()->void:_outcome(voyage(id))))
+	box.add_child(TDUI.label("营业期间订单与耐心继续推进；02:00仍收尾回小屋。",17,TDUI.MUTED))
+
+func voyage(destination: String) -> TDOutcome:
+	if profile==null or location not in ["town","voyage"]: return TDOutcome.new(false,"NOT_AT_PORT")
+	if profile.characters.clock.closed_day==profile.characters.clock.day: return TDOutcome.new(false,"NIGHT_CLOSED","今天已结束，请先休息。")
+	if guide!=null and guide.presenting(): return TDOutcome.new(false,"STORY_BUSY")
+	var at_port: bool=false
+	if visiting!=null: at_port=visiting.nearby().get("kind")=="harbor"
+	else:
+		var feet: Vector2=(town._player.position-town._origin())/TDTownWorld.CELL
+		var booth:=Rect2(70,32,1,1)
+		at_port=feet.distance_to(feet.clamp(booth.position,booth.end))<=.65 or feet.distance_to(Vector2(TDHarbor.ARRIVAL)+Vector2.ONE*.5)<=.8
+	if not at_port: return TDOutcome.new(false,"NOT_AT_PORT","请到港口柜台乘船。")
+	var arrivals: Dictionary={}
+	for id: String in TDTravelCatalog.IDS: arrivals[id]="harbor."+id+".arrival"
+	var request:=TDHarbor.departure_request(destination,visiting_town,TDTravelCatalog.IDS,arrivals,false)
+	if not request.ok: return request
+	var next_map:=TDTravelCatalog.map_for(profile,destination)
+	if next_map==null: return TDOutcome.new(false,"DESTINATION_NOT_READY")
+	_close_dialog();_clear_visit()
+	if destination==str(profile.commerce.state.home):
+		travel("town");town.spawn_at_harbor()
+		town._player.position=town._origin()+Vector2(70.5,33.5)*TDTownWorld.CELL
+	else:
+		visiting=TDTravelWorld.new();visiting.town_id=destination;visiting.map=next_map
+		visiting.harbor_requested.connect(show_harbor);visiting.landmark_requested.connect(_travel_landmark)
+		town.set_presented(false);restaurant.set_floor_cover(true);cottage.set_presented(false);kitchen_view.hide()
+		location="voyage";add_child(visiting)
+	visiting_town=destination;_lock_controls(true)
+	return TDOutcome.new(true,"ARRIVED",TDTravelCatalog.info(destination).name)
+
+func _clear_visit() -> void:
+	if visiting!=null:
+		visiting.close();remove_child(visiting);visiting.queue_free();visiting=null
+
+func _travel_landmark(plot: Dictionary) -> void:
+	if plot.has("branch_id"): show_branch();return
+	var box:=_dialog(TDTravelCatalog.label(plot,visiting_town),true)
+	box.add_child(TDUI.label(TDTravelCatalog.info(visiting_town).caption,20))
+	box.add_child(TDUI.label("这里的街坊经营着自己的生活。当地故事与室内互动将在后续加入。\n采购合作仍需商路推荐；可在主店账本查看世界行情。",18,TDUI.MUTED))
+
+func show_world_map() -> void:
+	if profile==null: return
+	var box:=_dialog("世界地图",true);_map_open=true;_notice.hide()
+	var panel: PanelContainer=box.get_parent().get_parent().get_parent()
+	panel.position=Vector2(40,42);panel.size=Vector2(1200,716)
+	var scroll:=box.get_parent() as ScrollContainer;scroll.vertical_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
+	var view:=TDTravelMapView.new();view.configure(profile);view.town_id=visiting_town
+	if visiting!=null: view.marker=visiting.player.position/TDTravelWorld.CELL
+	elif location=="town": view.marker=(town._player.position-town._origin())/TDTownWorld.CELL
+	else:
+		var id: String="player_cottage" if location=="cottage" else "player_diner"
+		var p: Dictionary=profile.world._plot_by_id(id)
+		if not p.is_empty(): view.marker=Vector2(p.x,p.y)+Vector2(p.w,p.h)*.5
+	box.add_child(view)
+	var bar:=HBoxContainer.new();box.add_child(bar)
+	bar.add_child(TDUI.button("世界全览",view.reset_view));bar.add_child(TDUI.button("当前位置",view.focus_town.bind(visiting_town)))
 
 func show_market() -> void:
 	if not profile.can_leave_shop(): _outcome(TDOutcome.new(false,"SHOP_OPEN","营业中不能采购。"));return
@@ -640,7 +716,7 @@ func show_menu() -> void:
 		price.value_changed.connect(func(value:float)->void:_outcome(profile.shop.set_menu(id,enabled.button_pressed,roundi(value*100))))
 		var stock:=TDUI.label("有料" if profile.shop.menu_available(id) else "缺料 / 售罄",17,TDUI.MUTED)
 		stock.custom_minimum_size.x=125;stock.autowrap_mode=TextServer.AUTOWRAP_OFF;row.add_child(stock)
-	box.add_child(TDUI.label("确认菜单和价格后开门。缺料菜自动停售，营业期间不能离店补货。",17,TDUI.MUTED))
+	box.add_child(TDUI.label("确认菜单和价格后开门。缺料菜自动停售，营业可外出，现货采购仍限筹备；请提前雇好厨师、传菜和收银。",17,TDUI.MUTED))
 	box.add_child(TDUI.label("用餐高峰 08–10 / 11–13 / 17–19 · 少量错峰\n持续营业至主动打烊或02:00；错过的时段不补客。",17,TDUI.MUTED))
 	var demand:=TDUI.label("",18,TDUI.ORANGE);box.add_child(demand)
 	var forecast_update:=func()->void:
@@ -655,14 +731,11 @@ func show_menu() -> void:
 
 func start_day() -> TDOutcome:
 	if profile.characters.clock.minute>=TDWorldDayClock.END_MINUTE: return _outcome(TDOutcome.new(false,"NIGHT_CLOSED","今天已经结束，请到床上休息。"))
-	var saved:=save_game()
-	if not saved.ok and saved.code!="KITCHEN_BUSY": return _outcome(saved)
 	var result:=profile.shop.open_day()
 	if result.ok:
 		kitchen_view._sync_usage();kitchen_view.refresh(true)
 		profile.world.day_phase="service"
 		_close_dialog();_lock_controls(true)
-		if saved.code=="KITCHEN_BUSY": result.message="开门营业！备好的食材已保留；本次未覆盖安全存档，打烊整理厨房后再保存。"
 	return _outcome(result)
 
 func _world_time_boundary(seconds: float) -> float:
@@ -723,7 +796,7 @@ func show_ledger() -> void:
 	for group:Dictionary in profile.commerce.config.groups:
 		box.add_child(TDUI.label("%s：味道%.0f / 服务%.0f / 划算%.0f"%[group.name,100*profile.commerce.reputation(group.id,"food"),100*profile.commerce.reputation(group.id,"service"),100*profile.commerce.reputation(group.id,"value")],17,TDUI.MUTED))
 	for item: Dictionary in state.ledger.slice(maxi(0,state.ledger.size()-16)):
-		box.add_child(TDUI.label("第%d天 · %s · %+.2f元"%[item.day,_ledger_name(item.kind),float(item.cents)/100.0],16,TDUI.MUTED))
+		box.add_child(TDUI.label("第%d天 · %s · %+.2f元"%[item.day,item.extra.get("label",_ledger_name(item.kind)),float(item.cents)/100.0],16,TDUI.MUTED))
 	if profile.at_boundary(): box.add_child(TDUI.button("保存当前进度",func()->void:_outcome(save_game())))
 	var account:=profile.commerce.society.bank.account("player")
 	box.add_child(TDUI.label("钱庄存款 ¥%.2f · 贷款本金 ¥%.2f · 未付利息 ¥%.2f\n借还本金和存取款不计入经营利润。商业街钱庄可办理。"%[float(account.deposit_cents)/100,float(account.principal_cents)/100,float(account.interest_cents)/100],18))
@@ -837,8 +910,7 @@ func _hire_crew(id: String) -> void:
 		show_crew()
 		return
 	var hired := profile.layout.crew.hire(id)
-	var saved := save_game()
-	_outcome(hired if saved.ok else saved)
+	_outcome(hired)
 	show_crew()
 
 func _dismiss_crew(id: String) -> void:
@@ -846,8 +918,7 @@ func _dismiss_crew(id: String) -> void:
 		_outcome(TDOutcome.new(false, "SHOP_OPEN", "打烊后才能辞退。"))
 		return
 	var result := profile.layout.crew.dismiss(id)
-	var saved := save_game()
-	_outcome(result if saved.ok else saved)
+	_outcome(result)
 	show_crew()
 
 func _hire_floor(role: String) -> void:
@@ -858,10 +929,6 @@ func _hire_floor(role: String) -> void:
 	var result := profile.world_transaction(func() -> TDOutcome: return profile.world.employ(role), "雇" + title)
 	if result.ok and role in ["greeter", "cashier"]:
 		profile.layout.set_staff(role, true)
-	if result.ok:
-		var saved := save_game()
-		if not saved.ok:
-			result = saved
 	_outcome(result)
 	show_crew()
 
@@ -873,54 +940,18 @@ func _dismiss_floor(role: String) -> void:
 	var result := profile.world_transaction(func() -> TDOutcome: return profile.world.dismiss(role), "辞退" + title)
 	if result.ok and role in ["greeter", "cashier"]:
 		profile.layout.set_staff(role, false)
-	if result.ok:
-		var saved := save_game()
-		if not saved.ok:
-			result = saved
 	_outcome(result)
 	show_crew()
 
 func show_branch() -> void:
-	if profile == null:
-		return
-	var box := _dialog("分店")
-	var world := profile.world
-	box.add_child(TDUI.label("同时只开一家，开在别的小镇，主店这张地图不动。钱和已会的菜谱共用，菜单、员工和原料分开。划地 %d 元。打烊结算时，有店长、会做菜单的主厨和原料，才有营业额；维护费照扣。这笔钱进同一本现金账，不另算经营等级。" % TDPhase3Session.CLAIM_FEE, 18, TDUI.MUTED))
-	if not profile.at_boundary():
-		box.add_child(TDUI.label("打烊后才能划地、雇人和进货。", 20))
-		return
-	if not world.branch_open:
-		for town: Dictionary in world.catalog.playable_towns():
-			if str(town.get("id", "")) == world.home_town_id:
-				continue
-			var town_id := str(town.get("id", ""))
-			var title := "%s · %s" % [str(town.get("real", town_id)), str(town.get("nickname", ""))]
-			box.add_child(TDUI.button("在%s开小店" % title, _open_branch.bind(town_id)))
-		return
-	var place := world.catalog.town(world.branch_town)
-	box.add_child(TDUI.label("分店在%s。地图 %d×%d。" % [str(place.get("real", world.branch_town)), world.branch_w, world.branch_h], 20))
-	for entry: Dictionary in world.branch_menu:
-		var snap: Dictionary = entry.get("snapshot", {})
-		box.add_child(TDUI.label("菜单 · %s · %d元" % [str(snap.get("name", entry.get("dish_id", ""))), int(entry.get("price", 0))], 18))
-		var dish_id := str(entry.get("dish_id", ""))
-		box.add_child(TDUI.button("教会主厨做" + str(snap.get("name", dish_id)), _teach_branch.bind(dish_id)))
-	if not world.branch_menu.is_empty():
-		var lead_entry: Dictionary = world.branch_menu[0]
-		var lead: Dictionary = lead_entry.get("snapshot", {})
-		box.add_child(TDUI.button("进一份原料 · %d元" % maxi(1, int(lead.get("ingredient_cost", 1))), _stock_branch))
-	for role: String in TDPhase3Session.ROLES:
-		var hired := bool(world.branch_staff.get(role, false))
-		var role_id := role
-		var row := HBoxContainer.new()
-		box.add_child(row)
-		row.add_child(TDUI.label("%s · 日薪%d元 · %s" % [str(TDPhase3Session.ROLE_TITLE.get(role, role)), world.catalog.wage_of(role), "在岗" if hired else "空缺"], 18))
-		if hired:
-			row.add_child(TDUI.button("辞退", _dismiss_branch.bind(role_id)))
-		else:
-			row.add_child(TDUI.button("雇佣", _hire_branch.bind(role_id)))
-	if profile.shop.snapshot().phase == "SETTLED" and not world.branch_settled.has(str(profile.shop.snapshot().day)):
-		box.add_child(TDUI.button("结算今天的分店", _settle_branch_now))
-	box.add_child(TDUI.button("关掉分店", _close_branch_ui))
+	if profile == null: return
+	var box := _dialog("分店经营",true)
+	_notice.hide()
+	var frame: PanelContainer=box.get_parent().get_parent().get_parent()
+	frame.position=Vector2(40,28);frame.size=Vector2(1200,744)
+	var panel := TDBranchPanel.new()
+	box.add_child(panel)
+	panel.configure(profile)
 
 func _open_branch(town_id: String) -> void:
 	var result := profile.world_transaction(func() -> TDOutcome: return profile.world.open_branch_in_town(town_id), "开分店")
@@ -929,9 +960,6 @@ func _open_branch(town_id: String) -> void:
 			profile.world.town_map.install_cottage(profile.residence.plot)
 		profile.sync_commercial_map()
 		profile.world.map_revision += 1
-		var saved := save_game()
-		if not saved.ok:
-			result = saved
 	_outcome(result)
 	show_branch()
 
@@ -962,10 +990,6 @@ func _close_branch_ui() -> void:
 	_keep_branch(result)
 
 func _keep_branch(result: TDOutcome) -> void:
-	if result.ok:
-		var saved := save_game()
-		if not saved.ok:
-			result = saved
 	_outcome(result)
 	show_branch()
 
@@ -1005,7 +1029,7 @@ func show_pause() -> void:
 	var save:=TDUI.button("保存进度",func()->void:_outcome(save_game()));save.disabled=not profile.at_boundary();box.add_child(save)
 	box.add_child(TDUI.button("设置",show_settings))
 	box.add_child(TDUI.button("返回主菜单",request_title))
-	box.add_child(TDUI.label("营业中退出将回到最近的筹备 / 日结存档。",16,TDUI.MUTED))
+	box.add_child(TDUI.label("睡觉或主动保存才记录进度（新档与02:00强制收尾除外）。退出不自动保存；未保存的装修、库存、金钱和研习都会回退。营业中及厨房未整理时不能保存。",16,TDUI.MUTED))
 
 func show_settings() -> void:
 	var box:=_dialog("设置",true)
@@ -1016,29 +1040,31 @@ func show_settings() -> void:
 	if profile!=null:
 		box.add_child(TDUI.label("研习输入校准（毫秒）",20))
 		var offset:=SpinBox.new();offset.min_value=-200;offset.max_value=200;offset.step=5;offset.value=profile.research.snapshot().input_offset_sec*1000;box.add_child(offset)
-		box.add_child(TDUI.button("保存校准",func()->void:_outcome(profile.research.calibrate(offset.value/1000.0))))
+		box.add_child(TDUI.button("应用校准（随进度保存）",func()->void:_outcome(profile.research.calibrate(offset.value/1000.0))))
 	box.add_child(TDUI.label("WASD 移动 · Shift 疾跑 · E 交互 / 放取 · F 开灶 · Q 取锅料 · B 菜谱 · Esc 暂停",17,TDUI.MUTED))
 
 func request_title() -> void:
 	if profile==null: return
-	if profile.at_boundary():
-		var result:=save_game()
-		if result.ok: go_title();return
-		if result.code!="KITCHEN_BUSY": _outcome(result);return
 	var box:=_dialog("放弃未保存的进度？",true)
-	box.add_child(TDUI.label("未保存的订单、做菜和营业奖励会一同回退到最近边界存档。",20))
+	box.add_child(TDUI.label("返回主菜单不会自动保存。未保存的装修、金钱、库存、研习与任务进度会一起回到上次存档。",20))
+	var save:=TDUI.button("保存并返回主菜单",func()->void:
+		var result:=save_game()
+		if result.ok: go_title()
+		else: _outcome(result))
+	save.disabled=not profile.at_boundary();box.add_child(save)
 	box.add_child(TDUI.button("确认返回主菜单",go_title))
 
 func request_quit() -> void:
 	if _quitting: return
 	if profile==null: _finish_quit();return
 	var box:=_dialog("退出游戏",true)
-	box.add_child(TDUI.label("营业中或厨房尚有食物时，退出会放弃未保存进度，回到最近安全存档。筹备/日结且厨房整理完毕时会先保存。",20))
-	box.add_child(TDUI.button("确认退出",func()->void:
-		if profile.at_boundary():
-			var result:=save_game()
-			if not result.ok and result.code!="KITCHEN_BUSY": _outcome(result);return
-		_finish_quit()))
+	box.add_child(TDUI.label("退出不会自动保存。未保存的装修、金钱、库存、研习与任务进度都会回退。需要保留时，请选择保存并退出。",20))
+	var save:=TDUI.button("保存并退出",func()->void:
+		var result:=save_game()
+		if result.ok: _finish_quit()
+		else: _outcome(result))
+	save.disabled=not profile.at_boundary();box.add_child(save)
+	box.add_child(TDUI.button("确认退出",_finish_quit))
 
 func _finish_quit() -> void:
 	if _quitting: return
@@ -1054,6 +1080,7 @@ func go_title() -> void:
 
 func _dispose_game() -> void:
 	close_atlas();_pause(false)
+	_clear_visit()
 	if guide!=null: guide.close();remove_child(guide);guide.queue_free();guide=null
 	for scene: Node in [town,restaurant,kitchen_view,cottage]:
 		if is_instance_valid(scene): scene.close();remove_child(scene);scene.queue_free()
@@ -1064,7 +1091,7 @@ func _dispose_game() -> void:
 func open_atlas() -> void:
 	if profile==null or atlas!=null: return
 	_prior_pause=get_tree().paused;_pause(true)
-	for scene: Node in [town,restaurant,kitchen_view,cottage]: _freeze_branch(scene)
+	for scene: Node in [town,restaurant,kitchen_view,cottage,visiting]: _freeze_branch(scene)
 	get_tree().paused=false
 	_atlas_layer=CanvasLayer.new();_atlas_layer.layer=600;add_child(_atlas_layer)
 	atlas=TDRecipeAtlas.new();atlas.session=profile.research
@@ -1128,9 +1155,7 @@ func show_debug_tools() -> void:
 			# Leave the real slot at a defined boundary; debug prototypes never own it.
 			if profile!=null and not profile.at_boundary():
 				_message("请先打烊再进入独立调试入口。");return
-			if profile!=null:
-				var saved:=save_game()
-				if not saved.ok: _outcome(saved);return
+			# Independent debug entry discards the live slot like returning to title.
 			go_title();debug_entry_requested.emit(entry)))
 
 func import_legacy() -> TDOutcome:

@@ -1,5 +1,28 @@
 # 项目架构与接入边界
 
+## D062 世界选址复用（2026-11-08）
+分店入口使用现有 TDTravelMapView 的 SiteMap 子视图，共用世界图、五镇地图快照和坐标变换；仅增加可读地籍覆盖及矩形输入状态。Shell 装配暂停弹窗，Panel 收到镇/矩形意图后交 TDPlayerBranches 报价、聘店长及提交。所在地采购和结算继续走既有 WorldEconomy/Shop/Profile。五镇开店资格与主店进口商路解耦，研究解锁不变，无新地图/金钱/存档权威。
+
+## D061-R1 地图同源增量
+RegionalLayout缓存四镇地形/街道配置；TownMap供经济与分店规则和TravelWorld共同读取。世界航海图只读五张同源地图，绘制插画背景与运行时道路/地标/位置，缩放拖动不发送传送请求。RegionMigration生成独立候选，Profile负责旧/新契约校验，ProfileStore负责备份及原子存储，Shell只在全部成功后切换。主镇地图与Shop钱物权威保持。
+
+## D061 旅行与主店托管
+Shell装配可释放TDTravelWorld，主镇Profile/Shop/WorldEconomy继续唯一运行，不复制经济会话。TravelCatalog复制既有地籍与占用，TravelMapView只读定位。地籍边缘不是不可见碰撞墙，只有可见建筑基底阻挡，水域沿terrain不可步行。ShopView在原时间推进中调度CookingLane真实自动谱，前厅照常落座/传菜/收银。退出、读档、02:00释放访问场景。
+
+## D060 分店托管
+TDGameProfile组合TDPlayerBranches；后者持有独立店铺状态，UI仅发选址/确认/菜单预算意图。WorldEconomy通过同一有限需求池把分店加入候选，仅被选中时用真实家庭现金购买真实库存；采购使用原市场账。所有现金通过Shop.branch_adjustment记账，分店流水既非主店销售也非银行收入，社会资金去向与主账一致。地形/产权由原地图读取，不重写建筑和厂商核心。schema8包含branches，旧版1–7显式兼容；不存在第二份分店存档文件。
+
+## D059 明确检查点与呈现修正
+Profile仍是整个存档槽的快照权威，Research.save_sink仅校验当前会话提交，不独立写盘。Shell集中保留主动保存/睡觉/新档/02:00，普通经营、装修、研究、事件和返回/退出不触发隐式写入；原备份/临时文件和安全边界复用。读档出生锚点仍与进度快照独立。
+餐厅输入轴单独投影并归一化，物理移动/滑墙/步态继续使用原真实屏幕距离预算。坐姿纹理与臀部锚点只属于显示，家具坐垫和低桌沿共享原FurnitureModel；真实Guest位置/Shop落座确认无新状态权威。
+
+## D058 食客与后厨共用订单
+Shop拥有ARRIVING→WAITING的业务转换、到店容量、库存分配及耐心；Restaurant拥有可达路线/座位和短暂坐下动画。Shell把Restaurant时钟回调装配给Shop，按营业事件/路径终点/坐下终点切分统一时间，前厅隐藏仍推进；取消、暂停、02:00沿原链处理。订单ID贯穿来访、后厨、评价和经济家庭；没有另一张前厅订单表，也没有新的NPC经济类。具名角色仍由CharacterRoster的真实经济机会进入、离开并释放日程占用。普通形象在TDDinerArt按稳定身份选两性别、三衣色，TDNpcGait按真实位移选帧；只读纹理缓存不进入存档。
+
+## D057 装修目录与共享呈现
+R1：Layout新增preview_move复用原校验并排除自身ID，World只持有拖动偏移/目标格；Iso在拖动时隐藏原实物、绘制同款幽灵，真实碰撞/存档直到松手才经move_piece提交。角标父框不接鼠标，只有两个按钮拦截输入，家具本体可直接拖拽。去掉Panel风格信号和选择器，不动旧布局schema。
+TDRestaurantCatalog/TDRestaurantLayout继续定义模板与实例。新增TDDecorationPanel仅显示卡片并发意图，TDFurnitureModel统一卡片/实物/幽灵预览的外形和点击边界；World装配并转给原Layout原子规则。没有新存档、Autoload或第二套家具状态；正式装修图板仍由Shell检查营业边界。相机、显示与输入使用同一变换，GUI先挡世界输入；测试覆盖实际鼠标事件、正式E入口、旧档及隔离Profile存档。
+
 ## D056 落脚故事与存档职责
 住所资格归既有 Profile.residence；它与 Opening 原教学进度并列，确保深夜提前安顿不会把尚未完成的试做覆盖成 done。Guide 只编排邀请/护送/门口对白，Town复用道路跟随、距离停等与原阿铃角色；Shell统一处理房间权限、日末清理及边界保存。没有新管理器或Autoload。
 ProfileStore 的槽删除使用独立文件归档日志，不把坏档解析为正常档后再删。当前活跃 Profile 不能从载入页面删除；开始与继续各自保留不同语义。

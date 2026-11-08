@@ -37,9 +37,8 @@ func load_game() -> TDOutcome:
 	return result
 
 func save_game(data: Dictionary) -> TDOutcome:
-	# The existing file only needs a structural check. The temp file is fully validated
-	# once after writing, which is the round-trip that must succeed before it can replace it.
-	var before:=_parse_file(path)
+	# Keep existing corrupt/unknown-version payloads intact. Validate the candidate on readback.
+	var before:=read_file(path)
 	if not before.ok and before.code!="NOT_FOUND": return before
 	var payload:=JSON.stringify(data)
 	var text:=JSON.stringify({"schema_version":1,"payload":payload,"sha256":payload.sha256_text()})

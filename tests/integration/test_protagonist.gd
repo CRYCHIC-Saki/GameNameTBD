@@ -160,7 +160,9 @@ func test_restaurant_stride_counts_rendered_pixels_once_in_each_direction() -> v
 		var traveled := TDRestaurantIsoView.project(finish.x, finish.y).distance_to(screen_start)
 		# Independent draw projection and accepted distances; never call the
 		# production inverse transform or read its stride settings as the oracle.
-		var pixels_per_cycle := 224.0 if action in ["world_up", "world_down"] else 140.0
+		# Single grid-axis keys now render diagonally; their horizontal component
+		# dominates the 2:1 projection, selecting the left/right walking pose.
+		var pixels_per_cycle := 140.0
 		assert_gt(traveled, 15.0, "Real input moved the on-screen feet")
 		assert_lt(traveled, 25.0, "Six physics ticks retain the real 180 px/s speed")
 		assert_almost_eq(body._walk_phase * pixels_per_cycle, traveled, .001, action+": each drawn pixel advances the stride only once")

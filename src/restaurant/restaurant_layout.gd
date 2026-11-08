@@ -157,6 +157,24 @@ func finish_stamp() -> int:
 		joined += item + "|"
 	return joined.hash()
 
+func set_surface_finish(finish_id: String) -> TDOutcome:
+	var wall := WALL_FINISHES.has(finish_id)
+	if not wall and not FLOOR_FINISHES.has(finish_id):
+		return _fail("BAD_FINISH", "没有这种地板或墙纸")
+	var replacement := _finishes.duplicate()
+	if replacement.size() != columns * rows:
+		replacement.resize(columns * rows)
+		replacement.fill("")
+	var count: int = 0
+	for y: int in rows:
+		for x: int in columns:
+			if (cell_zone(x, y) == "facade") == wall:
+				replacement[y * columns + x] = finish_id
+				count += 1
+	_finishes = replacement
+	return TDOutcome.new(true, "FINISHED", "整屋%s已换成%s" % ["墙面" if wall else "地面", finish_name(finish_id)], {"surface": "wall" if wall else "floor", "cells": count})
+
+# Kept for old saved-layout tooling. The game catalog uses set_surface_finish.
 func set_finish(x: int, y: int, finish_id: String) -> TDOutcome:
 	if not _inside(x, y):
 		return _fail("OUT_OF_BOUNDS", "超出餐厅边界")
@@ -288,6 +306,15 @@ func move_piece(id: String, x: int, y: int) -> TDOutcome:
 	if current.is_empty():
 		return _fail("MISSING", "没有这件家具")
 	return _commit(_index_of(id), _make_piece(id, String(current["kind"]), x, y, int(current["rotation"]), String(current["style_id"])))
+
+func preview_move(id: String, x: int, y: int) -> Dictionary:
+	var current := piece(id)
+	if current.is_empty():
+		return {"ok": false, "code": "MISSING", "message": "没有这件家具", "piece": {}}
+	# Validation already excludes this stable ID; the live layout is never mutated.
+	var built := _make_piece(id, str(current.kind), x, y, int(current.rotation), str(current.style_id))
+	var checked := _validate_piece(built)
+	return {"ok": checked.ok, "code": checked.code, "message": checked.message, "piece": built}
 
 func rotate_piece(id: String) -> TDOutcome:
 	return rotate_piece_by(id, 90)

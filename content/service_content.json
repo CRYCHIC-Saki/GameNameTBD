@@ -8347,6 +8347,8 @@
     "mushroom": 300
   },
   "settings": {
+    "arrival_wait_sec": 120,
+    "sit_down_sec": 0.7,
     "initial_cents": 30000,
     "day_sec": 360,
     "arrival_sec": 45,

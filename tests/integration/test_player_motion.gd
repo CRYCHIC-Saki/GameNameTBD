@@ -29,13 +29,13 @@ func screen_point(point: Vector2) -> Vector2:
 
 func test_real_restaurant_wall_slides_never_exceed_screen_walk_budget() -> void:
 	var starts: Array[Vector2i] = [Vector2i(1,7), Vector2i(7,1), Vector2i(room.layout.columns-2,7), Vector2i(7,room.layout.rows-2)]
-	var actions: Array[String] = ["world_up", "world_up", "world_down", "world_down"]
+	var actions: Array = [["world_left","world_up"],["world_left","world_up"],["world_right","world_down"],["world_right","world_down"]]
 	var peak := 0.0
 	var slides := 0
 	for i: int in starts.size():
 		room.teleport_player(starts[i])
 		await wait_physics_frames(2)
-		Input.action_press(actions[i])
+		for action: String in actions[i]: Input.action_press(action)
 		for tick: int in 45:
 			var before := room.player_position()
 			await get_tree().physics_frame
@@ -43,7 +43,7 @@ func test_real_restaurant_wall_slides_never_exceed_screen_walk_budget() -> void:
 			peak = maxf(peak, travel.length())
 			if absf(travel.x) > 0.1: slides += 1 # Vertical input deflected along a real wall.
 			assert_lte(travel.length(), 180.0 / Engine.physics_ticks_per_second + 0.08, "Wall slide cannot accelerate in screen space")
-		Input.action_release(actions[i])
+		for action: String in actions[i]: Input.action_release(action)
 	print("RESTAURANT_COLLISION peak_screen_step=", peak, " sliding_frames=", slides)
 	assert_gt(slides, 10, "Exercise real sliding contacts, not only open floor")
 	room.teleport_player(Vector2i(6,8))
@@ -89,23 +89,23 @@ func test_sprinting_into_table_edges_and_room_corner_cannot_tunnel_or_accelerate
 	var table := room.layout.piece_by_kind("dining_table")
 	var table_area := Rect2(Vector2(table.x,table.y)*64.0,Vector2(128,128))
 	var starts: Array[Vector2i] = [Vector2i(table.x-1,table.y),Vector2i(table.x,table.y-1),Vector2i(1,1)]
-	var actions: Array[String] = ["world_down","world_down","world_up"]
+	var actions: Array = [["world_right","world_down"],["world_right","world_down"],["world_left","world_up"]]
 	var contacts := 0
 	shift_key(true)
 	for i: int in starts.size():
 		room.teleport_player(starts[i])
 		await wait_physics_frames(2)
-		Input.action_press(actions[i])
+		for action: String in actions[i]: Input.action_press(action)
 		for tick: int in 32:
 			var before := room.player_position()
-			var heading := Vector2.DOWN if actions[i]=="world_down" else Vector2.UP
+			var heading := Vector2.DOWN if i<2 else Vector2.UP
 			if room._player.move_and_collide(room._player.motion_transform.basis_xform(heading*8.0),true)!=null: contacts+=1
 			await get_tree().physics_frame
 			assert_lte(screen_point(room.player_position()).distance_to(screen_point(before)),4.88)
 			assert_false(table_area.has_point(room.player_position()), "Feet never enter the table")
 			assert_gt(room.player_position().x,0.0)
 			assert_gt(room.player_position().y,0.0)
-		Input.action_release(actions[i])
+		for action: String in actions[i]: Input.action_release(action)
 	assert_gt(contacts,10,"Exercise physical contacts while sprinting")
 	shift_key(false)
 

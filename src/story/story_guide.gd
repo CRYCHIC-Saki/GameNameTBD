@@ -60,7 +60,7 @@ func _process(delta: float) -> void:
 	if shell==null or shell.profile==null: return
 	var story:=shell.profile.story
 	if shell.atlas!=null and shell.atlas.selected_id=="C02" and story.waiting_cook(): story.recipe_viewed=true
-	var hidden:=presenting() or shell._modal!=null or shell.atlas!=null or shell.kitchen_view._popup!=null or not story.started()
+	var hidden:=shell.location=="voyage" or presenting() or shell._modal!=null or shell.atlas!=null or shell.kitchen_view._popup!=null or not story.started()
 	var pending_home: bool=not shell.profile.has_residence() and shell.profile.residence.stage!="locked"
 	_card.visible=not hidden and (not story.finished() or pending_home)
 	_trail.visible=not hidden and story.tracked and (not story.finished() or pending_home)
@@ -141,9 +141,7 @@ func _on_dialogue_closed(_text: String, _picks: Array) -> void:
 	shell.kitchen_view.set_paused(get_tree().paused);shell._lock_controls(true)
 	if home_finished:
 		shell.travel("cottage",true)
-		var saved:=shell.save_game()
-		shell._outcome(saved)
-		shell._message("小屋已解锁。靠近床按 E 保存或休息；未完成的教学会继续保留。" if saved.ok else "已取得小屋，但保存失败。请在床边或暂停菜单重试。")
+		shell._message("小屋已解锁。靠近床按 E 保存或休息；退出不会自动保存，未完成的教学会随存档保留。")
 
 func show_journal() -> void:
 	if presenting() or shell.atlas!=null or shell._modal!=null: return

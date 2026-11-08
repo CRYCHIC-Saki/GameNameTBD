@@ -96,7 +96,7 @@ func test_real_load_migrates_only_after_backup_and_successful_write() -> void:
 	shell.slots.interrupt_at=""
 	assert_true(shell.load_game("slot-01").ok);assert_eq(shell.location,"cottage")
 	assert_eq(shell.profile.world.map_version,2)
-	assert_eq(int(shell.slots.load_slot("slot-01").data.schema_version),7)
+	assert_eq(int(shell.slots.load_slot("slot-01").data.schema_version),8)
 	assert_eq(FileAccess.get_sha256(path+".before-map-v2.bak"),checksum)
 	var malformed:=shell.profile.snapshot();malformed.map_migration="bad"
 	assert_false(TDGameProfile.validate_save(malformed).ok)

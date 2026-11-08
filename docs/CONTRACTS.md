@@ -1,5 +1,59 @@
 # 公共契约：v3完整烹饪，兼容v1/v2历史入口
 
+## 217cd34拉取后的兼容契约（2026-11-08）
+- ShopView挂载时设Shop.crew_external=true并注入crew_status_source，关停解除所属回调，不回退旧计时器。tick_staff同时适用于现场/离店，要求真实订单、厨师、空锅与材料；每位厨师只占一个会话，不重复接玩家正在制作的菜。cook_seconds旧倒计时/模拟属性只保留独立兼容测试；正式耗时/成品由FullKitchen/Lane/BeatSheet给出。
+- Restaurant.bind_dining_clock后advance_dining同时推进客人和服务员，_process只取显示位置；暂停/剧情冻结不移动、不交盘。雇用waiter抵达才hand_plate，独立runner岗位保持兼容，不新增钱物账或第二张订单。
+- TownMap.economic_parcels(catalog,seed,layout,region_version)缓存键含布局版本、地域版本、种子与zones指纹，返回深副本。Profile按存档region_layout_version校验，旧/新地形可同进程迁移，不互相污染。
+- ResearchStore写入前验证既有封装及业务payload，未知内部版本不能覆盖；候选临时文件写后完整校验，不通过不替换原文件。
+- 仅外围facade可走到实际边墙，内部facade/家具仍阻挡；入口、装修选择模型及D059地砖轴移动保持。test_pull_merge覆盖真实出餐、统一时钟、缓存隔离及坏档保留，原场景回归不降低断言。
+
+## D062 世界分店选址契约（2026-11-08）
+- `TDPlayerBranches.quote/open_store` 只按 active_towns 校验目的镇，不检查货运 routes；现有 `TOWN_LOCKED` 对未知镇保留。其余错误码、事务令牌、分钱单位、费用和原子性不变。
+- `TDBranchPanel.SiteMap extends TDTravelMapView` 共用世界插画、地图副本、坐标/镜头与五镇元数据；不是另建地图权威。`town_selected(id)` 清空旧方案，`picked([x,y,w,h])` 仅鼠标完整松手时提交意图。整数格坐标是该 town_id 的73×73地籍，水面及地图外不夹取为合法坐标。
+- 选择状态不改变 `town_id/marker` 玩家标记、旅行地点、时钟或存档。界面只调用分店报价/创建；店长及菜单仍由原规则层管理。开办后重新打开视图，从同一 Profile 读取最新分店占地。
+- 图形网格颜色只是提示：松手预览与最终开办均走原 `quote` 校验。不能以插画地面、颜色或点击按钮代替合法用地检查。取消、失焦、滚轮中断、切镇和隐藏不创建店铺/收费。
+- `TDTravelMapView.max_zoom/minimum_view_size/heading/controls_hint/show_player` 为实例级展示设置；默认普通 M 地图行为不变。`cell_to_screen(id,cell)` 接受连续格坐标，SiteMap 反换算后取地格。无新的持久字段。
+
+## D061-R1 地域地图契约
+- `TDRegionalLayout`读取`content/towns/regions.json`，仅静态几何；`TDTownMap.region_id`关联该源。`build_economic_layout(..., region_version=2)`产生当前布局；版本1仅用于旧档验证。旅行、分店报价、经济地形、存档几何验证不可分别构造另一版地图。
+- `TDKitchenPlayer.confine_to`严格为`(candidate: Vector2) -> bool`；TravelWorld校验完整短步路径、9px脚部半径、地形和真实建筑底座。轴向滑动仍由Player负责。角色PAUSABLE，地图覆盖禁止底层输入。
+- Profile新增`region_layout_version: int`与`region_migration`，主schema8和主镇map_version2不变；缺省1兼容，未知版本拒绝。`TDRegionMigration.convert`不改调用方，稳定商业地块ID仅替换几何；玩家分店按稳定ID顺序保留尺寸、确定性最近合法位置。任何一店无位置则整次失败。
+- 转换先过旧版完整校验，再验证候选；迁移前备份纳入槽删除/恢复文件族。备份或候选写入失败不激活新Profile；再次读取已迁移版本不再次写盘、不重新扣费。普通旅行/地图操作不保存。
+- 世界图的缩放/平移/选择仅是瞬态视图状态，不改变位置、钱物、时间、剧情开放或商路。底图插画是示意；实际地块和玩家标记来源于当前Profile。
+
+D061：TDTravelCatalog.map_for复制既有地籍及实时产权/分店，不回写Profile.world。TDTravelWorld持有单一访问地图与角色，由Shell校验港口、切换/销毁、暂停和日末。M只读，不保存当前位置。TDShopView.tick_staff只调度已雇厨师、空锅和真实已落座订单，材料/QTE/交付各沿原权威；session_id绑定锅，取消/重开拒绝旧结果。服务员承担runner，存档schema8保持。
+
+D060：正式分店由 Profile 装配 TDPlayerBranches，独立稳定 store_id / 菜单 / 原料批次 / 店长 / 租约 / 日账，Shop 仍唯一分钱账。选址报价只读，确认时重验地形、产权、余额和已解锁菜单，开办费一次；取消无副作用。经济有限机会先比较主店、分店、NPC及不外食，选中分店才消耗其库存和家庭资金，不另生成客流。店长带班组，分店自下一日起营业；日账幂等，欠费保留。Profile schema8 同包保存并显式兼容1–7，不改变D059保存时点。旧单店快照归档后迁移，不双跑旧 settle_branch。管理选址图不代表客运已开放。
+
+D059-R4显示修订：桌类座位处于真实seated或后半段sitting时，使用统一投影的occupied-seat图，家具绘制跳过该侧空凳；非桌类座位保持原独立坐姿。稳定ID/Shop时点不变。组合只在显示层以凳脚锚点等比定位，绝不生成第二个座位、重复确认落座或改存档。前序R3间距保留。
+
+D059-R3：餐桌/火锅桌显示拆为独立table/stool图层，dining_stool_rect与dining_feet/dining_cushion是同一显示模型中的座位位置权威；凳子向外移动，真实Guest接近点及坐姿同步，不额外建立可持久化凳子对象。Layout家具ID/2×2格占地/容量/旋转中心不变；目录/预览/实物继续共用模型。桌前层只采样独立桌纹理的alpha，不重画凳子盖住人物。人物83.52px比例沿用R2。
+
+D059-R2覆盖紧随其后的R1显示规则：用户明确问题是遮挡，取消强制鞋底接地和长腿图。恢复v2整幅坐姿的等比显示，家具显式提供前层遮挡多边形，仅在人物下半身相交区域重绘原纹理；原图不改，身体与下肢同一朝向/镜像。落座订单/布局/存档契约不变。
+
+D059-R1显示修订：dining_pose_rect按素材内臀部锚点与鞋底共同定位，等比缩放，使臀部触坐垫、鞋底触家具地面；不再以固定83.52px高度只对齐臀部。依旧仅显示，不改变真实Guest落座点/时机、足迹、容量或存档。
+
+## D059 餐厅投影输入与坐点（实现中）
+
+D059已确认保存修订：Profile.save仍是唯一整槽持久化入口，仅主动保存（含明确保存并退出/返回）、睡觉、新档/显式导入、02:00安全收尾调用；旧档迁移只回写迁移后的载入快照。普通退出只确认丢弃，不写盘。Research候选仅校验并提交当前会话，推荐商路/等级事件确认/小屋解锁/雇佣/分店/开门与普通日结不隐式保存；同槽各领域没有独立持久化权威。安全边界和厨房整理条件、临时文件/备份失败恢复不变，槽schema7不变。设置主音量仍属独立用户偏好；研习校准属于槽快照。
+TDKitchenPlayer新增独立input_transform，把输入映射为屏幕方向后归一化（保留摇杆强度）；motion_transform仍只负责屏幕到物理位移及逆变换，滑墙和步态按真实屏幕距离。餐厅装配地砖投影，其他场景默认identity。家具提供坐垫锚点，坐姿以臀部局部锚点对齐并绘制局部桌沿遮挡；属于显示契约，不修改布局ID/足迹/容量或Shop落座点单权威。保存修订见本节已确认规则。
+
+## D058 入座点单
+Shop保持唯一来访/订单权威。新增运行态ARRIVING表示已有食客意向但未正式点单，仍占到店容量/食材分配，不进入active_orders或制作/交付匹配。到店时间arrival_sec保留，confirm_seated(id,seat_id)幂等转WAITING并单独记录ordered_sec、seat_id与点单耐心；原报价/经济家庭预留不重抽、不重复预留。pending_orders包括ARRIVING/WAITING/COOKING，用于容量、超时及日结；边界存档依旧拒绝活动订单。正式Shell装配餐厅的统一时间推进/下个边界回调，不按可见性停止，不建立第二套钱物账。用户确认自动进店入座，无迎宾雇员也无需E放行；传菜与收银保持原规则。
+Restaurant在可达空座之间分配唯一seat_id；无空座在不挡门/物品的区域等位，超时通过Shop取消并释放原预留。到桌后经过sit_down_sec过渡，完成才confirm_seated；同seat重调返回ALREADY_ORDERED，换seat返回SEAT_MISMATCH，取消后的迟到回调返回STALE_VISIT，缺料仍走REJECTED_STOCK。新可选终态存档字段校验类型/范围，旧边界档无需补字段，营业现场仍不保存。
+Shell持有回调装配，Shop推进dining_tick(seconds)/dining_boundary(maximum)；场景关闭主动解除，角色不再额外_process计步。arrival_wait_sec是到店至点单的独立时间上限，ordered_sec只影响后厨耐心，经济等待仍从真实arrival_sec算起。TDNpcGait按真实投影位移播放，无经济随机调用；TDDinerArt缓存两身份/三衣色的只读派生纹理，正式普通人和日常对话同一appearance_id。桌椅前部脚点与家具共享绘制器对齐，不改原家具足迹或增加座位容量。
+
+## D057-R2 整屋饰面修订（2026-11-05）
+
+`RestaurantLayout.set_surface_finish(finish_id) -> TDOutcome`：仅接受已有floor/wall枚举，一次替换房间全部对应表面；非法ID原子失败，重复应用幂等。保留家具、区域、另一种饰面；沿用schema1逐格finish_ids存储兼容旧档。正式目录点击直接发送整屋意图，不进入旧逐格画笔。旋转显示在既有家具中心绘制，不因翻转贴图额外平移；不改变碰撞和保存的格坐标。验收见decoration-ui AC-D057-R2-001–004。
+
+## D057-R1 拖动契约（2026-11-05）
+Layout.preview_move(id,x,y)返回独立预览piece与校验结果，使用真实稳定ID排除自身旧占地，不临时从权威列表删实例。World只保留屏幕抓取偏移和目标格；松手时调用原move_piece重新校验，取消不写入布局，保存不会捕获悬浮坐标。左上叉号、右上逆时针旋转按钮为实际家具操作，rotation按-90模360；默认规则层旧rotate_piece仍保留兼容。目录移除风格/档次选择器，原style_id与房间默认风格保留。GUI、暂停、失焦、场景覆盖均终止拖拽，禁止旧松手事件提交。
+
+## D057 装修呈现契约（IMPLEMENTED）
+装修分类及卡片为只读目录，不增加家具身份或第二份布局状态。卡片/预览/实物复用同一绘制器；预览使用layout.preview_piece，只在确认放置后调用place。转向/删除仍经layout规则原子校验；右键取消或关闭选择，不再直接删除。点击实物上半部也可选中，重叠时取绘制最前的家具。UI区域必须拦截世界点击/滚轮；结束/覆盖装修清除选中弹窗及预览。旧布局schema和经济加成保持，卡片展示现有用途/风格/档次及实际装修效果变化，不发明舒适度数值。
+TDDecorationPanel仅发item_chosen/category_changed/style_chosen/done；TDRestaurantWorld持有临时工具/选择，所有操作仍走原Layout。放置成功即回选择，不必先切模式才能点家具；失败保留预览及明确原因。地面/墙壁仅饰面，不变更功能区或碰撞。暂停时目录和弹出菜单停止接收输入；相机最终变换在同帧同步，预览、屏幕点选和菜单定位使用同一矩阵。现有箭头挪动/换风格能力收进家具菜单，不恢复调试常驻栏。
+
 ## D056 新档与住所契约
 TDProfileStore.archive_slot(id)只接受六个固定 slot ID，只能由标题确认页发起。主档/.bak/.tmp/.preserved-*/.before-map-v2* 进入唯一 deleted/ 归档目录。先写不可变哈希清单，逐件移动，最后写清单校验值作为 committed 标记；中断在下一次读/写前回滚，源冲突或损坏清单返回 DELETE_RECOVERY_*，不覆盖。完成删除后旧备份不参与新槽恢复。槽外路径一律拒绝；运行测试只用 artifacts/。
 TDGameProfile schema7，residence.schema_version=2，plot保留原稳定地块；stage=locked/invited/following/door/unlocked，reason=空/first_day/late/legacy，anchor=harbor_arrival（未解锁）或cottage_bed（解锁）。Profile拥有状态，Town通过装配的同一引用仅推进 following→door；Guide完成对话推进 invited→following，门口对话完成后调用 unlock_residence，取消不推进。unlock_residence幂等；stage非door拒绝。无第二份NPC或存档。

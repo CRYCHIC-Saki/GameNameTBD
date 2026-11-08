@@ -84,7 +84,7 @@ func test_multi_day_level_reward_and_six_slot_package_are_idempotent() -> void:
 	assert_true(profile.save().ok);assert_true(profile.save().ok)
 	assert_eq(profile.progression.snapshot(),levels);assert_eq(profile.research.snapshot(),research)
 	var loaded:=store.load_slot("slot-01");assert_true(loaded.ok,loaded.code)
-	assert_eq(int(loaded.data.schema_version),7)
+	assert_eq(int(loaded.data.schema_version),8)
 	var restored:=create_profile("slot-03");assert_true(restored.restore(loaded.data).ok)
 	assert_eq(restored.progression.progress(),profile.progression.progress())
 	# The profile deliberately aligns research.world_time with the saved business day.
@@ -155,9 +155,12 @@ func test_pending_events_survive_retry_ack_and_stale_profile_calls() -> void:
 	var pending:=profile.pending_level_events();assert_eq(pending.size(),1)
 	var event_id:String=pending[0].event_id
 	store.interrupt_at="partial_write"
-	assert_false(profile.acknowledge_level_event(event_id).ok)
-	assert_eq(profile.pending_level_events().size(),1)
-	store.interrupt_at="";assert_true(profile.acknowledge_level_event(event_id).ok)
+	assert_true(profile.acknowledge_level_event(event_id).ok,"Event acknowledgement is live state, not a hidden save")
+	assert_true(profile.pending_level_events().is_empty())
+	assert_false(profile.save().ok)
+	var before_save:=create_profile("slot-03");assert_true(before_save.restore(store.load_slot("slot-01").data).ok)
+	assert_eq(before_save.pending_level_events().size(),1,"Failed explicit save keeps the previous event checkpoint")
+	store.interrupt_at="";assert_true(profile.save().ok)
 	assert_eq(profile.acknowledge_level_event(event_id).code,"ALREADY_APPLIED")
 	var restored:=create_profile("slot-02");assert_true(restored.restore(store.load_slot("slot-01").data).ok)
 	assert_true(restored.pending_level_events().is_empty())
@@ -205,6 +208,7 @@ func test_real_daily_transition_displays_upgrade_and_reloads_same_reward() -> vo
 	assert_eq(shell.profile.progression.progress().level,2)
 	assert_not_null(shell._modal_box.find_child("LevelRewardsView",true,false))
 	var points:=int(shell.profile.research.snapshot().points)
+	assert_true(shell.save_game().ok) # D059: ordinary daily settlement no longer writes the slot.
 	shell.go_title();assert_true(shell.load_game("slot-01").ok)
 	assert_eq(shell.profile.progression.progress().level,2)
 	assert_eq(int(shell.profile.research.snapshot().points),points)

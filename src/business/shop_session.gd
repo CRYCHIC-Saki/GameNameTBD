@@ -17,6 +17,9 @@ var recipe_cultures: Dictionary = {}
 var cooking_reward: Callable
 var kitchen_gate: Callable
 var practice_supply_policy: Callable
+var require_seating: bool=false
+var dining_tick: Callable
+var dining_boundary: Callable
 var day_minute_reader: Callable
 var _opening_minute: float = 480.0
 
@@ -158,7 +161,7 @@ func _allocation(extra: Dictionary = {}) -> Dictionary:
 			for food: Dictionary in entry.dish.ingredients.values():
 				if seen.has(food.id): continue
 				seen[food.id]=true; pool[food.ingredient_id]=int(pool.get(food.ingredient_id,0))+roundi(float(food.amount)*1000)
-	var requests: Array=active_orders()
+	var requests: Array=pending_orders()
 	if not extra.is_empty(): requests.append(extra)
 	var rejected: Array[String]=[]
 	for item: Dictionary in requests:
@@ -371,6 +374,13 @@ func bank_adjustment(delta_cents: int, token: String, action: String) -> TDOutco
 	_s.seen[token]=true;_record("bank_transfer",delta_cents,{},token,{"action":action})
 	return TDOutcome.new(true,"BANK_RECORDED")
 
+func branch_adjustment(cents: int, token: String, label: String, store_id: String) -> TDOutcome:
+	if token.is_empty() or _s.seen.has(token): return TDOutcome.new(false,"DUPLICATE")
+	if not store_id.begins_with("player-branch:") or absi(cents)>100000000 or int(_s.money_cents)+cents<0: return TDOutcome.new(false,"INSUFFICIENT_FUNDS","可用现金不足，未扣款。")
+	_s.seen[token]=true
+	_record("branch_transfer",cents,{},token,{"label":label,"store_id":store_id})
+	return TDOutcome.new(true,"BRANCH_RECORDED")
+
 func receive_supply(units: Dictionary, token: String, inventory_cost_cents: int = 0) -> TDOutcome:
 	if inventory_cost_cents<0: return TDOutcome.new(false,"INVALID_COST")
 	if _s.phase not in ["PREPARE","SETTLED"]: return TDOutcome.new(false,"NOT_AT_BOUNDARY")
@@ -413,24 +423,38 @@ func open_day(random_source: RefCounted = null) -> TDOutcome:
 
 func advance(seconds: float, paused: bool = false) -> TDOutcome:
 	if not is_finite(seconds) or seconds < 0: return TDOutcome.new(false,"INVALID_TIME")
-	if paused or _s.phase not in ["OPEN","DRAINING"]: return TDOutcome.new(true,"IDLE")
+	if paused: return TDOutcome.new(true,"IDLE")
+	if _s.phase not in ["OPEN","DRAINING"]:
+		_tick_dining(seconds)
+		return TDOutcome.new(true,"IDLE")
+	_tick_dining(0.0)
 	tick_crew(seconds)
 	var end: float = float(_s.elapsed_sec)+seconds
 	for iteration: int in 1024:
 		var next: float = end
 		if _s.phase == "OPEN": next = minf(next,minf(_next_arrival,business_close_sec()))
 		for item: Dictionary in _s.orders:
-			if item.status in ["WAITING","COOKING"]: next = minf(next,float(item.deadline_sec))
+			if item.status in ["ARRIVING","WAITING","COOKING"]: next = minf(next,float(item.deadline_sec))
+		if dining_boundary.is_valid(): next=minf(next,float(_s.elapsed_sec)+maxf(.0000001,float(dining_boundary.call(next-float(_s.elapsed_sec)))))
+		var step: float=next-float(_s.elapsed_sec)
 		_s.elapsed_sec = next
 		for item: Dictionary in _s.orders.duplicate(true):
-			if item.status in ["WAITING","COOKING"] and next >= float(item.deadline_sec): cancel_order(item.id,"TIMED_OUT")
+			if item.status in ["ARRIVING","WAITING","COOKING"] and next >= float(item.deadline_sec): cancel_order(item.id,"TIMED_OUT")
+		_tick_dining(step)
 		if _s.phase == "OPEN" and next >= business_close_sec(): _s.phase = "DRAINING"
 		if _s.phase == "OPEN" and next >= _next_arrival:
 			_arrive()
 			_next_arrival = _scheduled_arrival() if day_minute_reader.is_valid() and commerce!=null else _next_arrival+arrival_interval_sec()
-		if _s.phase == "DRAINING" and active_orders().is_empty(): return settle_day()
+		_tick_dining(0.0)
+		if _s.phase == "DRAINING" and pending_orders().is_empty():
+			var settled:=settle_day()
+			_tick_dining(maxf(0.0,end-next))
+			return settled
 		if next >= end: return TDOutcome.new(true,"ADVANCED")
 	return TDOutcome.new(false,"TIME_LIMIT")
+
+func _tick_dining(seconds: float) -> void:
+	if dining_tick.is_valid(): dining_tick.call(seconds)
 
 func next_boundary(maximum: float) -> float:
 	# Expire orders before allowing cooking callbacks beyond a business boundary.
@@ -438,7 +462,8 @@ func next_boundary(maximum: float) -> float:
 	var target: float=float(_s.elapsed_sec)+maximum
 	if _s.phase=="OPEN": target=minf(target,minf(_next_arrival,business_close_sec()))
 	for item: Dictionary in _s.orders:
-		if item.status in ["WAITING","COOKING"]: target=minf(target,float(item.deadline_sec))
+		if item.status in ["ARRIVING","WAITING","COOKING"]: target=minf(target,float(item.deadline_sec))
+	if dining_boundary.is_valid(): target=minf(target,float(_s.elapsed_sec)+maxf(.0000001,float(dining_boundary.call(target-float(_s.elapsed_sec)))))
 	return maxf(.0000001,target-float(_s.elapsed_sec))
 
 func economic_menu(assume_restocked: bool = false) -> Array:
@@ -461,8 +486,8 @@ func economic_menu(assume_restocked: bool = false) -> Array:
 func _arrive_economic() -> void:
 	var slot:=floori(maxf(0,float(_s.elapsed_sec)-1.0)/arrival_interval_sec()+0.000001)
 	var arrivals: Array
-	if day_minute_reader.is_valid(): arrivals=commerce.arrivals_at(_opening_minute+float(_s.elapsed_sec),economic_menu(),active_orders().size(),int(catalog.config.settings.max_orders),catalog.cooking.data().customers,float(catalog.config.settings.patience_sec))
-	else: arrivals=commerce.arrivals(slot,economic_menu(),active_orders().size(),int(catalog.config.settings.max_orders),catalog.cooking.data().customers,float(catalog.config.settings.patience_sec))
+	if day_minute_reader.is_valid(): arrivals=commerce.arrivals_at(_opening_minute+float(_s.elapsed_sec),economic_menu(),pending_orders().size(),int(catalog.config.settings.max_orders),catalog.cooking.data().customers,float(catalog.config.settings.patience_sec))
+	else: arrivals=commerce.arrivals(slot,economic_menu(),pending_orders().size(),int(catalog.config.settings.max_orders),catalog.cooking.data().customers,float(catalog.config.settings.patience_sec))
 	for arrival: Dictionary in arrivals:
 		var id: String=arrival.intent.recipe_id
 		var customer: Dictionary=arrival.template.duplicate(true)
@@ -477,7 +502,7 @@ func _arrive_economic() -> void:
 			continue
 		_s.order_serial+=1
 		var identity: String="%s:d%d:o%d"%[_s.run_id,_s.day,_s.order_serial]
-		_s.orders.append({"id":identity,"recipe_id":id,"family_id":family_id(id),"culture":str(recipe_cultures.get(family_id(id),"chinese")),"status":"WAITING","price_cents":int(arrival.intent.quoted_cents),"reference_cents":int(arrival.reference_cents),"customer":customer,"economic_profile":arrival.person,"economic_intent":arrival.intent,"arrival_sec":float(_s.elapsed_sec),"deadline_sec":float(_s.elapsed_sec)+guest_patience(float(arrival.intent.patience_seconds)),"lane":-1,"reserved":{},"used":{},"prepaid_cents":0,"refunded_cents":0,"tip_cents":0,"dish_id":"","score":{},"plan":{}})
+		_s.orders.append(_prepare_arrival({"id":identity,"recipe_id":id,"family_id":family_id(id),"culture":str(recipe_cultures.get(family_id(id),"chinese")),"status":"WAITING","price_cents":int(arrival.intent.quoted_cents),"reference_cents":int(arrival.reference_cents),"customer":customer,"economic_profile":arrival.person,"economic_intent":arrival.intent,"arrival_sec":float(_s.elapsed_sec),"deadline_sec":float(_s.elapsed_sec)+guest_patience(float(arrival.intent.patience_seconds)),"lane":-1,"reserved":{},"used":{},"prepaid_cents":0,"refunded_cents":0,"tip_cents":0,"dish_id":"","score":{},"plan":{}}))
 
 func _economic_review(item: Dictionary) -> void:
 	if item.status!="SERVED" and item.has("economic_intent"): commerce.society.release(item.economic_intent.opportunity_id)
@@ -497,7 +522,7 @@ func _arrive() -> void:
 	var prospective: Dictionary=profiles[int(_s.order_serial)%profiles.size()].duplicate(true)
 	for id: String in _s.menu:
 		if _s.menu[id].enabled and menu_available(id,prospective): menu.append(id)
-	if menu.is_empty() or active_orders().size() >= int(catalog.config.settings.max_orders): return
+	if menu.is_empty() or pending_orders().size() >= int(catalog.config.settings.max_orders): return
 	var id: String = menu[mini(menu.size()-1,int(float(_rng.call("unit"))*menu.size()))]
 	_s.order_serial += 1
 	var customer: Dictionary = profiles[(int(_s.order_serial)-1)%profiles.size()].duplicate(true)
@@ -508,16 +533,45 @@ func _arrive() -> void:
 		customer.requirements = customer.requirements.filter(func(r:Dictionary)->bool:return str(r.get("ingredient_id","")).is_empty())
 		customer.name = "偏甜的客人" if int(_s.order_serial)%2==1 else "偏鲜的客人"
 	var identity: String = "%s:d%d:o%d" % [_s.run_id,_s.day,_s.order_serial]
-	_s.orders.append({"id":identity,"recipe_id":id,"status":"WAITING","price_cents":int(_s.menu[id].price_cents),"customer":customer,"deadline_sec":float(_s.elapsed_sec)+guest_patience(float(catalog.config.settings.patience_sec)),"lane":-1,"reserved":{},"used":{},"prepaid_cents":0,"refunded_cents":0,"tip_cents":0,"dish_id":"","score":{},"plan":{}})
+	_s.orders.append(_prepare_arrival({"id":identity,"recipe_id":id,"status":"WAITING","price_cents":int(_s.menu[id].price_cents),"customer":customer,"deadline_sec":float(_s.elapsed_sec)+guest_patience(float(catalog.config.settings.patience_sec)),"lane":-1,"reserved":{},"used":{},"prepaid_cents":0,"refunded_cents":0,"tip_cents":0,"dish_id":"","score":{},"plan":{}}))
+
+func _prepare_arrival(item: Dictionary) -> Dictionary:
+	item.arrival_sec=float(_s.elapsed_sec)
+	if require_seating:
+		item.status="ARRIVING"
+		item.patience_seconds=float(item.deadline_sec)-float(item.arrival_sec)
+		item.deadline_sec=float(_s.elapsed_sec)+float(catalog.config.settings.get("arrival_wait_sec",120.0))
+	return item
+
+func confirm_seated(id: String, seat_id: String) -> TDOutcome:
+	var index:=_order_index(id)
+	if index<0 or seat_id.is_empty(): return TDOutcome.new(false,"INVALID_VISIT")
+	var item: Dictionary=_s.orders[index]
+	if item.has("ordered_sec"):
+		return TDOutcome.new(true,"ALREADY_ORDERED") if item.get("seat_id")==seat_id else TDOutcome.new(false,"SEAT_MISMATCH")
+	if _s.phase not in ["OPEN","DRAINING"] or item.status!="ARRIVING": return TDOutcome.new(false,"STALE_VISIT")
+	if float(_s.elapsed_sec)>=float(item.deadline_sec): return TDOutcome.new(false,"VISIT_EXPIRED")
+	if id in _allocation().rejected: return cancel_order(id,"REJECTED_STOCK")
+	item.status="WAITING";item.seat_id=seat_id;item.ordered_sec=float(_s.elapsed_sec)
+	item.deadline_sec=float(_s.elapsed_sec)+float(item.patience_seconds)
+	return TDOutcome.new(true,"ORDERED","已落座点单。",{"id":id,"seat_id":seat_id})
+
+func pending_orders() -> Array:
+	return _s.orders.filter(func(x:Dictionary)->bool:return x.status in ["ARRIVING","WAITING","COOKING"]).duplicate(true)
 
 func active_orders() -> Array:
 	return _s.orders.filter(func(x:Dictionary)->bool:return x.status in ["WAITING","COOKING"]).duplicate(true)
+
+func order_label(id: String) -> String:
+	var item:=order(id)
+	var name: String=str(item.get("economic_profile",{}).get("display_name",""))
+	return name if name!="" else "%02d号客人"%int(id.get_slice(":o",1))
 
 func cancel_order(id: String, reason: String = "CANCELLED") -> TDOutcome:
 	var i: int = _order_index(id)
 	if i < 0: return TDOutcome.new(false,"UNKNOWN_ORDER")
 	var item: Dictionary = _s.orders[i]
-	if item.status not in ["WAITING","COOKING"]: return TDOutcome.new(false,"ALREADY_FINISHED")
+	if item.status not in ["ARRIVING","WAITING","COOKING"]: return TDOutcome.new(false,"ALREADY_FINISHED")
 	item.status = reason if reason in ["TIMED_OUT","REJECTED_STOCK"] else "CANCELLED"
 	item.refunded_cents = int(item.prepaid_cents)
 	_record("refund_cancel",-int(item.prepaid_cents),{},id,{"waste":item.used.duplicate(true),"reason":item.status})
@@ -545,8 +599,12 @@ func guest_patience(base: float) -> float:
 var _crew_jobs: Dictionary = {}
 var _crew_skip: Dictionary = {}
 var _crew_note: String = ""
+var crew_external: bool = false
+var crew_status_source: Callable
 
 func crew_work(person_id: String) -> String:
+	if crew_external:
+		return str(crew_status_source.call(person_id)) if crew_status_source.is_valid() else ""
 	for job: Variant in _crew_jobs.values():
 		var record: Dictionary = job
 		if str(record.get("cook_id", "")) != person_id:
@@ -562,6 +620,8 @@ func take_crew_note() -> String:
 	return text
 
 func tick_crew(seconds: float) -> void:
+	# A real kitchen owns formal-game production. Do not also run the legacy timer.
+	if crew_external: return
 	if crew == null or not is_finite(seconds) or seconds <= 0.0 or _s.phase not in ["OPEN", "DRAINING"]:
 		return
 	var cooks := crew.cooks()
@@ -849,7 +909,7 @@ func close_early() -> TDOutcome:
 	if _s.phase != "OPEN": return TDOutcome.new(false,"INVALID_STATE")
 	_day_end_reason = "early"
 	_s.phase = "DRAINING"
-	if active_orders().is_empty(): return settle_day()
+	if pending_orders().is_empty(): return settle_day()
 	return TDOutcome.new(true,"DRAINING")
 
 func close_for_night() -> TDOutcome:
@@ -858,7 +918,7 @@ func close_for_night() -> TDOutcome:
 	_day_end_reason="night"
 	# Suppress new arrivals before ending existing orders through their usual path.
 	_s.phase="DRAINING"
-	for item: Dictionary in active_orders():
+	for item: Dictionary in pending_orders():
 		var cancelled:=cancel_order(str(item.id),"TIMED_OUT")
 		if not cancelled.ok: return cancelled
 	if _s.phase=="SETTLED": return TDOutcome.new(true,"SETTLED")
@@ -871,7 +931,7 @@ func note_night_cleanup(returned: int, waste: Dictionary) -> void:
 	_record("night_cleanup",0,{},token,{"returned_portions":returned,"waste":waste.duplicate(true)})
 
 func settle_day() -> TDOutcome:
-	if _s.phase != "DRAINING" or not active_orders().is_empty() or int(_s.day) in _s.settled_days: return TDOutcome.new(false,"INVALID_SETTLEMENT")
+	if _s.phase != "DRAINING" or not pending_orders().is_empty() or int(_s.day) in _s.settled_days: return TDOutcome.new(false,"INVALID_SETTLEMENT")
 	if commerce!=null:
 		var summary:=day_summary()
 		commerce.settle(_s.ledger,int(summary.received_cents)+int(summary.tip_cents)-int(summary.refunded_cents),_s.has("day_open_money_cents"))
@@ -931,7 +991,7 @@ func day_summary() -> Dictionary:
 				refunded += -int(event.cents)
 			"emergency_grant":
 				grant += int(event.cents)
-			"world_adjustment":
+			"world_adjustment", "branch_transfer":
 				world_net += int(event.cents)
 			"operating_payment":
 				operating_paid += -int(event.cents)
@@ -1177,7 +1237,8 @@ func validate_save(data: Variant) -> TDOutcome:
 	for id: String in catalog.config.costs: inventory[id]=0
 	for event: Variant in data.ledger:
 		if not event is Dictionary or not event.get("id") is String or ids.has(event.id) or not event.get("kind") is String or not TDServiceCatalog.integer(event.get("cents"),-1000000000,1000000000) or not event.get("inventory_delta") is Dictionary or not TDServiceCatalog.integer(event.get("day"),1,int(data.day)): return TDOutcome.new(false,"INVALID_LEDGER")
-		if not event.get("reference") is String or not event.get("extra") is Dictionary or event.kind not in ["purchase","prepayment","consumption","tip","refund_cancel","refund_served","settlement","emergency_grant","recipe_unlock","failed_delivery","world_adjustment","supply_delivery","operating_payment","bank_transfer","spoilage","wage","night_cleanup"]: return TDOutcome.new(false,"INVALID_LEDGER")
+		if not event.get("reference") is String or not event.get("extra") is Dictionary or event.kind not in ["purchase","prepayment","consumption","tip","refund_cancel","refund_served","settlement","emergency_grant","recipe_unlock","failed_delivery","world_adjustment","supply_delivery","operating_payment","bank_transfer","spoilage","wage","night_cleanup","branch_transfer"]: return TDOutcome.new(false,"INVALID_LEDGER")
+		if event.kind=="branch_transfer" and (not event.extra.get("store_id") is String or not event.extra.store_id.begins_with("player-branch:") or not event.extra.get("label") is String): return TDOutcome.new(false,"INVALID_BRANCH_LEDGER")
 		if event.kind=="spoilage":
 			if int(event.cents)!=0 or not event.extra.get("cold_foods") is Array: return TDOutcome.new(false,"INVALID_LEDGER")
 			for quantity: Variant in event.inventory_delta.values():
@@ -1204,6 +1265,10 @@ func validate_save(data: Variant) -> TDOutcome:
 	for item: Variant in data.orders:
 		if not item is Dictionary or item.get("status") not in ["SERVED","CANCELLED","TIMED_OUT","REJECTED_STOCK"] or not recipes.has(item.get("recipe_id")) or not item.get("id") is String or order_ids.has(item.id) or not item.id.begins_with(data.run_id+":d%d:" % int(data.day)): return TDOutcome.new(false,"ACTIVE_OR_INVALID_ORDER")
 		if item.has("feedback") and not item.feedback is String: return TDOutcome.new(false,"INVALID_ORDER")
+		if item.has("patience_seconds"):
+			if not TDServiceCatalog._number(item.patience_seconds,.1,1000000) or not TDServiceCatalog._number(item.get("arrival_sec"),0,1000000000): return TDOutcome.new(false,"INVALID_VISIT")
+		if item.has("ordered_sec") or item.has("seat_id"):
+			if not item.has("patience_seconds") or not TDServiceCatalog._number(item.get("ordered_sec"),float(item.get("arrival_sec",0)),1000000000) or not item.get("seat_id") is String or item.seat_id.is_empty(): return TDOutcome.new(false,"INVALID_VISIT")
 		if item.has("economic_intent"):
 			if not TDMealIntent.validate(item.economic_intent).ok or not TDEconomicCustomer.validate(item.get("economic_profile")).ok: return TDOutcome.new(false,"INVALID_ECONOMIC_ORDER")
 			if item.economic_intent.customer_id!=item.economic_profile.id or item.economic_intent.recipe_id!=item.recipe_id: return TDOutcome.new(false,"INVALID_ECONOMIC_ORDER")

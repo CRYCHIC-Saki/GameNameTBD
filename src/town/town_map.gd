@@ -4,6 +4,7 @@ extends RefCounted
 const SIZE := 41
 var extent: int = 41
 var layout_version: int = 1
+var region_id: String = ""
 const CENTER := 20
 const FACTORY_SLOTS := 8
 const FACTORY_CELL := 2
@@ -272,7 +273,11 @@ func is_road(x: int, y: int) -> bool:
 
 static var _economic_parcel_cache: Dictionary = {}
 
-func build_economic_layout(catalog: TDTownCatalog, seed_value: int) -> TDOutcome:
+func build_economic_layout(catalog: TDTownCatalog, seed_value: int, region_version: int = 2) -> TDOutcome:
+	if layout_version==2 and region_version==2:
+		for id: String in TDRegionalLayout.IDS:
+			if seed_value==seed_of(id): return TDRegionalLayout.populate(self,catalog,id)
+	region_id=""
 	# Remote economic regions have no owned player geometry. Reject generated layouts
 	# whose commercial frontage is disconnected, instead of selling unreachable land.
 	for attempt: int in 32:
@@ -290,23 +295,23 @@ func build_economic_layout(catalog: TDTownCatalog, seed_value: int) -> TDOutcome
 			if str(plot.id) not in ["competitor","commercial_street"]: continue
 			if not _touches(Vector2i(plot.x,plot.y),int(plot.w),int(plot.h)) or not reached.has(Vector2i(plot.approach_x,plot.approach_y)): valid=false
 		if valid:
-			var definitions: Dictionary = {}
-			for parcel: Dictionary in commercial_parcels():
-				definitions[parcel.id] = parcel.duplicate(true)
-			_economic_parcel_cache["%d:%d" % [layout_version, seed_value]] = definitions
 			return TDOutcome.new(true,"CONNECTED_ECONOMIC_LAYOUT")
 	return TDOutcome.new(false,"NO_CONNECTED_ECONOMIC_LAYOUT")
 
-static func economic_parcels(catalog: TDTownCatalog, seed_value: int, layout: int = 1) -> Variant:
-	var key := "%d:%d" % [layout, seed_value]
+static func economic_parcels(catalog: TDTownCatalog, seed_value: int, layout: int = 1, region_version: int = 2) -> Variant:
+	# Both legacy and new regional geometry can be validated in the same process.
+	var key := "%d:%d:%d:%s" % [layout, region_version, seed_value, JSON.stringify(catalog.zones).sha256_text()]
 	if _economic_parcel_cache.has(key):
-		return _economic_parcel_cache[key]
+		return _economic_parcel_cache[key].duplicate(true)
 	var map := TDTownMap.new()
 	map.layout_version = layout
-	var generated := map.build_economic_layout(catalog, seed_value)
+	var generated := map.build_economic_layout(catalog, seed_value, region_version)
 	if not generated.ok:
 		return generated
-	return _economic_parcel_cache.get(key, {})
+	var definitions: Dictionary={}
+	for parcel: Dictionary in map.commercial_parcels(): definitions[parcel.id]=parcel.duplicate(true)
+	_economic_parcel_cache[key]=definitions
+	return definitions.duplicate(true)
 
 func commercial_parcels() -> Array:
 	if layout_version==2:
@@ -919,5 +924,6 @@ func _house_name(rng: TDBusinessRandom, serial: int) -> String:
 	return "%s住户%d" % [faces[int(rng.unit() * float(faces.size())) % faces.size()], serial]
 
 func terrain_at(at: Vector2i) -> Dictionary:
+	if not region_id.is_empty(): return TDRegionalLayout.terrain(region_id,at)
 	if layout_version==2: return TDPlannedTown.terrain(at,is_road(at.x,at.y))
 	return {"terrain_type":"plain","elevation":1,"surface_type":"stone" if is_road(at.x,at.y) else "grass","walkable":is_walkable(at.x,at.y),"buildable":not is_road(at.x,at.y)}

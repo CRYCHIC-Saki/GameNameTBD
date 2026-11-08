@@ -27,7 +27,8 @@ func cell(at: Vector2i) -> Dictionary:
 	var result: Dictionary = {"schema_version":1,"id":key,"town_id":_town_id,"x":at.x,"y":at.y,"zone_id":zone,"parcel_id":str(parcel.get("id",key)),"land_value_cents":roundi(10000*(0.5+visibility)),"rent_quote_cents_per_day":roundi(8+16*visibility),"visibility":visibility,"attractiveness":0.6 if zone in ["plaza","commercial_street","rich_district"] else 0.4,"reachable":true,"travel_minutes":{"residential":2.0+center_distance*0.3,"station":2.0+absf(float(at.x)-5)*0.3,"market":2.0+absf(float(at.y)-30)*0.3}}
 	if _overrides.has(key): result.merge(_overrides[key],true)
 	if _layout_version == 2:
-		var terrain := TDPlannedTown.terrain(at, TDPlannedTown.is_road(at))
+		var regional: bool=_town_id in TDRegionalLayout.IDS and _plots.any(func(p:Dictionary)->bool:return p.get("region_layout_version",1)==2)
+		var terrain := TDRegionalLayout.terrain(_town_id,at) if regional else TDPlannedTown.terrain(at, TDPlannedTown.is_road(at))
 		result.merge(terrain, true)
 		# Saved economic overrides cannot turn a river or hillside into a footpath.
 		result.reachable = bool(result.reachable) and bool(terrain.walkable)
@@ -35,8 +36,11 @@ func cell(at: Vector2i) -> Dictionary:
 			# Facilities anchor distance estimates after moving away from the old centre.
 			for origin: String in ["residential","station","market"]:
 				var distance: float=100.0
+				if origin=="station" and regional:
+					var port:=TDRegionalLayout.port(_town_id)
+					distance=float(absi(at.x-port.x)+absi(at.y-port.y))
 				for plot: Dictionary in _plots:
-					if str(plot.kind)!=str({"residential":"housing"}.get(origin,origin)): continue
+					if not (str(plot.kind) in ["housing","urban_village","rich_district"] if origin=="residential" else str(plot.kind)==origin): continue
 					distance=minf(distance,absf(at.x-float(plot.approach_x))+absf(at.y-float(plot.approach_y)))
 				result.travel_minutes[origin]=2.0+distance*.3
 	_cache[key]=result

@@ -1,5 +1,29 @@
 # GameNameTBD · 小镇食堂
 
+最新本地版（2026-11-08 19:36）：分店筹建现在使用五镇世界地图。进入“分店→筹建新分店”，点镇放大，左键框选，中键拖动，滚轮缩放，再选店长确认。海外开店不要求先开进口商路；菜系、合法用地、资金与主动保存规则保持。Windows运行 `build/TownDiner.exe`（PCK同目录）；检查 `pwsh -File tools/check.ps1 -Suite branch-core`，地图回归 `-Suite travel-core`。31独立用例与实际EXE图形53项通过，人工试玩待确认；完整记录见 docs/phases/branch-expansion.md D062。
+
+## 世界地图与四镇旅行（D061-R1）
+港口附近按E免费前往四镇。WASD移动、Shift疾跑；M打开五镇世界地图，滚轮缩放、按住鼠标拖动，双击小镇放大，M/Esc返回。日本为海岛、欧洲为河谷、东南亚为河网三角洲、墨西哥为高原峡谷。
+旧存档首次载入会保留迁移前备份；主镇位置不变，外镇已有分店保留面积、产权与经营进度。存档仍只在睡觉/主动保存及既定安全边界写入。
+检查：`pwsh -NoProfile -File tools/check.ps1 -Suite travel`；经济回归`-Suite commerce`；构建`pwsh -NoProfile -File tools/export.ps1 -CheckSuite travel-core`。本地程序`build/TownDiner.exe`与同目录PCK一起使用。详见docs/phases/world-travel.md的最新R1证据。
+
+D061 五镇旅行：靠近港口按E，选择日本/欧洲/东南亚/墨西哥小镇，即时免费往返。按M查看当前位置与港口，M或Esc关闭；旅行不自动开放菜系或采购商路。营业可外出，已雇厨师负责真实耗料做菜，服务员/传菜及收银按岗位工作，缺岗/缺料会等待或超时。保存仍须主动保存或睡觉，读档回床边/港口。
+检查：`pwsh -NoProfile -File tools/check.ps1 -Suite travel-core`；相关回归用`-Suite travel`。构建：`pwsh -NoProfile -File tools/export.ps1 -CheckSuite travel-core`。
+
+D060 分店：筹备/打烊后到营业牌或食堂账本选择“分店”→“筹建新分店”，选菜系、左键拖出临路矩形、下一步选店长，确认后明日起营业。本镇可以多店；外镇只有已开放的合作镇可选。地图分店建筑附近也可按E查看。
+菜单/价格/每日采购预算由玩家调整，店长带基础班组自动买料经营；日账分别显示采购、耗料、工资、租金、水电、利润税与欠费。同镇店铺共享有限客源，可能亏损。星级和建议费用见 `content/branches.json`，实际长期平衡待试玩。
+分店与原有进度同槽保存，开办或修改预算不自动保存。专项：`pwsh -NoProfile -File tools/check.ps1 -Suite branches`；构建：`pwsh -NoProfile -File tools/export.ps1 -CheckSuite branches`。本轮过程及真实结果见[分店报告](docs/phases/branch-expansion.md)。
+
+D059：餐厅WASD沿地砖两条斜轴移动，组合按键不加速，Shift仍疾跑；普通男女、阿铃和老陈使用对齐坐垫的斜向坐姿。
+**存档：睡觉或主动“保存进度／保存并退出”才保留整份进度；普通退出不自动保存。** 未保存的装修、金钱、库存、研习与任务一同回退。新档与凌晨02:00保留安全保存；营业中或厨房尚有食物仍不能现场保存。解锁小屋前读档回港口，之后回床边。
+本轮专项：`pwsh -NoProfile -File tools/check.ps1 -Suite restaurant-feedback`；构建：`pwsh -NoProfile -File tools/export.ps1 -CheckSuite restaurant-feedback`。实际结果见[本轮报告](docs/phases/restaurant-feedback.md)，人工观感待试玩。
+
+D058 食客：开店后客人会自动沿过道走到空座、坐下并点单，后厨此时才显示同一位客人的订单并开始计算等餐耐心。满座先等位，不必按E迎宾；E仍可询问口味，传菜/收银沿用原规则。普通食客为男女各一形象、各三套衣色，带四向行走和坐姿。切到厨房不会停止前厅活动，暂停会冻结。
+专项检查：`pwsh -NoProfile -File tools/check.ps1 -Suite diners`；本地完整检查与构建：`pwsh -NoProfile -File tools/export.ps1`。实际图形验证脚本为`tools/diner_probe.gd`，在锁定Godot的图形模式运行，截图写入`artifacts/diner-flow/gpu/`；测试使用隔离目录，不打开玩家存档。验收见[食客流程](docs/phases/diner-flow.md)。
+
+D057-R2 餐厅装修：筹备或日结后，靠近餐厅内的**装修图板按E**。底部分地面/墙壁/陈设/餐桌/座椅/服务台；**点地板或墙纸卡片，立即替换整屋对应表面**。家具卡片显示半透明预览及占地，滚轮预转向，左键放下。**按住已摆家具拖动，松开放下**；选中框左上叉号删除，右上图标逆时针90°旋转，餐桌图像保持在原占地中心。右键取消、非法落点保留原位；移除方向按钮和风格/档次两栏。完成布置恢复走动，沿原合法边界存档保存。
+专项：`pwsh -NoProfile -File tools/check.ps1 -Suite decoration`；专项构建与EXE验证：`pwsh -NoProfile -File tools/export.ps1 -CheckSuite decoration`。默认不传CheckSuite仍先跑全量。报告见[decoration-ui.md](docs/phases/decoration-ui.md)。
+
 本轮新增：**开始游戏**占用空槽从港口开场；**继续游戏**读取最近进度。载入页可确认删除（本机保留归档，满六槽不会覆盖）。新档首日营业打烊后，出店跟随阿铃前往小屋；凌晨02:00会提前安排落脚，未完教学保留。解锁前读档回港口，解锁后回床边；旧档原有住所保留。新增落脚故事与CG/小屋画面见 `docs/phases/story-expansion.md` 的 D056。
 验证入口：`pwsh -NoProfile -File tools/check.ps1 -Suite homecoming`。本地完整构建：`pwsh -NoProfile -File tools/export.ps1`。测试不操作真实存档；新剧情文本为本轮授权扩写，原剧本不改。
 

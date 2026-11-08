@@ -11,6 +11,9 @@ func _initialize() -> void:
 		return
 	var catalog := TDCatalog.new()
 	var levels := TDLevelProgression.new()
+	var branches := TDPlayerBranches.new()
+	if not branches.error.ok:
+		printerr(branches.error.code); failures += 1
 	if not levels.error.ok:
 		printerr(levels.error.code); failures += 1
 	var outcome := catalog.load_file("res://content/dev_samples.json")
