@@ -1,6 +1,7 @@
 class_name TDShopSession
 extends RefCounted
 signal day_settled(day: int)
+signal day_opened()
 ## Money, orders and stock have one owner. The kitchen provides real dish snapshots.
 var catalog: TDServiceCatalog
 var scorer := TDCustomerScorer.new()
@@ -15,6 +16,7 @@ var commerce: TDWorldEconomy
 var recipe_cultures: Dictionary = {}
 var cooking_reward: Callable
 var kitchen_gate: Callable
+var practice_supply_policy: Callable
 var day_minute_reader: Callable
 var _opening_minute: float = 480.0
 
@@ -45,6 +47,32 @@ func stock_info(id: String) -> Dictionary:
 	result.units=available(id); result.expires_on=TDFoodStock.first_expiry(_s.get("inventory_lots",{}),id)
 	result.remaining_days=maxi(0,int(result.expires_on)-int(_s.day))
 	return result
+
+func replenish_practice_materials() -> TDOutcome:
+	if not kitchen_available() or not practice_supply_policy.is_valid(): return TDOutcome.new(true,"NO_PRACTICE_SUPPLY")
+	var policy: Variant=practice_supply_policy.call()
+	if not policy is Dictionary: return TDOutcome.new(false,"INVALID_PRACTICE_SUPPLY")
+	if policy.is_empty(): return TDOutcome.new(true,"NO_PRACTICE_SUPPLY")
+	var units: Dictionary={}
+	for id: Variant in policy:
+		if not catalog.config.costs.has(id) or not TDServiceCatalog.integer(policy[id],1,1000): return TDOutcome.new(false,"INVALID_PRACTICE_SUPPLY")
+		var held: int=available(id)
+		for food: Dictionary in _s.cold_foods:
+			if food.ingredient_id==id: held+=roundi(float(food.amount)*1000)
+		for entry: Dictionary in _kitchen:
+			var dish: Dictionary=entry.dish
+			# Board/hand food stays recoverable during cutting. Cooking food does not.
+			var cold: bool=dish.state=="preparing" and dish.steps.all(func(step:Dictionary)->bool:return step.operation=="cut")
+			if not cold and not (entry.location=="loose" and dish.state=="operating" and dish.steps.all(func(step:Dictionary)->bool:return step.operation=="cut")): continue
+			for food: Dictionary in dish.ingredients.values():
+				if food.ingredient_id==id: held+=roundi(float(food.amount)*1000)
+		var missing:=maxi(0,int(policy[id])-held)
+		if missing>0: units[id]=missing
+	if units.is_empty(): return TDOutcome.new(true,"PRACTICE_STOCK_READY")
+	var token: String="story-practice-v1:%s:%d"%[_s.run_id,int(_s.serial)+1]
+	_s.seen[token]=true
+	_record("supply_delivery",0,units,token,{"inventory_cost_cents":0,"source":"opening_practice"})
+	return TDOutcome.new(true,"PRACTICE_REFILLED","教程补给已补齐：番茄和鸡蛋可反复试做。",units.duplicate(true))
 
 func day_namespace() -> String:
 	return "%s:d%d:" % [_s.run_id,_s.day]
@@ -380,6 +408,7 @@ func open_day(random_source: RefCounted = null) -> TDOutcome:
 			commerce.skip_closed_before(_opening_minute)
 			_next_arrival=_scheduled_arrival()
 		commerce.begin_day()
+	day_opened.emit()
 	return TDOutcome.new(true,"OPENED")
 
 func advance(seconds: float, paused: bool = false) -> TDOutcome:

@@ -80,13 +80,13 @@ func _draw() -> void:
 		"soup_stall":
 			prop(5,Rect2(900,80,180,230))
 			var lift:=phase(t,.18,.65)
-			actor("chen",Vector2(650,560),260,Vector2i.DOWN,false,-lift*2.2,lift*2.2)
-			foreground(1,510)
+			actor("chen",Vector2(650,730),530,Vector2i.DOWN,false,-lift*2.2,lift*2.2)
+			foreground(1,492)
 			var ladle_y:=lerpf(465,345,lift)
 			draw_line(Vector2(595,ladle_y),Vector2(720,ladle_y),Color("af9873"),8);bowl(Vector2(740,ladle_y),22)
-			crowd(t,false);actor("hero",Vector2(225,660),190,Vector2i.UP);actor("aling",Vector2(1030,660),195,Vector2i.UP)
+			crowd(t,false);actor("hero",Vector2(220,770),420,Vector2i.UP);actor("aling",Vector2(1050,770),420,Vector2i.UP)
 		"black_soup":
-			actor("chen",Vector2(700,470),250,Vector2i.DOWN,false,-.2,lerpf(.5,1.6,phase(t,.12,.55)))
+			actor("chen",Vector2(700,730),540,Vector2i.DOWN,false,-.2,lerpf(.5,1.6,phase(t,.12,.55)))
 			foreground(1,495);bowl(Vector2(770,485),42)
 			var hand:=Vector2(540,390).lerp(Vector2(770,395),phase(t,.2,.48))
 			draw_line(Vector2(720,405),hand,Color("b29874"),7);bowl(hand,16)
@@ -96,7 +96,7 @@ func _draw() -> void:
 				prop(2,Rect2(390,200,500,380).grow(zoom*32))
 		"reflection":
 			if t<.28:
-				actor("hero",Vector2(620,640),350,Vector2i.DOWN,false,-1.0,1.0)
+				actor("hero",Vector2(620,780),520,Vector2i.DOWN,false,-1.0,1.0)
 				bowl(Vector2(620,lerpf(450,400,phase(t,0,.15))),70)
 			else:
 				draw_rect(Rect2(0,0,1280,720),Color(0,0,0,.82));prop(2,Rect2(350,150,580,480))
@@ -108,17 +108,17 @@ func _draw() -> void:
 				if t>.52 and t<.77: caption("“好吃。”",Vector2(900,350))
 				if t>.78: crowd(1,true)
 		"intervene":
-			actor("hero",Vector2(370,615),260,Vector2i.RIGHT);actor("chen",Vector2(900,615),260,Vector2i.LEFT)
+			actor("hero",Vector2(260,760),430,Vector2i.RIGHT);actor("chen",Vector2(1010,760),460,Vector2i.LEFT)
 			crowd(t,true)
 			var travel:=phase(t,.12,.55)
-			actor("aling",Vector2(1020,650).lerp(Vector2(640,620),travel),270,Vector2i.DOWN,travel>0 and travel<1,-phase(t,.5,.8)*1.5,phase(t,.5,.8)*1.5)
+			actor("aling",Vector2(1130,770).lerp(Vector2(640,750),travel),430,Vector2i.DOWN,travel>0 and travel<1,-phase(t,.5,.8)*1.5,phase(t,.5,.8)*1.5)
 		"ledger":
-			actor("aling",Vector2(640,650),350,Vector2i.DOWN,false,-.5,.5)
-			book(Vector2(640,505),1-phase(t,.4,.55),sin(phase(t,.4,.6)*PI)*.15)
+			actor("aling",Vector2(640,820),540,Vector2i.DOWN,false,-.5,.5)
+			book(Vector2(640,600),1-phase(t,.4,.55),sin(phase(t,.4,.6)*PI)*.15)
 		"uncover":
 			# The painted room already contains four furnished tables and the old fridge.
 			pass # Stove, fridge and four two-seat tables are already in this background.
-			actor("aling",Vector2(905,620),260,Vector2i.LEFT,false,-phase(t,.2,.5)*2,0)
+			actor("aling",Vector2(655,660),390,Vector2i.LEFT,false,-phase(t,.2,.5)*2,0)
 			var pull:=phase(t,.25,.55)
 			if pull<1:
 				var cloth_left:=120+pull*710;var cloth_width:=700*(1-pull)+20
@@ -127,12 +127,12 @@ func _draw() -> void:
 				var p:=phase(t,.3,1);var alpha:=sin(p*PI)*.5
 				draw_rect(Rect2(150+(i*97)%720+p*60,570-(i%6)*40-p*(100+(i%4)*25),3,3),Color(1,.94,.72,alpha))
 		"supplies":
-			table(Rect2(390,470,480,90));actor("hero",Vector2(250,650),230,Vector2i.RIGHT)
+			actor("hero",Vector2(575,540),290,Vector2i.RIGHT)
 			var travel:=phase(t,0,.48);var put:=phase(t,.5,.72)
-			var pos:=Vector2(1180,620).lerp(Vector2(820,595),travel)
-			actor("chen",pos,250,Vector2i.LEFT,travel<1,-.7,.7)
-			prop(4,Rect2(pos.x-155-100*put,pos.y-190+55*put,230,140))
-			if t>.74: actor("aling",Vector2(1050,650),230,Vector2i.LEFT)
+			var pos:=Vector2(690,560).lerp(Vector2(700,670),travel)
+			actor("chen",pos,390,Vector2i.LEFT,travel<1,-.7,.7)
+			prop(4,Rect2(Vector2(pos.x-100,pos.y-260).lerp(Vector2(185,380),put),Vector2(200,135)))
+			# The basket is set on the existing left table; no second floating table.
 		"tasting","hesitate","eat_again": tasting(t)
 		"broadcast":
 			prop(5,Rect2(420,100,310,430))
@@ -142,7 +142,7 @@ func _draw() -> void:
 				draw_arc(Vector2(905,180),35+wave*130,-.65,.65,24,Color(.95,.85,.52,(1-wave)*.6),3)
 			caption("滋……",Vector2(940,300))
 		"certificate":
-			actor("hero",Vector2(650,570),330,Vector2i.DOWN,false,0,phase(t,.12,.4)*1.2)
+			actor("hero",Vector2(650,730),640,Vector2i.DOWN,false,0,phase(t,.12,.4)*1.2)
 			var put:=phase(t,.12,.4)
 			foreground(3,530)
 			draw_texture_rect(TDStoryArt.prop(7),Rect2(500,lerpf(340,500,put),220,75),false)
@@ -160,7 +160,7 @@ func _draw() -> void:
 				draw_colored_polygon(PackedVector2Array([Vector2(x-17,480),Vector2(x,480-h),Vector2(x+17,480)]),Color(1,.4+i*.035,.08,.95))
 			draw_rect(Rect2(0,0,1280,720),Color(0,0,0,phase(t,.75,1)))
 	# Cinematic bars replace the dialogue panel. No direction text masquerades as animation.
-	draw_rect(Rect2(0,0,1280,48),Color("090e13"));draw_rect(Rect2(0,672,1280,48),Color("090e13"))
+	draw_rect(Rect2(0,0,1280,48),Color("090e13"));draw_rect(Rect2(0,672,1280,200),Color("090e13"))
 	draw_set_transform_matrix(Transform2D.IDENTITY)
 
 func arrival(t: float) -> void:
@@ -181,8 +181,8 @@ func arrival(t: float) -> void:
 			caption("天下千味之港",Vector2(845,368),24)
 
 func tasting(t: float) -> void:
-	actor("chen",Vector2(1040,560),290,Vector2i.LEFT,false,-.8,.8)
-	actor("aling",Vector2(640,550),295,Vector2i.DOWN,false,-.45,.55)
+	actor("chen",Vector2(1040,720),620,Vector2i.LEFT,false,-.8,.8)
+	actor("aling",Vector2(640,720),640,Vector2i.DOWN,false,-.45,.55)
 	foreground(3,530)
 	var portions:=3-maxi(0,int(t*3)) if shot=="eat_again" else 10
 	plate(Vector2(630,590),portions)
@@ -201,7 +201,7 @@ func tasting(t: float) -> void:
 func sign_scene(t: float) -> void:
 	draw_rect(Rect2(330,150,570,165),Color("71503a"));caption("家常菜",Vector2(750,296),37)
 	var put:=phase(t,.08,.4)
-	actor("aling",Vector2(960,620),290,Vector2i.LEFT,false,-put*1.4,0)
+	actor("aling",Vector2(660,660),390,Vector2i.LEFT,false,-put*1.4,0)
 	var y:=lerpf(440,155,put);var fold:=phase(t,.58,.88)
 	var a:=Vector2(900,y+150-fold*110);var b:=Vector2(900-fold*290,y+150)
 	draw_colored_polygon(PackedVector2Array([Vector2(330,y),Vector2(900,y),a,b,Vector2(330,y+150)]),Color("f4e6b9"))
@@ -254,11 +254,11 @@ func draw_ellipse_shadow(at: Vector2, radius: float) -> void:
 
 func crowd(t: float, turn: bool) -> void:
 	for i: int in 5:
-		var x:=100+i*240;var y:=640.0 if not turn else 675.0
+		var x:=100+i*240;var y:=840.0 if not turn else 870.0
 		var shift:=phase(t,.12+i*.06,.3+i*.06)*8 if turn else 0.0
-		draw_circle(Vector2(x,y-105),28,Color("253039"));draw_rect(Rect2(x-28,y-84,56,95),Color("253039"))
-		draw_circle(Vector2(x+shift,y-110),3,Color("82939a"))
-		bowl(Vector2(x,y-35),25)
+		draw_circle(Vector2(x,y-260),55,Color("253039"));draw_rect(Rect2(x-58,y-220,116,190),Color("253039"))
+		draw_circle(Vector2(x+shift,y-265),5,Color("82939a"))
+		bowl(Vector2(x,y-80),40)
 
 func foreground(index: int, y: float) -> void:
 	var bg:=TDStoryArt.background(index)
@@ -274,9 +274,15 @@ func crate(rect: Rect2) -> void:
 	draw_line(rect.position,rect.end,Color("af8a56"),5)
 
 func book(center: Vector2, openness: float, angle: float) -> void:
-	draw_set_transform_matrix(_camera*Transform2D(angle,center))
-	var w:=20+openness*42
-	draw_rect(Rect2(-w,-28,w*2,55),Color("34495b"));draw_rect(Rect2(-w+4,-24,w*2-8,46),Color("e5d7af"))
+	draw_set_transform_matrix(_camera*Transform2D(angle,Vector2.ONE*1.6,0,center))
+	var w:=35+openness*27
+	draw_rect(Rect2(-w,-28,w*2,55),Color("63462e"))
+	draw_rect(Rect2(-w+3,-25,w*2-6,49),Color("c69b55"),false,1.5)
+	if openness<.12:
+		draw_string(ThemeDB.fallback_font,Vector2(-14,-3),"密",HORIZONTAL_ALIGNMENT_LEFT,-1,23,Color("edce82"))
+		draw_string(ThemeDB.fallback_font,Vector2(-14,23),"令",HORIZONTAL_ALIGNMENT_LEFT,-1,23,Color("edce82"))
+		draw_set_transform_matrix(_camera);return
+	draw_rect(Rect2(-w+4,-24,w*2-8,46),Color("e5d7af"))
 	draw_line(Vector2(0,-24),Vector2(0,20),Color("99866a"),3)
 	for i: int in 4: draw_line(Vector2(-w+10,-15+i*8),Vector2(-10,-15+i*8),Color("a48c73"),2)
 	draw_set_transform_matrix(_camera)

@@ -3,6 +3,7 @@ extends Control
 signal active_time_advanced(seconds: float)
 var external_time_boundary: Callable
 var story_delivery: Callable
+var story_cooking_check: Callable
 
 signal back_requested
 signal pause_requested
@@ -110,10 +111,13 @@ func _make_kitchen() -> void:
 	if embedded:
 		kitchen.world.service_door=true
 		kitchen.world.dining_requested.connect(func()->void:back_requested.emit())
-	kitchen.handling.session_namespace=shop.day_namespace()
+	# Saved consumption tokens survive a reload. New sessions must not restart
+	# the old portable/lane identity counters in the same business day.
+	var kitchen_scope:=shop.day_namespace()+"kitchen-%d"%int(shop.snapshot().serial)
+	kitchen.handling.session_namespace=kitchen_scope+":"
 	kitchen.handling.material_sink=shop.consume_materials
 	for lane: TDCookingLane in kitchen.lanes:
-		lane.session_namespace=shop.day_namespace().trim_suffix(":")
+		lane.session_namespace=kitchen_scope
 		lane.new_session("service.tomato_egg")
 		lane.session.set_material_sink(shop.consume_materials,shop.available)
 
@@ -363,7 +367,11 @@ func _station_action(id: String, action: String) -> void:
 	if lane.qte!=null or lane.thermal_qte!=null or (lane.sheet!=null and lane.sheet.running): kitchen.open_station_view(id); return
 	if lane.snapshot().state=="plated": _station_done(TDOutcome.new(true,"READY","已做好，按 E 端盘。")); return
 	if lane.snapshot().ingredients.is_empty(): _station_done(TDOutcome.new(false,"NO_INGREDIENT")); return
-	var selected:=_recognize(lane,"steam" if id=="kitchen.steamer" else "stir",true)
+	var method: String="steam" if id=="kitchen.steamer" else "stir"
+	if story_cooking_check.is_valid():
+		var allowed: TDOutcome=story_cooking_check.call(lane.snapshot(),method)
+		if not allowed.ok: _station_done(allowed); return
+	var selected:=_recognize(lane,method,true)
 	if not selected.ok: _station_done(selected); return
 	lane.document_rules=true; lane.dual=true
 	if shop.mastery(lane.base_recipe_id).automatic_available:
@@ -465,8 +473,14 @@ func _trash() -> void:
 	column.add_child(TDUI.button("返回厨房",_close_popup))
 
 func _show_pantry() -> void:
+	_sync_usage()
+	var supply:=shop.replenish_practice_materials()
+	if not supply.ok: _show(supply)
 	var column:=_dialog("大冰箱 · 每次携带一份食材")
 	column.add_child(TDUI.label("先用快到期的原料；取出再放回不会刷新保质期。调味时直接使用剩余瓶/袋。",16,TDUI.MUTED))
+	if shop.practice_supply_policy.is_valid() and not shop.practice_supply_policy.call().is_empty():
+		column.add_child(TDUI.label("教程补给 ∞：番茄、鸡蛋用完可再领；试做交付后停止补给。",18,TDUI.ORANGE))
+		column.add_child(TDUI.label("番茄在「蔬菜」页，鸡蛋在「肉类」页。已有切配食材请直接取用。",17,TDUI.ORANGE))
 	var tabs:=TabContainer.new();tabs.custom_minimum_size=Vector2(730,340);column.add_child(tabs)
 	for group: String in ["vegetable","meat","seasoning","fruit"]:
 		var scroll:=ScrollContainer.new();scroll.name={"vegetable":"蔬菜","meat":"肉类","seasoning":"调料","fruit":"水果"}[group];tabs.add_child(scroll)
@@ -501,6 +515,10 @@ func pantry_entries(group: String) -> Array:
 func pick_ingredient(id: String) -> TDOutcome:
 	if get_tree().paused: return TDOutcome.new(false,"PAUSED")
 	if not shop.kitchen_available() or not service.config.costs.has(id): return TDOutcome.new(false,"KITCHEN_UNAVAILABLE")
+	if kitchen.handling.hand!=null: return TDOutcome.new(false,"HANDS_FULL","手上已有东西，请先放下。")
+	_sync_usage()
+	var supply:=shop.replenish_practice_materials()
+	if not supply.ok: return supply
 	var context: Dictionary=shop.context_for_ingredients([id])
 	var family: String=shop.family_id(context.recipe_id) if not context.is_empty() else "service.tomato_egg"
 	var amount: float=1.0 if service.is_primary(id) else .1

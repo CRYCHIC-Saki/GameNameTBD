@@ -1,5 +1,17 @@
 # 公共契约：v3完整烹饪，兼容v1/v2历史入口
 
+## D056 新档与住所契约
+TDProfileStore.archive_slot(id)只接受六个固定 slot ID，只能由标题确认页发起。主档/.bak/.tmp/.preserved-*/.before-map-v2* 进入唯一 deleted/ 归档目录。先写不可变哈希清单，逐件移动，最后写清单校验值作为 committed 标记；中断在下一次读/写前回滚，源冲突或损坏清单返回 DELETE_RECOVERY_*，不覆盖。完成删除后旧备份不参与新槽恢复。槽外路径一律拒绝；运行测试只用 artifacts/。
+TDGameProfile schema7，residence.schema_version=2，plot保留原稳定地块；stage=locked/invited/following/door/unlocked，reason=空/first_day/late/legacy，anchor=harbor_arrival（未解锁）或cottage_bed（解锁）。Profile拥有状态，Town通过装配的同一引用仅推进 following→door；Guide完成对话推进 invited→following，门口对话完成后调用 unlock_residence，取消不推进。unlock_residence幂等；stage非door拒绝。无第二份NPC或存档。
+旧 schema1–6 恢复时只增 residence 字段，既有资格/地块保留；原地图迁移保留 residence 其他字段只替换plot。新档读取不重播CG；未解锁固定港口，解锁后固定床边，非任意位置/QTE存档。
+Shop.day_opened() 与 day_settled(day) 由 Profile 同步记 Opening，关闭时断连，避免同帧开关店漏记与引用环。首次真正营业后 SETTLED 可触发落脚，零客正常算营业；从未开门的普通PREPARE不算完成。02:00沿原厨房清理/日结链触发 late 邀请，不改原 beat/tutorials，待日结床休息才跨日；收夜后未解锁只允许小镇护送、解锁后只允许小屋。
+
+
+## D055 序章可重试契约
+Shop.practice_supply_policy是Shell-owned StoryGuide装配的运行时Callable，返回当前允许的每原料补齐上限，教程外为空；不写入存档。Shop.replenish_practice_materials在厨房可操作时校验整个策略、统计实际库存及可回收在制品、一次记supply_delivery，重复无缺口不再发放，令牌复用持久事务序号。Shop保持唯一数量/批次/钱账；视图只在打开冰箱或有效取料意图前请求补给，不直接改账。旧存档无需schema升级，Guide载入按Opening.beat重新装配许可。厨房搬运/锅会话身份以营业日命名空间加当前持久事务序号区分每次装配，避免同日重载后从portable-1/lane-0-1重启而撞上旧扣料幂等令牌；旧令牌仍保留。
+ShopView.story_cooking_check(dish,method)仅教程开火前校验主料/炒蒸方法；教程外无拦截，普通自由试菜不变。TDOpening.TRIAL_RECIPES显式列正式及既有原型身份；低分番茄炒蛋仍正常交付，不凭显示名或伪造高分放行。Guide.trial_plate_problem说明失败原因并把已有失败成品指向垃圾桶，真实E交付后清手/清锅/推进一次。
+chen_door_point/bowl_point指向原食材铺正门；汤与人物提示仅soup/bowl时优先门交互，其他时期采购不变。护送首段有中门路点，暂停/远离等候/步态仍由原逻辑控制；无新增日程或居民身份。餐厅人物纯显示高度，绘制完恢复变换，不改物理大小。
+
 ## D054 接口修订（工程验收通过，人工待试玩）
 TDArrivalCutscene为本地场景，sample_segment(id,seconds)仅取样AnimationPlayer可编辑轨道，读取不发世界效果；暂停/跳过/重播由原TDDialogue拥有播放进度。TDDialogueView在intro对白期间保留上一段末画面，不提前露阿铃；切段不重播跨过的音效。TDStoryGuide装配新档开篇，整场结束一次恢复港口控制，旧档不自动重播。TDHarbor稳定ID/ANCHOR不变，位置变海岸；无新的旅行许可或经济授权。CharacterRoster.safe_stop_near扩展reserved可选参数，停点避让只影响显示层，无新的经济身份。
 

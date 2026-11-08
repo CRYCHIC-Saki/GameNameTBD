@@ -53,6 +53,7 @@ func test_actual_neighbourhood_notice_and_player_cottage_keep_separate_actions()
 	add_child_autofree(app);var shell:=app.game_shell;shell.automatic_time=false
 	assert_true(shell.create_game("slot-01").ok);shell.guide.dialogue.finish_now();shell.profile.story.beat="done";shell.town.sync_characters(0)
 	await get_tree().process_frame
+	shell.profile.residence.stage="door";assert_true(shell.profile.unlock_residence().ok)
 	var before: Dictionary=shell.profile.snapshot()
 	var driver:=DRIVER.new();driver.viewport=get_tree().root
 	for id: String in ["urban_village","rich_district"]:

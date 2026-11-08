@@ -72,6 +72,9 @@ func test_real_closed_kitchen_inputs_complete_and_feed_opening_story() -> void:
 	var money:=int(view.shop.snapshot().money_cents)
 	var sugar_before:=view.shop.available("sugar")
 	for lane: TDCookingLane in kitchen.lanes+[kitchen.prep]: lane.beat_offset_sec=0
+	# First attempt is wasted; the actual second attempt must still be playable.
+	for id: String in ["tomato","egg"]:
+		assert_true(view.pick_ingredient(id).ok);view._trash()
 	assert_true(view.pick_ingredient("tomato").ok)
 	driver.station("kitchen.board");assert_true(view.choose_cut("chunk").ok)
 	driver.play(12);driver.station("kitchen.board");driver.station("kitchen.stove.left")
@@ -93,6 +96,9 @@ func test_real_closed_kitchen_inputs_complete_and_feed_opening_story() -> void:
 	shell.travel("restaurant");assert_eq(shell.profile.story.score,-1,"Leaving is not delivery")
 	shell.travel("kitchen");driver.station("kitchen.stove.left");driver.station("kitchen.serve")
 	assert_gte(shell.profile.story.score,0);assert_eq(shell.profile.story.beat,"verdict")
+	assert_true(shell.guide.practice_supplies().is_empty())
+	assert_eq(view.kitchen.handling.hand_kind,"")
+	assert_eq(view.shop.replenish_practice_materials().code,"NO_PRACTICE_SUPPLY")
 	shell._apply_story(shell.profile.story.complete_scene("verdict_good" if shell.profile.story.good else "verdict_bad"))
 	assert_eq(shell.profile.story.beat,"founded")
 	assert_true(kitchen.lanes[0].snapshot().ingredients.is_empty(),"阿铃吃掉这盘试做菜")

@@ -65,6 +65,7 @@ func legacy_snapshot() -> Dictionary:
 	p.commerce=TDWorldEconomy.new(p.service.config.costs,"chengdu",101,1)
 	p._wire_commerce();p.initialize_residence()
 	var raw:=p.snapshot();raw.schema_version=5;raw.world.erase("map_version")
+	raw.residence={"schema_version":1,"anchor":"cottage_bed","plot":raw.residence.plot}
 	p.close();return raw
 
 func test_legacy_geometry_migration_preserves_progress_and_rejects_tamper() -> void:

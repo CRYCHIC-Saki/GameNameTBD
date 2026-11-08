@@ -82,6 +82,8 @@ static func draw_world(canvas: Node2D, session: TDPhase3Session, selected: Dicti
 		if kind=="housing": continue
 		var index: int={"player_diner":0,"player_cottage":1,"market":2,"competitor":4,"supply_factory":5,"factory_lot":12,"plaza":7,"rich_district":1,"urban_village":4,"landmark":7,"zoo":6,"amusement":10,"snack_street":13,"bank":8,"station":9}.get(kind,4)
 		var width: float=minf(rect.size.x,rect.size.y*1.3)
+		# Chen lives behind this shop door; other markets remain open stalls.
+		if p.get("id","")=="market-small": index=1
 		if p.get("construction",false): index=12
 		if kind in ["urban_village","rich_district"]:
 			TDTownScenery.fence(canvas,rect.grow(-2))

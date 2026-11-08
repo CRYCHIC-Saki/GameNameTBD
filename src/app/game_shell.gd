@@ -239,18 +239,33 @@ func show_slots(new_game: bool) -> void:
 		elif not row.ok and not row.empty and row.code!="UNSUPPORTED_VERSION":
 			if row.get("backup_available",false): line.add_child(TDUI.button("恢复备份",func()->void:_recover_slot(id,false)))
 			if row.get("temporary_available",false): line.add_child(TDUI.button("恢复完整临时档",func()->void:_recover_slot(id,true)))
+		if not new_game and not row.empty: line.add_child(TDUI.button("删除",_confirm_delete_slot.bind(id)))
 	if new_game: box.add_child(TDUI.button("导入旧进度（原文件保留）",func()->void:_enter_game(import_legacy,"正在导入旧进度……")))
 	box.add_child(TDUI.label("每个存档独立保存经营、菜谱、餐厅与小镇。营业期间不保存做菜现场。",16,TDUI.MUTED))
 
+func _confirm_delete_slot(id: String) -> void:
+	if profile!=null or _entry_busy or not slots.valid_id(id): return
+	var row: Dictionary={}
+	for item: Dictionary in slots.slots():
+		if item.slot_id==id: row=item
+	if row.is_empty() or row.empty: return
+	var box:=_dialog("删除存档？",true)
+	box.add_child(TDUI.label(("%s · 第%d天"%[row.title,row.day]) if row.ok else id+" · 无法读取的存档",24))
+	box.add_child(TDUI.label("这个存档将从载入列表移除，腾出新游戏的位置。原文件会保留在本机删除归档中。",20))
+	box.add_child(TDUI.button("取消",func()->void:show_slots(false)))
+	box.add_child(TDUI.button("确认删除",func()->void:
+		if profile!=null or _entry_busy: return
+		_entry_busy=true
+		var result:=slots.archive_slot(id)
+		_entry_busy=false
+		show_slots(false);_outcome(result)))
+
 func start_game() -> void:
 	if _entry_busy: return
-	var id:=slots.latest()
-	if not id.is_empty():
-		_enter_game(load_game.bind(id),"正在载入最近的存档……");return
 	for row: Dictionary in slots.slots():
 		if row.empty:
 			_enter_game(create_game.bind(String(row.slot_id),"小镇食堂"),"正在创建新生活……");return
-	_outcome(TDOutcome.new(false,"NO_EMPTY_SLOT","没有可载入的存档或空位，请通过“载入存档”检查并恢复已有存档。"))
+	_outcome(TDOutcome.new(false,"NO_EMPTY_SLOT","六个存档位已满。请在“载入存档”中删除不需要的存档，再开始新游戏。"))
 
 func _enter_game(action: Callable, progress: String) -> void:
 	if _entry_busy: return
@@ -313,7 +328,7 @@ func _activate(next: TDGameProfile,first_entry:bool=false) -> void:
 	town.balance_reader=func()->int:return int(profile.shop.snapshot().money_cents)
 	town.commercial_refresh=profile.sync_commercial_map
 	town.hero_name=profile.title;town.story=profile.story;town.story_effect.connect(_apply_story)
-	town.characters=profile.characters
+	town.characters=profile.characters;town.homecoming=profile.residence
 	town.restaurant_requested.connect(func()->void:travel("restaurant"));town.place_requested.connect(_place);town.pause_requested.connect(show_pause);add_child(town)
 	restaurant=TDRestaurantWorld.new();restaurant.player_mode=true;restaurant.floor_service=true;restaurant.session=profile.world;restaurant.layout=profile.layout;restaurant.business=profile.shop
 	restaurant.characters=profile.characters
@@ -329,13 +344,16 @@ func _activate(next: TDGameProfile,first_entry:bool=false) -> void:
 	profile.kitchen_checkpoint=kitchen_view.checkpoint_ready
 	town.sync_characters(0.0,profile.shop.snapshot().orders)
 	guide=TDStoryGuide.new();guide.shell=self;add_child(guide)
-	travel("town" if first_entry else "cottage",not first_entry)
-	if first_entry:
-		town.spawn_at_harbor();guide.begin_arrival()
+	travel("cottage" if profile.has_residence() and not first_entry else "town",not first_entry)
+	if not profile.has_residence() or first_entry: town.spawn_at_harbor()
+	if first_entry: guide.begin_arrival()
 
 func travel(destination: String,at_bed:bool=false) -> TDOutcome:
-	if profile!=null and profile.characters.clock.closed_day==profile.characters.clock.day and destination!="cottage": return _outcome(TDOutcome.new(false,"NIGHT_CLOSED","今天已结束，请先在床上休息。"))
+	if profile!=null and profile.characters.clock.closed_day==profile.characters.clock.day:
+		var allowed: String="cottage" if profile.has_residence() else "town"
+		if destination!=allowed: return _outcome(TDOutcome.new(false,"NIGHT_CLOSED","今天已结束，请跟随阿铃前往小屋，或在床上休息。"))
 	if profile==null or destination not in ["town","restaurant","kitchen","cottage"]: return TDOutcome.new(false,"INVALID_DESTINATION")
+	if destination=="cottage" and not profile.has_residence(): return _outcome(TDOutcome.new(false,"HOME_LOCKED","小屋还未交到你手中。先完成今日营业，再与阿铃聊聊落脚的事。"))
 	if destination in ["town","cottage"] and not profile.can_leave_shop(): return _outcome(TDOutcome.new(false,"SHOP_OPEN","营业中不能离店，请先处理订单并打烊。"))
 	if _modal!=null: _close_dialog()
 	var previous_location:=location
@@ -478,7 +496,9 @@ func _object(action: String) -> void:
 		"recipes": open_atlas()
 
 func _place(kind: String, id: String) -> void:
-	if kind=="cottage": travel("cottage")
+	if kind=="cottage":
+		if profile.residence.stage=="door": guide.present_home("home_door")
+		else: travel("cottage")
 	elif kind=="harbor": show_harbor()
 	elif kind in ["urban_village","rich_district"]:
 		var box:=_dialog("居民区 · "+str(profile.world._plot_by_id(id).get("name","青瓦巷")))
@@ -678,11 +698,13 @@ func finish_night() -> TDOutcome:
 	profile.characters.observe_orders(profile.shop.snapshot().orders)
 	restaurant.finish_night()
 	clock.closed_day=clock.day
-	travel("cottage",true)
+	if profile.has_residence(): travel("cottage",true)
+	else:
+		profile.invite_home("late");travel("town");guide.begin_homecoming()
 	var saved:=save_game()
 	_night_closing=false
-	if not saved.ok: return _outcome(TDOutcome.new(false,saved.code,"02:00已收尾回小屋，但保存失败，请在床边重试保存。"))
-	_message("已到02:00，收摊回小屋。"+cleaned.message+"日结已保存，睡觉进入下一天。")
+	if not saved.ok: return _outcome(TDOutcome.new(false,saved.code,"02:00已结束营业，但保存失败，请在暂停菜单重试保存。"))
+	_message(("已到02:00，收摊回小屋。" if profile.has_residence() else "夜深了，阿铃会带你找个落脚处。")+cleaned.message+"日结已保存。")
 	return TDOutcome.new(true,"NIGHT_CLOSED")
 
 func show_ledger() -> void:
@@ -948,7 +970,7 @@ func _keep_branch(result: TDOutcome) -> void:
 	show_branch()
 
 func show_rest() -> void:
-	if profile==null or location!="cottage": return
+	if profile==null or location!="cottage" or not profile.has_residence(): return
 	var box:=_dialog("小屋 · 床")
 	if profile.shop.snapshot().phase!="SETTLED":
 		box.add_child(TDUI.label("完成营业并打烊后，可以休息到下一天。读档会回到床边。",20))

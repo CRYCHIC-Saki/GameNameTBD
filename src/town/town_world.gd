@@ -28,8 +28,11 @@ var hero_name: String = ""
 var story: TDOpening
 var story_board: Dictionary = {}
 var _escort := Vector2i(-99, -99)
+var _escort_gate_index: int=0
+const FIRST_GATE_ROUTE := [Vector2i(64,34),Vector2i(64,29)]
 var _escort_wait: float = 0.0
 var _escort_facing := Vector2i.DOWN
+var homecoming: Dictionary={}
 var _escort_next:=Vector2i(-99,-99)
 var _npc_gaits: Dictionary={}
 
@@ -165,7 +168,7 @@ func _process(delta: float) -> void:
 		if _target_hint!=null:
 			var person:=_story_faced() if _selected.is_empty() else ""
 			_target_hint.text="[ E ] "+str(_selected.name) if not _selected.is_empty() else ("[ E ] 和"+("阿铃" if person=="aling" else "老陈")+"交谈" if person!="" else "靠近建筑或人物按 E")
-	if _target_hint!=null and story!=null and story.beat=="bowl" and _player.position.distance_to(bowl_point())<BOWL_REACH: _target_hint.text="[ E ] 尝一口黎明圣羹"
+	if _target_hint!=null and at_chen_door(): _target_hint.text="[ E ] 到屋里尝一口黎明圣羹" if story.beat=="bowl" else "[ E ] 在门口招呼老陈"
 	queue_redraw()
 
 func _overview_zoom() -> float:
@@ -312,8 +315,8 @@ func close() -> void:
 
 func _interact() -> void:
 	if external_story_frozen: return
-	if story!=null and story.beat=="bowl" and _player.position.distance_to(bowl_point())<BOWL_REACH:
-		story_requested.emit("bowl");return
+	if at_chen_door():
+		story_requested.emit("bowl" if story.beat=="bowl" else "chen");return
 	var cell := _player_cell()
 	var plot := session.town_map.plot_at(cell.x, cell.y)
 	if player_mode:
@@ -1370,7 +1373,7 @@ func _story_ready() -> bool:
 
 func _story_positions() -> Array:
 	var people: Array = []
-	if story == null or not story.started() or story.finished() or session == null:
+	if story == null or not story.started() or (story.finished() and homecoming.get("stage","") not in ["invited","following","door"]) or session == null:
 		return people
 	var diner := session._plot_by_id("player_diner")
 	var door := _diner_door()
@@ -1380,14 +1383,15 @@ func _story_positions() -> Array:
 	if chen.x >= 0:
 		blocked[chen] = true
 	var aling := TDHarbor.GUIDE_STOP if session.town_map.layout_version==2 else _road_near_door(3)
-	if story.beat in ["follow","return"] and _escort.x >= 0:
+	if escort_leg() in ["follow","return","home"] and _escort.x >= 0:
 		aling = _escort
 	elif story.beat in ["awaken","cook", "verdict", "founded", "done"] and not diner_roads.is_empty():
 		aling = diner_roads[0]
 	elif story.beat in ["soup","bowl"]:
 		aling = _aling_market_cell()
+	if homecoming.get("stage","")=="door": aling=Vector2i(homecoming.plot.approach_x,homecoming.plot.approach_y)+Vector2i.RIGHT
 	if characters!=null:
-		if story.beat not in ["arrive","follow","return","soup","bowl"]: aling=characters.safe_stop_near(aling,"aling",[chen])
+		if homecoming.get("stage","") not in ["following","door"] and story.beat not in ["arrive","follow","return","soup","bowl"]: aling=characters.safe_stop_near(aling,"aling",[chen])
 	people.append({"id": "chen", "name": "老陈", "cell": chen, "color": Color("#8a6238")})
 	people.append({"id": "aling", "name": "阿铃", "cell": aling, "color": Color("#24344a")})
 	return people
@@ -1405,23 +1409,21 @@ func _story_faced() -> String:
 
 func _draw_story() -> void:
 	_draw_stall_sign()
-	if story!=null and story.beat=="bowl":
-		var point:=bowl_point()
-		draw_rect(Rect2(point-Vector2(25,18),Vector2(50,27)),Color("805936"))
-		draw_texture_rect(TDStoryArt.prop(2),Rect2(point-Vector2(24,43),Vector2(48,35)),false)
-		draw_string(ThemeDB.fallback_font,point+Vector2(-35,-55),"汤碗 · E",HORIZONTAL_ALIGNMENT_LEFT,-1,16,Color("ffdfa2"))
+	if story!=null and story.beat in ["soup","bowl"]:
+		var point:=chen_door_point()
+		draw_string(ThemeDB.fallback_font,point+Vector2(-58,-103),"老陈家 · 门口 E",HORIZONTAL_ALIGNMENT_LEFT,-1,16,Color("ffdfa2"))
 	for person: Variant in _story_people():
 		var item: Dictionary = person
 		var cell: Vector2i = item.cell
 		if cell.x < 0:
 			continue
 		var at := _origin() + (Vector2(item.get("position",Vector2(cell))) + Vector2(0.5, 0.62)) * CELL
-		var facing: Vector2i=_escort_facing if item.id=="aling" and story!=null and story.beat in ["follow","return"] else item.get("facing",Vector2i.DOWN)
+		var facing: Vector2i=_escort_facing if item.id=="aling" and story!=null and escort_leg() in ["follow","return","home"] else item.get("facing",Vector2i.DOWN)
 		var gait: TDNpcGait=_npc_gaits.get(str(item.id))
 		var art:=TDStoryArt.sprite(str(item.id),gait.facing if gait!=null and gait.frame>=0 else facing,gait.frame if gait!=null else -1)
 		if art!=null: draw_texture_rect(art,TDStoryArt.fit(art,Rect2(at+Vector2(-36,-72),Vector2(72,72))),false)
 		draw_string(ThemeDB.fallback_font, at + Vector2(-18, -78), String(item.name), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("#fff6df"))
-		if item.id=="aling" and _escort_waiting and story!=null and story.beat in ["follow","return"]:
+		if item.id=="aling" and _escort_waiting and story!=null and escort_leg() in ["follow","return","home"]:
 			draw_rect(Rect2(at+Vector2(-69,-130),Vector2(138,32)),Color("f6edce"))
 			draw_string(ThemeDB.fallback_font,at+Vector2(-58,-108),"快跟上来",HORIZONTAL_ALIGNMENT_LEFT,-1,20,Color("564332"))
 		if player_mode and facing_plot().is_empty() and _story_faced()==str(item.id):
@@ -1439,12 +1441,18 @@ func _draw_stall_sign() -> void:
 	draw_string(ThemeDB.fallback_font, at + Vector2(6, 16), "讨伐军本部", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("#6a2a2a"))
 	draw_string(ThemeDB.fallback_font, at + Vector2(6, 32), sign, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("#5c4630"))
 
+func chen_door_point() -> Vector2:
+	var shop:=_plot_of_kind("market")
+	if shop.is_empty(): return _origin()+(Vector2(_any_road({}))+Vector2(.5,.5))*CELL
+	return _origin()+Vector2(float(shop.x)+float(shop.w)*.5,float(shop.y+shop.h))*CELL
+
 func _chen_cell() -> Vector2i:
-	var door := _diner_door()
-	var roads := _open_roads(_rim_roads(_plot_of_kind("market")), {door: true})
-	if not roads.is_empty():
-		return characters.safe_stop_near(roads[0],"chen") if characters!=null else roads[0]
-	return _any_road({door: true})
+	var at:=Vector2i((chen_door_point()-_origin())/CELL)+Vector2i.LEFT*2
+	if session.town_map.is_road(at.x,at.y): return at
+	return _any_road({_diner_door():true})
+
+func at_chen_door() -> bool:
+	return _player!=null and story!=null and story.beat in ["soup","bowl"] and _player.position.distance_to(chen_door_point())<=BOWL_REACH
 
 func _aling_market_cell() -> Vector2i:
 	var chen:=_chen_cell()
@@ -1476,23 +1484,35 @@ func _road_near_door(min_distance: int) -> Vector2i:
 	return best
 
 func bowl_point() -> Vector2:
-	var cell:=_chen_cell()
-	for direction: Vector2i in [Vector2i.RIGHT,Vector2i.DOWN,Vector2i.LEFT,Vector2i.UP]:
-		var candidate:=cell+direction
-		if candidate!=_diner_door() and session.town_map.is_road(candidate.x,candidate.y):
-			return _origin()+(Vector2(candidate)+Vector2(.5,.5))*CELL
-	return _origin()+(Vector2(cell)+Vector2(.8,.5))*CELL
+	# Historical API now points to the shop threshold; no meal table in the street.
+	return chen_door_point()
+
+func escort_leg() -> String:
+	return "home" if homecoming.get("stage","")=="following" else (story.beat if story!=null else "")
+
+func _nearest_road(cell: Vector2i) -> Vector2i:
+	var best:=cell;var gap:=INF
+	for y: int in session.town_map.extent:
+		for x: int in session.town_map.extent:
+			var at:=Vector2i(x,y)
+			if session.town_map.is_road(x,y) and Vector2(at-cell).length_squared()<gap:
+				best=at;gap=Vector2(at-cell).length_squared()
+	return best
 
 func escort_position() -> Vector2:
 	return _origin()+(Vector2(_escort).lerp(Vector2(_escort_next),clampf(_escort_wait/.45,0,1))+Vector2(.5,.5))*CELL
 
 func _tick_escort(delta: float) -> void:
-	if story==null or story.beat not in ["follow","return"] or session==null or external_story_frozen or get_tree().paused: return
-	if _escort_leg!=story.beat:
-		_escort_leg=story.beat
+	if story==null or escort_leg() not in ["follow","return","home"] or session==null or external_story_frozen or get_tree().paused: return
+	if _escort_leg!=escort_leg():
+		_escort_leg=escort_leg()
 		_escort=(TDHarbor.GUIDE_STOP if session.town_map.layout_version==2 else _road_near_door(3)) if story.beat=="follow" else _aling_market_cell()
-		_escort_next=_escort;_escort_wait=0;_escort_waiting=false
-	var goal:=_aling_market_cell() if story.beat=="follow" else _road_near_door(3)
+		if escort_leg()=="home": _escort=_nearest_road(_player_cell()+Vector2i(2,0))
+		_escort_next=_escort;_escort_wait=0;_escort_waiting=false;_escort_gate_index=0
+	var final_goal:=_aling_market_cell() if story.beat=="follow" else _road_near_door(3)
+	if escort_leg()=="home": final_goal=Vector2i(homecoming.plot.approach_x,homecoming.plot.approach_y)
+	var through_gate: bool=story.beat=="follow" and session.town_map.layout_version==2
+	var goal: Vector2i=FIRST_GATE_ROUTE[_escort_gate_index] if through_gate and _escort_gate_index<FIRST_GATE_ROUTE.size() else final_goal
 	if goal.x<0: return
 	var remaining:=maxf(0,delta)
 	while remaining>0:
@@ -1504,8 +1524,14 @@ func _tick_escort(delta: float) -> void:
 			_escort_facing=Vector2i(signf(offset.x),0) if absf(offset.x)>absf(offset.y) else Vector2i(0,signf(offset.y))
 			break
 		if _escort==goal and _escort_next==_escort:
-			if distance<CELL*3: story.arrive_escort()
-			break
+			if through_gate and _escort_gate_index<FIRST_GATE_ROUTE.size():
+				_escort_gate_index+=1
+				goal=FIRST_GATE_ROUTE[_escort_gate_index] if _escort_gate_index<FIRST_GATE_ROUTE.size() else final_goal
+			else:
+				if distance<CELL*3:
+					if escort_leg()=="home": homecoming.stage="door"
+					else: story.arrive_escort()
+				break
 		if _escort_next==_escort: _escort_next=_step_road(_escort,goal)
 		if _escort_next==_escort: break
 		_escort_facing=_escort_next-_escort
@@ -1818,7 +1844,7 @@ func sync_characters(seconds: float, orders: Array = [], minute_from: float = -1
 
 func _story_people() -> Array:
 	var people: Array=characters.visible_people() if characters!=null else _story_positions()
-	if story!=null and story.beat in ["follow","return"] and _escort.x>=0 and _escort_next.x>=0:
+	if story!=null and escort_leg() in ["follow","return","home"] and _escort.x>=0 and _escort_next.x>=0:
 		for person: Dictionary in people:
 			if person.id=="aling": person.position=Vector2(_escort).lerp(Vector2(_escort_next),clampf(_escort_wait/.45,0,1));person.facing=_escort_facing
 	return people

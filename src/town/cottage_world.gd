@@ -2,6 +2,7 @@ class_name TDCottageWorld
 extends Node2D
 ## A physical room. Date, save and business decisions belong to the application.
 signal object_requested(action:String)
+const FURNITURE: Texture2D=preload("res://assets/cottage/furniture-v1.png")
 const ROOM:=Rect2(280,160,720,480)
 const BED:=Rect2(796,210,132,172)
 const BED_ANCHOR:=Vector2(752,314)
@@ -21,7 +22,7 @@ func _ready() -> void:
 	var walls:=StaticBody2D.new();walls.collision_layer=64;walls.collision_mask=0;add_child(walls)
 	for rect:Rect2 in [Rect2(248,128,784,32),Rect2(248,640,784,32),Rect2(248,160,32,480),Rect2(1000,160,32,480),BED,Rect2(710,218,54,60)]:
 		var collision:=CollisionShape2D.new();var shape:=RectangleShape2D.new();shape.size=rect.size;collision.shape=shape;collision.position=rect.get_center();walls.add_child(collision)
-	player=TDKitchenPlayer.new();player.name="Player";player.collision_layer=128;player.collision_mask=64;player.motion_mode=CharacterBody2D.MOTION_MODE_FLOATING
+	player=TDKitchenPlayer.new();player.sprite_height=100.0;player.name="Player";player.collision_layer=128;player.collision_mask=64;player.motion_mode=CharacterBody2D.MOTION_MODE_FLOATING
 	player.process_mode=Node.PROCESS_MODE_PAUSABLE
 	var sprite:=Sprite2D.new();sprite.name="Sprite2D";player.add_child(sprite)
 	var feet:=CollisionShape2D.new();var circle:=CircleShape2D.new();circle.radius=11;feet.shape=circle;player.add_child(feet);add_child(player)
@@ -55,19 +56,38 @@ func _unhandled_input(event:InputEvent) -> void:
 func close() -> void:
 	set_presented(false);set_process(false)
 
+func _furniture(index: int, box: Rect2) -> void:
+	var art:=TDStoryArt.grid_view("cottage:"+str(index),FURNITURE,index,3,2)
+	draw_texture_rect(art,TDStoryArt.fit(art,box),false)
+
 func _draw() -> void:
-	draw_rect(Rect2(0,0,1280,800),Color("1c2927"));draw_rect(ROOM,Color("a58659"))
-	for y:int in range(160,640,32):
-		draw_line(Vector2(280,y),Vector2(1000,y),Color("816444"),2)
-		for x:int in range(280+(16 if y%64 else 0),1000,64): draw_line(Vector2(x,y),Vector2(x,y+32),Color("92714b"),1)
-	draw_rect(Rect2(272,130,736,35),Color("654830"));draw_rect(ROOM,Color("59402d"),false,12)
-	# Chinese timber window, red paper decoration and a simple bedside cabinet.
-	draw_rect(Rect2(380,170,148,100),Color("5a4432"));draw_rect(Rect2(388,178,132,84),Color("9ac4b4"))
-	for x:int in range(388,521,22): draw_line(Vector2(x,178),Vector2(x,262),Color("654b35"),4)
-	draw_line(Vector2(388,220),Vector2(520,220),Color("654b35"),4)
-	draw_rect(Rect2(604,172,44,44),Color("a94d38"));draw_rect(Rect2(618,186,16,16),Color("dfb56e"))
-	draw_rect(BED.grow(6),Color("664833"));draw_rect(BED,Color("b34e3d"));draw_rect(Rect2(BED.position,Vector2(132,44)),Color("e6dab5"))
-	draw_rect(Rect2(810,222,104,24),Color("f1e5c5"));draw_rect(Rect2(808,278,108,8),Color("e0ad62"));draw_rect(Rect2(808,344,108,8),Color("e0ad62"))
-	draw_rect(Rect2(710,218,54,60),Color("795738"));draw_rect(Rect2(725,195,24,30),Color("dfad5d"))
-	draw_rect(Rect2(DOOR-Vector2(44,12),Vector2(88,36)),Color("674733"));draw_rect(Rect2(DOOR-Vector2(40,8),Vector2(80,10)),Color("b39660"))
-	draw_string(ThemeDB.fallback_font,Vector2(595,124),"自 家 小 屋",HORIZONTAL_ALIGNMENT_CENTER,130,22,Color("ead7a7"))
+	# Physical footprints stay in one coordinate system; wall ornaments are above the floor.
+	draw_rect(Rect2(0,0,1280,800),Color("172b2c"))
+	draw_rect(Rect2(260,24,760,624),Color("533c2e"))
+	draw_rect(Rect2(280,40,720,122),Color("ebcc96"))
+	draw_rect(ROOM,Color("b98b57"))
+	for row: int in 15:
+		var y: float=160+row*32
+		for column: int in 13:
+			var x: float=280+column*64-(32 if row%2 else 0)
+			var plank:=Rect2(Vector2(maxf(x,280),y),Vector2(minf(x+64,1000)-maxf(x,280),32))
+			if plank.size.x<=0: continue
+			draw_rect(plank,Color("bc8f5e") if (row+column)%3 else Color("c49865"))
+			draw_rect(plank.grow(-1),Color("a4774c"),false,1)
+			if plank.size.x>30: draw_line(plank.position+Vector2(9,21),plank.end-Vector2(10,11),Color("b48654"),1)
+	# Skirting, timber posts and the recessed sill make a room rather than a flat rectangle.
+	for x: float in [264.0,994.0]:
+		draw_rect(Rect2(x,35,22,610),Color("755031"));draw_rect(Rect2(x+4,35,4,610),Color("a37044"))
+	for y: float in [30.0,150.0,635.0]:
+		draw_rect(Rect2(270,y,740,14),Color("815631"));draw_line(Vector2(276,y+3),Vector2(1003,y+3),Color("b3834a"),3)
+	_furniture(2,Rect2(342,44,180,110))
+	_furniture(3,Rect2(560,52,210,103))
+	_furniture(5,Rect2(841,42,111,113))
+	# A floor rug cannot block movement. Furniture bases coincide with BED/cabinet colliders.
+	_furniture(4,Rect2(440,370,260,154))
+	_furniture(0,BED)
+	_furniture(1,Rect2(710,188,54,90))
+	draw_rect(Rect2(DOOR-Vector2(48,12),Vector2(96,48)),Color("543c30"))
+	for i: int in 3:
+		draw_rect(Rect2(DOOR+Vector2(-44,-7+i*12),Vector2(88,10)),Color("ba9e70"))
+	draw_string(ThemeDB.fallback_font,Vector2(545,718),"一盏灯，一处归途",HORIZONTAL_ALIGNMENT_CENTER,190,19,Color("ead7a7"))

@@ -20,7 +20,8 @@ static func convert(raw: Dictionary) -> TDOutcome:
 	if bool(data.world.branch_open) and str(data.world.town_id)==str(data.world.branch_town) and planned._plot_by_id("branch_diner").is_empty(): return TDOutcome.new(false,"MIGRATION_BRANCH_NOT_PLACED")
 	var cottage:=planned.town_map.choose_cottage()
 	if cottage.is_empty(): return TDOutcome.new(false,"MIGRATION_NO_COTTAGE")
-	if int(data.schema_version)>=4: data.residence={"schema_version":1,"anchor":"cottage_bed","plot":cottage}
+	if int(data.schema_version)>=4:
+		data.residence=data.residence.duplicate(true);data.residence.plot=cottage
 	var archived: Dictionary={}
 	if data.has("economy") and int(data.economy.schema_version)==2:
 		for town: String in data.economy.expansion.parcels:

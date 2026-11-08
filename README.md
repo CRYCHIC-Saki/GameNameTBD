@@ -1,5 +1,9 @@
 # GameNameTBD · 小镇食堂
 
+本轮新增：**开始游戏**占用空槽从港口开场；**继续游戏**读取最近进度。载入页可确认删除（本机保留归档，满六槽不会覆盖）。新档首日营业打烊后，出店跟随阿铃前往小屋；凌晨02:00会提前安排落脚，未完教学保留。解锁前读档回港口，解锁后回床边；旧档原有住所保留。新增落脚故事与CG/小屋画面见 `docs/phases/story-expansion.md` 的 D056。
+验证入口：`pwsh -NoProfile -File tools/check.ps1 -Suite homecoming`。本地完整构建：`pwsh -NoProfile -File tools/export.ps1`。测试不操作真实存档；新剧情文本为本轮授权扩写，原剧本不改。
+
+
 ## 海港开篇预览（D054）
 新建空槽会先播放抵达海港的开场，初遇对白结束后进入港口地图；已有存档继续从小屋读取。独立预览可打开 `src/story/arrival_preview.tscn` 后F6，或锁定Godot运行该场景；时间轴在 `src/story/arrival_cutscene.tscn` 的AnimationPlayer中编辑。专项：`pwsh -NoProfile -File tools/check.ps1 -Suite arrival-coast`。资源绑定和动作限制见 `assets/story/arrival-bindings.md`，工程结果见 `docs/phases/story-expansion.md`。
 
@@ -210,3 +214,10 @@ CI配置在 `.github/workflows/check.yml`，推送和Pull Request调用同一 `t
 ### D053-R2 连续演出
 
 剧本演出自动全屏播放，普通点击/长按不会跳镜头；右上角可暂停或只跳本段，普通对白仍点击阅读。新档从阿铃序章体验，已完成旧档可J回顾（不重复奖励）。实际录制预览：`artifacts/cg-revision/preview.html`，102秒无声录制；游戏内有拟音，正式角色配音未制作。专项复查：`pwsh -NoProfile -File tools/check.ps1 -Suite story-expansion`；完整检查及导出：`pwsh -NoProfile -File tools/export.ps1`。
+
+
+### D055 序章试玩修正
+
+新档在开篇输入昵称前显示“？？？”；跟随阿铃走正门，靠近老陈食材铺门口按E。教程番茄/鸡蛋用尽可在冰箱免费重领，已取出/切好的食材优先使用；用同一炒锅放入两种主料后按F，完成后E端盘、到出餐台E交付。交付后停止补给，余料回普通库存。
+
+专项检查：`pwsh -NoProfile -File tools/check.ps1 -Suite story-fixes`；实际图形核查：锁定Godot `--path . --script res://tools/story_playtest_probe.gd`（使用artifacts下隔离槽）；完整检查与导出沿用 `tools/export.ps1`。

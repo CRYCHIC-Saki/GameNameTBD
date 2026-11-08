@@ -43,6 +43,8 @@ func _ready() -> void:
 		if shell.profile!=null and dialogue.talk!=null and dialogue.talk.context.get("kind")=="story": shell.profile.story.hero_name=value)
 	shell.town.story_requested.connect(request_person)
 	shell.kitchen_view.story_delivery=serve_trial
+	shell.kitchen_view.story_cooking_check=check_trial_cooking
+	shell.profile.shop.practice_supply_policy=practice_supplies
 	shell.kitchen_view.kitchen.tutorial_gate=tutorial_gate
 
 func presenting() -> bool:
@@ -58,9 +60,10 @@ func _process(delta: float) -> void:
 	if shell==null or shell.profile==null: return
 	var story:=shell.profile.story
 	if shell.atlas!=null and shell.atlas.selected_id=="C02" and story.waiting_cook(): story.recipe_viewed=true
-	var hidden:=presenting() or shell._modal!=null or shell.atlas!=null or not story.started()
-	_card.visible=not hidden and not story.finished()
-	_trail.visible=not hidden and story.tracked and not story.finished()
+	var hidden:=presenting() or shell._modal!=null or shell.atlas!=null or shell.kitchen_view._popup!=null or not story.started()
+	var pending_home: bool=not shell.profile.has_residence() and shell.profile.residence.stage!="locked"
+	_card.visible=not hidden and (not story.finished() or pending_home)
+	_trail.visible=not hidden and story.tracked and (not story.finished() or pending_home)
 	if not get_tree().paused and not presenting(): _pulse+=delta
 	var now:=objective()
 	_hint.text=str(now.get("text",""));_title.text="主线 · "+str(now.get("title","第一口异端"))
@@ -70,15 +73,23 @@ func _process(delta: float) -> void:
 	_bark_portrait.visible=_bark.visible
 	if not hidden and shell.location=="kitchen": cooking_barks()
 	if hidden or get_tree().paused: return
+	if not shell.profile.has_residence():
+		if story.served and shell.profile.shop.snapshot().phase=="SETTLED": shell.profile.invite_home("first_day")
+		if shell.profile.residence.stage=="invited" and shell.location=="town": begin_homecoming();return
+		if shell.profile.residence.stage in ["following","door"]: return
 	if story.beat=="awaken" and shell.location=="restaurant": present("awaken")
 	elif story.beat=="verdict" and shell.location=="restaurant": present("verdict_good" if story.good else "verdict_bad")
 	elif story.beat=="founded" and not story.setup_seen and shell.location=="restaurant": present("setup")
 
 func request_person(who: String) -> void:
 	if presenting() or shell._modal!=null: return
+	if who=="aling" and not shell.profile.has_residence():
+		if shell.profile.residence.stage=="locked": shell.profile.invite_home("first_day")
+		if shell.profile.residence.stage=="invited": begin_homecoming();return
+		if shell.profile.residence.stage=="door": present_home("home_door");return
 	var story:=shell.profile.story
 	if who=="bowl" and story.beat=="bowl":
-		var box:=shell._dialog("黎明圣羹",true)
+		var box:=shell._dialog("老陈屋内 · 黎明圣羹",true)
 		box.add_child(TDUI.label("浓黑汤面上浮着焦蛋，碗边结着盐。",23))
 		box.add_child(TDUI.button("尝一口",func()->void:shell._close_dialog();present("after_taste")))
 		return
@@ -98,7 +109,15 @@ func present(id: String) -> void:
 	show_talk(talk)
 
 func hero_name() -> String:
-	return shell.profile.story.hero_name if not shell.profile.story.hero_name.is_empty() else "玩家"
+	return shell.profile.story.hero_name if not shell.profile.story.hero_name.is_empty() else "？？？"
+
+func begin_homecoming() -> void:
+	if shell.profile.residence.stage!="invited" or presenting(): return
+	present_home("home_late" if shell.profile.residence.reason=="late" else "home_invite")
+
+func present_home(scene: String) -> void:
+	if presenting(): return
+	show_talk(TDOpeningScript.home_conversation(scene,hero_name()))
 
 func show_talk(talk: TDDialogue) -> void:
 	_scene_key=str(talk.context.get("scene",""));dialogue.present(talk)
@@ -107,7 +126,12 @@ func show_talk(talk: TDDialogue) -> void:
 
 func _on_dialogue_closed(_text: String, _picks: Array) -> void:
 	var story:=shell.profile.story
-	if _scene_key=="end_day" and dialogue.last_completed and story.beat=="founded" and story.served:
+	var home_finished: bool=false
+	if _scene_key in ["home_invite","home_late","home_door"]:
+		if dialogue.last_completed:
+			if _scene_key=="home_door": home_finished=shell.profile.unlock_residence().ok
+			elif shell.profile.residence.stage=="invited": shell.profile.residence.stage="following"
+	elif _scene_key=="end_day" and dialogue.last_completed and story.beat=="founded" and story.served:
 		story.beat="done"
 	else: shell._apply_story(story.complete_scene(_scene_key,dialogue.last_completed))
 	_scene_key="";shell.town.external_story_frozen=false;shell.restaurant.story_frozen=false
@@ -115,6 +139,11 @@ func _on_dialogue_closed(_text: String, _picks: Array) -> void:
 		_first_arrival=false;shell.town.set_presented(true)
 		shell.town.sync_characters(0);shell.town._follow_camera()
 	shell.kitchen_view.set_paused(get_tree().paused);shell._lock_controls(true)
+	if home_finished:
+		shell.travel("cottage",true)
+		var saved:=shell.save_game()
+		shell._outcome(saved)
+		shell._message("小屋已解锁。靠近床按 E 保存或休息；未完成的教学会继续保留。" if saved.ok else "已取得小屋，但保存失败。请在床边或暂停菜单重试。")
 
 func show_journal() -> void:
 	if presenting() or shell.atlas!=null or shell._modal!=null: return
@@ -136,20 +165,30 @@ func show_journal() -> void:
 
 func objective() -> Dictionary:
 	var story:=shell.profile.story
+	if not shell.profile.has_residence():
+		var stage: String=shell.profile.residence.stage
+		if stage!="locked":
+			return {"title":"夜鸦的落脚密令","room":"town","target":"cottage" if stage=="door" else ("escort" if stage=="following" else "aling"),"text":{"invited":"收好灶火，到店外交谈。阿铃为你安排了今晚的落脚处。","following":"跟上阿铃，前往小屋。走远时她会停下等你。","door":"走近小屋门口，按 E 接过钥匙。"}[stage]}
 	var result: Dictionary={"title":"第一口异端","text":story.quest(shell.town.chapter_ready,shell.town.story_board),"room":"town","target":"aling"}
 	match story.beat:
 		"follow","return": result.target="escort"
-		"soup": result.target="chen"
-		"bowl": result.target="bowl"
+		"soup": result.target="bowl";result.text="阿铃带你来到老陈家。走近食材铺正门，按 E 招呼老陈。"
+		"bowl": result.target="bowl";result.text="在老陈家门口按 E，进屋尝一口黎明圣羹。"
 		"awaken","verdict": result.room="restaurant";result.target="table"
 		"cook":
 			result.title="唤醒灶火";result.room="kitchen";result.target="kitchen.fridge"
-			if not story.recipe_viewed: return result
 			var kitchen:=shell.kitchen_view.kitchen
 			var handling:=kitchen.handling
-			if handling.hand_kind=="dish": result.text="端着成品前往出餐台，按 E 交给阿铃。";result.target="kitchen.serve";return result
+			if handling.hand_kind=="dish":
+				var issue:=trial_plate_problem(handling.hand.snapshot().to_dict())
+				result.text="端着成品前往出餐台，按 E 交给阿铃。" if issue.ok else issue.message
+				result.target="kitchen.serve" if issue.ok else "kitchen.trash";return result
 			for lane: TDCookingLane in kitchen.lanes:
-				if lane.snapshot().state=="plated": result.text="回到锅边按 E 端起成品，再送到出餐台。";result.target="kitchen.stove.left" if lane.lane_index==0 else "kitchen.stove.right";return result
+				if lane.snapshot().state=="plated":
+					var issue:=trial_plate_problem(lane.snapshot())
+					result.text="回到锅边按 E 端起成品，再送到出餐台。" if issue.ok else "这锅没做成番茄炒蛋。先按 E 端起，再去垃圾桶丢弃；教程材料可重新领取。"
+					result.target="kitchen.stove.left" if lane.lane_index==0 else "kitchen.stove.right";return result
+			if not story.recipe_viewed: return result
 			var pot:=0
 			for lane: TDCookingLane in kitchen.lanes:
 				if not lane.snapshot().ingredients.is_empty(): pot=lane.lane_index;break
@@ -157,15 +196,16 @@ func objective() -> Dictionary:
 			if handling.hand_kind=="ingredient":
 				var food: Dictionary=handling.hand.snapshot().to_dict().ingredients.values()[0]
 				if food.ingredient_id=="tomato" and food.shape=="whole": result.text="到砧板按 E 放下番茄，选择「大块」。";result.target="kitchen.board"
-				else: result.text="拿着食材到同一口锅前按 E 放入。";result.target=pot_id
+				else: result.text="拿着食材到同一口炒锅前按 E 放入（教程建议左锅）。";result.target=pot_id
 			elif handling.board!=null:
 				result.text="切配中按谱落刀/转向；完成后返回砧板按 E 取走。";result.target="kitchen.board"
 			else:
 				var foods: Array=kitchen.lanes[pot].snapshot().ingredients.values().map(func(x:Dictionary)->String:return x.ingredient_id)
 				if "tomato" in foods and "egg" in foods: result.text="到锅前按 F 开火；热锅→翻炒控温→调味→出锅会依次进行。";result.target=pot_id
-				else: result.text="去冰箱按 E 取"+("鸡蛋" if "tomato" in foods else "番茄")+"。阿铃的一份材料已经入库。"
+				else: result.text="去冰箱按 E 取"+("鸡蛋（肉类页）" if "tomato" in foods else "番茄（蔬菜页）")+"。教程番茄、鸡蛋用完可以继续领取。"
 		"founded":
 			result.title="点燃第一日"
+			if story.served and shell.profile.has_residence(): result.text="今日灶火已收。去店外与阿铃谈谈明日的打算。"
 			if not story.served:
 				result.room="restaurant";result.target="menu"
 				if not shell.town.story_board.get("stock",false) and shell.profile.at_boundary(): result.room="town";result.target="market"
@@ -177,10 +217,39 @@ func trial_customer() -> Dictionary:
 		if item.id in ["sweet_front","chunk","tender"]: requirements.append(item.duplicate(true))
 	return {"id":"story.aling.trial","name":"阿铃","requirements":requirements}
 
+func practice_supplies() -> Dictionary:
+	return {"tomato":1000,"egg":1000} if not _closed and shell.profile!=null and shell.profile.story.waiting_cook() else {}
+
+func check_trial_cooking(dish: Dictionary, method: String) -> TDOutcome:
+	if not shell.profile.story.waiting_cook(): return TDOutcome.new(true,"NOT_TRIAL_COOKING")
+	var ids: Array=[];var extras: Array[String]=[]
+	for food: Dictionary in dish.get("ingredients",{}).values():
+		ids.append(food.ingredient_id)
+		if shell.profile.service.is_primary(food.ingredient_id) and food.ingredient_id not in ["tomato","egg"]: extras.append(str(food.name))
+	if not extras.is_empty(): return TDOutcome.new(false,"TRIAL_EXTRA_MATERIAL","阿铃这次要番茄炒蛋。请先按 Q 取出多放的"+"、".join(extras)+"，放回冰箱。")
+	var missing: Array[String]=[]
+	if "tomato" not in ids: missing.append("番茄")
+	if "egg" not in ids: missing.append("鸡蛋")
+	if not missing.is_empty(): return TDOutcome.new(false,"TRIAL_MISSING_MATERIAL","锅里还缺"+"和".join(missing)+"。去冰箱领取，按 E 放进同一口炒锅，再按 F 开火。")
+	if method!="stir": return TDOutcome.new(false,"TRIAL_WRONG_METHOD","番茄炒蛋要用炒锅，不能蒸。按 Q 取回食材，放进左侧炒锅后按 F。")
+	return TDOutcome.new(true,"TRIAL_READY")
+
+func trial_plate_problem(dish: Dictionary) -> TDOutcome:
+	if dish.get("recipe_id","") in TDOpening.TRIAL_RECIPES and not dish.get("failed_dish",false): return TDOutcome.new(true,"TRIAL_PLATE")
+	var method: String=str(dish.get("recipe",{}).get("cooking_method","steam" if str(dish.get("recipe_id","")).ends_with("steam") else "stir"))
+	var issue:=check_trial_cooking(dish,method)
+	var cause: String="这盘是失败的菜品。"
+	if issue.code=="TRIAL_MISSING_MATERIAL": cause="这盘缺少番茄或鸡蛋，未识别为番茄炒蛋。"
+	elif issue.code=="TRIAL_EXTRA_MATERIAL": cause="多放了其他主料，这盘不是番茄炒蛋。"
+	elif issue.code=="TRIAL_WRONG_METHOD": cause="这盘用了蒸制，番茄炒蛋需要用炒锅。"
+	elif not dish.get("failed_dish",false): cause="这盘是其他菜，阿铃这次想尝番茄炒蛋。"
+	return TDOutcome.new(false,"WRONG_TRIAL_DISH",cause+"先到垃圾桶按 E 放下，再从冰箱领取教程食材重试。")
+
 func serve_trial(dish: Dictionary) -> TDOutcome:
 	var story:=shell.profile.story
 	if story.beat!="cook": return TDOutcome.new(false,"NOT_STORY_DELIVERY")
-	if not str(dish.get("recipe_id","")).ends_with("tomato_egg"): return TDOutcome.new(false,"WRONG_TRIAL_DISH","阿铃等的是番茄炒蛋。")
+	var issue:=trial_plate_problem(dish)
+	if not issue.ok: return issue
 	var rated:=TDCustomerScorer.new().evaluate(dish,trial_customer())
 	if not rated.ok: return rated
 	var accepted:=story.accept_trial(dish,rated.data)
@@ -262,6 +331,7 @@ func update_route(goal: Dictionary) -> void:
 		var town:=shell.town;start=town._player_cell();var point:=Vector2.ZERO
 		if destination!="town":
 			var plot:=town.session._plot_by_id("player_diner");point=Vector2(plot.x,plot.y)+Vector2(plot.w,plot.h)*.5
+		elif target=="cottage": point=Vector2(shell.profile.residence.plot.approach_x,shell.profile.residence.plot.approach_y)
 		elif target=="escort": point=(town.escort_position()-town._origin())/town.CELL
 		elif target=="bowl": point=(town.bowl_point()-town._origin())/town.CELL
 		elif target=="market":
@@ -309,6 +379,8 @@ func close() -> void:
 	_closed=true;_pending_tutorial=""
 	if dialogue!=null: dialogue.dismiss()
 	if shell!=null and shell.town!=null: shell.town.external_story_frozen=false
+	if shell!=null and shell.profile!=null: shell.profile.shop.practice_supply_policy=Callable()
+	if shell!=null and shell.kitchen_view!=null: shell.kitchen_view.story_cooking_check=Callable()
 	set_process(false)
 
 func show_manual() -> void:

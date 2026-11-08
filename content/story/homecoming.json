@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "source": "D056 用户授权新增剧情；AI-065 文本建议，非原 DOCX 转录",
+  "scenes": {
+    "home_invite": [
+      {
+        "who": "aling",
+        "mood": "calm",
+        "text": "今日的战报，夜鸦已经封存。赤焰之手，还有最后一道密令。"
+      },
+      {
+        "who": "hero",
+        "mood": "surprised",
+        "text": "最后一道？灶火尚未冷却，我还能再战！"
+      },
+      {
+        "who": "aling",
+        "mood": "calm",
+        "text": "睡觉。"
+      },
+      {
+        "who": "hero",
+        "mood": "puzzled",
+        "text": "……这也算密令？"
+      },
+      {
+        "who": "aling",
+        "mood": "happy",
+        "text": "连锅都要离火，何况掌锅的人。老陈把巷子里那间小屋的钥匙托付给了吾。"
+      },
+      {
+        "who": "aling",
+        "mood": "calm",
+        "text": "不是新战场，是你的落脚处。跟紧夜鸦，别让明日的讨伐军统帅睡在码头。"
+      }
+    ],
+    "home_late": [
+      {
+        "who": "aling",
+        "mood": "surprised",
+        "text": "赤焰之手！港钟已敲过两点，你打算与太阳比谁先起锅？"
+      },
+      {
+        "who": "hero",
+        "mood": "puzzled",
+        "text": "可我还有些事没有做完……"
+      },
+      {
+        "who": "aling",
+        "mood": "calm",
+        "text": "未完的记录，吾一字未删。留到明日，不算败退。"
+      },
+      {
+        "who": "aling",
+        "mood": "happy",
+        "text": "老陈托吾带你去巷子里的小屋。夜鸦今晚的密令只有一条：先去睡觉。"
+      },
+      {
+        "who": "hero",
+        "mood": "calm",
+        "text": "好。养足精神，明日继续！"
+      }
+    ],
+    "home_door": [
+      {
+        "who": "aling",
+        "mood": "calm",
+        "text": "到了。门轴有些响，窗边有风，床铺倒是干净。"
+      },
+      {
+        "who": "hero",
+        "mood": "surprised",
+        "text": "这间屋子……是给我的？"
+      },
+      {
+        "who": "aling",
+        "mood": "happy",
+        "text": "给赤焰之手的临时据点。放心，灰烬司祭说屋子不用交租——食材依然不可赊账。"
+      },
+      {
+        "who": "hero",
+        "mood": "happy",
+        "text": "有一口锅，有一张床。这场讨伐，忽然像是能认真做下去了。"
+      },
+      {
+        "who": "aling",
+        "mood": "calm",
+        "text": "钥匙收好。以后收工就回这里，靠近床按 E，保存今日的记录，或休息到明天。"
+      },
+      {
+        "who": "aling",
+        "mood": "happy",
+        "text": "明日的灶火归你。今夜，夜鸦准许你熄灯。"
+      }
+    ]
+  }
+}

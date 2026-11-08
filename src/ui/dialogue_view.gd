@@ -317,7 +317,7 @@ func _refresh() -> void:
 	_name_entry.visible=awaiting_name()
 	if intro and not film: _skip.text="继续"
 	if awaiting_name():
-		_skip.disabled=true;_body.text="见习厨师，你的名字是……";_hint.text="输入昵称后报上真名。"
+		_skip.disabled=true;_body.text="我的名字是……";_hint.text="输入昵称后报上真名。"
 
 func awaiting_name() -> bool:
 	return talk!=null and talk.action=="enter_name" and not _name_confirmed
@@ -390,6 +390,7 @@ static func paint_bust(canvas: CanvasItem, who: String, box: Rect2, emotion: Str
 	var art:=TDStoryArt.portrait(who,emotion,action)
 	if art!=null:
 		canvas.draw_texture_rect(art,TDStoryArt.fit(art,box),false)
+		if who=="aling": TDStoryArt.paint_ledger_title(canvas,art,box)
 		return
 	var cloth := Color("#3f6f8f")
 	var hair := Color("#243038")

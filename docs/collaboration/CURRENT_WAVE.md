@@ -1,5 +1,16 @@
 # 当前协作波次
 
+## 2026-11-02 D055–D056 集成上传
+本轮用户已授权上传并合并main。root为集成者，在现有integration/phase-4-wave-story-fixes提交本轮59个工程文件；原始资料19份不暂存。远端起点73eb8fc无新增，841验证输入与D056最终测试一致，所有权检查78路径PASS。保留集成PR及merge commit，禁止强推；GitHub实际检查通过后执行已授权合并。本条修订此前“不提交/推送”，不授权新增玩法或扩展剧情。
+
+## 2026-11-01 D056 新档/落脚小屋与演出修订（DELIVERED_LOCAL_PLAYTEST_PENDING）
+root 是唯一写入者：app/game_shell、business/profile_store/game_profile、story、ui/dialogue_view封面、town/cottage_world/town_world/map_migration、导出配置/脚本、 新增美术、相关测试/检查/导出探针与记录。cg_revision_facts 只读审计已完成。保留 D055 的未提交成果；46 份起点文件已备份至 artifacts/homecoming/baseline。原资料/既有原图/真实玩家存档只读。本轮不提交推送。
+最终571/571、20284断言、GPU42帧、553运行资源及实际EXE启动3×4/菜单移动新档小屋36项PASS。21:41本地EXE/PCK更新；841输入不变、46备份完整、19用户原始资料不变，335路径协作检查PASS。当前写入锁释放，人工PENDING，远程CI NOT_RUN，未提交推送。
+
+## 2026-11-01 D055 序章试玩修正（DELIVERED_LOCAL_PLAYTEST_PENDING）
+本轮基线origin/main 73eb8fc（PR#6已合并），integration/phase-4-wave-story-fixes。root为唯一写入者：story/Opening/Guide/arrival表现、ui/dialogue、town_world护送及门口接线、town_art老陈门面复用、restaurant_iso人物表现、business/shop_view及最小Shop补给接口、对应测试/检查/探针/工程记录；cg_revision_facts只读核查。19份用户原始资料完整备份artifacts/story-fixes/baseline，原图和玩家存档不改。本轮未请求提交/推送。
+最终564/564、GPU18张、550资源及EXE实际启动3×4/菜单移动30项PASS；1093最终输入和19份原资料/备份不变。20:00 EXE/PCK已更新；当前锁释放，人工PENDING，未提交/推送。
+
 ## 2026-11-01 当前版上传授权
 
 用户明确请求上传当前版本；root作为集成者在现有integration/phase-4-wave-protagonist提交推送，覆盖历史本轮“不提交/推送”约束。已fetch并确认origin/main fa172f7完整包含；代码/素材/测试与D054最终验证一致，无新玩法。保留本地doc/source改动，EXE、缓存与测试产物继续忽略；本轮不合并main。

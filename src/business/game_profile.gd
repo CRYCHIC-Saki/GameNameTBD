@@ -61,15 +61,41 @@ func _init() -> void:
 	if not progression.error.ok: error=progression.error;return
 	initialize_progression()
 	shop.day_settled.connect(_on_day_settled)
+	shop.day_opened.connect(_on_business_opened)
+	shop.day_settled.connect(_on_business_settled)
 	error=initialize_residence()
+
+func _on_business_opened() -> void:
+	story.note_opened()
+
+func _on_business_settled(_day: int) -> void:
+	story.note_served()
 
 func initialize_residence() -> TDOutcome:
 	var plot:=world.town_map.choose_cottage()
 	if plot.is_empty(): return TDOutcome.new(false,"NO_COTTAGE_LOCATION")
 	var installed:=world.town_map.install_cottage(plot)
 	if not installed.ok: return installed
-	residence={"schema_version":1,"anchor":"cottage_bed","plot":plot}
+	residence={"schema_version":2,"anchor":"harbor_arrival","plot":plot,"stage":"locked","reason":""}
 	return installed
+
+func has_residence() -> bool:
+	return residence.get("stage","")=="unlocked"
+
+func invite_home(reason: String) -> TDOutcome:
+	if has_residence(): return TDOutcome.new(true,"HOME_ALREADY_UNLOCKED")
+	if residence.stage!="locked": return TDOutcome.new(true,"HOME_ALREADY_PENDING")
+	if shop.snapshot().phase!="SETTLED" or reason not in ["first_day","late"]: return TDOutcome.new(false,"HOME_NOT_READY")
+	if reason=="first_day" and not story.served: return TDOutcome.new(false,"BUSINESS_NOT_COMPLETED")
+	residence.stage="invited";residence.reason=reason
+	return TDOutcome.new(true,"HOME_INVITED")
+
+func unlock_residence() -> TDOutcome:
+	if has_residence(): return TDOutcome.new(true,"HOME_ALREADY_UNLOCKED")
+	if residence.stage!="door": return TDOutcome.new(false,"HOME_STORY_INCOMPLETE")
+	residence.stage="unlocked";residence.anchor="cottage_bed"
+	if story.beat=="founded" and story.served: story.beat="done"
+	return TDOutcome.new(true,"HOME_UNLOCKED")
 
 func initialize_progression(migrated: bool = false) -> void:
 	var day := int(shop.snapshot().day)+(1 if shop.snapshot().phase=="SETTLED" else 0)
@@ -208,7 +234,7 @@ func snapshot(candidate: Dictionary = {}) -> Dictionary:
 	state.day=int(business.day);state.money=int(business.money_cents)/100
 	state.day_phase="evening" if business.phase=="SETTLED" else "morning"
 	progress.world_time={"day":int(business.day),"phase":state.day_phase,"spent":state.free_spent}
-	var data:={"schema_version":6,"kind":"town-diner-profile","slot_id":slot_id,"title":title,"updated_at":updated_at,"revision":revision,"imported_legacy":imported_legacy,"shop":business,"research":progress,"world":state,"layout":layout.to_dict(),"economy":commerce.snapshot(),"progression":progression.snapshot(),"residence":residence.duplicate(true),"characters":characters.snapshot(),"map_migration":map_migration.duplicate(true)}
+	var data:={"schema_version":7,"kind":"town-diner-profile","slot_id":slot_id,"title":title,"updated_at":updated_at,"revision":revision,"imported_legacy":imported_legacy,"shop":business,"research":progress,"world":state,"layout":layout.to_dict(),"economy":commerce.snapshot(),"progression":progression.snapshot(),"residence":residence.duplicate(true),"characters":characters.snapshot(),"map_migration":map_migration.duplicate(true)}
 	var chapter:=story.export_state()
 	if not chapter.is_empty(): data.story=chapter
 	return data
@@ -423,6 +449,9 @@ func restore(data: Dictionary) -> TDOutcome:
 	slot_id=data.slot_id;title=data.title;updated_at=int(data.updated_at);revision=int(data.revision);imported_legacy=data.imported_legacy
 	if data.has("story") and data.story is Dictionary: story.restore(data.story)
 	else: story.clear()
+	# Older slots already owned their cottage. Never remove a previously saved entitlement.
+	if int(data.schema_version)<7:
+		residence.merge({"schema_version":2,"anchor":"cottage_bed","stage":"unlocked","reason":"legacy"},true)
 	if int(data.schema_version)>=5: characters.restore(data.characters,int(data.shop.day))
 	else: characters.migrate(int(data.shop.day),data.shop.phase=="SETTLED")
 	world.scaled_interior=false
@@ -441,7 +470,7 @@ func initialize_legacy_commerce() -> void:
 	_wire_commerce()
 
 static func validate_save(raw: Variant) -> TDOutcome:
-	if not raw is Dictionary or not TDServiceCatalog.integer(raw.get("schema_version"),1,6) or raw.get("kind")!="town-diner-profile": return TDOutcome.new(false,"UNSUPPORTED_VERSION")
+	if not raw is Dictionary or not TDServiceCatalog.integer(raw.get("schema_version"),1,7) or raw.get("kind")!="town-diner-profile": return TDOutcome.new(false,"UNSUPPORTED_VERSION")
 	if raw.has("story"):
 		var chapter:=TDOpening.validate_state(raw.story)
 		if not chapter.ok: return chapter
@@ -455,7 +484,11 @@ static func validate_save(raw: Variant) -> TDOutcome:
 			if not TDServiceCatalog.integer(value,0,73): return TDOutcome.new(false,"INVALID_MAP_ARCHIVE")
 		for value: Variant in archive.archived_cell_overrides.values():
 			if not TDEconomicCell.validate(value).ok: return TDOutcome.new(false,"INVALID_MAP_ARCHIVE")
-	if int(raw.schema_version)>=4:
+	if int(raw.schema_version)>=7:
+		var home: Variant=raw.get("residence")
+		if not home is Dictionary or home.get("schema_version")!=2 or not home.get("plot") is Dictionary or home.get("stage") not in ["locked","invited","following","door","unlocked"] or home.get("reason") not in ["","first_day","late","legacy"]: return TDOutcome.new(false,"INVALID_RESIDENCE")
+		if home.get("anchor")!=("cottage_bed" if home.stage=="unlocked" else "harbor_arrival"): return TDOutcome.new(false,"INVALID_RESIDENCE_ANCHOR")
+	elif int(raw.schema_version)>=4:
 		if not raw.get("residence") is Dictionary or raw.residence.get("schema_version")!=1 or raw.residence.get("anchor")!="cottage_bed" or not raw.residence.get("plot") is Dictionary: return TDOutcome.new(false,"INVALID_RESIDENCE")
 	if not raw.get("slot_id") is String or not raw.slot_id in ["slot-01","slot-02","slot-03","slot-04","slot-05","slot-06"]: return TDOutcome.new(false,"INVALID_SLOT")
 	if not raw.get("title") is String or raw.title.strip_edges().is_empty() or raw.title.length()>40 or not raw.get("imported_legacy") is bool: return TDOutcome.new(false,"INVALID_PROFILE")
@@ -575,3 +608,5 @@ func close() -> void:
 		shop.day_minute_reader=Callable()
 	if commerce!=null: commerce.character_candidate=Callable()
 	if shop!=null and shop.day_settled.is_connected(_on_day_settled): shop.day_settled.disconnect(_on_day_settled)
+	if shop!=null and shop.day_opened.is_connected(_on_business_opened): shop.day_opened.disconnect(_on_business_opened)
+	if shop!=null and shop.day_settled.is_connected(_on_business_settled): shop.day_settled.disconnect(_on_business_settled)
