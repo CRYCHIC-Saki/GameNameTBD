@@ -21,6 +21,8 @@ var selected_id: String = ""
 var ghost_cell := Vector2i(-1, -1)
 var ghost_size := Vector2i.ZERO
 var ghost_ok: bool = false
+var ghost_piece: Dictionary = {}
+var dragged_id: String = ""
 var player_point := Vector2.ZERO
 var player_moving: bool = false
 var player_facing:=Vector2i.DOWN
@@ -71,7 +73,7 @@ func set_presented(presented: bool) -> void:
 
 func set_room(next: TDRestaurantLayout) -> void:
 	layout = next
-	if layout != null and _camera != null:
+	if layout != null and _camera != null and not editing and not follow_player:
 		_camera.position = project(float(layout.columns) * 0.5, float(layout.rows) * 0.5)
 	queue_redraw()
 
@@ -82,28 +84,34 @@ func sync(player: Node2D, guests: Array, frozen: bool=false) -> void:
 			player_facing = player.facing
 			player_walk_frame = player.walk_frame
 		player_moving = player_walk_frame >= 0
-		if follow_player and _camera!=null and layout!=null:
+		if (follow_player or editing) and _camera!=null and layout!=null:
 			var grid:=player_point/float(layout.cell_px)
 			_camera.position=project(grid.x,grid.y)+Vector2(0,-70) if not editing else project(layout.columns*.5,layout.rows*.5)
-			var zoom: float=minf(1.0,minf(1100.0/((layout.columns+layout.rows)*HALF_W),600.0/((layout.columns+layout.rows)*HALF_H+WALL_HEIGHT))) if editing else 1.0
+			var view:=get_viewport_rect().size
+			var zoom: float=minf(1.0,minf((view.x-80)/((layout.columns+layout.rows)*HALF_W),maxf(200,view.y-370)/((layout.columns+layout.rows)*HALF_H+WALL_HEIGHT))) if editing else 1.0
 			_camera.zoom=Vector2.ONE*zoom
+			if editing: _camera.position+=Vector2(0,135/zoom)
+			# Context menus and pointer picking need the final camera transform this frame.
+			_camera.force_update_scroll()
 	actors = []
 	var live: Dictionary={}
 	for item: Variant in guests:
 		var guest := item as TDRestaurantGuest
 		var key: String="guest:"+str(guest.get_instance_id());live[key]=true
 		var gait:=_gait(key,guest.position,frozen or guest.frozen,guest.seated or guest.finished)
+		var sitting: bool=guest.phase=="sitting" and guest.sit_elapsed>=guest.sit_duration*.5
 		actors.append({
 			"position": guest.position,
 			"phase": guest.phase,
 			"bob": guest.bob,
 			"gone": guest.phase == "gone",
-			"seated": guest.seated,
+			"seated": guest.seated or sitting,
 			"label": guest.dish_name,
 			"shirt": [Color("497f92"),Color("a66f44"),Color("82719c")][guest.appearance_id%3],
 			"character_id":guest.character_id,
 			"appearance_id":guest.appearance_id,
-			"facing":gait.facing,"frame":gait.frame,
+			"seat_id":guest.seat_id if guest.externally_driven and (guest.seated or sitting) else "",
+			"facing":guest.sit_facing if guest.seated or sitting else gait.facing,"frame":gait.frame,
 		})
 	for person: Dictionary in crew_people:
 		var key: String="staff:"+str(person.actor_id);live[key]=true
@@ -162,6 +170,7 @@ func _draw() -> void:
 	# Sort by ground position so walking behind a table does not draw the chef on it.
 	var entries:Array[Dictionary]=[]
 	for item: Dictionary in layout.pieces():
+		if str(item.id)==dragged_id: continue
 		entries.append({"kind":"furniture","data":item,"depth":float(item.x+item.y)+(item.w+item.h)*.5})
 	for marker: Dictionary in interaction_markers:
 		entries.append({"kind":"marker","data":marker,"depth":marker.cell.x+marker.cell.y+1.0})
@@ -175,6 +184,9 @@ func _draw() -> void:
 		if actor.get("shirt") is Color:
 			shirt = actor.shirt as Color
 		var person:=_person_entry(actor["position"],not sitting,shirt,String(actor["label"]),sitting)
+		var seat:=layout.piece(str(actor.get("seat_id","")))
+		if not seat.is_empty(): person.depth=maxf(person.depth,float(seat.x+seat.y)+(seat.w+seat.h)*.5+.01)
+		person.seat=seat
 		person.character_id=str(actor.get("character_id",""));person.appearance_id=int(actor.get("appearance_id",0))
 		person.frame=int(actor.frame);person.facing=actor.facing
 		entries.append(person)
@@ -193,10 +205,42 @@ func _draw() -> void:
 		match entry.kind:
 			"furniture": _furniture(entry.data)
 			"marker": _marker(entry.data)
-			"person": _person(entry.point,entry.moving,entry.shirt,entry.caption,entry.seated,bool(entry.get("staff", false)),str(entry.get("character_id","")),int(entry.get("appearance_id",0)),int(entry.get("frame",-1)),entry.get("facing",Vector2i.DOWN))
+			"person":
+				if entry.seated and not entry.get("seat",{}).is_empty(): _dining_person(entry)
+				else: _person(entry.point,entry.moving,entry.shirt,entry.caption,entry.seated,bool(entry.get("staff", false)),str(entry.get("character_id","")),int(entry.get("appearance_id",0)),int(entry.get("frame",-1)),entry.get("facing",Vector2i.DOWN))
 
+	# Ghost is an explicit edit overlay, readable even at an invalid occupied spot.
+	if editing and not ghost_piece.is_empty():
+		draw_set_transform(TDFurnitureModel.center(ghost_piece))
+		TDFurnitureModel.draw_model(self,ghost_piece,Color(1,1,1,.55) if ghost_ok else Color(1,.48,.42,.55))
+		draw_set_transform_matrix(Transform2D.IDENTITY)
+		_direction(ghost_piece,Color("9de6be") if ghost_ok else Color("ed8065"))
 func _person_entry(point:Vector2,moving:bool,shirt:Color,caption:String,seated:bool) -> Dictionary:
 	return {"kind":"person","depth":(point.x+point.y)/float(layout.cell_px),"point":point,"moving":moving,"shirt":shirt,"caption":caption,"seated":seated}
+
+func _dining_person(entry: Dictionary) -> void:
+	var seat: Dictionary=entry.seat
+	var art:=TDDinerArt.dining_sprite(entry.appearance_id,entry.character_id)
+	var hip:=TDDinerArt.hip_ratio(entry.appearance_id,entry.character_id)
+	var box:=TDFurnitureModel.dining_pose_rect(seat,art,hip)
+	if TDFurnitureModel.uses_occupied_pose(seat):
+		art=TDDinerArt.occupied_sprite(entry.appearance_id,entry.character_id)
+		box=TDFurnitureModel.occupied_pose_rect(seat,art,TDDinerArt.occupied_base(entry.appearance_id,entry.character_id))
+	# Keep the second half of the sitting transition continuous with its real
+	# approach position; the completed pose lands exactly on the cushion.
+	var grid: Vector2=entry.point/float(layout.cell_px)
+	box.position+=project(grid.x,grid.y)-TDFurnitureModel.dining_feet(seat)
+	var target:=box
+	if int(seat.get("rotation",0)) in [90,270]: target.size.x=-target.size.x
+	draw_texture_rect(art,target,false)
+	draw_set_transform(TDFurnitureModel.center(seat))
+	# Hands/torso stay in front; knees beneath the tabletop are occluded by
+	# actual table pixels. Do not repaint a whole table over the character.
+	var leg_side: float=0.0 if int(seat.get("rotation",0)) in [90,270] else .52
+	var lower:=Rect2(box.position-TDFurnitureModel.center(seat)+box.size*Vector2(leg_side,.70),box.size*Vector2(.48,.30))
+	TDFurnitureModel.draw_dining_foreground(self,seat,lower)
+	draw_set_transform_matrix(Transform2D.IDENTITY)
+	if entry.caption!="": draw_string(_staff_font(),box.position+Vector2(-10,-8),entry.caption,HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color("fff4d2"))
 
 func _marker(marker: Dictionary) -> void:
 	var point:=project(marker.cell.x+.5,marker.cell.y+.5)
@@ -271,6 +315,13 @@ func _ghost() -> void:
 	var fill := Color(0.35, 0.78, 0.42, 0.42) if ghost_ok else Color(0.86, 0.28, 0.22, 0.45)
 	draw_colored_polygon(points, fill)
 	draw_polyline(points + PackedVector2Array([points[0]]), Color("#fff6df"), 2.0)
+
+func pick_piece(point: Vector2) -> String:
+	var pieces:=layout.pieces()
+	pieces.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return float(a.x+a.y)+(a.w+a.h)*.5>float(b.x+b.y)+(b.w+b.h)*.5)
+	for item: Dictionary in pieces:
+		if TDFurnitureModel.hit(item,point): return str(item.id)
+	return ""
 
 func _exit_step(cell: Vector2i) -> Vector2i:
 	for step: Vector2i in [Vector2i(0, -1), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(1, 0)]:
@@ -408,35 +459,27 @@ func _wall(cell: Vector2i, along_north: bool) -> void:
 			draw_rect(Rect2(lamp-Vector2(3,6),Vector2(6,15)),Color("e9a354"))
 			TDDaylight.glow(self,lamp,float(TDDaylight.sample(day_minute,true).lamps),35)
 
-func _furniture(item: Dictionary) -> void:
-	var points := _quad(int(item["x"]), int(item["y"]), int(item["w"]), int(item["h"]))
-	var center := (points[0] + points[1] + points[2] + points[3]) / 4.0
-	if not interaction_markers.is_empty() and item.kind in ["dining_table","booth","sofa","hotpot_table","welcome_desk","cashier","order_counter"]:
-		# Show the actual layout footprint underneath the elevated furniture artwork.
-		draw_colored_polygon(points,Color("584332"))
-		draw_polyline(points+PackedVector2Array([points[0]]),Color("81654a"),1)
-		var footprint_width: float=(float(item.w)+float(item.h))*HALF_W
-		_prop(0 if item.seat_use=="dining" else 1,center,footprint_width*.94)
-		if selected_id==str(item.id): draw_polyline(points+PackedVector2Array([points[0]]),Color("f0cc70"),3)
-		return
-	for index in points.size():
-		points[index] = points[index].lerp(center, 0.14)
-	var parts := String(item["style_id"]).split("_")
-	var swatch := TDRestaurantArt.swatch(parts[0] if not parts.is_empty() else "plain", parts[1] if parts.size() > 1 else "low")
-	var fill := Color(String(swatch["cloth"]))
-	if String(item["kind"]) == "screen":
-		fill = Color(String(swatch["accent"]))
-	draw_colored_polygon(points, fill)
-	draw_polyline(points + PackedVector2Array([points[0]]), Color(String(swatch["wood"])), 2.0)
-	if String(item["surface"]) == "induction":
-		draw_circle(center, 8.0, Color("#d23a32"))
-		draw_circle(center, 3.0, Color("#202426"))
-	if selected_id == String(item["id"]):
-		draw_polyline(points + PackedVector2Array([points[0]]), Color("#f0cc70"), 3.0)
-	var font := ThemeDB.fallback_font
-	if font != null:
-		draw_string(font, center + Vector2(-18, -10), String(item["name"]), HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color.WHITE)
+func seat_is_occupied(id: String) -> bool:
+	for actor: Dictionary in actors:
+		if not actor.get("gone",false) and actor.get("seated",false) and str(actor.get("seat_id",""))==id: return true
+	return false
 
+func _furniture(item: Dictionary) -> void:
+	var points:=_quad(int(item.x),int(item.y),int(item.w),int(item.h))
+	if editing:
+		draw_colored_polygon(points,Color(0.25,0.2,0.12,.22))
+		if selected_id==str(item.id): draw_polyline(points+PackedVector2Array([points[0]]),Color("f0cc70"),3)
+	draw_set_transform(TDFurnitureModel.center(item))
+	TDFurnitureModel.draw_model(self,item,Color.WHITE,TDFurnitureModel.uses_occupied_pose(item) and seat_is_occupied(str(item.id)))
+	draw_set_transform_matrix(Transform2D.IDENTITY)
+	if editing and selected_id==str(item.id): _direction(item,Color("f0cc70"))
+
+func _direction(item: Dictionary, color: Color) -> void:
+	var at:=TDFurnitureModel.center(item)
+	var step:Vector2=[Vector2(1,0),Vector2(0,1),Vector2(-1,0),Vector2(0,-1)][int(item.rotation)/90]
+	var endpoint:=at+Vector2((step.x-step.y)*28,(step.x+step.y)*14)
+	draw_line(at,endpoint,color,3)
+	draw_circle(endpoint,4,color)
 func _edit_grid() -> void:
 	for y in layout.rows:
 		for x in layout.columns:
@@ -470,6 +513,13 @@ func _person(point: Vector2, _moving: bool, shirt: Color, caption: String, seate
 			draw_string(_staff_font(), plate.position + Vector2(4, 16), caption, HORIZONTAL_ALIGNMENT_CENTER, 84, 14, Color("#fff4d2"))
 		return
 	var ground:=project(grid.x,grid.y)
+	if not staff:
+		var art:=TDDinerArt.sprite(appearance_id,facing,walk_frame if not seated else -1,seated)
+		var height: float=PERSON_HEIGHT*(.87 if seated else 1.0)
+		var box:=Rect2(ground+Vector2(-PERSON_HEIGHT*.5,-height),Vector2(PERSON_HEIGHT,height))
+		draw_texture_rect(art,TDStoryArt.fit(art,box),false)
+		if caption!="": draw_string(_staff_font(),ground+Vector2(-30,-PERSON_HEIGHT-8),caption,HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color("fff4d2"))
+		return
 	draw_set_transform(ground,0,Vector2.ONE*(PERSON_HEIGHT/40.0))
 	at=Vector2(0,drop)
 	if seated:

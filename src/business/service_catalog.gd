@@ -67,6 +67,8 @@ func load_data(raw: Variant) -> TDOutcome:
 	for key: String in ["initial_cents","day_sec","arrival_sec","patience_sec","max_orders","grant_cents","initial_popularity","refund_below"]:
 		if not integer(raw.settings.get(key),1,1000000): return TDOutcome.new(false,"INVALID_SETTINGS",key)
 	if raw.settings.max_orders > 8 or raw.settings.initial_popularity > 100 or raw.settings.refund_below > 100: return TDOutcome.new(false,"INVALID_SETTINGS")
+	for key: String in ["arrival_wait_sec","sit_down_sec"]:
+		if raw.settings.has(key) and not _number(raw.settings[key],.1,300.0): return TDOutcome.new(false,"INVALID_SETTINGS",key)
 	if not integer(raw.settings.get("forecast_uncertainty_percent",20),0,50): return TDOutcome.new(false,"INVALID_SETTINGS","forecast_uncertainty_percent")
 	if not integer(raw.settings.get("stock_rejection_popularity",1),0,10): return TDOutcome.new(false,"INVALID_SETTINGS","stock_rejection_popularity")
 	if not integer(raw.settings.get("failed_dish_popularity",4),0,20): return TDOutcome.new(false,"INVALID_SETTINGS","failed_dish_popularity")

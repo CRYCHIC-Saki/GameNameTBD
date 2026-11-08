@@ -110,7 +110,26 @@ func run() -> void:
 	await click("开始游戏",shell._title_screen)
 	check(shell.profile!=null and shell.profile.slot_id=="slot-03","start always creates a new empty slot")
 	check(shell.guide.presenting() and shell.profile.story.beat=="arrive","new start replays opening")
+	shell.guide.dialogue.finish_now()
+	await check_checkpoint()
 	await finish()
+
+func check_checkpoint() -> void:
+	var path:=shell.slots.path_for("slot-03")
+	var original:=FileAccess.get_file_as_bytes(path)
+	check(shell.restaurant.layout.set_surface_finish("carpet").ok,"exported unsaved decoration")
+	check(shell.profile.research.calibrate(.05).ok,"exported research change stays in memory")
+	shell.request_title();await frames();await capture("discard-confirmation")
+	await click("确认返回主菜单",shell._modal_box)
+	check(FileAccess.get_file_as_bytes(path)==original,"actual return does not silently checkpoint decoration or research")
+	check(shell.load_game("slot-03").ok,"export reloads last whole checkpoint")
+	check(shell.profile.research.snapshot().input_offset_sec==0.0,"unsaved research rolls back")
+	check(shell.restaurant.layout.finish_at(2,2)!="carpet","unsaved decoration rolls back with research")
+	check(shell.restaurant.layout.set_surface_finish("carpet").ok,"new decoration can be explicitly saved")
+	shell.request_title();await frames()
+	await click("保存并返回主菜单",shell._modal_box)
+	check(shell.profile==null and FileAccess.get_file_as_bytes(path)!=original,"explicit save and return commits")
+	check(shell.load_game("slot-03").ok and shell.restaurant.layout.finish_at(2,2)=="carpet","explicitly saved decoration survives reload")
 
 func physics_frames(count: int) -> void:
 	for i:int in count: await physics_frame
@@ -143,8 +162,9 @@ func check_room_movement() -> void:
 	var after:=room.player_position()
 	var travel:=TDRestaurantIsoView.project(after.x/layout.cell_px,after.y/layout.cell_px)-old_screen
 	print("EXPORTED_ROOM_TRAVEL screen=",travel)
-	check(travel.x>30.0 and absf(travel.y)<.1,"real movement input crosses the clear aisle horizontally on screen")
+	check(travel.x>25.0 and absf(travel.y-travel.x*.5)<.1,"real movement follows the 2:1 floor tile edge")
 	await capture("restaurant-clear-aisle")
+	await check_decoration(room)
 	shell.travel("kitchen");await physics_frames(2)
 	var kitchen:=shell.kitchen_view.kitchen.world
 	kitchen._player.position=Vector2(500,450)
@@ -159,3 +179,122 @@ func check_room_movement() -> void:
 	shell.profile.residence.stage="door";check(shell.profile.unlock_residence().ok,"profile can acquire cottage through its contract")
 	check(shell.travel("cottage",true).ok and shell.cottage.target()=="rest","exported cottage bed and interaction are available")
 	await capture("cottage-bed")
+	await check_dining()
+
+func check_dining() -> void:
+	# Controlled arrival timing, actual exported profile/room/kitchen and order authority.
+	shell.profile.story.beat="done"
+	var shop:=shell.profile.shop;shop.commerce=null
+	shell.kitchen_view.kitchen.auto_advance=false
+	var stock: Dictionary=shop.offer("service.tomato_egg").stock.duplicate(true)
+	for id: String in stock: stock[id]=int(stock[id])*3
+	check(shop.buy(stock,"export-dining-stock").ok,"exported dining inventory")
+	for id: String in shop.snapshot().menu: shop.set_menu(id,id=="service.tomato_egg",1200)
+	shell.travel("restaurant");await frames()
+	check(shop.require_seating and shell.restaurant.unified_dining_clock,"formal shell connects the dining clock")
+	check(shop.open_day().ok and shop.advance(1).ok,"exported diner arrives")
+	check(shop.pending_orders().size()==1 and shop.active_orders().is_empty(),"arriving diner is not a kitchen order")
+	if shop.pending_orders().is_empty(): return
+	var id: String=shop.pending_orders()[0].id
+	var guest:=shell.restaurant._business_guests.get(id) as TDRestaurantGuest
+	check(guest!=null,"exported restaurant creates actual diner")
+	if guest==null: return
+	check(shop.advance(guest.walking_seconds()).ok and guest.phase=="sitting","exported diner walks to its table")
+	check(shop.advance(guest.sit_duration).ok and shop.order(id).status=="WAITING","exported diner sits then orders once")
+	var before:=shop.order(id)
+	check(shop.confirm_seated(id,guest.seat_id).code=="ALREADY_ORDERED" and shop.order(id)==before,"duplicate seating does not reset order")
+	shell.restaurant.teleport_player(shell.restaurant.approach_cell(guest.seat_id));await frames()
+	await capture("diner-seated")
+	shell.travel("kitchen");shell.kitchen_view.refresh();await frames()
+	var text: String=""
+	for label: Label in shell.kitchen_view._sidebar.find_children("*","Label",true,false): text+=label.text
+	check(text.contains(shop.order_label(id)) and text.contains(shop.recipe_name(before.recipe_id)),"exported kitchen shows the same diner and dish")
+	await capture("diner-kitchen-order")
+	for variant: int in TDDinerArt.VARIANTS:
+		check(TDDinerArt.sprite(variant,Vector2i.RIGHT,0).get_height()>10 and TDDinerArt.sprite(variant,Vector2i.LEFT,-1,true).get_height()>10,"exported walking and seated art "+str(variant))
+	for who: String in ["","aling","chen"]:
+		check(TDDinerArt.dining_sprite(1,who).get_height()>50,"exported aligned dining pose "+who)
+	for order: Dictionary in shop.pending_orders(): shop.cancel_order(order.id)
+	shop.close_early()
+
+func click_at(point: Vector2, button: MouseButton=MOUSE_BUTTON_LEFT) -> void:
+	var motion:=InputEventMouseMotion.new();motion.position=point;motion.global_position=point
+	root.push_input(motion,true);await process_frame
+	for down: bool in [true,false]:
+		var event:=InputEventMouseButton.new()
+		event.button_index=button;event.pressed=down;event.position=point;event.global_position=point
+		root.push_input(event,true);await process_frame
+	await frames()
+
+func check_decoration(room: TDRestaurantWorld) -> void:
+	var board: Dictionary=room.interaction_points().filter(func(value: Dictionary)->bool:return value.action=="decorate")[0]
+	room.teleport_player(Vector2i(1,int(board.cell.y)));await frames()
+	for down: bool in [true,false]:
+		var key:=InputEventKey.new();key.physical_keycode=KEY_E;key.pressed=down;root.push_input(key,true)
+	await frames()
+	check(room._editing and room._decor_panel.visible,"actual decoration board E opens catalog")
+	if not room._editing: return
+	var count:=room.layout.pieces().size()
+	await click("陈设",room._decor_panel)
+	var card:=room._decor_panel._cards.get_node("Item_kiosk") as Button
+	await click_at(card.get_global_rect().get_center())
+	check(room._tool=="place","exported furniture card uses actual input")
+	room._hover_at(Vector2i(8,8));await frames()
+	check(room._iso.ghost_ok and not room._iso.ghost_piece.is_empty(),"export includes raised preview renderer")
+	await capture("decoration-preview")
+	var point:=room._iso.get_global_transform_with_canvas()*TDRestaurantIsoView.project(8.5,8.5)
+	await click_at(point)
+	var id:=room._selected
+	check(room.layout.pieces().size()==count+1 and room._tool=="select","exported placement commits once and returns to selection")
+	if not room.layout.piece(id).is_empty():
+		var top:=TDFurnitureModel.center(room.layout.piece(id))+Vector2(0,-65)
+		await click_at(room._iso.get_global_transform_with_canvas()*top)
+		check(room._selected==id and room._context_menu.visible,"exported upper model selection")
+		check(room._decor_panel.find_children("*","OptionButton",true,false).is_empty(),"removed style selectors stay absent in export")
+		await click_at(room._rotate_button.get_global_rect().get_center())
+		check(int(room.layout.piece(id).get("rotation",-1))==270,"exported corner rotates counterclockwise once")
+		await capture("decoration-actions")
+		var start:=room._iso.get_global_transform_with_canvas()*(TDFurnitureModel.center(room.layout.piece(id))+Vector2(0,-45))
+		var end:=start+room._iso.get_global_transform_with_canvas().basis_xform(Vector2(96,48))
+		var press:=InputEventMouseButton.new();press.button_index=MOUSE_BUTTON_LEFT;press.pressed=true;press.position=start;press.global_position=start;root.push_input(press,true);await frames()
+		var motion:=InputEventMouseMotion.new();motion.position=end;motion.global_position=end;root.push_input(motion,true);await frames()
+		check(room._dragging and int(room.layout.piece(id).x)==8,"exported drag preview is read-only")
+		var release:=InputEventMouseButton.new();release.button_index=MOUSE_BUTTON_LEFT;release.pressed=false;release.position=end;release.global_position=end;root.push_input(release,true);await frames()
+		check(int(room.layout.piece(id).x)==10 and int(room.layout.piece(id).y)==8,"exported drag moves existing furniture")
+		await capture("decoration-moved")
+		check(shell.save_game().ok,"moved furniture saves through the profile boundary")
+		var moved_save:=shell.slots.load_slot(shell.profile.slot_id)
+		check(moved_save.ok and moved_save.data.layout.pieces.any(func(piece: Dictionary)->bool:return str(piece.id)==id and int(piece.x)==10 and int(piece.y)==8 and int(piece.rotation)==270),"isolated disk save keeps moved identity, position and rotation")
+		await click_at(room._delete_button.get_global_rect().get_center())
+		check(room.layout.piece(id).is_empty() and room.layout.pieces().size()==count,"exported context deletes once")
+	await click("餐桌",room._decor_panel)
+	await click_at((room._decor_panel._cards.get_node("Item_dining_table") as Button).get_global_rect().get_center())
+	await click_at(room._iso.get_global_transform_with_canvas()*TDRestaurantIsoView.project(8.5,7.5))
+	var table_id:=room._selected
+	check(not room.layout.piece(table_id).is_empty(),"exported table card places table")
+	if not room.layout.piece(table_id).is_empty():
+		var original:=room.layout.piece(table_id)
+		await click_at(room._iso.get_global_transform_with_canvas()*(TDFurnitureModel.center(original)+Vector2(0,-80)))
+		check(room._selected==table_id and room._context_menu.visible,"exported placed table selected")
+		for angle: int in [270,180,90,0]:
+			await click_at(room._rotate_button.get_global_rect().get_center())
+			check(int(room.layout.piece(table_id).rotation)==angle and TDFurnitureModel.center(room.layout.piece(table_id))==TDFurnitureModel.center(original),"exported table rotates at same center "+str(angle))
+		await capture("decoration-table-rotated")
+	for category: String in ["地面","墙壁"]:
+		await click(category,room._decor_panel)
+		await click_at((room._decor_panel._cards.get_node("Item_"+("tile" if category=="地面" else "brick")) as Button).get_global_rect().get_center())
+		var whole: bool=true
+		for y: int in room.layout.rows:
+			for x: int in room.layout.columns:
+				if (room.layout.cell_zone(x,y)=="facade")== (category=="墙壁"):
+					whole=whole and room.layout.finish_at(x,y)==("brick" if category=="墙壁" else "tile")
+		check(whole and room._tool=="select","exported whole finish card "+category)
+	await capture("decoration-whole-finishes")
+	await click("完成布置",room._decor_panel)
+	check(not room._editing and not room._context_menu.visible,"finishing restores game controls")
+	check(shell.save_game().ok,"decoration persists through the existing profile boundary")
+	var restored:=shell.slots.load_slot(shell.profile.slot_id)
+	check(restored.ok,"saved profile remains readable after decoration")
+	# JSON arrays/numbers must pass through the real layout importer before comparison.
+	var restored_layout:=TDRestaurantLayout.import_dict(restored.data.layout,room.catalog) if restored.ok else null
+	check(restored_layout!=null and restored_layout.to_dict()==room.layout.to_dict(),"isolated disk save preserves whole surfaces and table orientation")

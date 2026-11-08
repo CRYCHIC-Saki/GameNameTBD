@@ -23,6 +23,12 @@ var meal_intent: TDMealIntent
 var character_id: String = ""
 var appearance_id: int = 0
 var frozen: bool = false
+var externally_driven: bool=false
+var sit_elapsed: float=0.0
+var sit_duration: float=0.7
+var sit_from: Vector2
+var sit_target: Vector2
+var sit_facing: Vector2i=Vector2i.DOWN
 var _points: PackedVector2Array = PackedVector2Array()
 var _index: int = 0
 var _stages: Array = []
@@ -47,15 +53,34 @@ func set_path(cells: Array, cell_px: int) -> void:
 func advance(distance: float) -> void:
 	if finished or _index >= _points.size() or distance <= 0.0:
 		return
-	var target := _points[_index]
-	position = position.move_toward(target, distance)
-	if position.distance_to(target) > 0.5:
-		return
-	position = target
-	_index += 1
-	if _index >= _points.size():
-		finished = true
-		position = goal
+	while _index<_points.size() and distance>0.0:
+		var target:=_points[_index]
+		var remaining:=position.distance_to(target)
+		# Vector2 uses float32; do not leave a sub-pixel remainder at a clock boundary.
+		if remaining-distance>0.0001:
+			position=position.move_toward(target,distance)
+			return
+		position=target;distance=maxf(0.0,distance-remaining);_index+=1
+	finished=_index>=_points.size()
+	if finished: position=goal
+
+func walking_seconds() -> float:
+	if finished: return 0.0
+	var length: float=0.0
+	var previous:=position
+	for index: int in range(_index,_points.size()):
+		length+=previous.distance_to(_points[index]);previous=_points[index]
+	return length/maxf(1.0,speed)
+
+func begin_sitting(target: Vector2, duration: float, direction: Vector2i) -> void:
+	phase="sitting";sit_from=position;sit_target=target;sit_elapsed=0.0
+	sit_duration=maxf(.1,duration);sit_facing=direction;finished=true
+
+func advance_sitting(seconds: float) -> void:
+	sit_elapsed=minf(sit_duration,sit_elapsed+maxf(0.0,seconds))
+	if sit_duration-sit_elapsed<0.0000001: sit_elapsed=sit_duration
+	position=sit_from.lerp(sit_target,smoothstep(0.0,1.0,sit_elapsed/sit_duration))
+	seated=sit_elapsed>=sit_duration
 
 func begin_service(stages: Array, cell_px: int, next_dish_id: String, next_dish_name: String, menu_missing: bool, npc: Dictionary) -> void:
 	service_active = true
@@ -151,6 +176,6 @@ func _ready() -> void:
 	add_child(sprite)
 
 func _process(delta: float) -> void:
-	if service_active or frozen:
+	if service_active or frozen or externally_driven:
 		return
 	advance(speed * delta)

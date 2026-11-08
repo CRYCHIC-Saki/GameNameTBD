@@ -1,11 +1,11 @@
 #Requires -Version 7.2
 [CmdletBinding()]
-param([string]$GodotPath = $env:GODOT_BIN, [int]$CheckTimeoutSeconds = 1800)
+param([string]$GodotPath = $env:GODOT_BIN, [int]$CheckTimeoutSeconds = 1800, [string]$CheckSuite = 'all')
 $ErrorActionPreference = 'Stop'
 $root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $lock = Get-Content -LiteralPath (Join-Path $root 'dependencies.lock.json') -Raw | ConvertFrom-Json
 if (-not $GodotPath) { $GodotPath = $lock.godot.local_path }
-& (Join-Path $PSScriptRoot 'check.ps1') -GodotPath $GodotPath -TimeoutSeconds $CheckTimeoutSeconds -ReportName ('pre-export-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
+& (Join-Path $PSScriptRoot 'check.ps1') -GodotPath $GodotPath -Suite $CheckSuite -TimeoutSeconds $CheckTimeoutSeconds -ReportName ('pre-export-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
 if ($LASTEXITCODE -ne 0) { exit 1 }
 $build = Join-Path $root 'build'
 New-Item -ItemType Directory -Force -Path $build | Out-Null
@@ -42,11 +42,17 @@ try {
   try {
     $names = @($archive.Entries | ForEach-Object { $_.FullName })
     foreach ($name in $names) {
-      if ($name -notmatch '^(src/|\.godot/|assets/characters/(aling/archive/2026-10-29/aling|ash-priest/archive/2026-10-29/ash-priest)-(idle-four-directions|dialogue-halfbody)\.png(\.import)?$|assets/characters/(aling/aling|ash-priest/ash-priest)-walk-four-directions-v1\.png(\.import)?$|assets/characters/protagonist/protagonist-((idle|walk)-four-directions-v1|dialogue-halfbody-pose-pixel-v7)\.png(\.import)?$|assets/audio/(casual|service|cooking)\.wav(\.import)?$|assets/(kitchen/(recipe-icons/)?|town/|story/|cottage/)[^/]+\.png(\.import)?$|content/(story/(opening|homecoming)|characters/roster|dev_samples|cooking_prototype|cooking_system|service_content|restaurant|phase3_world|pantry|ingredient_index|research/recipe_atlas|research/runtime_recipes|town_economy/(economy|meal_schedule)|towns/chinese_layout|markets/kitchen_stock|brand/progression)\.json$|project\.binary$)') { throw "Non-runtime resource exported: $name" }
+      if ($name -notmatch '^(src/|\.godot/|assets/characters/diners/diners-((four-directions|seated)-v1|isometric-seated-v2|occupied-seat-v4)\.png(\.import)?$|assets/characters/(aling/archive/2026-10-29/aling|ash-priest/archive/2026-10-29/ash-priest)-(idle-four-directions|dialogue-halfbody)\.png(\.import)?$|assets/characters/(aling/aling|ash-priest/ash-priest)-walk-four-directions-v1\.png(\.import)?$|assets/characters/protagonist/protagonist-((idle|walk)-four-directions-v1|dialogue-halfbody-pose-pixel-v7)\.png(\.import)?$|assets/audio/(casual|service|cooking)\.wav(\.import)?$|assets/(kitchen/(recipe-icons/)?|town/|story/|cottage/)[^/]+\.png(\.import)?$|content/(story/(opening|homecoming)|characters/roster|dev_samples|cooking_prototype|cooking_system|service_content|branches|restaurant|phase3_world|pantry|ingredient_index|research/recipe_atlas|research/runtime_recipes|town_economy/(economy|meal_schedule)|towns/(chinese_layout|regions)|markets/kitchen_stock|brand/progression)\.json$|project\.binary$)') { throw "Non-runtime resource exported: $name" }
     }
     $names | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'runtime-manifest.json') -Encoding utf8
 	if ('content/town_economy/economy.json' -notin $names) { throw 'Missing exported economy configuration' }
+    foreach ($resource in @('assets/town/world-atlas-v1.png.import','content/towns/regions.json','src/town/regional_layout.gd','src/town/region_migration.gd','src/town/travel_catalog.gd','src/town/travel_world.gd','src/town/travel_map_view.gd','assets/town/four-cultures-v1.png.import','assets/town/four-cultures-props-v1.png.import')) {
+      if ($resource -notin $names -and ($resource + '.remap') -notin $names) { throw "Missing exported travel resource: $resource" }
+    }
     $crewResource = 'src/restaurant/restaurant_crew.gd'
+    foreach ($resource in @('assets/characters/diners/diners-occupied-seat-v4.png.import','assets/town/dining-table-stool-separated-v1.png.import','src/restaurant/decoration_panel.gd','src/restaurant/furniture_model.gd','src/restaurant/diner_art.gd','assets/characters/diners/diners-four-directions-v1.png.import','assets/characters/diners/diners-seated-v1.png.import','assets/characters/diners/diners-isometric-seated-v2.png.import')) {
+      if ($resource -notin $names -and ($resource + '.remap') -notin $names) { throw "Missing exported decoration resource: $resource" }
+    }
     if ($crewResource -notin $names -and ($crewResource + '.remap') -notin $names) { throw 'Missing exported restaurant crew script' }
     $guestResource = 'src/restaurant/guest_visit.gd'
     if ($guestResource -notin $names -and ($guestResource + '.remap') -notin $names) { throw 'Missing exported guest visit script' }
@@ -62,7 +68,7 @@ try {
         if ($resource -notin $names) { throw "Missing selected story art: $resource" }
       }
     }
-	foreach ($resource in @('src/platform/game_music.gd','src/town/cottage_world.gd','src/world/chef_art.gd','assets/audio/casual.wav.import','assets/audio/service.wav.import','assets/audio/cooking.wav.import','content/brand/progression.json','src/business/level_progression.gd','src/ui/level_rewards_view.gd','content/markets/kitchen_stock.json','src/business/food_stock.gd','src/ui/ingredient_icon.gd')) {
+	foreach ($resource in @('src/business/branch_network.gd','src/business/branch_panel.gd','content/branches.json','src/platform/game_music.gd','src/town/cottage_world.gd','src/world/chef_art.gd','assets/audio/casual.wav.import','assets/audio/service.wav.import','assets/audio/cooking.wav.import','content/brand/progression.json','src/business/level_progression.gd','src/ui/level_rewards_view.gd','content/markets/kitchen_stock.json','src/business/food_stock.gd','src/ui/ingredient_icon.gd')) {
 	  if ($resource -notin $names -and ($resource + '.remap') -notin $names) { throw "Missing exported stock resource: $resource" }
 	}
 	foreach ($script in Get-ChildItem -LiteralPath (Join-Path $root 'src/town_economy') -Filter '*.gd' -File) {
@@ -91,7 +97,7 @@ try {
   $probeLog = Get-Content -LiteralPath (Join-Path $evidence 'title-input.log') -Raw
   if ($probeLog -notmatch 'TITLE_PROBE success=true checks=(\d+)' -or [int]$Matches[1] -lt 29) { throw 'Exported title and movement regression did not complete its checks' }
   $titleChecks = [int]$Matches[1]
-  $summary = [ordered]@{status='PASS';export_exit=0;smoke_exit=0;title_input_exit=0;title_input_checks=$titleChecks;runtime_files=$names.Count;package='build/TownDiner.exe + TownDiner.pck';kind='DEVELOPMENT_DEMO';human_playtest='PENDING';remote_ci='NOT_RUN'}
+  $summary = [ordered]@{status='PASS';check_suite=$CheckSuite;export_exit=0;smoke_exit=0;title_input_exit=0;title_input_checks=$titleChecks;runtime_files=$names.Count;package='build/TownDiner.exe + TownDiner.pck';kind='DEVELOPMENT_DEMO';human_playtest='PENDING';remote_ci='NOT_RUN'}
   $summary | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'summary.json') -Encoding utf8
   Write-Host "EXPORT PASS; evidence=$evidence"
   exit 0

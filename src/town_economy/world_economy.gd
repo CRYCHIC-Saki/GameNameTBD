@@ -16,6 +16,7 @@ var interior_effect: float = -1.0
 var character_candidate: Callable
 var meal_schedule := TDMealSchedule.new()
 var event_minute: float = -1.0
+var player_branches: TDPlayerBranches
 const SOCIETY_FIELDS: Array[String] = ["society","expansion","legacy_archive","tax_due_cents","today_interest_cents"]
 const FIRM_FIELDS: Array[String] = ["owner_id","name","parcel_id","capacity","open_day","status","cost_basis","consumed_cents","wage_expense_cents","tax_cents","tax_due_cents","profitable_reviews","last_profit_cents","travel_minutes","basket_index"]
 
@@ -304,6 +305,7 @@ func _firms(town: String, group: Dictionary) -> Array:
 		for item: String in firm.ingredients:
 			if int(firm.inventory.get(item,0))<int(firm.ingredients[item]): enough=false
 		result.append({"id":firm.id,"open":enough and firm.status=="open" and society.staff(firm.id).size()>=int(config.expansion.staff_per_store) and int(firm.served)<int(firm.capacity),"visibility":0.45,"awareness":firm.awareness,"brand":firm.brand,"service":0.65,"travel_minutes":float(firm.travel_minutes),"wait_minutes":float(firm.served)*0.3,"decor_match":0.25,"menu":[{"id":firm.recipe_id,"family_id":firm.family_id,"price_cents":int(firm.price_cents),"reference_cents":int(firm.reference_cents),"food":firm.quality,"familiarity":0.7,"taste":{group.preferred_taste:0.2}}]})
+	if player_branches!=null: result.append_array(player_branches.candidates(town,group))
 	return result
 
 func player_store(menu: Array, waiting: int, group: Dictionary, origin: String = "residential", resident_id: String = "") -> Dictionary:
@@ -365,6 +367,7 @@ func meal_events() -> Array:
 	return meal_schedule.events(int(config.opportunities_per_day),int(state.seed),int(state.day),str(state.home))
 
 func skip_closed_before(minute: float) -> void:
+	if player_branches!=null: player_branches.prepare()
 	var events:=meal_events()
 	while int(state.day_stats.opportunities)<events.size():
 		var index: int=int(state.day_stats.opportunities)
@@ -374,7 +377,7 @@ func skip_closed_before(minute: float) -> void:
 		group=spending_group(group,state.home,index)
 		var choice:=TDEconomicDemand.pick(TDEconomicDemand.choices(group,_firms(state.home,group),config.outside_utility,config.menu_tau),unit("choice:%s:%d:%d"%[state.home,state.day,index]))
 		state.day_stats.opportunities+=1
-		if choice.store_id!="outside" and _sell_npc(state.home,choice.store_id,family): state.day_stats.competitor+=1
+		if choice.store_id!="outside" and _sell_npc(state.home,choice.store_id,family,choice.recipe_id): state.day_stats.competitor+=1
 		else: state.day_stats.outside+=1
 
 func next_meal_minute() -> float:
@@ -395,6 +398,7 @@ func arrivals_at(minute: float, menu: Array, waiting: int, capacity: int, templa
 	return result
 
 func _arrival_range(start: int, finish: int, slot: int, menu: Array, waiting: int, capacity: int, templates: Array, patience: float) -> Array:
+	if player_branches!=null: player_branches.prepare()
 	var result: Array=[]
 	for index: int in range(start,finish):
 		var group:=_group((index*37+int(state.day)*7)%100)
@@ -419,7 +423,7 @@ func _arrival_range(start: int, finish: int, slot: int, menu: Array, waiting: in
 		state.day_stats.opportunities+=1
 		if chosen.store_id=="outside" or society.available(family)==0: state.day_stats.outside+=1;continue
 		if chosen.store_id!="player":
-			if _sell_npc(state.home,chosen.store_id,family): state.day_stats.competitor+=1
+			if _sell_npc(state.home,chosen.store_id,family,chosen.recipe_id): state.day_stats.competitor+=1
 			else: state.day_stats.outside+=1
 			continue
 		state.day_stats.considered+=1
@@ -437,7 +441,8 @@ func _arrival_range(start: int, finish: int, slot: int, menu: Array, waiting: in
 		result.append({"person":person.snapshot(),"intent":intent.snapshot(),"template":template,"reference_cents":int(dish.reference_cents)})
 	return result
 
-func _sell_npc(town: String, id: String, family_id: String) -> bool:
+func _sell_npc(town: String, id: String, family_id: String, recipe_id: String="") -> bool:
+	if player_branches!=null and id.begins_with("player-branch:"): return player_branches.sell(id,recipe_id,family_id)
 	for firm: Dictionary in state.competitors[town]:
 		if firm.id!=id: continue
 		if not society.spend(family_id,int(firm.price_cents)): return false
@@ -528,6 +533,7 @@ func settle(ledger: Array, receipts: int, opened_today: bool = true) -> Dictiona
 	_daily_interest=bank_day.data.get("loan_interest",{}) if bank_day.ok else {}
 	state.today_interest_cents=int(bank_day.data.get("loan_interest",{}).get("player",0)) if bank_day.ok else 0
 	_simulate_remaining()
+	if player_branches!=null: player_branches.settle()
 	society.finish_day(int(state.day))
 	for town: String in config.active_towns: expansion.review(town,state.competitors[town],society,int(state.day))
 	var utility: int=roundi((float(config.fees.opening_cents) if opened_today else 0.0)+int(state.day_stats.admitted)*float(config.fees.guest_cents)+float(state.day_stats.cooking_seconds)*float(config.fees.cooking_second_cents))
@@ -572,6 +578,7 @@ func pay_debt(available_cents: int) -> int:
 
 func _simulate_remaining() -> void:
 	if state.day_stats.npc_finished: return
+	if player_branches!=null: player_branches.prepare()
 	for town: String in config.active_towns:
 		var start: int=int(state.day_stats.opportunities) if town==state.home else 0
 		for index: int in range(start,int(config.opportunities_per_day)):
@@ -579,7 +586,7 @@ func _simulate_remaining() -> void:
 			var family:=society.identity(town,group.id,index)
 			group=spending_group(group,town,index)
 			var chosen:=TDEconomicDemand.pick(TDEconomicDemand.choices(group,_firms(town,group),config.outside_utility,config.menu_tau),unit("choice:%s:%d:%d"%[town,state.day,index]))
-			if chosen.store_id!="outside" and not _sell_npc(town,chosen.store_id,family): chosen.store_id="outside"
+			if chosen.store_id!="outside" and not _sell_npc(town,chosen.store_id,family,chosen.recipe_id): chosen.store_id="outside"
 			if town==state.home:
 				state.day_stats.opportunities+=1
 				if chosen.store_id=="outside": state.day_stats.outside+=1

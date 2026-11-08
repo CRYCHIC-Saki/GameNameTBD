@@ -1,0 +1,35 @@
+{
+  "tool": "image_gen built-in",
+  "usage": "D058 ordinary diners only; original important character art unchanged",
+  "walking_prompt": "Use case: stylized-concept. Asset: a production sprite atlas for a Chinese small-town cooking game, transparent background. Create ONE atlas with exactly 4 equal columns by 6 equal rows, 24 separate full-body pixel sprites. Match the game's existing cute chibi anime pixel style: 2.5 heads tall, large expressive eyes, dark warm outlines, clean clustered pixel shading, clear small-scale silhouette, no realistic anatomy. Two ordinary adult diners only, not heroes: rows 1-3 the SAME young adult man with short dark brown hair, simple teal Chinese-collar casual shirt, cream undershirt, charcoal trousers, brown cloth shoes. Rows 4-6 the SAME young adult woman with dark brown bob and small tied ponytail, simple teal Chinese-collar blouse, dark charcoal skirt over leggings, brown cloth shoes. No hats, books, weapons, food, bags, text, accessories or scenery. Their teal clothing will be recolored in-game; keep hair/skin/shoes brown or neutral and ensure only clothing uses saturated teal. COLUMNS in every row: FRONT facing viewer, BACK facing away, LEFT profile looking left, RIGHT profile looking right. ROWS: 1 man idle neutral feet together; 2 man walking left foot forward/right foot back with opposite arm swing; 3 man walking opposite step right foot forward/left foot back; 4 woman idle; 5 woman walking left foot forward; 6 woman opposite walking step. This is NOT 24 different people: exactly one male and one female identity consistent across all frames. Strongly visible alternating steps in front/back as well as profiles. Equal sized cells; center each sprite at same x within its cell, soles on same baseline, consistent head height across idle and step frames, generous transparent padding, no sprite crossing its cell boundary. Straight orthographic RPG character views, no perspective foreshortening. Pixel edges only, no blur, no external cast shadow, true alpha background. Tall portrait atlas ideally 1024x1536, no grid lines or labels.",
+  "seated_prompt": "Create a supplementary SEATED animation atlas using exactly the same two ordinary diners from the attached sprite sheet. This is an edit/derived sprite asset: preserve male and female identities, faces, brown hair, teal Chinese-collar shirts, charcoal pants/skirt, cream accents, brown cloth shoes, cute chibi pixel-art style and their 2.5-head proportions. Replace the sheet arrangement with exactly 4 equal columns by 2 equal rows, total 8 sprites. Top row same man seated; bottom row same woman seated. Columns FRONT facing camera, BACK facing away, LEFT profile looking left, RIGHT profile looking right. Every character sits with hips lowered, knees bent at a right angle, feet hanging down or resting below the knees, hands resting on lap/table height. NO chair, NO table, NO furniture, NO food or scenery, only the character so the game can position them at its own seat. Same scale in all cells, center horizontally, feet baseline consistent, padding around each sprite. Genuine transparent background with clean alpha, no background paint, no cast shadows, no labels, no grid. Preserve dark warm pixel outlines and clustered pixel shading; no blur.",
+  "frames": {
+    "walking": {
+      "columns": 4,
+      "rows": 6,
+      "directions": [
+        "down",
+        "up",
+        "left",
+        "right"
+      ],
+      "rows_detail": [
+        "male idle",
+        "male step A",
+        "male step B",
+        "female idle",
+        "female step A",
+        "female step B"
+      ]
+    },
+    "seated": {
+      "columns": 4,
+      "rows": 2,
+      "rows_detail": [
+        "male seated",
+        "female seated"
+      ]
+    }
+  },
+  "palette": "Runtime cached clothing-only teal hue mapping; face and hair unchanged"
+}

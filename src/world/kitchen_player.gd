@@ -8,6 +8,7 @@ var body_lift: float = 47.0
 var confine_to: Callable = Callable()
 var facing := Vector2i.DOWN
 var motion_transform := Transform2D.IDENTITY
+var input_transform := Transform2D.IDENTITY
 var walk_speed: float=WALK_SPEED
 @export_range(1.0, 3.0, 0.05) var sprint_multiplier: float = 1.6
 var directional_art: bool=true
@@ -55,11 +56,17 @@ func set_controls_enabled(enabled: bool) -> void:
 		velocity = Vector2.ZERO
 		_reset_pose()
 
+func screen_input(direction: Vector2) -> Vector2:
+	# Input axes and physics projection are separate. Normalize the projected
+	# heading so diagonals retain the same visible speed and analogue strength.
+	return input_transform.basis_xform(direction).normalized() * direction.length()
+
 func _physics_process(delta: float) -> void:
 	var before_motion := position
 	var direction := Vector2.ZERO
 	if controls_enabled:
 		direction = Input.get_vector("world_left", "world_right", "world_up", "world_down")
+	direction = screen_input(direction)
 	face(direction)
 	var speed := walk_speed * (sprint_multiplier if controls_enabled and Input.is_action_pressed("world_sprint") else 1.0)
 	var motion := motion_transform.basis_xform(direction * speed)

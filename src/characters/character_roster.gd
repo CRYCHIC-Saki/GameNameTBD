@@ -145,9 +145,9 @@ func observe_orders(orders: Array) -> void:
 			r.affection=clampi(int(r.affection)+gain,0,100);r.last_meal_day=clock.day;r.last_meal_token=str(order.id)
 		if not runtime.has(id): continue
 		var actor: Dictionary=runtime[id]
-		if int(r.last_visit_day)<clock.day and order.status in ["WAITING","COOKING","SERVED"]:
+		if int(r.last_visit_day)<clock.day and order.status in ["ARRIVING","WAITING","COOKING","SERVED"]:
 			r.last_visit_day=clock.day;actor.order_id=str(order.id);actor.phase="to_diner";actor.route=[];actor.goal=Vector2i(-1,-1);actor.entered=false
-		if str(actor.order_id)==str(order.id) and order.status not in ["WAITING","COOKING","SERVED"] and not actor.get("entered",false):
+		if str(actor.order_id)==str(order.id) and order.status not in ["ARRIVING","WAITING","COOKING","SERVED"] and not actor.get("entered",false):
 			finish_visit(id,str(order.id))
 
 func finish_visit(id: String, order_id: String) -> void:

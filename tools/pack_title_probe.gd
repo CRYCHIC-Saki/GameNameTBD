@@ -2,7 +2,9 @@ extends SceneTree
 ## Build a disposable test PCK from the actual export. Nothing is added to the shipped PCK.
 func _initialize() -> void:
 	var smoke:bool="--startup-exit" in OS.get_cmdline_user_args()
-	var folder:=ProjectSettings.globalize_path("res://artifacts/export/startup-probe" if smoke else "res://artifacts/export/title-probe")
+	var travel:bool="--world-travel" in OS.get_cmdline_user_args()
+	var branches:bool="--world-branches" in OS.get_cmdline_user_args()
+	var folder:=ProjectSettings.globalize_path("res://artifacts/export/branch-probe" if branches else ("res://artifacts/export/travel-probe" if travel else ("res://artifacts/export/startup-probe" if smoke else "res://artifacts/export/title-probe")))
 	DirAccess.make_dir_recursive_absolute(folder)
 	var zip:=ZIPReader.new()
 	if zip.open(ProjectSettings.globalize_path("res://artifacts/export/runtime.zip"))!=OK: quit(1);return
@@ -18,8 +20,14 @@ func _initialize() -> void:
 	ProjectSettings.set_setting("application/run/main_scene","res://probe.tscn")
 	if ProjectSettings.save_custom(folder+"/project.binary")!=OK: quit(1);return
 	if pack.add_file("res://project.binary",folder+"/project.binary")!=OK: quit(1);return
-	var script:=FileAccess.get_file_as_string("res://tools/startup_exit_probe.gd" if smoke else "res://tools/title_input_probe.gd")
+	var script:=FileAccess.get_file_as_string("res://tools/branch_probe.gd" if branches else ("res://tools/travel_probe.gd" if travel else ("res://tools/startup_exit_probe.gd" if smoke else "res://tools/title_input_probe.gd")))
 	script=script.replace("\r\n","\n")
+	if branches:
+		script=script.replace("res://artifacts/branch-world/gpu",folder+"/screenshots")
+		script=script.replace("res://artifacts/branch-world/probe-slots/",folder+"/isolated-profiles/")
+	if travel:
+		script=script.replace("res://artifacts/travel-r1/gpu",folder+"/screenshots")
+		script=script.replace("res://artifacts/travel-r1/probe/",folder+"/isolated-profiles/")
 	script=script.replace("extends SceneTree","extends Node\nvar root: Window\nvar paused: bool:\n\tget: return get_tree().paused\nfunc quit(code: int) -> void: get_tree().quit(code)")
 	script=script.replace('func _initialize() -> void: call_deferred("run")','func _ready() -> void:\n\troot=get_tree().root\n\tcall_deferred("run")')
 	script=script.replace("await process_frame","await get_tree().process_frame")

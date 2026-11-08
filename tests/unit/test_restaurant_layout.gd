@@ -154,6 +154,48 @@ func test_feet_cannot_leave_the_room_or_stand_on_furniture() -> void:
 	var desk := layout.piece_by_kind("welcome_desk")
 	assert_false(layout.feet_inside(layout.cell_center(Vector2i(int(desk["x"]), int(desk["y"])))))
 
+func test_whole_surface_finishes_are_atomic_and_keep_legacy_save_compatibility() -> void:
+	# Start from mixed legacy per-cell finishes, including a floor entrance.
+	assert_true(layout.set_finish(1, 1, "carpet").ok)
+	var wall := _first_cell("facade")
+	assert_true(layout.set_finish(wall.x, wall.y, "floral").ok)
+	var legacy := layout.to_dict()
+	var other := TDRestaurantLayout.import_dict(legacy, catalog)
+	assert_not_null(other)
+	assert_eq(other.to_dict(), legacy)
+	var before := layout.to_dict()
+	assert_eq(layout.set_surface_finish("invalid").code, "BAD_FINISH")
+	assert_eq(layout.to_dict(), before)
+	assert_true(layout.set_surface_finish("tile").ok)
+	var correct_floor: bool = true
+	var floor_count: int = 0
+	for y: int in layout.rows:
+		for x: int in layout.columns:
+			if layout.cell_zone(x, y) == "facade":
+				correct_floor = correct_floor and layout.finish_at(x, y) == other.finish_at(x, y)
+			else:
+				floor_count += 1
+				correct_floor = correct_floor and layout.finish_at(x, y) == "tile"
+	assert_true(correct_floor, "Every floor cell changes; all existing wall finishes stay")
+	assert_gt(floor_count, 1)
+	assert_eq(layout.finish_at(layout.entrance().x, layout.entrance().y), "tile")
+	assert_true(layout.set_surface_finish("brick").ok)
+	var correct_all: bool = true
+	for y: int in layout.rows:
+		for x: int in layout.columns:
+			correct_all = correct_all and layout.finish_at(x, y) == ("brick" if layout.cell_zone(x, y) == "facade" else "tile")
+	assert_true(correct_all, "Every wall changes without replacing any floor")
+	var finished := layout.to_dict()
+	var expected := before.duplicate(true)
+	expected["finish_ids"] = finished["finish_ids"]
+	assert_eq(finished, expected, "No furniture, zones, entrances or staff changed")
+	assert_true(layout.set_surface_finish("brick").ok)
+	assert_eq(layout.to_dict(), finished, "Repeat is idempotent")
+	var loaded := TDRestaurantLayout.import_dict(finished, catalog)
+	assert_not_null(loaded)
+	assert_eq(loaded.to_dict(), finished)
+	assert_eq(other.to_dict(), legacy, "Other layouts and templates remain isolated")
+
 func _assert_walk(cells: Variant) -> void:
 	var path: Array = cells
 	assert_gt(path.size(), 1)

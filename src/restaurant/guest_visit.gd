@@ -28,6 +28,7 @@ static func shirt(phase: String) -> Color:
 			return Color("#3f6f8f")
 
 static func caption(dish: String, status: String, phase: String, seconds_left: int, satisfaction: float, net_cents: int, refunded_cents: int) -> String:
+	if status=="ARRIVING": return "正在入座 · 尚未点单" if phase=="sitting" else "进店等位 · 尚未点单"
 	var name := dish if dish != "" else "菜"
 	match phase:
 		"approach":
@@ -55,6 +56,7 @@ static func leave_name(status: String, refunded_cents: int) -> String:
 
 static func status_name(status: String) -> String:
 	return {
+		"ARRIVING": "进店等位",
 		"WAITING": "等上菜",
 		"COOKING": "后厨制作",
 		"SERVED": "已上菜",
@@ -67,6 +69,8 @@ static func inspect_text(dish: String, customer: String, status: String, phase: 
 	var who := customer if customer != "" else "客人"
 	var meal := dish if dish != "" else "菜"
 	var lines := PackedStringArray()
+	if status=="ARRIVING":
+		return "%s正在%s，坐好后才会向后厨点单。"%[who,"找座位" if phase!="sitting" else "入座"]
 	lines.append("%s点了%s。" % [who, meal])
 	lines.append(_sentence(status, phase, seconds_left, satisfaction, net_cents, refunded_cents))
 	if price_cents > 0:
@@ -110,6 +114,10 @@ static func conversation(who: String, dish: String, phase: String, portrait: Str
 	var meal := dish if dish != "" else "这道菜"
 	var person := who if who != "" else "客人"
 	var opening := "%s：我点了%s。" % [person, meal]
+	if order.get("status","")=="ARRIVING":
+		talk.context={"kind":"guest","ticket_id":str(order.id)}
+		talk.add_line(person,portrait,"我先找个位置，坐好了再点菜。")
+		return talk
 	if phase == "eat":
 		opening = "%s：%s我正在吃。" % [person, meal]
 	elif phase in ["pay", "leave"]:

@@ -396,9 +396,9 @@ static func paint_bust(canvas: CanvasItem, who: String, box: Rect2, emotion: Str
 	var hair := Color("#243038")
 	var accent := Color("#d7e4ea")
 	if who.begins_with("guest"):
-		var variant:=clampi(int(who.trim_prefix("guest")),0,2)
-		cloth=[Color("497f92"),Color("a66f44"),Color("82719c")][variant]
-		hair=[Color("313642"),Color("704d36"),Color("666b72")][variant]
+		var guest_art:=TDDinerArt.portrait(int(who.trim_prefix("guest")))
+		canvas.draw_texture_rect(guest_art,TDStoryArt.fit(guest_art,box),false)
+		return
 	if who == "aling":
 		cloth = Color("#24344a")
 		hair = Color("#1b1a24")

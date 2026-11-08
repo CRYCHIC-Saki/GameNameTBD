@@ -71,11 +71,14 @@ func test_factory_uses_formal_ingredients_rejects_locked_and_delivers_once_after
 	var stock:=loaded.shop.snapshot();assert_true(loaded.receive_supplies().ok);assert_eq(loaded.shop.snapshot(),stock)
 	assert_eq(loaded.shop.stock_info("rice").remaining_days,30)
 
-func test_research_candidate_is_persisted_in_same_profile_transaction() -> void:
+func test_research_candidate_waits_for_explicit_whole_profile_checkpoint() -> void:
 	var profile:=create_profile("slot-01")
 	assert_true(profile.save().ok)
 	var before:int=int(profile.research.snapshot().points)
 	assert_true(profile.research.begin("C03").ok)
+	assert_eq(int(store.load_slot("slot-01").data.research.points),before,"Buying a licence cannot checkpoint unrelated progress")
+	profile.research.cancel(str(profile.research._active.token))
+	assert_true(profile.save().ok)
 	var saved:=store.load_slot("slot-01")
 	assert_true(saved.ok,saved.code)
 	assert_eq(int(saved.data.research.points),before-1)

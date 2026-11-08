@@ -9,6 +9,7 @@ signal object_requested(action: String)
 var player_mode: bool = false
 var business: TDShopSession
 var _business_guests: Dictionary = {}
+var unified_dining_clock: bool=false
 
 const CHEF := preload("res://assets/kitchen/chef-v1.png")
 const INTERACTION_RADIUS := 78.0
@@ -78,6 +79,15 @@ var floor_service: bool = false
 var _talk_layer: CanvasLayer
 var _talk_view: TDDialogueView
 var _plate_order: String = ""
+var _decor_panel: TDDecorationPanel
+var _context_menu: Control
+var _delete_button: Button
+var _rotate_button: Button
+var _drag_candidate: bool=false
+var _dragging: bool=false
+var _drag_start := Vector2.ZERO
+var _drag_offset := Vector2.ZERO
+var _drag_cell := Vector2i(-1,-1)
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -149,9 +159,9 @@ func _process(delta: float) -> void:
 		_player.z_index = int(_player.position.y)
 	for guest: TDRestaurantGuest in guest_nodes(): guest.frozen=story_frozen or (_talk_open() and str(_talk_view.talk.context.get("ticket_id",""))==guest.ticket_id)
 	if player_mode and not get_tree().paused and not story_frozen:
-		_visit_seconds+=delta
+		if not unified_dining_clock: _visit_seconds+=delta
 		_crew_time += delta
-		_sync_business_guests()
+		if not unified_dining_clock: _sync_business_guests()
 		if business != null:
 			var crew_note := business.take_crew_note()
 			if not crew_note.is_empty():
@@ -179,10 +189,14 @@ func _process(delta: float) -> void:
 		_iso.runner_label = _runner_caption()
 		_iso.pass_point = layout.cell_center(pass_cell()) if _pass_has_plate() or _needs_player_plate() else Vector2(-1, -1)
 		_iso.held_label = _held_caption()
-		_iso.crew_people = _crew_points(0.0 if get_tree().paused or story_frozen else delta)
+		_iso.crew_people = _crew_points(0.0 if get_tree().paused or story_frozen or unified_dining_clock else delta)
 		_iso.sync(_player, guest_nodes(),get_tree().paused or story_frozen)
 		if player_mode: _iso.nearby_action=str(nearby_object().get("action",""))
 	if _editing:
+		if get_tree().paused or story_frozen or _covered:
+			_reset_drag()
+			_context_menu.hide()
+		_position_context()
 		queue_redraw()
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -206,10 +220,14 @@ func _unhandled_input(event: InputEvent) -> void:
 func _input(event: InputEvent) -> void:
 	if _talk_open():
 		return
-	if _closed or not _editing or layout == null or _iso == null or get_tree().paused:
+	if _closed or _covered or not _editing or layout == null or _iso == null or get_tree().paused:
 		return
 	if event is InputEventMouseMotion:
 		var motion := event as InputEventMouseMotion
+		if _drag_candidate:
+			if motion.position.distance_to(_drag_start)>=6.0: _dragging=true
+			if _dragging: _preview_drag(motion.position)
+			return
 		if _pointer_on_chrome(motion.position):
 			_clear_hover()
 			return
@@ -218,28 +236,79 @@ func _input(event: InputEvent) -> void:
 	if not event is InputEventMouseButton:
 		return
 	var click := event as InputEventMouseButton
+	if not click.pressed and click.button_index==MOUSE_BUTTON_LEFT and _drag_candidate:
+		_finish_drag(click.position)
+		get_viewport().set_input_as_handled()
+		return
+	if click.pressed and click.button_index==MOUSE_BUTTON_RIGHT and _drag_candidate:
+		_cancel_decoration()
+		get_viewport().set_input_as_handled()
+		return
 	if _pointer_on_chrome(click.position):
 		return
 	if click.pressed and click.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
-		_spin(1 if click.button_index == MOUSE_BUTTON_WHEEL_UP else -1)
+		if not _drag_candidate: _spin(1 if click.button_index == MOUSE_BUTTON_WHEEL_UP else -1)
 		get_viewport().set_input_as_handled()
 		return
 	if not click.pressed or click.button_index not in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]:
 		return
-	_click_cell(_iso.pick_cell(_screen_to_room(click.position)), click.button_index)
+	var room_point:=_screen_to_room(click.position)
+	var model_hit:=_iso.pick_piece(room_point) if _tool=="select" else ""
+	if click.button_index==MOUSE_BUTTON_LEFT and model_hit!="":
+		_select_furniture(model_hit)
+		var item:=layout.piece(model_hit)
+		_drag_candidate=true
+		_drag_start=click.position
+		_drag_offset=room_point-TDRestaurantIsoView.project(float(item.x)+.5,float(item.y)+.5)
+	else:
+		_click_cell(_iso.pick_cell(room_point), click.button_index)
 	get_viewport().set_input_as_handled()
 
 func _screen_to_room(screen: Vector2) -> Vector2:
-	var camera := _iso.get_node_or_null("IsoCamera") as Camera2D
-	if camera == null or not camera.enabled:
-		return screen
-	var view := get_viewport().get_visible_rect().size
-	return camera.position + (screen - view * 0.5) / camera.zoom
+	return _iso.get_global_transform_with_canvas().affine_inverse()*screen
 
 func _pointer_on_chrome(screen: Vector2) -> bool:
 	if _board != null and is_instance_valid(_board):
 		return true
-	return _bar != null and Rect2(_bar.position, _bar.size).has_point(screen)
+	for control: Control in [_decor_panel,_delete_button,_rotate_button,_bar]:
+		if control!=null and control.is_visible_in_tree() and control.get_global_rect().has_point(screen): return true
+	return false
+
+func _preview_drag(screen: Vector2) -> void:
+	_context_menu.hide()
+	if _pointer_on_chrome(screen):
+		_clear_hover();_iso.dragged_id=""
+		return
+	_drag_cell=_iso.pick_cell(_screen_to_room(screen)-_drag_offset)
+	var preview:=layout.preview_move(_selected,_drag_cell.x,_drag_cell.y)
+	var item: Dictionary=preview.piece
+	if item.is_empty(): _reset_drag();return
+	_show_ghost(_drag_cell,int(item.w),int(item.h),bool(preview.ok))
+	_iso.ghost_piece=item
+	_iso.dragged_id=_selected
+	_set_status("松开放下 · 右键取消" if preview.ok else str(preview.message)+" · 松开保留原位")
+
+func _finish_drag(screen: Vector2) -> void:
+	var moving:=_dragging
+	var valid_area:=not _pointer_on_chrome(screen)
+	var target:=_iso.pick_cell(_screen_to_room(screen)-_drag_offset)
+	_reset_drag()
+	if moving and valid_area:
+		var result:=_apply(layout.move_piece(_selected,target.x,target.y))
+		_set_status("已移动，按住家具可继续拖动。" if result.ok else result.message+"，家具保留原位。")
+	_context_menu.visible=not layout.piece(_selected).is_empty()
+	_position_context()
+
+func _reset_drag() -> void:
+	_drag_candidate=false;_dragging=false
+	_drag_cell=Vector2i(-1,-1)
+	if _iso!=null: _iso.dragged_id=""
+	_clear_hover()
+
+func _notification(what: int) -> void:
+	if what==NOTIFICATION_APPLICATION_FOCUS_OUT and _iso!=null:
+		_reset_drag()
+		if _context_menu!=null: _context_menu.hide()
 
 func _draw() -> void:
 	if _iso != null or not _editing or layout == null:
@@ -259,6 +328,9 @@ func _draw() -> void:
 
 func close() -> void:
 	_closed = true
+	if business!=null and business.dining_tick==advance_dining:
+		business.dining_tick=Callable();business.dining_boundary=Callable()
+	_reset_drag()
 	_dismiss_talk()
 	if session != null:
 		session.floor.clear()
@@ -287,7 +359,8 @@ func _standing_inside_solid(cell: Vector2i) -> bool:
 	if layout.furniture_blocks(cell.x, cell.y):
 		return true
 	# Open facade floor is the doorway and the ground in front of the drawn walls.
-	return not layout.is_walkable(cell.x, cell.y) and layout.cell_zone(cell.x, cell.y) != "facade"
+	var outer: bool=cell.x==0 or cell.y==0 or cell.x==layout.columns-1 or cell.y==layout.rows-1
+	return not layout.is_walkable(cell.x, cell.y) and not (outer and layout.cell_zone(cell.x, cell.y)=="facade")
 
 func cell_of_player() -> Vector2i:
 	return _cell_at(player_position())
@@ -311,7 +384,7 @@ func guest_nodes() -> Array[TDRestaurantGuest]:
 	return result
 
 func request_interaction() -> bool:
-	if _closed or _player == null or layout == null or get_tree().paused or _covered:
+	if _closed or _player == null or layout == null or get_tree().paused or _covered or _editing:
 		return false
 	if _talk_open():
 		return true
@@ -381,7 +454,7 @@ func spawn_guest() -> TDOutcome:
 	return TDOutcome.new(true, "SEATED", guest.seat_id)
 
 func place_kind(kind: String, x: int, y: int) -> TDOutcome:
-	return _apply(layout.place(kind, x, y, _place_rotation))
+	return _apply(layout.place(kind, x, y, _place_rotation,_culture+"_"+_tier))
 
 func paint_cell(x: int, y: int, symbol: String) -> TDOutcome:
 	return _apply(layout.paint(x, y, symbol))
@@ -398,6 +471,7 @@ func remove_selected() -> TDOutcome:
 	var result := layout.remove_piece(_selected)
 	if result.ok:
 		_selected = ""
+		if _context_menu!=null: _context_menu.hide()
 	return _apply(result)
 
 func _pull_layout_staff() -> void:
@@ -506,6 +580,7 @@ func _build_world() -> void:
 	_player.walk_speed=180.0
 	_player.vertical_stride_multiplier=1.6
 	_player.motion_transform=Transform2D(Vector2(TDRestaurantIsoView.HALF_W,TDRestaurantIsoView.HALF_H)/layout.cell_px,Vector2(-TDRestaurantIsoView.HALF_W,TDRestaurantIsoView.HALF_H)/layout.cell_px,Vector2.ZERO).affine_inverse()
+	_player.input_transform=_player.motion_transform.affine_inverse()
 	var sprite := Sprite2D.new()
 	sprite.name = "Sprite2D"
 	sprite.texture = CHEF
@@ -612,33 +687,86 @@ func _build_status_bar() -> void:
 			button.visible = false
 	play.add_child(_button("保存", save_current))
 	_edit_box = HFlowContainer.new()
-	_edit_box.visible = false
-	_edit_box.add_theme_constant_override("h_separation", 6)
-	_edit_box.add_theme_constant_override("v_separation", 4)
+	_edit_box.hide()
 	box.add_child(_edit_box)
-	_edit_box.add_child(_button("选择", func() -> void: _set_tool("select")))
-	_kind_button = _button("家具", _cycle_kind)
-	_brush_button = _button("笔刷", _cycle_brush)
-	_style_button = _button("风格", _cycle_culture)
-	_tier_button = _button("档次", _cycle_tier)
-	_edit_box.add_child(_kind_button)
-	_edit_box.add_child(_brush_button)
-	_edit_box.add_child(_style_button)
-	_edit_box.add_child(_tier_button)
-	_edit_box.add_child(_button("这件换风格", restyle_selected))
-	_edit_box.add_child(_button("全店套用", restyle_venue))
-	_edit_box.add_child(_button("上", func() -> void: nudge_selected(0, -1)))
-	_edit_box.add_child(_button("下", func() -> void: nudge_selected(0, 1)))
-	_edit_box.add_child(_button("左", func() -> void: nudge_selected(-1, 0)))
-	_edit_box.add_child(_button("右", func() -> void: nudge_selected(1, 0)))
-	_edit_box.add_child(_button("转向", _rotate_selected))
-	_edit_box.add_child(_button("拆除", remove_selected))
-	_edit_box.add_child(_button("恢复默认", reset_layout))
-	if player_mode:
-		_play_row.hide()
-		_edit_box.get_child(_edit_box.get_child_count()-1).hide()
-		_edit_box.add_child(_button("完成布置",_toggle_edit))
+	_build_decoration_ui(layer)
+	if player_mode: _play_row.hide()
 	_fit_bar()
+
+func _build_decoration_ui(layer: CanvasLayer) -> void:
+	_decor_panel=TDDecorationPanel.new();_decor_panel.name="DecorationCatalog"
+	_decor_panel.catalog=catalog;_decor_panel.culture=_culture;_decor_panel.tier=_tier
+	layer.add_child(_decor_panel);_decor_panel.hide()
+	_decor_panel.item_chosen.connect(_choose_decoration)
+	_decor_panel.category_changed.connect(_cancel_decoration)
+	_decor_panel.done.connect(_toggle_edit)
+	_context_menu=Control.new();_context_menu.name="FurnitureActions"
+	_context_menu.process_mode=Node.PROCESS_MODE_PAUSABLE
+	_context_menu.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	layer.add_child(_context_menu);_context_menu.hide()
+	var frame:=Panel.new();frame.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	var border:=StyleBoxFlat.new();border.bg_color=Color.TRANSPARENT
+	border.border_color=Color("e9c780");border.set_border_width_all(1)
+	frame.add_theme_stylebox_override("panel",border);_context_menu.add_child(frame)
+	frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_delete_button=_furniture_icon("×","删除家具",remove_selected,Color("914b47"))
+	_rotate_button=_furniture_icon("↶","逆时针旋转90°",_rotate_selected,Color("355d56"))
+	_delete_button.name="DeleteFurniture";_rotate_button.name="RotateFurniture"
+
+func _furniture_icon(symbol: String, hint: String, action: Callable, color: Color) -> Button:
+	var button:=Button.new();button.text=symbol;button.tooltip_text=hint
+	button.theme=_theme;button.focus_mode=Control.FOCUS_NONE
+	button.custom_minimum_size=Vector2(32,32);button.size=Vector2(32,32)
+	button.add_theme_font_size_override("font_size",24)
+	for state: String in ["normal","hover","pressed","focus"]:
+		var style:=StyleBoxFlat.new();style.bg_color=color.lightened(.14) if state=="hover" else color
+		style.border_color=Color("ecd5a2");style.set_border_width_all(1);style.set_corner_radius_all(5)
+		button.add_theme_stylebox_override(state,style)
+	button.pressed.connect(action);_context_menu.add_child(button)
+	return button
+
+func _cancel_decoration() -> void:
+	_reset_drag()
+	_tool="select"
+	_selected=""
+	if _decor_panel!=null: _decor_panel.clear_selection()
+	_clear_hover()
+	if _context_menu!=null: _context_menu.hide()
+	_set_status("选择家具或饰面，点击已摆好的家具可转向或删除。")
+
+func _choose_decoration(id: String, finish: bool) -> void:
+	_reset_drag()
+	_selected="";_context_menu.hide()
+	_clear_hover()
+	if finish:
+		_tool="select"
+		_apply(layout.set_surface_finish(id))
+		return
+	_armed_kind=id;_tool="place";_place_rotation=0
+	_set_status("%s：移动鼠标查看预览，左键放置，右键取消。"%str(catalog.furniture(id).name))
+
+func _select_furniture(id: String) -> void:
+	_selected=id;_tool="select";_clear_hover()
+	_decor_panel.clear_selection()
+	var piece:=layout.piece(id)
+	_context_menu.visible=_editing and not piece.is_empty()
+	if not piece.is_empty(): _set_status("%s · 按住拖动 · 左上删除 / 右上逆时针旋转 · 右键取消"%piece.name)
+	_position_context();queue_redraw()
+
+func _position_context() -> void:
+	if _context_menu==null or not _context_menu.visible or _iso==null: return
+	var piece:=layout.piece(_selected)
+	if piece.is_empty(): _context_menu.hide();return
+	var transform:=_iso.get_global_transform_with_canvas()
+	var bounds:=TDFurnitureModel.bounds(piece)
+	var point:=transform*(TDFurnitureModel.center(piece)+bounds.position)-Vector2(8,8)
+	var extent:=transform.basis_xform(bounds.size)+Vector2(16,16)
+	if extent.x<80: point.x-=(80-extent.x)*.5;extent.x=80
+	var view:=get_viewport().get_visible_rect().size
+	_context_menu.size=extent
+	_context_menu.position=Vector2(clampf(point.x,18,maxf(18,view.x-extent.x-18)),clampf(point.y,18,maxf(18,view.y-TDDecorationPanel.PANEL_HEIGHT-extent.y-18)))
+	_delete_button.position=Vector2(-16,-16)
+	_rotate_button.position=Vector2(extent.x-16,-16)
 
 func _rebuild() -> void:
 	if layout == null or _floor == null:
@@ -656,7 +784,7 @@ func _rebuild() -> void:
 		for x in layout.columns:
 			# Facade cells are drawn as floor. A full-cell body there is an invisible wall
 			# in front of the old door and along the north wall. Furniture still fills its cells.
-			if layout.is_walkable(x, y) or (layout.cell_zone(x, y) == "facade" and not layout.furniture_blocks(x, y)):
+			if not _standing_inside_solid(Vector2i(x,y)):
 				continue
 			var shape := RectangleShape2D.new()
 			shape.size = Vector2(layout.cell_px, layout.cell_px)
@@ -706,23 +834,13 @@ func _add_fixture(item: Dictionary) -> void:
 	_fixtures.add_child(node)
 
 func _click_cell(cell: Vector2i, button: int = MOUSE_BUTTON_LEFT) -> void:
+	if button == MOUSE_BUTTON_RIGHT:
+		_cancel_decoration()
+		return
 	if cell.x < 0 or cell.y < 0 or cell.x >= layout.columns or cell.y >= layout.rows:
 		_set_status("点在房间外面了。")
 		return
 	var hit := _piece_at(cell)
-	if button == MOUSE_BUTTON_RIGHT:
-		if _tool == "place" or _tool == "paint":
-			_tool = "select"
-			_refresh_buttons()
-			_set_status("已取消。选择后再右键，才会拆掉点中的家具。")
-			_refresh_hover()
-			return
-		if hit == "":
-			_set_status("这里没有家具。")
-			return
-		_selected = hit
-		remove_selected()
-		return
 	if _tool == "paint":
 		if _brush in ["#", ".", "+"]:
 			paint_cell(cell.x, cell.y, _brush)
@@ -730,17 +848,14 @@ func _click_cell(cell: Vector2i, button: int = MOUSE_BUTTON_LEFT) -> void:
 			_apply(layout.set_finish(cell.x, cell.y, _brush))
 		_refresh_hover()
 		return
-	if _tool == "place" and hit == "":
-		place_kind(_armed_kind, cell.x, cell.y)
-		_refresh_hover()
+	if _tool == "place":
+		var placed:=place_kind(_armed_kind, cell.x, cell.y)
+		if placed.ok:
+			_tool="select";_decor_panel.clear_selection();_clear_hover()
+			_set_status("已放好。点击家具可转向、移动或删除；选择卡片可继续添置。")
+		else: _refresh_hover()
 		return
-	_selected = hit
-	queue_redraw()
-	if _selected == "":
-		_set_status("这格是空的。点「放置」后，滚轮转向，左键放下，右键取消。")
-	else:
-		var selected := layout.piece(_selected)
-		_set_status("选中%s。滚轮或「转向」旋转，选择模式下右键或「拆除」删掉它。" % String(selected["name"]))
+	_select_furniture(hit)
 
 func _apply(result: TDOutcome) -> TDOutcome:
 	if result.ok:
@@ -801,8 +916,13 @@ func _interact_message(piece: Dictionary, code: String) -> String:
 			return String(piece["name"])
 
 func _toggle_edit() -> void:
+	_reset_drag()
 	_editing = not _editing
-	_edit_box.visible = _editing
+	_iso.editing=_editing
+	_edit_box.hide()
+	_bar.visible=not _editing
+	_decor_panel.visible=_editing
+	_selected="";_context_menu.hide()
 	for button: Button in _service_buttons:
 		button.visible = not _editing and not player_mode
 	_edit_button.text = "完成布置" if _editing else "布置"
@@ -810,8 +930,12 @@ func _toggle_edit() -> void:
 	_fit_bar()
 	if not _editing:
 		_clear_hover()
+		if not _iso.follow_player:
+			_iso._camera.zoom=Vector2.ONE
+			_iso.set_room(layout)
 	queue_redraw()
-	_set_status("左键选家具。放置时滚轮转向、右键取消。地板都能放东西，接待、点餐和用餐只看家具。墙纸和地板只改外观。" if _editing else "回到走动。E 可以查看家具。")
+	_lock_player()
+	_set_status("选择分类中的家具或饰面；按住家具拖动，左上删除、右上逆时针旋转。" if _editing else "回到走动。E 可以查看家具。")
 
 func _cycle_kind() -> void:
 	var kinds := catalog.kinds()
@@ -849,7 +973,7 @@ func _rotate_selected() -> void:
 	if _selected == "":
 		_set_status("先点选一件家具，或先进入放置再用滚轮转向。")
 		return
-	_apply(layout.rotate_piece(_selected))
+	_apply(layout.rotate_piece_by(_selected,-90))
 	_refresh_hover()
 
 func _spin(steps: int) -> void:
@@ -871,7 +995,7 @@ func _set_tool(next: String) -> void:
 	_tool = next
 	_refresh_buttons()
 	_refresh_hover()
-	_set_status("点击家具即可选中。选择模式下右键拆除。" if next == "select" else "滚轮转向，右键取消。")
+	_set_status("点击家具打开转向/删除菜单，右键关闭。" if next == "select" else "滚轮转向，右键取消。")
 
 func _refresh_buttons() -> void:
 	if layout == null:
@@ -931,19 +1055,23 @@ func _hover_at(cell: Vector2i) -> void:
 		_clear_hover()
 		return
 	if _hover_label != null:
-		_hover_label.visible = true
+		_hover_label.visible = false
 	if _tool == "place":
-		var preview := layout.preview_piece(_armed_kind, cell.x, cell.y, _place_rotation)
+		var preview := layout.preview_piece(_armed_kind, cell.x, cell.y, _place_rotation,_culture+"_"+_tier)
 		_show_ghost(cell, int(preview["w"]), int(preview["h"]), bool(preview["ok"]))
+		_iso.ghost_piece=preview.piece.duplicate(true)
+		if _decor_panel!=null: _decor_panel.show_info(_place_hover_text(preview))
 		if _hover_label != null:
 			_hover_label.text = _place_hover_text(preview)
 		return
 	if _tool == "paint":
 		_show_ghost(cell, 1, 1, _finish_fits(cell))
+		if _decor_panel!=null: _decor_panel.show_info(_paint_hover_text(cell))
 		if _hover_label != null:
 			_hover_label.text = _paint_hover_text(cell)
 		return
 	_show_ghost(Vector2i(-1, -1), 0, 0, false)
+	if _decor_panel!=null: _decor_panel.show_info(_cell_hover_text(cell))
 	if _hover_label != null:
 		_hover_label.text = _cell_hover_text(cell)
 
@@ -968,6 +1096,7 @@ func _show_ghost(cell: Vector2i, width: int, height: int, ok: bool) -> void:
 	_iso.ghost_cell = cell
 	_iso.ghost_size = Vector2i(width, height)
 	_iso.ghost_ok = ok
+	_iso.ghost_piece={}
 	_iso.queue_redraw()
 
 func _finish_fits(cell: Vector2i) -> bool:
@@ -1036,10 +1165,15 @@ func _add_service_button(row: HFlowContainer, text: String, action: Callable) ->
 func _fit_bar() -> void:
 	if _bar == null:
 		return
-	var height := 220 if _editing else (68 if player_mode else 168)
+	if _drag_candidate: _reset_drag()
+	var height := TDDecorationPanel.PANEL_HEIGHT if _editing else (68.0 if player_mode else 168.0)
 	var view_size := get_viewport().get_visible_rect().size
 	_bar.size = Vector2(view_size.x, height)
 	_bar.position = Vector2(0, view_size.y - height)
+	if _decor_panel!=null:
+		_decor_panel.position=Vector2(0,view_size.y-TDDecorationPanel.PANEL_HEIGHT)
+		_decor_panel.size=Vector2(view_size.x,TDDecorationPanel.PANEL_HEIGHT)
+	_position_context()
 	if _bar_box != null:
 		_bar_box.size = Vector2(view_size.x - 20, height - 16)
 	if _status != null:
@@ -1082,6 +1216,7 @@ func _note(result: TDOutcome) -> TDOutcome:
 	return result
 
 func _set_status(text: String) -> void:
+	if _decor_panel!=null and _editing: _decor_panel.show_info(text)
 	if _status != null:
 		_status.text = text
 
@@ -1266,7 +1401,10 @@ func deliver_held_plate() -> TDOutcome:
 
 func set_floor_cover(covered: bool) -> void:
 	if covered:
+		_reset_drag()
 		_dismiss_talk()
+		_clear_hover()
+		if _context_menu!=null: _context_menu.hide()
 	_covered = covered
 	visible = not covered
 	set_process_unhandled_input(not covered)
@@ -1288,7 +1426,7 @@ func set_observe(observing: bool) -> void:
 func _lock_player() -> void:
 	if _player == null:
 		return
-	_player.set_controls_enabled(not _closed and not _covered and not _observing and not _talk_open())
+	_player.set_controls_enabled(not _closed and not _covered and not _observing and not _editing and not _talk_open())
 
 func _talk_open() -> bool:
 	return _talk_view != null and is_instance_valid(_talk_view) and _talk_view.visible
@@ -1340,7 +1478,12 @@ func _place_seated(guest: TDRestaurantGuest) -> void:
 		guest.seated = false
 		return
 	guest.seated = true
-	guest.position = layout.cell_center(layout.sit_cell(seat))
+	guest.position = _dining_point(seat)
+
+func _dining_point(seat: Dictionary) -> Vector2:
+	if not unified_dining_clock: return layout.cell_center(layout.sit_cell(seat))
+	var screen:=TDFurnitureModel.dining_feet(seat)-TDRestaurantIsoView.ORIGIN
+	return Vector2((screen.x/TDRestaurantIsoView.HALF_W+screen.y/TDRestaurantIsoView.HALF_H)*.5,(screen.y/TDRestaurantIsoView.HALF_H-screen.x/TDRestaurantIsoView.HALF_W)*.5)*layout.cell_px
 
 func _tick_runner(delta: float) -> void:
 	var active := session if session != null and session.ready else null
@@ -1574,7 +1717,7 @@ func _crew_points(delta: float) -> Array:
 			verb = "上菜" if ready else "候餐"
 		var current := _waiter_feet[index].move_toward(target, 90.0 * maxf(delta, 0.0))
 		_waiter_feet[index] = current
-		if index < seats.size() and verb == "上菜" and current.distance_to(target) <= 36.0:
+		if delta>0.0 and index < seats.size() and verb == "上菜" and current.distance_to(target) <= 36.0:
 			hand_plate(seats[index])
 		people.append({
 			"point": current,
@@ -1652,6 +1795,34 @@ func interaction_points() -> Array[Dictionary]:
 		{"action":"hire","name":"招工处","cell":Vector2(layout.columns-2,0)},
 		{"action":"kitchen","name":"后厨","cell":Vector2(layout.columns-2,layout.rows-2)}]
 
+func bind_dining_clock() -> void:
+	if business==null: return
+	unified_dining_clock=true;business.require_seating=true
+	business.dining_tick=advance_dining;business.dining_boundary=next_dining_boundary
+
+func advance_dining(seconds: float) -> void:
+	if _closed or get_tree().paused or story_frozen: return
+	_visit_seconds+=seconds
+	for guest: TDRestaurantGuest in guest_nodes():
+		if guest.frozen: continue
+		if guest.phase=="sitting": guest.advance_sitting(seconds)
+		elif guest.phase in ["approach","leave"]: guest.advance(guest.speed*seconds)
+	_sync_business_guests()
+	_crew_points(seconds)
+	for guest: TDRestaurantGuest in guest_nodes(): _place_seated(guest)
+
+func next_dining_boundary(maximum: float) -> float:
+	var next: float=maximum
+	for guest: TDRestaurantGuest in guest_nodes():
+		if guest.frozen: continue
+		if guest.phase=="sitting": next=minf(next,maxf(.0000001,guest.sit_duration-guest.sit_elapsed))
+		elif guest.phase in ["approach","leave"] and not guest.finished: next=minf(next,maxf(.0000001,guest.walking_seconds()))
+		elif guest.has_meta("settled_at") and guest.phase in ["eat","pay"]:
+			var age: float=_visit_seconds-float(guest.get_meta("settled_at"))
+			var target: float=TDGuestVisit.EAT_SEC if guest.phase=="eat" else TDGuestVisit.EAT_SEC+TDGuestVisit.PAY_SEC
+			if age<target: next=minf(next,target-age)
+	return next
+
 func restore_visit_boundary() -> void:
 	# Boundary saves contain historical orders, not resumable dining actors.
 	_finished_visits.clear()
@@ -1659,7 +1830,7 @@ func restore_visit_boundary() -> void:
 	var state:=business.snapshot()
 	_visit_day=int(state.day)
 	for order: Dictionary in state.orders:
-		if order.status not in ["WAITING","COOKING"]: _finished_visits[str(order.id)]=true
+		if order.status not in ["ARRIVING","WAITING","COOKING"]: _finished_visits[str(order.id)]=true
 
 func _sync_business_guests() -> void:
 	if business == null or layout == null or _guests == null:
@@ -1672,7 +1843,7 @@ func _sync_business_guests() -> void:
 	for order: Dictionary in orders:
 		by_id[str(order.id)] = order
 	for order: Dictionary in orders:
-		if str(order.status) not in ["WAITING", "COOKING", "SERVED"] or _business_guests.has(str(order.id)) or _finished_visits.has(str(order.id)):
+		if str(order.status) not in ["ARRIVING", "WAITING", "COOKING", "SERVED"] or _business_guests.has(str(order.id)) or _finished_visits.has(str(order.id)):
 			continue
 		var character_id:=characters.character_for(order.get("economic_profile",{})) if characters!=null else ""
 		if character_id!="" and not characters.can_enter(character_id,str(order.id)): continue
@@ -1691,29 +1862,32 @@ func _sync_business_guests() -> void:
 			seat = piece
 			route = path
 			break
-		if route.is_empty():
+		if route.is_empty() and str(order.status)!="ARRIVING":
 			continue
 		var guest := TDRestaurantGuest.new()
 		guest.ticket_id = str(order.id)
 		guest.character_id=character_id
 		if characters!=null and not character_id.is_empty(): characters.begin_visit(character_id,str(order.id))
-		guest.appearance_id=absi(str(order.get("economic_profile",{}).get("id",order.id)).hash())%3
+		guest.appearance_id=TDDinerArt.appearance(str(order.get("economic_profile",{}).get("id",order.id)))
+		guest.externally_driven=unified_dining_clock
+		guest.speed=guest_speed
 		if order.has("economic_profile"): guest.dining_profile=TDEconomicCustomer.new(order.economic_profile)
 		if order.has("economic_intent"): guest.meal_intent=TDMealIntent.new(order.economic_intent)
 		guest.seat_id = str(seat.get("id", ""))
 		guest.phase = "approach"
 		guest.set_meta("recipe_label", business.recipe_name(str(order.recipe_id)))
-		var welcomed := duty_on("greeter")
+		var welcomed := unified_dining_clock or duty_on("greeter")
 		guest.set_meta("welcomed", welcomed)
 		guest.set_meta("sent_in", welcomed)
 		guest.dish_name = _order_caption(order, "approach", now)
 		guest.process_mode = Node.PROCESS_MODE_PAUSABLE
 		_guests.add_child(guest)
-		if welcomed:
+		if welcomed and not route.is_empty():
 			guest.set_path(route, layout.cell_px)
 		else:
-			guest.position = layout.cell_center(layout.entrance())
+			guest.position = layout.cell_center(_queue_cell() if route.is_empty() else layout.entrance())
 			guest.finished = true
+			if route.is_empty(): guest.phase="waiting_seat"
 		_business_guests[str(order.id)] = guest
 	var ids: Array = _business_guests.keys()
 	for id: String in ids:
@@ -1724,13 +1898,20 @@ func _sync_business_guests() -> void:
 		var order: Dictionary = by_id.get(id, {})
 		var status := str(order.get("status", "CANCELLED"))
 		if _talk_open() and str(_talk_view.talk.context.get("ticket_id",""))==id: continue
+		if status=="ARRIVING" and guest.seat_id=="":
+			var next_seat:=_free_seat(_cell_at(guest.position))
+			if next_seat.is_empty():
+				guest.phase="waiting_seat";guest.dish_name=business.order_label(id)+" · 等空位"
+				continue
+			guest.seat_id=str(next_seat.seat.id);guest.phase="approach"
+			guest.set_path(next_seat.path,layout.cell_px)
 		var arrived := guest.phase != "approach" or guest.finished
-		var welcomed := duty_on("greeter") or bool(guest.get_meta("welcomed", false))
-		if not welcomed and status in ["WAITING","COOKING","SERVED"]:
+		var welcomed := unified_dining_clock or duty_on("greeter") or bool(guest.get_meta("welcomed", false))
+		if not welcomed and status in ["ARRIVING","WAITING","COOKING","SERVED"]:
 			guest.phase = "approach"
 			guest.dish_name = _order_caption(order, "approach", now)
 			continue
-		if not bool(guest.get_meta("sent_in", false)) and status in ["WAITING","COOKING","SERVED"]:
+		if not bool(guest.get_meta("sent_in", false)) and status in ["ARRIVING","WAITING","COOKING","SERVED"]:
 			guest.set_meta("sent_in", true)
 			guest.set_meta("welcomed", true)
 			var seat := layout.piece(guest.seat_id)
@@ -1743,12 +1924,27 @@ func _sync_business_guests() -> void:
 			else:
 				guest.set_path(walk, layout.cell_px)
 			arrived = guest.finished or guest.phase != "approach"
+		if status=="ARRIVING":
+			if guest.phase=="sitting" and guest.sit_elapsed>=guest.sit_duration:
+				business.confirm_seated(id,guest.seat_id)
+				order=business.order(id);status=str(order.status)
+			elif arrived and guest.phase!="sitting":
+				var seat:=layout.piece(guest.seat_id)
+				if not seat.is_empty():
+					var target:=_dining_point(seat)
+					var direction:=TDFurnitureModel.center(seat)-TDFurnitureModel.dining_feet(seat)
+					var facing:=Vector2i.RIGHT if direction.x>0 else Vector2i.LEFT
+					if absf(direction.y)>absf(direction.x): facing=Vector2i.DOWN if direction.y>0 else Vector2i.UP
+					guest.begin_sitting(target,float(business.catalog.config.settings.get("sit_down_sec",.7)),facing)
+			if status=="ARRIVING":
+				guest.dish_name="正在入座…" if guest.phase=="sitting" else "走向座位 · 尚未点单"
+				continue
 		if status in ["WAITING", "COOKING"]:
 			guest.phase = TDGuestVisit.phase_of(status, arrived, 0.0)
 			if guest.has_meta("settled_at"):
 				guest.remove_meta("settled_at")
 		else:
-			var plated := duty_on("runner") or bool(guest.get_meta("plated", false))
+			var plated := (duty_on("runner") and layout.crew.waiters().is_empty()) or bool(guest.get_meta("plated", false))
 			if status == "SERVED" and not plated:
 				if guest.has_meta("settled_at"):
 					guest.remove_meta("settled_at")
@@ -1777,7 +1973,30 @@ func _sync_business_guests() -> void:
 			guest.dish_name = _order_caption(order, guest.phase, now)
 	_refresh_order_board(orders, now)
 
+func _free_seat(start: Vector2i) -> Dictionary:
+	var occupied: Array=guest_nodes().map(func(g:TDRestaurantGuest)->String:return g.seat_id)
+	for piece: Dictionary in layout.pieces():
+		if piece.seat_use!="dining" or piece.id in occupied: continue
+		var route:=layout.path(start,Vector2i(piece.approach_x,piece.approach_y))
+		if not route.is_empty(): return {"seat":piece,"path":route}
+	return {}
+
+func _queue_cell() -> Vector2i:
+	# Visual actors have no collision, but also keep door/fixture interaction areas clear.
+	for y: int in range(1,mini(layout.rows-1,7)):
+		for x: int in range(1,layout.columns-1):
+			var cell:=Vector2i(x,y)
+			if not layout.is_walkable(x,y) or Vector2(cell).distance_to(Vector2(layout.entrance()))<2.0: continue
+			var safe: bool=true
+			for marker: Dictionary in interaction_points():
+				if TDInteractionRange.distance(Vector2(cell)+Vector2.ONE*.5,marker.get("bounds",Rect2(marker.cell,Vector2.ONE)))<1.3: safe=false;break
+			for other: TDRestaurantGuest in guest_nodes():
+				if other.position.distance_to(layout.cell_center(cell))<float(layout.cell_px): safe=false;break
+			if safe: return cell
+	return layout.entrance()
+
 func duty_on(role: String) -> bool:
+	if role=="runner" and layout!=null and not layout.crew.waiters().is_empty(): return true
 	if not floor_service:
 		return true
 	var active := _session()
@@ -1842,6 +2061,7 @@ func _unplated_order() -> String:
 
 func _guest_name(guest: TDRestaurantGuest) -> String:
 	if guest!=null and characters!=null and guest.character_id!="": return str(characters.definition(guest.character_id).get("name","客人"))
+	if guest!=null and business!=null: return business.order_label(guest.ticket_id)
 	return "客人"
 
 func _tick_floor_runner(delta: float) -> void:
@@ -1885,7 +2105,7 @@ func _order_caption(order: Dictionary, phase: String, now: float) -> String:
 	if order.get("score") is Dictionary and not (order.score as Dictionary).is_empty():
 		satisfaction = float((order.score as Dictionary).get("satisfaction", -1.0))
 	var net := int(order.get("prepaid_cents", 0)) + int(order.get("tip_cents", 0)) - int(order.get("refunded_cents", 0))
-	return TDGuestVisit.caption(dish, str(order.get("status", "")), phase, left, satisfaction, net, int(order.get("refunded_cents", 0)))
+	return business.order_label(str(order.get("id","")))+" · "+TDGuestVisit.caption(dish, str(order.get("status", "")), phase, left, satisfaction, net, int(order.get("refunded_cents", 0)))
 
 func _decor_now() -> Dictionary:
 	var wild: Array = []
@@ -1944,7 +2164,7 @@ func _guest_brief(guest: TDRestaurantGuest) -> String:
 		crew = layout.crew.duty_line()
 	var text := TDGuestVisit.inspect_text(dish, customer, status, guest.phase, left, price, satisfaction, net, refunded, reasons, float(_decor_now().get("effect", 0.0)), crew)
 	if floor_service:
-		text += "\n迎宾%s，传菜%s，收银%s。没雇的岗位要你亲自做，不另收一笔钱。" % ["在岗" if duty_on("greeter") else "你来", "在岗" if duty_on("runner") else "你来", "在岗" if duty_on("cashier") else "你来"]
+		text += "\n迎宾%s，传菜%s，收银%s。" % ["在岗" if duty_on("greeter") else ("自动入座" if unified_dining_clock else "你来"), "在岗" if duty_on("runner") else "你来", "在岗" if duty_on("cashier") else "你来"]
 	return text
 
 func _refresh_order_board(orders: Array, now: float) -> void:
@@ -1961,11 +2181,13 @@ func _refresh_order_board(orders: Array, now: float) -> void:
 	if layout != null and layout.crew != null and not layout.crew.duty_line().is_empty():
 		lines.append(layout.crew.duty_line())
 	if floor_service:
-		lines.append("迎宾%s，传菜%s，收银%s" % ["在岗" if duty_on("greeter") else "你来", "在岗" if duty_on("runner") else "你来", "在岗" if duty_on("cashier") else "你来"])
+		lines.append("迎宾%s，传菜%s，收银%s" % ["在岗" if duty_on("greeter") else ("自动入座" if unified_dining_clock else "你来"), "在岗" if duty_on("runner") else "你来", "在岗" if duty_on("cashier") else "你来"])
 	var active: Array = []
+	var arriving: int=0
 	var recent: Dictionary = {}
 	for order: Dictionary in orders:
 		var status := str(order.status)
+		if status=="ARRIVING": arriving+=1
 		if status in ["WAITING", "COOKING"]:
 			active.append(order)
 		elif status in ["SERVED", "TIMED_OUT", "CANCELLED", "REJECTED_STOCK"]:
@@ -1987,9 +2209,10 @@ func _refresh_order_board(orders: Array, now: float) -> void:
 			phase = latest.phase
 		lines.append(_order_caption(recent, phase, now))
 		shown += 1
-	if shown == 0:
+	if arriving>0: lines.append("%d位客人正在进店或等位，落座后点单。"%arriving)
+	if shown == 0 and arriving==0:
 		lines.append("还没有客人。开门后，客人会比较本店、竞品和在家吃饭。")
-	lines.append("靠近客人按 E。没雇迎宾、传菜、收银时，招呼、端菜和送客也是这一下。" if floor_service else "靠近客人按 E，查看点单、比较和结算。")
+	lines.append("自动入座点单；靠近客人按 E 交流。未雇传菜/收银时仍需端菜和送客。" if unified_dining_clock else ("靠近客人按 E。没雇迎宾、传菜、收银时，招呼、端菜和送客也是这一下。" if floor_service else "靠近客人按 E，查看点单、比较和结算。"))
 	_order_board.text = "\n".join(lines)
 
 var last_visit: Dictionary = {}

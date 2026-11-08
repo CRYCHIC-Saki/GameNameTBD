@@ -67,7 +67,7 @@ func test_market_inventory_menu_open_and_real_kitchen_delivery_three_day_save_lo
 		shell._close_dialog();shell.travel("restaurant");shell.show_menu()
 		var open:=button("确认菜单，开门营业",shell._modal_box);assert_not_null(open);open.pressed.emit()
 		assert_eq(shell.profile.shop.snapshot().phase,"OPEN")
-		assert_eq(shell.travel("town").code,"SHOP_OPEN")
+		assert_true(shell.travel("town").ok)
 		assert_eq(shell.profile.buy({"egg":1000}).code,"SHOP_OPEN")
 		shell.travel("kitchen");driver.kitchen=shell.kitchen_view.kitchen;driver.sent={}
 		var view:=shell.kitchen_view;var kitchen:=view.kitchen
@@ -93,7 +93,7 @@ func test_market_inventory_menu_open_and_real_kitchen_delivery_three_day_save_lo
 		assert_gt(float(shell.profile.commerce.state.day_stats.cooking_seconds),0,"Actual kitchen work drives utilities")
 		var paid:=view.shop.snapshot();driver.station("kitchen.serve");assert_eq(view.shop.snapshot(),paid)
 		view.shop.close_early()
-		for remaining: Dictionary in view.shop.active_orders(): view.shop.cancel_order(remaining.id)
+		for remaining: Dictionary in view.shop.pending_orders(): view.shop.cancel_order(remaining.id)
 		kitchen.advance(.01);assert_eq(view.shop.snapshot().phase,"SETTLED")
 		assert_eq(shell.profile.progression.snapshot().last_day,day,"Real QTE day produces one level settlement")
 		assert_true(shell.profile.progression_error.ok,shell.profile.progression_error.code)

@@ -117,21 +117,21 @@ func test_night_ends_open_orders_without_duplicate_reviews_or_dates() -> void:
 	for firm: Dictionary in shell.profile.commerce.state.competitors.chengdu: firm.served=int(firm.capacity)
 	assert_true(shell.profile.buy(shop.offer("service.tomato_egg").stock).ok)
 	assert_true(shop.open_day().ok);shop.advance(shop.next_boundary(1080)+.001)
-	assert_false(shop.active_orders().is_empty())
+	assert_false(shop.pending_orders().is_empty())
 	shell.profile.characters.clock.minute=1560
 	var closed:=shell.finish_night();assert_true(closed.ok,closed.code)
 	assert_true(shop.active_orders().is_empty());assert_eq(shop.snapshot().orders[0].status,"TIMED_OUT")
 	var state:=shop.snapshot();shell.finish_night();assert_eq(shop.snapshot(),state)
 	assert_eq(state.settled_days,[1])
 
-func test_cancelled_unwelcomed_guest_departs_and_served_guest_finishes_after_settlement() -> void:
+func test_cancelled_arriving_guest_departs_and_served_guest_finishes_after_settlement() -> void:
 	var shop:=shell.profile.shop;shop.commerce=null
 	assert_true(shop.buy(shop.offer("service.tomato_egg").stock,"visit-stock").ok)
 	assert_true(shop.open_day().ok);shop.advance(shop.next_boundary(1080)+.001)
 	var room:=shell.restaurant;room._sync_business_guests()
 	assert_eq(room.guest_nodes().size(),1)
 	var guest:=room.guest_nodes()[0];var ticket:=guest.ticket_id
-	assert_false(bool(guest.get_meta("welcomed",false)))
+	assert_true(bool(guest.get_meta("welcomed",false)),"Formal diners enter automatically")
 	assert_true(shop.cancel_order(ticket,"TIMED_OUT").ok)
 	room._sync_business_guests();assert_eq(guest.phase,"leave")
 	for i: int in 80:
@@ -199,7 +199,7 @@ func test_real_named_meal_changes_affection_once_and_loaded_history_does_not_res
 	profile.commerce.config.outside_utility=-100
 	for firm: Dictionary in profile.commerce.state.competitors.chengdu: firm.served=int(firm.capacity)
 	assert_true(shop.open_day().ok);shop.advance(shop.next_boundary(1080)+.001)
-	var orders: Array=shop.active_orders()
+	var orders: Array=shop.pending_orders()
 	var named: Array=orders.filter(func(o:Dictionary)->bool:return o.get("economic_profile",{}).has("character_id"))
 	assert_false(named.is_empty())
 	if named.is_empty(): return
@@ -210,6 +210,9 @@ func test_real_named_meal_changes_affection_once_and_loaded_history_does_not_res
 	shop.close_early() # Drain only this real order; no later arrivals in the fixture.
 	people.advance(100,shop.snapshot().orders)
 	shell.restaurant._sync_business_guests();shell.travel("kitchen")
+	var visitor:=shell.restaurant._business_guests[target.id] as TDRestaurantGuest
+	assert_true(shop.advance(visitor.walking_seconds()+visitor.sit_duration).ok)
+	assert_eq(shop.order(target.id).status,"WAITING","Named diner also orders only after actually sitting")
 	var view:=shell.kitchen_view;var kitchen:=view.kitchen
 	for lane: TDCookingLane in kitchen.lanes+[kitchen.prep]: lane.beat_offset_sec=0
 	assert_true(view.pick_ingredient("tomato").ok)

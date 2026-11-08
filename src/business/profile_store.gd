@@ -101,7 +101,7 @@ func archive_slot(id: String) -> TDOutcome:
 
 func _slot_file(id: String, name: String) -> bool:
 	var prefix:=id+".json"
-	return name==prefix or name in [prefix+".bak",prefix+".tmp"] or name.begins_with(prefix+".preserved-") or name.begins_with(prefix+".before-map-v2")
+	return name==prefix or name in [prefix+".bak",prefix+".tmp"] or name.begins_with(prefix+".preserved-") or name.begins_with(prefix+".before-map-v2") or name.begins_with(prefix+".before-region-v2")
 
 func _write_delete_manifest(directory: String, data: Dictionary) -> bool:
 	var path:=directory.path_join("manifest.json")
@@ -141,16 +141,17 @@ func _rollback_delete(archive: String, data: Dictionary) -> TDOutcome:
 	if DirAccess.remove_absolute(archive.path_join("manifest.json"))!=OK: return TDOutcome.new(false,"DELETE_RECOVERY_REQUIRED")
 	return TDOutcome.new(true,"DELETE_ROLLED_BACK")
 
-func backup_map_migration(id: String) -> TDOutcome:
+func backup_map_migration(id: String, regional: bool=false) -> TDOutcome:
 	if not valid_id(id): return TDOutcome.new(false,"INVALID_SLOT")
 	var source:=path_for(id)
 	var checked:=load_slot(id)
 	if not checked.ok: return checked
-	var destination:=source+".before-map-v2.bak"
+	var suffix: String=".before-region-v2" if regional else ".before-map-v2"
+	var destination:=source+suffix+".bak"
 	if FileAccess.file_exists(destination):
 		# Never replace the first original. A prior interrupted migration can retry.
 		if FileAccess.get_sha256(source)==FileAccess.get_sha256(destination): return TDOutcome.new(true,"MIGRATION_BACKUP_EXISTS")
-		destination=source+".before-map-v2."+FileAccess.get_sha256(source).substr(0,12)+".bak"
+		destination=source+suffix+"."+FileAccess.get_sha256(source).substr(0,12)+".bak"
 	if not FileAccess.file_exists(destination) and DirAccess.copy_absolute(source,destination)!=OK: return TDOutcome.new(false,"MIGRATION_BACKUP_FAILED")
 	if FileAccess.get_sha256(source)!=FileAccess.get_sha256(destination): return TDOutcome.new(false,"MIGRATION_BACKUP_MISMATCH")
 	return TDOutcome.new(true,"MIGRATION_BACKUP_READY","",{"path":destination})

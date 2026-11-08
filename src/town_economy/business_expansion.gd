@@ -104,7 +104,7 @@ func validate(raw: Variant, towns: Array, competitors: Dictionary) -> TDOutcome:
 			if not p is Dictionary or p.get("id")!=id or p.get("parent_id") not in ["competitor","commercial_street"] or not p.get("tradable") is bool or not p.get("owner_id") is String or not p.get("store_id") is String: return TDOutcome.new(false,"INVALID_PARCEL")
 			for field: String in ["x","y","w","h","capacity","version","land_cents"]:
 				if not TDServiceCatalog.integer(p.get(field),0,100000000): return TDOutcome.new(false,"INVALID_PARCEL",field)
-			if int(p.w)<1 or int(p.h)<1 or int(p.x+p.w)>41 or int(p.y+p.h)>41: return TDOutcome.new(false,"INVALID_PARCEL_GEOMETRY")
+			if int(p.w)<1 or int(p.h)<1 or int(p.x+p.w)>73 or int(p.y+p.h)>73: return TDOutcome.new(false,"INVALID_PARCEL_GEOMETRY")
 			if not p.owner_id.is_empty():
 				if occupied.has(p.store_id): return TDOutcome.new(false,"DUPLICATE_PROPERTY")
 				var stores: Array=competitors[town].filter(func(f:Dictionary)->bool:return f.id==p.store_id and f.owner_id==p.owner_id and f.parcel_id==id)

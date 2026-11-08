@@ -160,6 +160,10 @@ func test_edit_click_selects_places_and_removes_through_a_blocking_parent() -> v
 	assert_eq(room.layout.pieces().size(), before + 1, room._status.text)
 	room._tool = "select"
 	_click_room(room, int(piece["x"]), int(piece["y"]), MOUSE_BUTTON_RIGHT)
+	assert_false(room.layout.piece(id).is_empty(), "Right-click now cancels without deleting")
+	room._click_cell(Vector2i(int(piece.x),int(piece.y)))
+	assert_true(room._context_menu.visible)
+	room.remove_selected()
 	assert_true(room.layout.piece(id).is_empty())
 
 func test_hover_wheel_finish_and_right_click_cancels_building() -> void:
@@ -423,8 +427,7 @@ func _open_dining_cell(room: TDRestaurantWorld) -> Vector2i:
 
 func _click_room(room: TDRestaurantWorld, x: int, y: int, button: int) -> void:
 	var local := TDRestaurantIsoView.project(float(x) + 0.5, float(y) + 0.5)
-	var camera := room.get_node("IsoView/IsoCamera") as Camera2D
-	var screen := local - camera.position + get_viewport().get_visible_rect().size * 0.5
+	var screen := room._iso.get_global_transform_with_canvas()*local
 	var event := InputEventMouseButton.new()
 	event.button_index = button
 	event.pressed = true

@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "parameter_status": "PROPOSED_AI_069",
+  "min_side": 3,
+  "max_side": 12,
+  "max_area": 108,
+  "opening_base_cents": 20000,
+  "opening_cell_cents": 900,
+  "crew_base_cents": 1400,
+  "crew_cell_cents": 20,
+  "default_budget_cents": 12000,
+  "target_portions": 12,
+  "cook_seconds": 45,
+  "managers": [
+    {"id":"manager.steady","name":"一星 · 踏实掌柜","stars":1,"wage_cents":1800,"attraction":35,"operations":40,"quality":42,"economy":35,"special":"无特殊加成","service_bonus":0.0,"quality_bonus":0.0,"utility_discount":0.0},
+    {"id":"manager.host","name":"二星 · 街坊熟客","stars":2,"wage_cents":2800,"attraction":65,"operations":65,"quality":68,"economy":65,"special":"宾至如归：服务额外 +6分","service_bonus":0.06,"quality_bonus":0.0,"utility_discount":0.0},
+    {"id":"manager.master","name":"三星 · 金牌掌柜","stars":3,"wage_cents":4000,"attraction":86,"operations":88,"quality":90,"economy":85,"special":"金牌标准：出餐品质 +4分\n节能管理：水电 −15%","service_bonus":0.0,"quality_bonus":0.04,"utility_discount":0.15}
+  ]
+}

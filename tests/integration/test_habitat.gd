@@ -80,7 +80,7 @@ func test_bed_saves_next_day_once_and_loads_there_with_existing_progress() -> vo
 	assert_false(shell.restaurant.interaction_points().any(func(p:Dictionary)->bool:return p.action=="rest"))
 	var old:=before.duplicate(true);old.schema_version=3;old.erase("residence")
 	var migrated:=TDGameProfile.new();var result:=migrated.restore(old)
-	assert_true(result.ok,result.code);assert_eq(migrated.snapshot().schema_version,7)
+	assert_true(result.ok,result.code);assert_eq(migrated.snapshot().schema_version,8)
 	assert_true(TDLevelProgression.same_value(migrated.research.snapshot(),shell.profile.research.snapshot()));migrated.close()
 	var invalid:=before.duplicate(true);invalid.residence.schema_version=99
 	var unchanged:=shell.profile.snapshot()
@@ -96,7 +96,7 @@ func test_bed_write_failure_cannot_advance_or_destroy_last_good_slot() -> void:
 	assert_eq(FileAccess.get_file_as_bytes(path),bytes);assert_false(shell._rest_busy)
 	shell._close_dialog();shell.profile.persistence=shell.slots.save_slot
 	driver.tap(KEY_E);button("休息到明天").pressed.emit();assert_eq(shell.profile.shop.snapshot().day,2)
-	shell.profile.shop.open_day();assert_eq(shell.travel("cottage").code,"SHOP_OPEN")
+	shell.profile.shop.open_day();assert_true(shell.travel("cottage").ok)
 
 func test_music_context_hidden_kitchen_pause_and_real_qte() -> void:
 	await get_tree().process_frame

@@ -40,7 +40,7 @@ static func validate(raw: Variant) -> TDOutcome:
 	if not raw.get("reachable") is bool or not raw.get("travel_minutes") is Dictionary:
 		return TDOutcome.new(false, "INVALID_CELL_ACCESS")
 	if raw.has("terrain_type"):
-		if raw.terrain_type not in ["plain", "hill", "water"] or raw.get("surface_type") not in ["grass", "woodland", "water", "stone", "bridge"] or not TDServiceCatalog.integer(raw.get("elevation"), 0, 100):
+		if raw.terrain_type not in ["plain", "hill", "water"] or raw.get("surface_type") not in ["grass", "woodland", "water", "stone", "bridge", "sand"] or not TDServiceCatalog.integer(raw.get("elevation"), 0, 100):
 			return TDOutcome.new(false, "INVALID_CELL_TERRAIN")
 		if not raw.get("buildable") is bool or not raw.get("walkable") is bool:
 			return TDOutcome.new(false, "INVALID_CELL_TERRAIN")
