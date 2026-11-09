@@ -396,9 +396,9 @@ func test_san_windows_dark_dish_hours_and_market_distance() -> void:
 	var markets: Array = session.town_map.markets()
 	markets.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a["tier"]) < int(b["tier"]))
 	assert_true(session.select_market(String((markets[0] as Dictionary)["id"])).ok)
-	assert_eq(session.order_supply("beef").code, "LOCKED")
-	assert_true(session.select_market(String((markets[2] as Dictionary)["id"])).ok)
 	session.money = 20
+	assert_true(session.order_supply("beef").ok)
+	assert_true(session.select_market(String((markets[2] as Dictionary)["id"])).ok)
 	assert_true(session.order_supply("beef").ok)
 
 func test_iso_projection_picks_the_same_cell_and_counts_two_walls() -> void:

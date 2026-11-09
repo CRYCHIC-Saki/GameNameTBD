@@ -220,7 +220,7 @@ func test_edit_bar_tracks_viewport_size_changes() -> void:
 	var local := TDRestaurantIsoView.project(spot.x + 0.5, spot.y + 0.5)
 	assert_false(room._pointer_on_chrome(room._iso.get_global_transform_with_canvas() * local))
 
-func test_waiters_stay_put_until_a_guest_is_waiting_for_food() -> void:
+func test_waiters_stay_put_until_the_dish_is_ready() -> void:
 	assert_true(world.layout.crew.hire("waiter-ning").ok)
 	assert_true(world.layout.crew.hire("waiter-tao").ok)
 	var idle: Array = world._crew_points(0.5)
@@ -230,16 +230,35 @@ func test_waiters_stay_put_until_a_guest_is_waiting_for_food() -> void:
 	assert_eq((still[1] as Dictionary).point, (idle[1] as Dictionary).point)
 	assert_false(bool((still[0] as Dictionary).moving))
 	var seat := world.layout.piece_by_kind("dining_table")
-	var table := world.layout.cell_center(world.approach_cell(String(seat["id"])))
 	var guest := TDRestaurantGuest.new()
 	guest.phase = "wait_serve"
 	guest.seat_id = String(seat["id"])
 	world._guests.add_child(guest)
-	var serving: Array = world._crew_points(0.25)
+	var waiting: Array = world._crew_points(0.25)
+	assert_eq((waiting[0] as Dictionary).point, (idle[0] as Dictionary).point)
+	assert_false(bool((waiting[0] as Dictionary).moving))
+	var service := TDServiceCatalog.new()
+	assert_true(service.load_file().ok)
+	var shop := TDShopSession.new(service, "waiter-ready", 3)
+	assert_true(shop.buy(shop.offer("service.tomato_egg").stock, "buy").ok)
+	assert_true(shop.open_day().ok)
+	shop.advance(1.0)
+	assert_false(shop.active_orders().is_empty())
+	var order_id := str(shop.active_orders()[0].id)
+	shop._s.orders[0].status = "SERVED"
+	guest.ticket_id = order_id
+	world.business = shop
 	var home: Vector2 = idle[0].point
+	var hatch := world.layout.cell_center(world.service_window_cell())
+	assert_true(world.layout.is_walkable(world.service_window_cell().x, world.service_window_cell().y))
+	assert_ne(world.service_window_cell(), Vector2i(world.layout.columns - 2, world.layout.rows - 2))
+	var serving: Array = world._crew_points(0.25)
 	assert_gt(home.distance_to((serving[0] as Dictionary).point), 1.0)
-	assert_lt((serving[0] as Dictionary).point.distance_to(table), home.distance_to(table))
+	assert_lt((serving[0] as Dictionary).point.distance_to(hatch), home.distance_to(hatch))
+	assert_false(bool(guest.get_meta("plated", false)))
+	assert_eq(world._hatch_plate_count(), 1)
 	assert_eq((serving[1] as Dictionary).point, (idle[1] as Dictionary).point)
+	assert_true(str((serving[0] as Dictionary).label).begins_with("取菜"))
 	guest.phase = "leave"
 	var returning: Array = world._crew_points(0.25)
 	assert_lt((returning[0] as Dictionary).point.distance_to(home), (serving[0] as Dictionary).point.distance_to(home))
@@ -263,11 +282,21 @@ func test_waiter_puts_the_ready_plate_on_the_table() -> void:
 	guest.ticket_id = order_id
 	world._guests.add_child(guest)
 	var saw_serve := false
-	for _step in 40:
+	var reached_side := false
+	var stand := world._beside_seat(String(seat["id"]))
+	assert_true(world.layout.is_walkable(stand.x, stand.y))
+	assert_false(world._piece_covers(seat, stand))
+	for _step in 80:
 		for person: Variant in world._crew_points(0.5):
+			var feet: Vector2 = (person as Dictionary).point
+			var cell := world._cell_at(feet)
+			assert_true(world.layout.is_walkable(cell.x, cell.y), "服务员要沿过道走，不能穿进桌椅")
 			if str((person as Dictionary).label).begins_with("上菜"):
 				saw_serve = true
+				if cell == stand:
+					reached_side = true
 	assert_true(saw_serve)
+	assert_true(reached_side)
 	assert_true(bool(guest.get_meta("plated", false)))
 
 func test_business_guest_follows_the_shop_order_through_leaving() -> void:
@@ -318,11 +347,17 @@ func test_business_guest_follows_the_shop_order_through_leaving() -> void:
 		guard += 1
 	assert_false(world._business_guests.has(order_id))
 	assert_true(world.layout.crew.hire("cook-he").ok)
+	assert_true(world.layout.crew.hire("waiter-ning").ok)
 	var saw_cook := false
+	var saw_waiter := false
 	for person: Variant in world._crew_points(0.0):
-		if str((person as Dictionary).label).begins_with("后厨"):
+		var label := str((person as Dictionary).label)
+		if label.begins_with("后厨") or label.begins_with("厨师"):
 			saw_cook = true
-	assert_true(saw_cook)
+		if label.contains("阿宁"):
+			saw_waiter = true
+	assert_false(saw_cook)
+	assert_true(saw_waiter)
 
 func test_unhired_floor_posts_wait_for_the_player_and_do_not_charge_again() -> void:
 	var service := TDServiceCatalog.new()
@@ -396,11 +431,11 @@ func test_hired_greeter_runner_and_cashier_carry_the_visit() -> void:
 		world._sync_business_guests()
 		guard += 1
 	assert_eq(guest.phase, "wait_serve")
-	var saw_greeter := false
 	for person: Variant in world._crew_points(0.0):
-		if str((person as Dictionary).label) == "迎宾":
-			saw_greeter = true
-	assert_true(saw_greeter)
+		var label := str((person as Dictionary).label)
+		assert_false(label == "迎宾" or label == "收银" or label.begins_with("传菜"))
+	world._tick_floor_runner(0.5)
+	assert_false(world._runner_on)
 	var elapsed := world._visit_seconds
 	shop._s.orders[0].status = "SERVED"
 	shop._s.orders[0].score = {"satisfaction": 80.0}

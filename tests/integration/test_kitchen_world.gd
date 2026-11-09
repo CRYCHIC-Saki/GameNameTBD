@@ -110,6 +110,59 @@ func test_hired_cooks_stay_at_the_stoves() -> void:
 		assert_false(counter.has_point(point))
 		assert_eq(point, TDKitchenWorld.cook_point(index, 0.0))
 
+func test_assigned_cook_walks_the_kitchen_until_the_dish_is_done() -> void:
+	var service := TDServiceCatalog.new()
+	assert_true(service.load_file().ok)
+	var shop := TDShopSession.new(service, "kitchen-cook-walk", 4)
+	var crew := TDRestaurantCrew.new()
+	assert_true(crew.hire("cook-he").ok)
+	assert_true(crew.hire("cook-zhou").ok)
+	shop.crew = crew
+	assert_true(shop.buy(shop.offer("service.tomato_egg").stock, "buy").ok)
+	assert_true(shop.open_day().ok)
+	shop.advance(1.0)
+	assert_eq(shop.active_orders().size(), 1)
+	shop.advance(0.05)
+	assert_eq(shop.crew_work("cook-he"), "做菜")
+	assert_eq(shop.crew_work("cook-zhou"), "")
+	world.crew = crew
+	world.order_shop = shop
+	world._crew_time = 0.2
+	world._staff_delta = 0.0
+	world._sync_staff()
+	var busy := world.get_node("Cook0") as Node2D
+	var idle := world.get_node("Cook1") as Node2D
+	var busy_start := busy.position
+	var idle_start := idle.position
+	assert_eq(busy_start, TDKitchenWorld.cook_point(0, 0.0))
+	assert_eq(idle_start, TDKitchenWorld.cook_point(1, 0.0))
+	world._staff_delta = 0.45
+	world._sync_staff()
+	assert_gt(busy.position.distance_to(busy_start), 20.0)
+	assert_eq(idle.position, idle_start)
+	var counter := Rect2(Vector2(924.0, 514.0), Vector2(232.0, 102.0))
+	assert_false(counter.has_point(busy.position))
+	assert_eq((world.get_node("Cook0/Body") as Sprite2D).position, Vector2(0, -47))
+	assert_true((world.get_node("Cook0/Name") as Label).text.contains("做菜"))
+	var toward_ingredients := busy.position
+	world._crew_time = 4.0
+	world._staff_delta = 0.45
+	world._sync_staff()
+	assert_lt(busy.position.distance_to(TDKitchenWorld.cook_station(0, "取料")), toward_ingredients.distance_to(TDKitchenWorld.cook_station(0, "取料")))
+	shop._s.orders[0].status = "SERVED"
+	shop.tick_crew(0.05)
+	assert_eq(shop.crew_work("cook-he"), "")
+	var away := busy.position
+	var home := TDKitchenWorld.cook_point(0, 0.0)
+	world._staff_delta = 0.5
+	world._sync_staff()
+	assert_lt(busy.position.distance_to(home), away.distance_to(home))
+	assert_eq((world.get_node("Cook0/Body") as Sprite2D).position.y, -47.0)
+	for index: int in 2:
+		var stop := TDKitchenWorld.cook_task_point(index, 0.2)
+		assert_false(counter.has_point(stop))
+		assert_gt(stop.distance_to(TDKitchenWorld.cook_point(index, 0.0)), 40.0)
+
 func test_close_disables_world_and_reentry_starts_fresh() -> void:
 	(world.get_node("Player") as TDKitchenPlayer).position = Vector2(588.0, 310.0);(world.get_node("Player") as TDKitchenPlayer).face(Vector2.UP)
 	world.close()

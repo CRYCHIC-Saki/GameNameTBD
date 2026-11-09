@@ -622,16 +622,19 @@ func show_world_map() -> void:
 
 func show_market() -> void:
 	if not profile.can_leave_shop(): _outcome(TDOutcome.new(false,"SHOP_OPEN","营业中不能采购。"));return
-	var box:=_dialog("街口菜摊 · 现货采购")
+	var stall:=profile.world.town_map.market(profile.world.selected_market)
+	var title:=String(stall.get("name","街坊菜市")) if not stall.is_empty() else "街坊菜市"
+	var box:=_dialog(title+" · 现货采购")
 	if profile.shop.snapshot().phase=="SETTLED":
 		box.add_child(TDUI.label("今天已经打烊。回店休息后，明早再来挑新鲜食材。",20));return
 	var forecast:=profile.shop.visitor_forecast()
 	box.add_child(TDUI.label("用餐高峰 08–10 / 11–13 / 17–19 · 少量错峰
 持续营业至主动打烊或02:00；错过的时段不补客。",17,TDUI.MUTED))
 	box.add_child(TDUI.label("从现在开门预计 %d—%d 位客人 · 买好食材后回店挂牌营业"%[forecast.min_visitors,forecast.max_visitors],20,TDUI.ORANGE))
+	box.add_child(TDUI.label("这家菜市开着，货架上有的都能买。研究只决定能做什么菜，不限制采购。",17,TDUI.MUTED))
 	for id: String in profile.shop.spoiled_today():
 		box.add_child(TDUI.label("今日过期：%s %.2f%s，已清理。"%[_ingredient_name(id),float(profile.shop.spoiled_today()[id])/1000,profile.shop.stock_info(id).unit],17,TDUI.ORANGE))
-	for id: String in profile.shop.purchase_ids():
+	for id: String in profile.shop.market_ids():
 		var row:=HBoxContainer.new();box.add_child(row)
 		row.add_child(TDIngredientIcon.make(id))
 		var market:Dictionary=profile.commerce.state.markets[profile.commerce.state.home]
@@ -674,7 +677,7 @@ func show_remote_market(town_id: String) -> void:
 	if town_id not in profile.commerce.state.routes: _outcome(TDOutcome.new(false,"ROUTE_LOCKED","尚未收到这条商路的推荐。"));return
 	var box:=_dialog(_town_name(town_id)+" · 当日报价")
 	var market:Dictionary=profile.commerce.state.markets[town_id]
-	for id: String in profile.shop.purchase_ids():
+	for id: String in profile.shop.market_ids():
 		var row:=HBoxContainer.new();box.add_child(row)
 		row.add_child(TDIngredientIcon.make(id))
 		var info:=profile.shop.stock_info(id)
@@ -716,13 +719,19 @@ func show_menu() -> void:
 		price.value_changed.connect(func(value:float)->void:_outcome(profile.shop.set_menu(id,enabled.button_pressed,roundi(value*100))))
 		var stock:=TDUI.label("有料" if profile.shop.menu_available(id) else "缺料 / 售罄",17,TDUI.MUTED)
 		stock.custom_minimum_size.x=125;stock.autowrap_mode=TextServer.AUTOWRAP_OFF;row.add_child(stock)
-	box.add_child(TDUI.label("确认菜单和价格后开门。缺料菜自动停售，营业可外出，现货采购仍限筹备；请提前雇好厨师、传菜和收银。",17,TDUI.MUTED))
+	box.add_child(TDUI.label("确认菜单和价格后开门。缺料菜自动停售，营业可外出，现货采购仍限筹备。请提前雇好厨师和服务员：厨师在后厨按流程做菜，菜放在出餐口，服务员去取再端到桌上。",17,TDUI.MUTED))
 	box.add_child(TDUI.label("用餐高峰 08–10 / 11–13 / 17–19 · 少量错峰\n持续营业至主动打烊或02:00；错过的时段不补客。",17,TDUI.MUTED))
 	var demand:=TDUI.label("",18,TDUI.ORANGE);box.add_child(demand)
 	var forecast_update:=func()->void:
 		var estimated:=profile.shop.visitor_forecast()
-		demand.text="从现在开门、备足材料预计 %d—%d 位客人；预算、路程、排队和竞争会影响实际到店。"%[estimated.min_visitors,estimated.max_visitors]
-		if estimated.has("excluded_budget_share") and float(estimated.excluded_budget_share)>0:
+		var ready: Array=profile.shop.economic_menu()
+		if ready.is_empty():
+			demand.text="按现在的冰箱，今天不会有客人进门。菜单上的菜还缺主料或调料。"
+			demand.text+="\n补齐后再开门，备足材料预计 %d—%d 位。"%[estimated.min_visitors,estimated.max_visitors]
+		else:
+			var live: Dictionary=profile.commerce.forecast(ready,profile.characters.clock.minute)
+			demand.text="按现在的库存，预计 %d—%d 位客人。预算、路程、排队和竞争会影响实际到店。"%[live.min_visitors,live.max_visitors]
+		if estimated.has("excluded_budget_share") and float(estimated.excluded_budget_share)>0 and not ready.is_empty():
 			demand.text+="\n目前没有约%.0f%%客群买得起的菜，可试着加入较低价菜品。"%(100*float(estimated.excluded_budget_share))
 	forecast_update.call()
 	for price_control: SpinBox in box.find_children("*","SpinBox",true,false): price_control.value_changed.connect(func(_v:float)->void:forecast_update.call())
@@ -857,8 +866,7 @@ func _ledger_name(id: String) -> String:
 func show_crew() -> void:
 	var crew := profile.layout.crew
 	var box := _dialog("招工处")
-	box.add_child(TDUI.label("厨师在后厨做菜，服务员在店里端菜。每类最多两人，同一种加成不叠加，按在岗者里较高的等级计算。完成一单，在岗的人各得1点经验，每4点升1级，最高5级。入职数值较低，升级后才提高。辞退后经验还在。日薪当场扣除，打烊后才能办理。",18,TDUI.MUTED))
-	box.add_child(TDUI.label("迎宾、传菜和收银是店里的另外三个岗位。没雇的时候，进门、端菜和送客要你亲自做。雇了就由他们做。工资从同一本现金账扣，不重复收客人的钱。",18,TDUI.MUTED))
+	box.add_child(TDUI.label("只雇厨师和服务员。厨师只在后厨做菜，餐厅里看不到厨师。菜做好后放在出餐口，服务员去取，再端到客人桌上。每类最多两人，同一种加成不叠加，按在岗者里较高的等级计算。完成一单，在岗的人各得1点经验，每4点升1级，最高5级。入职数值较低，升级后才提高。辞退后经验还在。日薪当场扣除，打烊后才能办理。",18,TDUI.MUTED))
 	if not crew.duty_line().is_empty():
 		box.add_child(TDUI.label(crew.duty_line(),20,TDUI.ORANGE))
 	for person: Dictionary in crew.roster():
@@ -876,24 +884,17 @@ func show_crew() -> void:
 			button.disabled = not profile.at_boundary()
 			row.add_child(button)
 	for role: String in ["greeter", "cashier", "runner"]:
+		if not profile.world.staff_on(role):
+			continue
 		var floor := HBoxContainer.new()
 		box.add_child(floor)
 		var title := str(TDPhase3Session.ROLE_TITLE.get(role, role))
-		var wage := profile.world.catalog.wage_of(role)
-		var hired := profile.world.staff_on(role)
-		var caption := TDUI.label("%s · 日薪%d元\n%s" % [title, wage, "已经在岗" if hired else "没雇时要你亲自做这一岗"], 18)
+		var caption := TDUI.label("%s · 已在岗，招工处不再招这一岗" % title, 18)
 		caption.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		caption.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		floor.add_child(caption)
-		var role_id := role
-		if hired:
-			var dismiss := TDUI.button("辞退", _dismiss_floor.bind(role_id))
-			dismiss.disabled = not profile.at_boundary()
-			floor.add_child(dismiss)
-		else:
-			var hire := TDUI.button("雇佣", _hire_floor.bind(role_id))
-			hire.disabled = not profile.at_boundary()
-			floor.add_child(hire)
+		var dismiss := TDUI.button("辞退", _dismiss_floor.bind(role))
+		dismiss.disabled = not profile.at_boundary()
+		floor.add_child(dismiss)
 
 func _hire_crew(id: String) -> void:
 	if profile == null or not profile.at_boundary():
@@ -918,17 +919,6 @@ func _dismiss_crew(id: String) -> void:
 		_outcome(TDOutcome.new(false, "SHOP_OPEN", "打烊后才能辞退。"))
 		return
 	var result := profile.layout.crew.dismiss(id)
-	_outcome(result)
-	show_crew()
-
-func _hire_floor(role: String) -> void:
-	if profile == null or not profile.at_boundary():
-		_outcome(TDOutcome.new(false, "SHOP_OPEN", "打烊后才能雇人。"))
-		return
-	var title := str(TDPhase3Session.ROLE_TITLE.get(role, role))
-	var result := profile.world_transaction(func() -> TDOutcome: return profile.world.employ(role), "雇" + title)
-	if result.ok and role in ["greeter", "cashier"]:
-		profile.layout.set_staff(role, true)
 	_outcome(result)
 	show_crew()
 

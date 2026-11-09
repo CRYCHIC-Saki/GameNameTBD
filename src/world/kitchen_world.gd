@@ -46,8 +46,11 @@ var pot_contents: Array=[]
 var crew: TDRestaurantCrew
 const CHEF_SPRITE := preload("res://assets/kitchen/chef-v1.png")
 const COOK_POSTS: Array[Vector2] = [Vector2(640, 400), Vector2(850, 400)]
+const COOK_WALK_SPEED := 140.0
+const COOK_LEG_SEC := 1.2
 var _staff_nodes: Array[Node2D] = []
 var _crew_time: float = 0.0
+var _staff_delta: float = 0.0
 var order_shop: TDShopSession
 
 func stations() -> Array[Dictionary]:
@@ -85,8 +88,10 @@ func _ready() -> void:
 	_update_prompt()
 
 func _process(delta: float) -> void:
+	_staff_delta = 0.0
 	if is_inside_tree() and not get_tree().paused:
 		_crew_time += delta
+		_staff_delta = delta
 	_update_prompt()
 	_sync_staff()
 	queue_redraw()
@@ -243,6 +248,59 @@ func set_context(value: Dictionary, message: String = "", simmer: String = "") -
 static func cook_point(index: int, _time_sec: float) -> Vector2:
 	return COOK_POSTS[index % COOK_POSTS.size()]
 
+static func cook_flow_step(time_sec: float) -> String:
+	var steps: Array[String] = ["取料", "切菜", "热锅", "翻炒", "调味", "出餐"]
+	var leg := int(time_sec / COOK_LEG_SEC) % steps.size()
+	if leg < 0:
+		leg = 0
+	return steps[leg]
+
+static func cook_place(step: String) -> String:
+	match step:
+		"取料":
+			return "取料"
+		"切菜":
+			return "切菜"
+		"热锅", "翻炒", "调味", "勾芡", "做菜":
+			return "做菜"
+		"蒸制":
+			return "蒸制"
+		"出餐", "出锅":
+			return "出餐"
+		_:
+			return ""
+
+static func cook_place_rank(place: String) -> int:
+	match place:
+		"取料":
+			return 1
+		"切菜":
+			return 2
+		"做菜", "蒸制":
+			return 3
+		"出餐":
+			return 4
+		_:
+			return 0
+
+static func cook_station(index: int, step: String) -> Vector2:
+	var stove := cook_point(index, 0.0)
+	var slot := float(index % 2)
+	match cook_place(step):
+		"取料":
+			return Vector2(210.0 + slot * 90.0, 450.0)
+		"切菜":
+			return Vector2(790.0 + slot * 80.0, 348.0)
+		"蒸制":
+			return Vector2(740.0 + slot * 50.0, 390.0)
+		"出餐":
+			return Vector2(820.0 + slot * 70.0, 478.0)
+		_:
+			return stove
+
+static func cook_task_point(index: int, time_sec: float) -> Vector2:
+	return cook_station(index, cook_flow_step(time_sec))
+
 func _sync_staff() -> void:
 	var wanted: Array[Dictionary] = []
 	if crew != null:
@@ -250,12 +308,18 @@ func _sync_staff() -> void:
 		for index: int in cooks.size():
 			var cook: Dictionary = cooks[index]
 			var work := ""
+			var step := ""
 			if order_shop != null:
 				work = order_shop.crew_work(str(cook.id))
+				step = str(order_shop.cook_step(str(cook.id)))
 			var caption := "厨师 %s %d级" % [String(cook["name"]), int(cook.get("level", 1))]
-			if work != "":
+			if work == "做菜":
+				if step == "":
+					step = cook_flow_step(_crew_time)
+				caption = "厨师 %s 做菜 · %s" % [String(cook["name"]), step]
+			elif work != "":
 				caption = "厨师 %s %s" % [String(cook["name"]), work]
-			wanted.append({"caption": caption, "at": cook_point(index, _crew_time), "color": Color("#c46a3a"), "work": work})
+			wanted.append({"caption": caption, "name": String(cook["name"]), "color": Color("#c46a3a"), "work": work, "step": step, "index": index})
 	while _staff_nodes.size() < wanted.size():
 		var root := Node2D.new()
 		var sprite := Sprite2D.new()
@@ -283,23 +347,44 @@ func _sync_staff() -> void:
 		var info: Dictionary = wanted[index]
 		var root: Node2D = _staff_nodes[index]
 		var body := root.get_node("Body") as Sprite2D
+		var home := cook_point(int(info.index), 0.0)
+		var task := str(info.get("work", ""))
+		var cooking := task == "做菜"
+		var step := str(info.get("step", ""))
+		var place := _held_place(root, step, cooking)
+		var goal := cook_station(int(info.index), place) if cooking else home
 		if not root.has_meta("placed"):
-			root.position = info.at
+			root.position = home
 			root.set_meta("placed", true)
-		var step_x := float(info.at.x) - root.position.x
-		root.position = info.at
+		var step_x := goal.x - root.position.x
+		if _staff_delta > 0.0:
+			root.position = root.position.move_toward(goal, COOK_WALK_SPEED * _staff_delta)
 		root.z_index = 1
 		if step_x < -0.4:
 			body.flip_h = true
 		elif step_x > 0.4:
 			body.flip_h = false
-		var task := str(info.get("work", ""))
-		var cooking := task == "做菜" or (order_shop != null and not order_shop.active_orders().is_empty())
-		var bob := 6.0 if task == "做菜" else 2.0
-		body.position.y = -47.0 - (absf(sin(_crew_time * 8.0 + float(index))) * bob if cooking else 0.0)
-		var caption := root.get_node("Name") as Label
-		caption.text = String(info.caption)
-		caption.add_theme_color_override("font_color", info.color)
+		body.position = Vector2(0, -47)
+		var name_label := root.get_node("Name") as Label
+		name_label.text = String(info.caption)
+		if cooking:
+			var shown := step if cook_place(step) == place else place
+			if shown == "":
+				shown = "做菜"
+			name_label.text = "厨师 %s 做菜 · %s" % [String(info.get("name", "")), shown]
+		name_label.add_theme_color_override("font_color", info.color)
+
+func _held_place(root: Node2D, reported: String, cooking: bool) -> String:
+	if not cooking:
+		if root.has_meta("cook_place"):
+			root.remove_meta("cook_place")
+		return ""
+	var place := cook_place(reported)
+	var held := str(root.get_meta("cook_place", ""))
+	if place != "" and (held == "" or cook_place_rank(place) > cook_place_rank(held)):
+		root.set_meta("cook_place", place)
+		return place
+	return held
 
 func _station_hint(id: String) -> String:
 	var hand: Dictionary = _context.get("hand",{})

@@ -32,6 +32,7 @@ var runner_visible: bool = false
 var runner_point := Vector2.ZERO
 var runner_label: String = ""
 var pass_point := Vector2(-1, -1)
+var hatch_plates: int = 0
 var held_label: String = ""
 var interaction_markers: Array[Dictionary] = []
 var crew_people: Array = []
@@ -402,6 +403,28 @@ func _door_in_wall(start: Vector2, finish: Vector2, up: Vector2, wall: Color) ->
 	draw_circle(left.lerp(seam, 0.78) + leaf * 0.48, 2.2, Color("e2ba69"))
 	draw_circle(seam.lerp(right, 0.22) + leaf * 0.48, 2.2, Color("e2ba69"))
 
+func _service_window(start: Vector2, finish: Vector2, up: Vector2, wall: Color) -> void:
+	var span := finish - start
+	var left := start + span * 0.08
+	var right := finish - span * 0.08
+	var sill := 0.38
+	var lintel := 0.78
+	_slab(start, left, up, wall)
+	_slab(right, finish, up, wall)
+	_slab(left, right, up * sill, wall)
+	_slab(left + up * lintel, right + up * lintel, up * (1.0 - lintel), wall)
+	_slab(left + up * sill, right + up * sill, up * (lintel - sill), Color(0.16, 0.14, 0.12))
+	_slab(left + up * (sill - 0.05), right + up * (sill - 0.05), up * 0.07, Color("8b5a34"))
+	var font := ThemeDB.fallback_font
+	var title := (left + right) * 0.5 + up * (lintel + 0.08)
+	if font != null:
+		draw_string(font, title + Vector2(-28, 0), "出餐口", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color("fff4d2"))
+	var shown := mini(hatch_plates, 3)
+	for slot: int in shown:
+		var at := left.lerp(right, 0.35 + float(slot) * 0.15) + up * (sill + 0.04)
+		draw_circle(at, 5.2, Color("f4f0e4"))
+		draw_circle(at, 2.6, Color("d4573a"))
+
 func _kitchen_door_segment() -> PackedVector2Array:
 	var x := float(layout.columns - 2)
 	var y := float(layout.rows)
@@ -422,6 +445,9 @@ func _draw_kitchen_bay() -> void:
 		var edge := PackedVector2Array([project(float(x), float(layout.rows)), project(float(x + 1), float(layout.rows))])
 		if dx == 0:
 			_door_in_wall(edge[0], edge[1], up, paint)
+			continue
+		if dx == -1:
+			_service_window(edge[0], edge[1], up, paint)
 			continue
 		_slab(edge[0], edge[1], up, paint)
 		if interaction_markers.is_empty():
@@ -534,6 +560,9 @@ func _person(point: Vector2, _moving: bool, shirt: Color, caption: String, seate
 		var eye_x: float=3.0 if facing==Vector2i.RIGHT else (-4.0 if facing==Vector2i.LEFT else -3.0)
 		draw_rect(Rect2(at+Vector2(eye_x,-11),Vector2(2,2)),Color("302c30"))
 	if staff: draw_rect(Rect2(at+Vector2(-8,-21),Vector2(16,7)),Color("ede6d2"))
+	if caption.begins_with("上菜"):
+		draw_circle(at + Vector2(11, -2), 4.2, Color("#f4f0e4"))
+		draw_circle(at + Vector2(11, -2), 2.2, Color("#d4573a"))
 	if not seated:
 		for side: int in [-1,1]:
 			var swing: float=stride*side*4.0

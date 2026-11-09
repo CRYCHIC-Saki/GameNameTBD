@@ -63,8 +63,11 @@ var _runner_points := PackedVector2Array()
 var _runner_index: int = 0
 var _runner_ticket: String = ""
 var _runner_button: Button
-var _crew_time: float = 0.0
 var _waiter_feet: Array[Vector2] = []
+var _waiter_plate: Array[String] = []
+var _waiter_routes: Array = []
+var _waiter_route_at: Array[int] = []
+var _waiter_route_goal: Array[Vector2i] = []
 var _iso: TDRestaurantIsoView
 var _board: TDEconomyBoard
 var _pantry: TDPantryBoard
@@ -151,7 +154,7 @@ func _ready() -> void:
 		_set_status(room)
 	_pull_layout_staff()
 	if player_mode:
-		_set_status("WASD 走动 · Shift 疾跑 · 招工处可雇厨师、服务员、迎宾、传菜和收银 · 门牌、账本、装修桌或门按 E · B 菜谱 · Esc 暂停" if floor_service else "WASD 走动 · Shift 疾跑 · 招工处可雇厨师或服务员 · 门牌、账本、装修桌或门按 E · B 菜谱 · Esc 暂停")
+		_set_status("WASD 走动 · Shift 疾跑 · 招工处可雇厨师或服务员 · 门牌、账本、装修桌或门按 E · B 菜谱 · Esc 暂停")
 		_iso.interaction_markers=interaction_points()
 
 func _process(delta: float) -> void:
@@ -160,7 +163,6 @@ func _process(delta: float) -> void:
 	for guest: TDRestaurantGuest in guest_nodes(): guest.frozen=story_frozen or (_talk_open() and str(_talk_view.talk.context.get("ticket_id",""))==guest.ticket_id)
 	if player_mode and not get_tree().paused and not story_frozen:
 		if not unified_dining_clock: _visit_seconds+=delta
-		_crew_time += delta
 		if not unified_dining_clock: _sync_business_guests()
 		if business != null:
 			var crew_note := business.take_crew_note()
@@ -177,9 +179,9 @@ func _process(delta: float) -> void:
 			_set_status("客人走到了%s" % String(seat.get("name", "座位")))
 		elif guest.service_active and not player_mode:
 			_watch_service(guest)
-	if not get_tree().paused and not story_frozen and player_mode and floor_service:
-		_tick_floor_runner(delta)
-	elif not get_tree().paused and not story_frozen and not player_mode:
+	if player_mode:
+		_runner_on = false
+	elif not get_tree().paused and not story_frozen:
 		_tick_runner(delta)
 	if _iso != null:
 		_iso.editing = _editing
@@ -187,7 +189,8 @@ func _process(delta: float) -> void:
 		_iso.runner_visible = _runner_on
 		_iso.runner_point = _runner_pos
 		_iso.runner_label = _runner_caption()
-		_iso.pass_point = layout.cell_center(pass_cell()) if _pass_has_plate() or _needs_player_plate() else Vector2(-1, -1)
+		_iso.pass_point = Vector2(-1, -1)
+		_iso.hatch_plates = _hatch_plate_count()
 		_iso.held_label = _held_caption()
 		_iso.crew_people = _crew_points(0.0 if get_tree().paused or story_frozen or unified_dining_clock else delta)
 		_iso.sync(_player, guest_nodes(),get_tree().paused or story_frozen)
@@ -418,11 +421,11 @@ func request_interaction() -> bool:
 	if _held_ticket != "" and cell_of_player() == pass_cell():
 		_session().floor.release_plate(_held_ticket)
 		_held_ticket = ""
-		_set_status("把菜放回传菜口。")
+		_set_status("把菜放回出餐口。")
 		return true
 	if cell_of_player() == layout.entrance():
 		kitchen_requested.emit()
-		_set_status("走进后厨。出餐后菜放在门口里侧的传菜口，要端到客人坐下的那一桌。按 V 只看餐厅，时间继续走。")
+		_set_status("走进后厨。菜做好后放在南墙出餐口，服务员去那里取，再端到客人桌上。按 V 只看餐厅，时间继续走。")
 		return true
 	var nearest := _nearest_piece()
 	if nearest.is_empty():
@@ -1339,7 +1342,7 @@ func serve_waiting(quality: float) -> TDOutcome:
 	if not plated.ok:
 		return plated
 	var who := String((plated.data as Dictionary).get("npc_id", "客人"))
-	plated.message = "这盘菜放在传菜口，要端给坐着的%s。走到门口里侧按 E 端起。" % who
+	plated.message = "这盘菜放在出餐口，要端给坐着的%s。走到南墙出餐口按 E 端起。" % who
 	return plated
 
 func deliver_to_guest(dish_id: String, quality: float, failed: bool) -> TDOutcome:
@@ -1355,13 +1358,26 @@ func deliver_to_guest(dish_id: String, quality: float, failed: bool) -> TDOutcom
 		return plated
 	var who := String((plated.data as Dictionary).get("npc_id", "客人"))
 	if failed:
-		plated.message = "这盘没做成，放在传菜口，要端给坐着等的%s。" % who
+		plated.message = "这盘没做成，放在出餐口，要端给坐着等的%s。" % who
 	else:
-		plated.message = "%s的菜放在门口里侧的传菜口。走到那里按 E 端起，再到这桌座位旁按 E。雇了传菜员会自己端过去。" % who
+		plated.message = "%s的菜放在南墙出餐口。走到那里按 E 端起，再到这桌座位旁按 E。雇了服务员会自己去取。" % who
 	return plated
 
-func pass_cell() -> Vector2i:
+func service_window_cell() -> Vector2i:
+	if layout == null:
+		return Vector2i(-1, -1)
+	var origin := Vector2i(maxi(1, layout.columns - 3), maxi(1, layout.rows - 2))
+	if layout.is_walkable(origin.x, origin.y):
+		return origin
+	var steps: Array[Vector2i] = [Vector2i.LEFT, Vector2i.UP, Vector2i.RIGHT, Vector2i.DOWN, Vector2i(-1, -1), Vector2i(1, -1)]
+	for step: Vector2i in steps:
+		var cell := origin + step
+		if layout.is_walkable(cell.x, cell.y):
+			return cell
 	return _spawn_cell()
+
+func pass_cell() -> Vector2i:
+	return service_window_cell()
 
 func approach_cell(seat_id: String) -> Vector2i:
 	if layout == null:
@@ -1378,10 +1394,10 @@ func pickup_pass_plate() -> TDOutcome:
 	if _held_ticket != "":
 		return TDOutcome.new(false, "HANDS_FULL", "手上已经有一盘菜。")
 	if cell_of_player() != pass_cell():
-		return TDOutcome.new(false, "TOO_FAR", "先走到门口里侧的传菜口。")
+		return TDOutcome.new(false, "TOO_FAR", "先走到南墙的出餐口。")
 	var plate := active.floor.pass_plate()
 	if plate.is_empty():
-		return TDOutcome.new(false, "NO_PLATE", "传菜口还没有菜。")
+		return TDOutcome.new(false, "NO_PLATE", "出餐口还没有菜。")
 	var claimed := active.floor.claim_plate(String(plate["id"]), "player")
 	if not claimed.ok:
 		return claimed
@@ -1634,7 +1650,7 @@ func _phase_text(guest: TDRestaurantGuest) -> String:
 		"seat":
 			return "客人走向座位。"
 		"wait_serve":
-			return "%s已经坐在座位上，等%s。菜要从传菜口端到这桌旁边。" % [String(guest.profile.get("id", "客人")), guest.dish_name]
+			return "%s已经坐在座位上，等%s。菜要从出餐口端到这桌旁边。" % [String(guest.profile.get("id", "客人")), guest.dish_name]
 		"eat":
 			return "客人正在吃%s。" % guest.dish_name
 		"pay":
@@ -1689,36 +1705,64 @@ func _crew_points(delta: float) -> Array:
 	if layout == null or layout.crew == null:
 		return people
 	var posts: Array[Vector2] = []
-	var jobs: Array[Vector2] = []
-	var seats: Array[TDRestaurantGuest] = []
 	var servers := layout.crew.waiters()
 	for index: int in servers.size():
 		posts.append(_waiter_post(index))
-	for guest: TDRestaurantGuest in guest_nodes():
-		if guest.phase != "wait_serve" or guest.seat_id == "":
-			continue
-		var cell := approach_cell(guest.seat_id)
-		if layout.is_walkable(cell.x, cell.y):
-			seats.append(guest)
-			jobs.append(layout.cell_center(cell))
+	var ready := _service_jobs()
 	while _waiter_feet.size() < servers.size():
 		_waiter_feet.append(posts[_waiter_feet.size()])
 	while _waiter_feet.size() > servers.size():
 		_waiter_feet.pop_back()
+	while _waiter_plate.size() < servers.size():
+		_waiter_plate.append("")
+	while _waiter_plate.size() > servers.size():
+		_waiter_plate.pop_back()
+	while _waiter_routes.size() < servers.size():
+		_waiter_routes.append(PackedVector2Array())
+		_waiter_route_at.append(0)
+		_waiter_route_goal.append(Vector2i(-999, -999))
+	while _waiter_routes.size() > servers.size():
+		_waiter_routes.pop_back()
+		_waiter_route_at.pop_back()
+		_waiter_route_goal.pop_back()
+	var hatch := layout.cell_center(service_window_cell())
+	var pending: Array[TDRestaurantGuest] = []
+	var claimed: Dictionary = {}
+	for carried: String in _waiter_plate:
+		if carried != "":
+			claimed[carried] = true
+	for guest: TDRestaurantGuest in ready:
+		if not claimed.has(guest.ticket_id):
+			pending.append(guest)
+	var next_job := 0
 	for index: int in servers.size():
 		var server: Dictionary = servers[index]
-		var target: Vector2 = posts[index]
+		var goal := _cell_at(posts[index])
 		var verb := "待命"
-		if index < jobs.size():
-			target = jobs[index]
-			var ready := false
-			if business != null:
-				ready = str(business.order(seats[index].ticket_id).get("status", "")) == "SERVED"
-			verb = "上菜" if ready else "候餐"
-		var current := _waiter_feet[index].move_toward(target, 90.0 * maxf(delta, 0.0))
+		var carry := _waiter_plate[index]
+		var seated: TDRestaurantGuest = null
+		if carry != "":
+			seated = _guest_by_ticket(carry)
+		if seated == null or seated.phase != "wait_serve" or bool(seated.get_meta("plated", false)):
+			_waiter_plate[index] = ""
+			carry = ""
+			seated = null
+		if carry != "":
+			goal = _beside_seat(seated.seat_id)
+			verb = "上菜"
+		elif next_job < pending.size():
+			goal = service_window_cell()
+			verb = "取菜"
+		var target := layout.cell_center(goal)
+		var current := _walk_waiter(index, _waiter_feet[index], goal, delta)
 		_waiter_feet[index] = current
-		if delta>0.0 and index < seats.size() and verb == "上菜" and current.distance_to(target) <= 36.0:
-			hand_plate(seats[index])
+		if delta > 0.0 and verb == "取菜" and current.distance_to(hatch) <= 36.0:
+			_waiter_plate[index] = pending[next_job].ticket_id
+		elif delta > 0.0 and verb == "上菜" and seated != null and current.distance_to(target) <= 36.0:
+			hand_plate(seated)
+			_waiter_plate[index] = ""
+		if verb == "取菜":
+			next_job += 1
 		people.append({
 			"point": current,
 			"actor_id":str(server.id),
@@ -1726,27 +1770,8 @@ func _crew_points(delta: float) -> Array:
 			"color": Color("#2f7a68"),
 			"moving": current.distance_to(target) > 0.5,
 		})
-	var cooks := layout.crew.cooks()
-	for index: int in cooks.size():
-		var cook: Dictionary = cooks[index]
-		var work := ""
-		if business != null:
-			work = business.crew_work(str(cook.id))
-		var stove := _staff_spot(Vector2i(layout.columns - 2, layout.rows - 2), index)
-		if work == "做菜":
-			stove.x += sin(_crew_time * 7.0 + float(index)) * 8.0
-		var cook_label := "后厨 %s%d" % [String(cook["name"]), int(cook.get("level", 1))]
-		if work != "":
-			cook_label = "后厨%s %s%d" % [work, String(cook["name"]), int(cook.get("level", 1))]
-		people.append({
-			"point": stove,
-			"actor_id":str(cook.id),
-			"label": cook_label,
-			"color": Color("#8a4b32"),
-			"moving": work == "做菜",
-		})
 	var active := _session()
-	if active != null and active.ready and layout != null:
+	if active != null and active.ready and layout != null and not player_mode:
 		if active.staff_on("greeter"):
 			people.append({"actor_id":"floor-greeter","point": layout.cell_center(layout.entrance()), "label": "迎宾", "color": Color("#d7a15a"), "moving": false})
 		if active.staff_on("cashier"):
@@ -1756,6 +1781,98 @@ func _crew_points(delta: float) -> Array:
 				at = Vector2i(int(desk.approach_x), int(desk.approach_y))
 			people.append({"actor_id":"floor-cashier","point": layout.cell_center(at), "label": "收银", "color": Color("#c4b15a"), "moving": false})
 	return people
+
+func _walk_waiter(index: int, feet: Vector2, goal: Vector2i, delta: float) -> Vector2:
+	if layout == null or index < 0 or index >= _waiter_routes.size() or not layout.is_walkable(goal.x, goal.y):
+		return feet
+	if _waiter_route_goal[index] != goal:
+		var from := _cell_at(feet)
+		if not layout.is_walkable(from.x, from.y):
+			from = _nearest_walkable(from, goal)
+		var points := PackedVector2Array()
+		for cell: Vector2i in layout.path(from, goal):
+			points.append(layout.cell_center(cell))
+		_waiter_routes[index] = points
+		_waiter_route_goal[index] = goal
+		_waiter_route_at[index] = 1 if points.size() > 1 else 0
+	var route: PackedVector2Array = _waiter_routes[index]
+	var at := _waiter_route_at[index]
+	if route.is_empty():
+		return feet
+	if at >= route.size():
+		return layout.cell_center(goal)
+	var moved := feet.move_toward(route[at], 90.0 * maxf(delta, 0.0))
+	if delta > 0.0 and moved.distance_to(route[at]) <= 1.0:
+		moved = route[at]
+		_waiter_route_at[index] = at + 1
+	return moved
+
+func _beside_seat(seat_id: String) -> Vector2i:
+	var seat := layout.piece(seat_id)
+	if seat.is_empty():
+		return service_window_cell()
+	var approach := Vector2i(int(seat.approach_x), int(seat.approach_y))
+	var anchor := Vector2i(int(seat.x) + int(seat.w) / 2, int(seat.y) + int(seat.h) / 2)
+	var away := approach - anchor
+	var step := Vector2i(signi(away.x), signi(away.y))
+	if step == Vector2i.ZERO:
+		step = Vector2i(-1, 0)
+	var outside := approach + (Vector2i(step.x, 0) if absi(away.x) >= absi(away.y) else Vector2i(0, step.y))
+	if layout.is_walkable(outside.x, outside.y) and not _piece_covers(seat, outside):
+		return outside
+	if layout.is_walkable(approach.x, approach.y) and not _piece_covers(seat, approach):
+		return approach
+	return _nearest_walkable(approach, approach)
+
+func _piece_covers(seat: Dictionary, cell: Vector2i) -> bool:
+	return cell.x >= int(seat.x) and cell.y >= int(seat.y) and cell.x < int(seat.x) + int(seat.w) and cell.y < int(seat.y) + int(seat.h)
+
+func _nearest_walkable(origin: Vector2i, prefer: Vector2i) -> Vector2i:
+	if layout.is_walkable(origin.x, origin.y):
+		return origin
+	var best := origin
+	var best_distance := 1 << 30
+	var found := false
+	for radius: int in range(1, 6):
+		for y: int in range(origin.y - radius, origin.y + radius + 1):
+			for x: int in range(origin.x - radius, origin.x + radius + 1):
+				if not layout.is_walkable(x, y):
+					continue
+				var distance := absi(x - prefer.x) + absi(y - prefer.y)
+				if distance < best_distance:
+					best = Vector2i(x, y)
+					best_distance = distance
+					found = true
+		if found:
+			return best
+	return service_window_cell()
+
+func _service_jobs() -> Array[TDRestaurantGuest]:
+	var seats: Array[TDRestaurantGuest] = []
+	for guest: TDRestaurantGuest in guest_nodes():
+		if guest.phase != "wait_serve" or guest.seat_id == "" or bool(guest.get_meta("plated", false)):
+			continue
+		if business == null or str(business.order(guest.ticket_id).get("status", "")) != "SERVED":
+			continue
+		var cell := _beside_seat(guest.seat_id)
+		if layout.is_walkable(cell.x, cell.y):
+			seats.append(guest)
+	return seats
+
+func _hatch_plate_count() -> int:
+	var count := 0
+	if _pass_has_plate() and _held_ticket == "":
+		count += 1
+	var carried := {}
+	for plate_id: String in _waiter_plate:
+		if plate_id != "":
+			carried[plate_id] = true
+	if _plate_order != "":
+		carried[_plate_order] = true
+	for guest: TDRestaurantGuest in _service_jobs():
+		if not carried.has(guest.ticket_id):
+			count += 1
+	return count
 
 func _waiter_post(index: int) -> Vector2:
 	return _staff_spot(Vector2i(layout.columns - 2, layout.rows - 3), index)
@@ -2040,12 +2157,15 @@ func _floor_act() -> bool:
 		return true
 	if _plate_order == "" and _needs_player_plate() and cell_of_player() == pass_cell():
 		_plate_order = _unplated_order()
-		_set_status("从传菜口端起菜。走到客人面前按 E。")
+		_set_status("从出餐口端起菜。走到客人面前按 E。")
 		return true
 	return false
 
+func _waiter_serving() -> bool:
+	return layout != null and layout.crew != null and not layout.crew.waiters().is_empty()
+
 func _needs_player_plate() -> bool:
-	return floor_service and not duty_on("runner") and _unplated_order() != ""
+	return floor_service and not duty_on("runner") and not _waiter_serving() and _unplated_order() != ""
 
 func _unplated_order() -> String:
 	for id: String in _business_guests.keys():
@@ -2064,22 +2184,9 @@ func _guest_name(guest: TDRestaurantGuest) -> String:
 	if guest!=null and business!=null: return business.order_label(guest.ticket_id)
 	return "客人"
 
-func _tick_floor_runner(delta: float) -> void:
-	if layout == null or not duty_on("runner"):
-		_runner_on = false
-		return
-	_runner_on = true
-	if _runner_pos == Vector2.ZERO:
-		_runner_pos = layout.cell_center(pass_cell())
-	var goal := pass_cell()
-	for guest: TDRestaurantGuest in guest_nodes():
-		if guest.phase != "wait_serve" or guest.seat_id == "":
-			continue
-		var next := approach_cell(guest.seat_id)
-		if next.x >= 0:
-			goal = next
-			break
-	_step_runner(goal, delta)
+func _tick_floor_runner(_delta: float) -> void:
+	# Hired waiters carry the plates. The formal dining room does not add a runner.
+	_runner_on = false
 
 func _send_guest_out(guest: TDRestaurantGuest) -> void:
 	guest.phase = "leave"
@@ -2164,7 +2271,7 @@ func _guest_brief(guest: TDRestaurantGuest) -> String:
 		crew = layout.crew.duty_line()
 	var text := TDGuestVisit.inspect_text(dish, customer, status, guest.phase, left, price, satisfaction, net, refunded, reasons, float(_decor_now().get("effect", 0.0)), crew)
 	if floor_service:
-		text += "\n迎宾%s，传菜%s，收银%s。" % ["在岗" if duty_on("greeter") else ("自动入座" if unified_dining_clock else "你来"), "在岗" if duty_on("runner") else "你来", "在岗" if duty_on("cashier") else "你来"]
+		text += "\n客人自己入座，收银%s。%s。" % ["在岗" if duty_on("cashier") else "你来", "菜放在出餐口，服务员去取再端上桌" if _waiter_serving() else "菜放在出餐口，由你端上桌"]
 	return text
 
 func _refresh_order_board(orders: Array, now: float) -> void:
@@ -2181,7 +2288,9 @@ func _refresh_order_board(orders: Array, now: float) -> void:
 	if layout != null and layout.crew != null and not layout.crew.duty_line().is_empty():
 		lines.append(layout.crew.duty_line())
 	if floor_service:
-		lines.append("迎宾%s，传菜%s，收银%s" % ["在岗" if duty_on("greeter") else ("自动入座" if unified_dining_clock else "你来"), "在岗" if duty_on("runner") else "你来", "在岗" if duty_on("cashier") else "你来"])
+		lines.append("客人自己入座")
+		lines.append("收银%s" % ("在岗" if duty_on("cashier") else "你来"))
+		lines.append("出餐口取菜后服务员端上桌" if _waiter_serving() else "出餐口取菜后由你端上桌")
 	var active: Array = []
 	var arriving: int=0
 	var recent: Dictionary = {}
@@ -2211,8 +2320,17 @@ func _refresh_order_board(orders: Array, now: float) -> void:
 		shown += 1
 	if arriving>0: lines.append("%d位客人正在进店或等位，落座后点单。"%arriving)
 	if shown == 0 and arriving==0:
-		lines.append("还没有客人。开门后，客人会比较本店、竞品和在家吃饭。")
-	lines.append("自动入座点单；靠近客人按 E 交流。未雇传菜/收银时仍需端菜和送客。" if unified_dining_clock else ("靠近客人按 E。没雇迎宾、传菜、收银时，招呼、端菜和送客也是这一下。" if floor_service else "靠近客人按 E，查看点单、比较和结算。"))
+		var phase:=str(business.snapshot().phase) if business!=null else ""
+		if phase in ["OPEN","DRAINING"] and business.economic_menu().is_empty():
+			lines.append("菜单上的菜现在做不了，缺料时不会有客人进门。")
+		else:
+			lines.append("还没有客人。开门后，客人会比较本店、竞品和在家吃饭。")
+	if unified_dining_clock:
+		lines.append("客人自己入座点单。菜先放到出餐口，再由%s端上桌。没雇收银时由你送客。" % ("服务员" if _waiter_serving() else "你"))
+	elif floor_service:
+		lines.append("靠近客人按 E。菜放在出餐口后，雇了服务员就由服务员去取，没雇就由你端。")
+	else:
+		lines.append("靠近客人按 E，查看点单、比较和结算。")
 	_order_board.text = "\n".join(lines)
 
 var last_visit: Dictionary = {}

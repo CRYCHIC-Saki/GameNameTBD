@@ -10,11 +10,11 @@ func test_purchase_gate_tracks_unlocks_and_all_condiments() -> void:
 	var shop:=_shop()
 	assert_true(shop.purchasable("tomato"));assert_true(shop.purchasable("rice"))
 	assert_false(shop.purchasable("chicken"));assert_true(shop.purchasable("bean_paste"))
-	var before:=shop.snapshot()
-	assert_eq(shop.buy({"chicken":1000,"tomato":1000},"blocked").code,"INGREDIENT_LOCKED")
-	assert_eq(shop.snapshot(),before)
-	assert_true(shop.grant_recipe("service.kungpao").ok)
-	assert_true(shop.buy({"chicken":1000,"peanut":1000},"allowed").ok)
+	# The market sells while open: research gates cooking, not buying.
+	assert_true(shop.market_sells("chicken"));assert_true("chicken" in shop.market_ids())
+	assert_true(shop.buy({"chicken":1000,"tomato":1000},"bought").ok)
+	assert_eq(shop.available("chicken"),1000)
+	assert_false(shop.market_sells("not_an_ingredient"))
 
 func test_batches_use_earliest_expiry_and_reconcile() -> void:
 	var lots:=TDFoodStock.migrate({"tomato":0},1,{})

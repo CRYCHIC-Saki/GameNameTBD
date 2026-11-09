@@ -39,8 +39,8 @@ func test_two_slots_keep_research_stock_and_layout_independent() -> void:
 
 func test_official_factory_market_filter_and_stock_mastery_survive_profile_roundtrip() -> void:
 	var profile:=create_profile("slot-01")
-	assert_eq(profile.buy({"chicken":1000}).code,"INGREDIENT_LOCKED")
-	assert_eq(profile.order_remote("chicken").code,"INGREDIENT_LOCKED")
+	assert_true(profile.buy({"chicken":1000}).ok)
+	assert_eq(profile.order_remote("chicken").code,"NO_REMOTE_ROUTE")
 	assert_true(profile.world.factory_products("meat").all(func(item:Dictionary)->bool:return item.id=="egg"))
 	assert_true(profile.world.factory_products("seasoning").any(func(item:Dictionary)->bool:return item.id=="bean_paste"))
 	assert_true(profile.world.factory_products("fruit").is_empty())

@@ -328,9 +328,8 @@ func select_market(id: String) -> TDOutcome:
 		return TDOutcome.new(false, "MISSING", "这里不是菜市场")
 	selected_market = id
 	refresh_pool()
-	var tier := int(stall.get("tier", 1))
-	var count := catalog.supply_items.size() if tier >= 3 else (stall.get("unlocks", []) as Array).size()
-	return TDOutcome.new(true, "MARKET", "选定%s。距离%d格，能买%d种，备货%d分钟。" % [String(stall["name"]), town_map.distance_to(id), count, int(schedule()["stock_minutes"])])
+	var count := catalog.supply_items.size()
+	return TDOutcome.new(true, "MARKET", "选定%s。距离%d格，架上%d种都能买，备货%d分钟。" % [String(stall["name"]), town_map.distance_to(id), count, int(schedule()["stock_minutes"])])
 
 func visit_zone(kind: String) -> TDOutcome:
 	if day_phase == "service":
@@ -719,12 +718,11 @@ func _stock_text() -> String:
 	return "、".join(parts)
 
 func _supply_open(item_id: String) -> bool:
+	# While the market is open, every stocked item is on sale. Selecting a stall
+	# only changes distance and restocking time, not what may be bought.
 	if selected_market == "":
 		return true
-	var stall := town_map.market(selected_market)
-	if stall.is_empty() or int(stall.get("tier", 0)) >= 3:
-		return true
-	return item_id in stall.get("unlocks", [])
+	return not town_map.market(selected_market).is_empty() and not _supply_item(item_id).is_empty()
 
 func _meal_for(index: int) -> Dictionary:
 	var rows: Array = schedule()["meals"]

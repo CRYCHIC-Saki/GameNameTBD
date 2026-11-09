@@ -11,10 +11,10 @@ const NUDGE_CAP := 0.2
 const TIP_CAP := 0.25
 const COOK_SEC := 16.0
 const ROSTER: Array[Dictionary] = [
-	{"id": "cook-he", "role": "cook", "name": "阿禾", "wage_yuan": 23, "buff": "", "blurb": "在后厨做菜。"},
+	{"id": "cook-he", "role": "cook", "name": "阿禾", "wage_yuan": 23, "buff": "", "blurb": "接到订单后在后厨按流程做菜。"},
 	{"id": "cook-zhou", "role": "cook", "name": "老周", "wage_yuan": 28, "buff": "faster_service", "blurb": "出餐更快。"},
 	{"id": "cook-man", "role": "cook", "name": "小满", "wage_yuan": 26, "buff": "secondary", "blurb": "出锅后修正口味、香味、口感和温度。"},
-	{"id": "waiter-ning", "role": "waiter", "name": "阿宁", "wage_yuan": 29, "buff": "", "blurb": "在店里端菜。"},
+	{"id": "waiter-ning", "role": "waiter", "name": "阿宁", "wage_yuan": 29, "buff": "", "blurb": "到出餐口取菜，再端到客人桌上。"},
 	{"id": "waiter-tao", "role": "waiter", "name": "小桃", "wage_yuan": 32, "buff": "tip", "blurb": "端菜时增加小费。"},
 ]
 

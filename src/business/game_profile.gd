@@ -337,7 +337,7 @@ func next_day() -> TDOutcome:
 
 func order_remote(id: String, town_id: String = "", units: int = 1000, request_id: String = "") -> TDOutcome:
 	if not service.config.costs.has(id): return TDOutcome.new(false,"UNSUPPORTED_MATERIAL")
-	if not shop.purchasable(id): return TDOutcome.new(false,"INGREDIENT_LOCKED","该原料尚未用于已解锁菜谱。")
+	if not shop.market_sells(id): return TDOutcome.new(false,"INGREDIENT_LOCKED","这家菜市场没有这种原料。")
 	if not at_boundary() or shop.snapshot().phase!="PREPARE": return TDOutcome.new(false,"NOT_PREPARING")
 	if town_id.is_empty():
 		if commerce.state.routes.size()<2: return TDOutcome.new(false,"NO_REMOTE_ROUTE","目前只有本地商路，等待剧情推荐后再预订。")

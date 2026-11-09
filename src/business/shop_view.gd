@@ -11,12 +11,18 @@ var _staff_note: String=""
 
 func staff_status() -> String:
 	if shop==null or shop.crew==null or shop.crew.cooks().is_empty(): return "主店缺厨师：可以外出，订单仍会等待或超时。"
-	return "厨师可代班，按库存实际制作；请配好传菜/服务员与收银岗位。"+("\n"+_staff_note if not _staff_note.is_empty() else "")
+	return "厨师按订单在后厨做菜；菜好后由服务员端上桌。"+("\n"+_staff_note if not _staff_note.is_empty() else "")
 
 func staff_work(person_id: String) -> String:
 	if _closed or kitchen==null: return ""
 	for index: int in _staff_lanes:
 		if _staff_cooks.get(index,"")==person_id and kitchen.lanes[index].snapshot().session_id==_staff_lanes[index]: return "做菜"
+	return ""
+
+func staff_step(person_id: String) -> String:
+	if _closed or kitchen==null: return ""
+	for index: int in _staff_lanes:
+		if _staff_cooks.get(index,"")==person_id and kitchen.lanes[index].snapshot().session_id==_staff_lanes[index]: return kitchen.lanes[index].cook_step()
 	return ""
 
 func tick_staff() -> void:
@@ -117,7 +123,7 @@ func _ready() -> void:
 		if not loaded.ok: add_child(TDUI.label("营业配置错误："+loaded.message)); return
 		linked=TDKitchenLink.install(service, learned_dishes)
 		shop=TDShopSession.new(service,"",101,recipe_unlocks); shop.cooking_reward=cooking_reward; store=TDShopStore.new(save_path,shop)
-	shop.crew_external=true;shop.crew_status_source=staff_work
+	shop.crew_external=true;shop.crew_status_source=staff_work;shop.cook_step_source=staff_step
 	if resume_saved and not embedded:
 		var saved:=store.load_game()
 		if saved.ok:

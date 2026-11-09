@@ -39,6 +39,17 @@ func purchasable(id: String) -> bool:
 		if is_unlocked(item.id) and id in item.primary: return true
 	return false
 
+func market_sells(id: String) -> bool:
+	# The neighbourhood market sells every stocked ingredient while it is open.
+	# Research still decides which dishes can be cooked, not what can be bought.
+	return catalog != null and catalog.config.costs.has(id)
+
+func market_ids() -> Array[String]:
+	var result: Array[String]=[]
+	for id: String in catalog.config.costs:
+		if market_sells(id): result.append(id)
+	return result
+
 func purchase_ids() -> Array[String]:
 	var result: Array[String]=[]
 	for id: String in catalog.config.costs:
@@ -350,7 +361,7 @@ func buy(cart: Dictionary, token: String, price_override: Dictionary = {}) -> TD
 	if cart.is_empty(): return TDOutcome.new(false,"EMPTY_CART")
 	var cost: int = 0; var change: Dictionary = {}
 	for id: Variant in cart:
-		if research_controlled and not purchasable(str(id)): return TDOutcome.new(false,"INGREDIENT_LOCKED","该原料尚未用于已解锁菜谱。")
+		if not market_sells(str(id)): return TDOutcome.new(false,"INGREDIENT_LOCKED","这家菜市场没有这种原料。")
 		if not catalog.config.costs.has(id) or not TDServiceCatalog.integer(cart[id],1,100000) or int(_s.inventory[id])+int(cart[id])>1000000: return TDOutcome.new(false,"INVALID_QUANTITY")
 		if price_override.has(id) and not TDServiceCatalog.integer(price_override[id],1,10000000): return TDOutcome.new(false,"INVALID_QUOTE")
 		change[id] = int(cart[id]); cost += amount_cost(int(cart[id]),int(price_override.get(id,catalog.config.costs[id])))
@@ -495,6 +506,13 @@ func _arrive_economic() -> void:
 		customer.name=commerce.config.groups.filter(func(g:Dictionary)->bool:return g.id==arrival.intent.group_id)[0].name
 		if arrival.person.has("display_name"): customer.name=str(arrival.person.display_name)
 		if family_id(id)!="service.tomato_egg": customer.requirements=customer.requirements.filter(func(r:Dictionary)->bool:return str(r.get("ingredient_id","")).is_empty())
+		if not menu_available(id,customer) and menu_available(id):
+			var relaxed: Dictionary=customer.duplicate(true)
+			var kept: Array=[]
+			for requirement: Dictionary in customer.get("requirements",[]):
+				if str(requirement.get("kind",""))!="flavor": kept.append(requirement)
+			relaxed.requirements=kept
+			if menu_available(id,relaxed): customer=relaxed
 		if not menu_available(id,customer):
 			commerce.society.release(arrival.intent.opportunity_id)
 			commerce.state.day_stats.admitted-=1
@@ -601,6 +619,7 @@ var _crew_skip: Dictionary = {}
 var _crew_note: String = ""
 var crew_external: bool = false
 var crew_status_source: Callable
+var cook_step_source: Callable
 
 func crew_work(person_id: String) -> String:
 	if crew_external:
@@ -612,6 +631,22 @@ func crew_work(person_id: String) -> String:
 		if bool(record.get("paused", false)):
 			return ""
 		return "缺料" if bool(record.get("blocked", false)) else "做菜"
+	return ""
+
+func cook_step(person_id: String) -> String:
+	if crew_external:
+		return str(cook_step_source.call(person_id)) if cook_step_source.is_valid() else ""
+	if crew == null:
+		return ""
+	var steps: Array[String] = ["取料", "切菜", "热锅", "翻炒", "调味", "出餐"]
+	for job: Variant in _crew_jobs.values():
+		var record: Dictionary = job
+		if str(record.get("cook_id", "")) != person_id or bool(record.get("paused", false)) or bool(record.get("blocked", false)):
+			continue
+		var total: float = crew.cook_seconds(person_id)
+		var left: float = float(record.get("left", total))
+		var done: float = clampf(1.0 - left / maxf(0.001, total), 0.0, 0.999)
+		return steps[mini(steps.size() - 1, int(done * float(steps.size())))]
 	return ""
 
 func take_crew_note() -> String:

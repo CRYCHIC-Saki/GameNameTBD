@@ -327,6 +327,44 @@ func close() -> void:
 func snapshot() -> Dictionary:
 	return session.snapshot().to_dict() if session != null else {}
 
+func cook_step() -> String:
+	var dish := snapshot()
+	if dish.is_empty():
+		return ""
+	var state := str(dish.get("state", ""))
+	if state == "plated":
+		return "出餐"
+	if state in ["delivered", "discarded", "cancelled"]:
+		return ""
+	if not _automatic_target.is_empty():
+		return "切菜"
+	var operation := ""
+	if qte != null:
+		operation = str(progress.get("kind", ""))
+	elif thermal_qte != null:
+		operation = str(thermal_progress.get("kind", ""))
+	match operation:
+		"cut":
+			return "切菜"
+		"heat", "preheat":
+			return "热锅"
+		"stir", "oil", "ferment":
+			return "翻炒"
+		"season":
+			return "调味"
+		"starch":
+			return "勾芡"
+		"steam", "boil":
+			return "蒸制"
+		"plate":
+			return "出餐"
+		_:
+			if state == "preparing":
+				return "取料"
+			if state == "operating":
+				return "翻炒"
+			return ""
+
 func customer_feedback() -> Array:
 	return _customer_feedback.duplicate(true)
 
