@@ -38,7 +38,14 @@ func test_paid_thirteen_town_legacy_save_migrates_without_losing_shipments() -> 
 	assert_eq(profile.commerce.state.familiarity["local:continental"],0.72)
 	assert_eq(profile.commerce.state.familiarity["local:eu"],0.72)
 	var historical:=TDShopSession.normalize_save(old.shop)
-	for field: String in historical: assert_eq(profile.shop.snapshot()[field],historical[field],field)
+	var current: Dictionary=profile.shop.snapshot()
+	for field: String in historical:
+		if field!="inventory": assert_eq(current[field],historical[field],field)
+	for id: String in historical.inventory: assert_eq(current.inventory[id],historical.inventory[id],id)
+	for id: String in current.inventory:
+		if historical.inventory.has(id): continue
+		assert_true(TDMaterialCatalog.added(id),"Only registered new materials may be added: "+id)
+		assert_eq(current.inventory[id],0,id)
 	assert_eq(profile.shop.snapshot().stock_version,1)
 	assert_true(profile.shop.snapshot().mastery.is_empty())
 	assert_eq(profile.research.snapshot().unlocked,old.research.unlocked)

@@ -1223,6 +1223,7 @@ func restore(data: Variant) -> TDOutcome:
 
 static func normalize_save(data: Dictionary) -> Dictionary:
 	var value: Dictionary=data.duplicate(true)
+	if value.has("material_version"): value.material_version=int(value.material_version)
 	if value.has("stock_version"):
 		value.stock_version=int(value.stock_version)
 		for lots: Array in value.inventory_lots.values():

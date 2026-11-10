@@ -1,5 +1,20 @@
 extends GutTest
 var profiles: Array[TDGameProfile]=[]
+
+func test_installed_catalog_reloads_and_still_rejects_invalid_costs() -> void:
+	var original:=TDServiceCatalog.new();assert_true(original.load_file().ok)
+	var before: Dictionary=original.config.duplicate(true)
+	var restored:=TDServiceCatalog.new()
+	var result:=restored.load_data(before)
+	assert_true(result.ok,result.code)
+	assert_eq(restored.config,before)
+	assert_eq(restored.cooking.data(),original.cooking.data())
+	for id: String in ["tomato","miso","unknown-material"]:
+		var invalid: Dictionary=before.duplicate(true)
+		invalid.costs[id]=0 if id!="unknown-material" else 100
+		assert_eq(TDServiceCatalog.new().load_data(invalid).code,"INVALID_COST",id)
+	assert_eq(original.config,before,"Reload and failed validation must not mutate the source")
+
 func profile() -> TDGameProfile:
 	var p:=TDGameProfile.new();profiles.append(p);p.slot_id="slot-01"
 	assert_true(p.error.ok,p.error.code)

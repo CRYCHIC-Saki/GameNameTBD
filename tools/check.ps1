@@ -5,9 +5,12 @@ param(
   [ValidateSet('condiment-rules','materials','materials-regression','supplier-release','supplier-lines','supplier-compat','sync-current','sync-remainder','sync-migration','construction-regression','construction','console','management','management-regression','pull-core','pull-scenes','regions','travel-core','travel','branch-core','branches','seated-art','restaurant-feedback','diners','decoration','all','content','cooking','qte','platform','scoring','integration','business','service','research','profiles','game','title','movement','commerce','stock','progression','habitat','protagonist','locomotion','story','characters','town-renewal','town-polish','residential','visual-unity','story-expansion','arrival-coast','story-fixes','homecoming')]
   [string]$Suite = 'all',
   [int]$TimeoutSeconds = 1800,
+  [ValidateRange(1,16)][int]$ShardCount = 1,
+  [ValidateRange(0,15)][int]$ShardIndex = 0,
   [string]$ReportName = ''
 )
 $ErrorActionPreference = 'Stop'
+if ($ShardIndex -ge $ShardCount) { throw 'ShardIndex must be less than ShardCount' }
 $root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $lock = Get-Content -LiteralPath (Join-Path $root 'dependencies.lock.json') -Raw | ConvertFrom-Json
 if (-not $GodotPath) { $GodotPath = $lock.godot.local_path }
@@ -125,6 +128,12 @@ try {
   $files = if ($Suite -eq 'all') {
     @(Get-ChildItem -LiteralPath (Join-Path $root 'tests') -Filter 'test_*.gd' -File -Recurse | ForEach-Object { [IO.Path]::GetRelativePath($root, $_.FullName).Replace('\','/') })
   } else { @($testMap[$Suite]) }
+  $allFiles = @($files | Sort-Object -CaseSensitive)
+  $files = @(for ($i = 0; $i -lt $allFiles.Count; $i++) {
+    if (($i % $ShardCount) -eq $ShardIndex) { $allFiles[$i] }
+  })
+  [ordered]@{suite=$Suite;shard_index=$ShardIndex;shard_count=$ShardCount;total_files=$allFiles.Count;files=$files} |
+    ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $report 'selection.json') -Encoding utf8
   $discovered = 0
   foreach ($file in $files) {
     $text = Get-Content -LiteralPath (Join-Path $root $file) -Raw
@@ -147,7 +156,7 @@ try {
   if ($executed -ne $discovered -or $executed -eq 0 -or $failures -gt 0 -or $skipped -gt 0 -or $errors -gt 0) {
     throw "TEST_GATE: discovered=$discovered executed=$executed failures=$failures skipped=$skipped errors=$errors"
   }
-  $summary = [ordered]@{status='PASS';engine=$version;suite=$Suite;discovered=$discovered;executed=$executed;passed=$executed;failed=$failures;skipped=$skipped;exit_code=0;stages=$stages}
+  $summary = [ordered]@{status='PASS';engine=$version;suite=$Suite;shard_index=$ShardIndex;shard_count=$ShardCount;discovered=$discovered;executed=$executed;passed=$executed;failed=$failures;skipped=$skipped;exit_code=0;stages=$stages}
   $summary | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $report 'summary.json') -Encoding utf8
   Write-Host "PASS discovered=$discovered executed=$executed failed=0 skipped=0 exit=0"
   Write-Host "REPORT=$report"

@@ -49,7 +49,12 @@ func load_data(raw: Variant) -> TDOutcome:
 	if not checked.ok: return checked
 	var names: Dictionary = {}
 	for item: Dictionary in data.ingredients: names[item.id] = item
+	# config also contains installed regional costs after the first load.
+	# Resolve those IDs from the same registry used by install(), never caller metadata.
 	for id: Variant in raw.costs:
+		if id is String and (TDMaterialCatalog.added(id) or not names.has(id)):
+			var definition: Dictionary=TDMaterialCatalog.definition(id)
+			if not definition.is_empty(): names[id]=definition
 		if not id is String or not names.has(id) or not integer(raw.costs[id],1,1000000) or names[id].scope == "TEST_ONLY": return TDOutcome.new(false,"INVALID_COST")
 	var seen: Dictionary = {}
 	if raw.offers.size() < 5 or raw.offers.size() > 8: return TDOutcome.new(false,"INVALID_MENU_COUNT")

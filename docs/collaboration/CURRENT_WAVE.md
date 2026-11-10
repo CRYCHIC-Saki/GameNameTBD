@@ -1,6 +1,7 @@
 # 当前协作波次
 
-## 2026-11-10 上传集成（IN_PROGRESS）
+## 2026-11-10 上传集成（CANDIDATE_FROZEN，源代码锁释放）
+CI 修复由 root 独占 src/business/service_catalog.gd、src/business/shop_session.gd、tests/unit/test_regional_materials.gd、tests/integration/test_town_economy_integration.gd 、tools/check.ps1、.github/workflows/check.yml 和本段/PROJECT_STATE；备份 ci-fix-baseline。AC-UPLOAD-001：扩展材料配置可重复加载且非法成本拒绝；002：存档读回类型与数量一致，故意中断仍恢复旧档；003：十三镇旧档库存原量不变，仅注册新材料补零。必须复验失败用例及远端全量，不能绕过失败合并。AC-UPLOAD-004：远端同入口按文件四组并行，覆盖原全量集合且无重复；每组保留导入、加载、数量/跳过/失败门槛，默认本地 all 不变。
 用户授权推送并合并main。root唯一集成者，冻结103个发布候选工程文件；远端main经官方API确认3719c13，无新增提交。源文件/罗厄34项排除，43个保护文件哈希与全部候选备份在artifacts/upload-20261110。Git直连不稳定，优先使用官方GitHub API传输并验证相同Git对象；禁止强推、覆盖他人更新或上传凭据/原始资料。保持当前已验证功能及验收限制，干净副本检查后执行合并。
 
 ## D070 调料菜系门槛（DELIVERED_LOCAL_PLAYTEST_PENDING，2026-11-10，锁释放）
