@@ -21,7 +21,10 @@ func test_old_owned_properties_branches_inventory_and_books_survive_once() -> vo
 	var p:=legacy()
 	assert_true(p.shop.world_adjustment(300000,"fixture","测试资金").ok)
 	assert_true(p.recommend_route("tokyo","fixture-route").ok)
-	for y: int in [48,53]: assert_true(p.branches.open_store("tokyo",[6,y,3,4],"cn","manager.steady","fixture:%d"%y).ok)
+	for y: int in [48,53]:
+		var opened:=p.branches.open_store("tokyo",[6,y,3,4],"cn","","fixture:%d"%y)
+		assert_true(opened.ok,opened.code)
+	assert_eq(p.branches.paid_ids().size(),2,"migration fixture owns two actually paid building sites")
 	var raw:=raw_save(p);var before:=raw.duplicate(true)
 	var next:=TDGameProfile.new();profiles.append(next)
 	var result:=next.restore(raw);assert_true(result.ok,result.code+":"+result.message)

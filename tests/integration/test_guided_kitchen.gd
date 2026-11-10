@@ -129,7 +129,9 @@ func test_guided_restart_cleans_schedules_and_returns_to_player_title() -> void:
 	app.return_to_menu(); await get_tree().process_frame; await get_tree().process_frame
 	assert_false(is_instance_valid(old))
 	var labels: Array=[]
-	for button: Button in app._menu.find_children("*","Button",true,false): labels.append(button.text)
+	assert_false(app.game_shell._hud_layer.visible,"in-game shortcuts stay hidden at the title")
+	for button: Button in app._menu.find_children("*","Button",true,false):
+		if button.is_visible_in_tree(): labels.append(button.text)
 	assert_eq(labels,["开始游戏","继续游戏","载入存档","设置","退出游戏"])
 	app.enter_full_kitchen(); kitchen=app.full_kitchen; kitchen.auto_advance=false
 	assert_false(kitchen.stage.visible)

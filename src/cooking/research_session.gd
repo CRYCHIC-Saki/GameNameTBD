@@ -125,6 +125,28 @@ func _event(id: String, payload: Dictionary) -> TDOutcome:
 		candidate.points+=payload.amount
 	return _commit(candidate)
 
+func debug_unlock(id: String) -> TDOutcome:
+	# Explicit cheat provenance; never fabricate study results or migration history.
+	if not _active.is_empty(): return TDOutcome.new(false,"BUSY")
+	if not catalog.nodes.has(id) or catalog.runtime_id(id).is_empty(): return TDOutcome.new(false,"UNKNOWN_RUNTIME_RECIPE")
+	if has(id): return TDOutcome.new(true,"ALREADY_UNLOCKED","该菜已掌握，未重复修改。")
+	var pending: Array[String]=[id];var targets: Array[String]=[]
+	while not pending.is_empty():
+		var current: String=pending.pop_back()
+		if current in targets: continue
+		targets.append(current)
+		for parent: String in catalog.node(current).prerequisites: pending.append(parent)
+	var candidate:=snapshot()
+	for current: String in targets:
+		if current in candidate.unlocked: continue
+		var cuisine: String=catalog.node(current).cuisine_id
+		if cuisine not in candidate.cuisines: candidate.cuisines.append(cuisine)
+		candidate.unlocked.append(current)
+		candidate.events["debug:recipe:"+current]={"kind":"debug_unlock","recipe":current}
+	var result:=_commit(candidate)
+	if result.ok: result.message="调试掌握菜谱及必要前置；没有生成研习分数。"
+	return result
+
 func inherit_legacy(runtime_ids: Array) -> TDOutcome:
 	var candidate:=snapshot()
 	for runtime: Variant in runtime_ids:
@@ -170,9 +192,16 @@ func validate_save(raw: Variant) -> TDOutcome:
 	if "cn" not in raw.cuisines: return TDOutcome.new(false,"INVALID_CUISINES")
 	for id:String in raw.grandfathered:
 		if id not in raw.unlocked or catalog.runtime_id(id) not in raw.legacy_ids: return TDOutcome.new(false,"INVALID_INHERITANCE")
+	var debug_ids: Array[String]=[]
+	if raw.get("events") is Dictionary:
+		for event_id: Variant in raw.events:
+			var event: Variant=raw.events[event_id]
+			if not event is Dictionary or event.get("kind")!="debug_unlock": continue
+			if not event_id is String or not event.get("recipe") is String or event_id!="debug:recipe:"+event.recipe or not catalog.nodes.has(event.recipe) or event.recipe not in raw.unlocked or event.keys().size()!=2: return TDOutcome.new(false,"INVALID_DEBUG_UNLOCK")
+			debug_ids.append(event.recipe)
 	for id:String in raw.unlocked:
 		if id in raw.grandfathered: continue
-		if id not in catalog.data.unlock_rules.initial_unlocked_ids:
+		if id not in catalog.data.unlock_rules.initial_unlocked_ids and id not in debug_ids:
 			if id not in raw.licensed or not raw.get("best") is Dictionary or not TDResearchCatalog.number(raw.best.get(id)) or raw.best[id]<float(catalog.data.settings.pass_score): return TDOutcome.new(false,"INVALID_UNLOCK")
 		if catalog.node(id).cuisine_id not in raw.cuisines: return TDOutcome.new(false,"INVALID_UNLOCK")
 		for parent:String in catalog.node(id).prerequisites:
@@ -192,6 +221,8 @@ func validate_save(raw: Variant) -> TDOutcome:
 			if row.get("cuisine") not in raw.cuisines: return TDOutcome.new(false,"INVALID_EVENT")
 		elif row.get("kind")=="inspiration":
 			if not TDResearchCatalog.integer(row.get("amount"),1,10000): return TDOutcome.new(false,"INVALID_EVENT")
+		elif row.get("kind")=="debug_unlock":
+			if row.get("recipe") not in debug_ids: return TDOutcome.new(false,"INVALID_DEBUG_UNLOCK")
 		else: return TDOutcome.new(false,"INVALID_EVENT")
 	if not raw.get("world_time") is Dictionary or not TDResearchCatalog.integer(raw.world_time.get("day"),1,1000000) or raw.world_time.get("phase") not in ["morning","evening"] or not TDResearchCatalog.number(raw.world_time.get("spent")) or raw.world_time.spent<0 or raw.world_time.spent>24: return TDOutcome.new(false,"INVALID_WORLD_TIME")
 	if not TDResearchCatalog.number(raw.get("input_offset_sec")) or absf(float(raw.input_offset_sec))>.2: return TDOutcome.new(false,"INVALID_OFFSET")

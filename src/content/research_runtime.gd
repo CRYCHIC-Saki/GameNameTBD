@@ -20,7 +20,8 @@ static func install(service:TDServiceCatalog) -> TDOutcome:
 	for item:Dictionary in raw.ingredients:
 		var definition:Dictionary=item.definition
 		if not TDServiceCatalog.integer(item.get("cost_cents_per_unit"),1,1000000): return TDOutcome.new(false,"INVALID_COST")
-		cooking.ingredients.append(definition.duplicate(true));cooking.active.ingredients.append(definition.id)
+		if definition.id not in cooking.active.ingredients:
+			cooking.ingredients.append(definition.duplicate(true));cooking.active.ingredients.append(definition.id)
 		config.ingredients.append(definition.duplicate(true));config.costs[definition.id]=item.cost_cents_per_unit;config.research_cost_ids.append(definition.id)
 	for item:Dictionary in raw.dishes:
 		if not item.recipe.id.begins_with("study.") or item.recipe.id!=item.world.service_recipe or item.sheet.id!=item.recipe.id or item.offer.id!=item.recipe.id: return TDOutcome.new(false,"INVALID_RUNTIME_REFERENCE")

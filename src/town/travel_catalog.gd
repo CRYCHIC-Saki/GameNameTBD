@@ -50,7 +50,7 @@ static func prop(town: String, decoration: bool) -> Texture2D:
 	return _sprites[key]
 
 static func label(plot: Dictionary, town: String) -> String:
-	if plot.has("branch_id"): return str(plot.name)
+	if plot.has("branch_id"): return str(plot.name)+(" · 施工中" if plot.get("construction",false) else "")
 	if town=="chengdu": return str(plot.get("name","街区"))
 	var jp: bool=town=="tokyo";var eu: bool=town=="paris";var sea: bool=town=="bangkok"
 	match str(plot.get("kind","")):

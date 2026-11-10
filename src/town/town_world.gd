@@ -1,5 +1,6 @@
 class_name TDTownWorld
 extends Node2D
+var management_menus: bool=false
 var _target_hint: Label
 
 signal back_requested
@@ -205,7 +206,7 @@ func _draw() -> void:
 	if session == null or session.town_map.plots.is_empty():
 		return
 	if player_mode:
-		TDTownArt.draw_world(self,session,_selected)
+		TDTownArt.draw_world(self,session,_selected,management_menus)
 		TDHarbor.draw(self,session.town_map,_origin(),CELL)
 		# Property visuals now use the same atlas renderer.
 		_draw_story()
@@ -333,6 +334,7 @@ func _interact() -> void:
 			if story_requested.has_connections(): story_requested.emit(story_person)
 			else: _open_talk(story.talk(story_person, hero_name, chapter_ready, session.san, story_board))
 		elif characters!=null:
+			characters.mark_met(story_person)
 			_open_talk(characters.conversation(story_person))
 		queue_redraw()
 		return
@@ -341,6 +343,7 @@ func _interact() -> void:
 		return
 	_selected = plot
 	var kind := String(plot["kind"])
+	if management_menus and kind in ["factory_lot","supply_factory"]: return
 	if player_mode:
 		if kind=="player_cottage": place_requested.emit("cottage",str(plot.id));return
 		if kind=="player_diner" and String(plot.get("id",""))=="player_diner":
@@ -401,6 +404,12 @@ func _interact() -> void:
 		near = " 离餐厅%d格，预计人气加成%d。" % [session.town_map.distance_to(String(plot["id"])), TDSanRules.near_bonus(session.town_map.distance_to(String(plot["id"])))]
 	_set_status("%s，%s。人数贡献%d，预算平移%d。%s%s" % [String(plot["name"]), enabled, int(plot["pool"]), int(plot["budget_shift"]), visit, near])
 
+func _walkable(x: int, y: int) -> bool:
+	if management_menus:
+		var plot:=session.town_map.plot_at(x,y)
+		if plot.get("kind","") in ["factory_lot","supply_factory"]: return session.town_map.terrain_at(Vector2i(x,y)).walkable
+	return session.town_map.is_walkable(x,y)
+
 func _build_blockers() -> void:
 	if _blockers != null and is_instance_valid(_blockers):
 		_blockers.queue_free()
@@ -413,9 +422,9 @@ func _build_blockers() -> void:
 	for y: int in session.town_map.extent:
 		var x: int=0
 		while x<session.town_map.extent:
-			if session.town_map.is_walkable(x,y): x+=1;continue
+			if _walkable(x,y): x+=1;continue
 			var first: int=x
-			while x<session.town_map.extent and not session.town_map.is_walkable(x,y): x+=1
+			while x<session.town_map.extent and not _walkable(x,y): x+=1
 			var shape:=RectangleShape2D.new();shape.size=Vector2((x-first)*CELL,CELL)
 			var collider:=CollisionShape2D.new();collider.shape=shape
 			collider.position=_origin()+Vector2((first+x)*.5*CELL,(y+.5)*CELL)
@@ -492,13 +501,13 @@ func _keep_player_on_map() -> void:
 	if _player == null or session == null:
 		return
 	var cell := _player_cell()
-	if session.town_map.is_walkable(cell.x, cell.y):
+	if _walkable(cell.x,cell.y):
 		return
 	var best := Vector2i(TDTownMap.CENTER, TDTownMap.CENTER)
 	var distance := INF
 	for y: int in session.town_map.extent:
 		for x: int in session.town_map.extent:
-			if not session.town_map.is_walkable(x, y):
+			if not _walkable(x,y):
 				continue
 			var score := Vector2(x, y).distance_squared_to(Vector2(cell))
 			if score < distance:
@@ -509,7 +518,7 @@ func _keep_player_on_map() -> void:
 
 func _feet_on_road(at: Vector2) -> bool:
 	var cell := _cell_at(at)
-	return session != null and session.town_map.is_walkable(cell.x, cell.y)
+	return session != null and _walkable(cell.x,cell.y)
 
 func _player_cell() -> Vector2i:
 	return _cell_at(_player.position)
@@ -1640,6 +1649,7 @@ func facing_plot() -> Dictionary:
 	var harbor:=TDHarbor.facility(session.town_map)
 	if not harbor.is_empty(): facilities.append(harbor)
 	for p: Dictionary in facilities:
+		if management_menus and p.get("kind","") in ["factory_lot","supply_factory"]: continue
 		if not TDInteractionRange.facility(p): continue
 		var bounds:=TDInteractionRange.plot_bounds(p,CELL,_origin())
 		var at:=TDInteractionRange.closest(_player.position,bounds)
@@ -1650,7 +1660,7 @@ func facing_plot() -> Dictionary:
 		for step: int in range(1,5):
 			var point:=_player.position.lerp(at,step/5.0)
 			var cell:=Vector2i((point-_origin())/CELL)
-			if not session.town_map.is_walkable(cell.x,cell.y) and not bounds.has_point(point): clear=false;break
+			if not _walkable(cell.x,cell.y) and not bounds.has_point(point): clear=false;break
 		if clear:
 			best=p.duplicate(true);best.interaction_point=at;shortest=distance
 	return best

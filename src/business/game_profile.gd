@@ -17,6 +17,8 @@ var _alive: bool = true
 var error := TDOutcome.new(true)
 var commerce: TDWorldEconomy
 var branches := TDPlayerBranches.new()
+var employees := TDEmployeeRoster.new()
+var suppliers := TDSupplierNetwork.new()
 var progression := TDLevelProgression.new()
 var progression_error := TDOutcome.new(true)
 var residence:Dictionary={}
@@ -27,6 +29,7 @@ var region_layout_version: int=2
 var region_migration: Dictionary={}
 var story := TDOpening.new()
 var characters := TDCharacterRoster.new()
+var main_management_auto: bool=false
 
 func _init() -> void:
 	if not characters.error.ok: error=characters.error;return
@@ -59,9 +62,16 @@ func _init() -> void:
 	shop.crew=layout.crew
 	research.save_sink=_research_candidate
 	research.changed.connect(_sync_recipes)
+	shop.material_recipe_unlocks=research.snapshot().unlocked.duplicate()
+	shop.material_cuisine_unlocks=research.snapshot().cuisines.duplicate()
 	commerce=TDWorldEconomy.new(service.config.costs,world.home_town_id if not world.home_town_id.is_empty() else world.town_id,int(shop.snapshot().seed))
 	if not commerce.error.ok: error=commerce.error;return
 	if not branches.error.ok: error=branches.error;return
+	branches.managed=true
+	employees.attach(self);suppliers.attach(self)
+	if not employees.error.ok: error=employees.error;return
+	if not suppliers.error.ok: error=suppliers.error;return
+	employees.sync_main_crew()
 	branches.attach(self)
 	_wire_commerce()
 	if not error.ok: return
@@ -73,6 +83,7 @@ func _init() -> void:
 	error=initialize_residence()
 
 func _on_business_opened() -> void:
+	employees.record_duties(int(shop.snapshot().day))
 	story.note_opened()
 
 func _on_business_settled(_day: int) -> void:
@@ -158,6 +169,8 @@ func acknowledge_level_event(event_id: String) -> TDOutcome:
 
 func _wire_commerce() -> void:
 	shop.commerce=commerce
+	shop.before_open=prepare_management
+	shop.before_settlement=_accrue_main_payroll
 	branches.attach(self)
 	commerce.player_branches=branches
 	commerce.character_candidate=_meal_candidate
@@ -180,13 +193,80 @@ func _wire_commerce() -> void:
 		var recipe:=world.catalog.kitchen_recipe_id(runtime)
 		if not recipe.is_empty(): shop.recipe_cultures[recipe]={"cn":"chinese","eu":"continental","jp":"japanese","sea":"southeast_asian","lat":"latin_american"}.get(research.catalog.node(id).cuisine_id,research.catalog.node(id).cuisine_id)
 
+func _legacy_staff(old_layout: Dictionary) -> Dictionary:
+	var result: Dictionary=world.staff.duplicate(true)
+	for role: String in ["greeter","cashier"]:
+		if bool(old_layout.get("staff",{}).get(role,false)): result[role]=true
+	return result
+
+func prepare_management() -> void:
+	if not _alive or not at_boundary(): return
+	suppliers.advance(0)
+	receive_supplies()
+	_automate_main()
+	branches.automate()
+	suppliers.automate()
+	employees.record_duties(int(shop.snapshot().day))
+	employees.sync_main_crew()
+
+func main_menu_rows() -> Array:
+	var rows: Array=[];var data:=shop.snapshot()
+	for id: String in data.menu:
+		if not shop.is_unlocked(shop.family_id(id)): continue
+		var row:=shop.offer(id)
+		if row.is_empty(): continue
+		row.name=shop.recipe_name(id);row.enabled=bool(data.menu[id].enabled);row.price_cents=int(data.menu[id].price_cents)
+		rows.append(row)
+	rows.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return str(a.id)<str(b.id))
+	return rows
+
+func set_main_management(value: bool) -> TDOutcome:
+	if not _alive or not at_boundary(): return TDOutcome.new(false,"NOT_AT_BOUNDARY","筹备或日结后才能调整托管。")
+	if value and employees.manager_for("player_diner").is_empty(): return TDOutcome.new(false,"MANAGER_REQUIRED","请先从员工仓库为主店派驻店长。")
+	main_management_auto=value
+	if value: _automate_main()
+	return TDOutcome.new(true,"AUTOMATION_UPDATED","主店经营托管已开启，店长将在筹备时安排人员和菜单。" if value else "主店经营托管已关闭，当前人员和菜单保留。")
+
+func _automate_main() -> void:
+	if not _alive or not main_management_auto or shop.snapshot().phase!="PREPARE" or employees.manager_for("player_diner").is_empty(): return
+	var choices:=main_menu_rows()
+	choices.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return int(a.reference_cents)<int(b.reference_cents) if int(a.reference_cents)!=int(b.reference_cents) else str(a.id)<str(b.id))
+	var menu: Array=[]
+	for dish: Dictionary in choices.slice(0,3):
+		var recipe:=shop.profile_for({"recipe_id":dish.id})
+		var needs:=service.material_needs(recipe,shop.family_id(dish.id));var cost: int=0
+		for item: String in needs:
+			cost+=TDShopSession.amount_cost(int(needs[item]),int(commerce.state.markets[commerce.state.home].price.get(item,0)))
+		menu.append({"id":dish.id,"price_cents":clampi(maxi(int(dish.reference_cents),roundi(cost*1.8)),1,1000000)})
+	if menu.is_empty(): return
+	var updated:=shop.configure_menu(menu)
+	if updated.ok: employees.auto_assign("player_diner")
+
+func _accrue_main_payroll() -> void:
+	employees.record_duties(int(shop.snapshot().day))
+	var payroll: Dictionary=employees.payroll_for("player_diner",int(shop.snapshot().day))
+	# Legacy hiring paid these named workers in advance. Keep the paid wage in the
+	# existing ledger and accrue only the balance, including after save migration.
+	var prepaid: Dictionary={}
+	for event: Dictionary in shop.snapshot().ledger:
+		if event.kind=="settlement": prepaid.clear()
+		elif event.kind=="wage" and int(event.cents)<0:
+			prepaid[str(event.reference)]=int(prepaid.get(str(event.reference),0))-int(event.cents)
+	var credit: int=0
+	for worker: Dictionary in payroll.workers:
+		var paid: int=0
+		for token: String in prepaid:
+			if token.begins_with("crew:%s:"%worker.employee_id): paid+=int(prepaid[token])
+		credit+=mini(int(worker.cents),paid)
+	shop.accrue_wage(maxi(0,int(payroll.total_cents)-credit),shop.day_namespace()+"employee-payroll")
+
 func _meal_candidate(raw: Dictionary, templates: Array, family_count: int) -> Dictionary:
 	return characters.candidate(raw,templates,family_count,commerce.event_minute)
 
 func _factory_products(group: String) -> Array:
 	var rows: Array=[]
 	for id: String in shop.purchase_ids():
-		if shop.stock_info(id).group==group: rows.append({"id":id,"hours":1.0 if group=="meat" else .5})
+		if shop.stock_info(id).group==group and TDMaterialCatalog.supplies(world.town_id,id): rows.append({"id":id,"hours":1.0 if group=="meat" else .5})
 	return rows
 
 func _factory_item(id: String) -> Dictionary:
@@ -222,6 +302,8 @@ func _reward_cooking(day: int, id: String, score: float) -> void:
 
 func _sync_recipes() -> void:
 	if not _alive: return
+	shop.material_recipe_unlocks=research.snapshot().unlocked.duplicate()
+	shop.material_cuisine_unlocks=research.snapshot().cuisines.duplicate()
 	install_legacy(service,world.research_service_ids())
 	for id: String in world.research_service_ids():
 		if not shop.is_unlocked(id): shop.grant_recipe(id)
@@ -241,7 +323,8 @@ func snapshot(candidate: Dictionary = {}) -> Dictionary:
 	state.day=int(business.day);state.money=int(business.money_cents)/100
 	state.day_phase="evening" if business.phase=="SETTLED" else "morning"
 	progress.world_time={"day":int(business.day),"phase":state.day_phase,"spent":state.free_spent}
-	var data:={"schema_version":8,"kind":"town-diner-profile","slot_id":slot_id,"title":title,"updated_at":updated_at,"revision":revision,"imported_legacy":imported_legacy,"shop":business,"research":progress,"world":state,"layout":layout.to_dict(),"economy":commerce.snapshot(),"branches":branches.snapshot(),"progression":progression.snapshot(),"residence":residence.duplicate(true),"characters":characters.snapshot(),"map_migration":map_migration.duplicate(true)}
+	var data:={"schema_version":9,"kind":"town-diner-profile","slot_id":slot_id,"title":title,"updated_at":updated_at,"revision":revision,"imported_legacy":imported_legacy,"shop":business,"research":progress,"world":state,"layout":layout.to_dict(),"economy":commerce.snapshot(),"branches":branches.snapshot(),"employees":employees.snapshot(),"suppliers":suppliers.snapshot(),"progression":progression.snapshot(),"residence":residence.duplicate(true),"characters":characters.snapshot(),"map_migration":map_migration.duplicate(true)}
+	data.main_management_auto=main_management_auto
 	data.region_layout_version=region_layout_version;data.region_migration=region_migration.duplicate(true)
 	var chapter:=story.export_state()
 	if not chapter.is_empty(): data.story=chapter
@@ -324,20 +407,26 @@ func next_day() -> TDOutcome:
 	if not books.ok:
 		commerce.restore(previous)
 		return books
+	var overnight: float=1440.0+TDWorldDayClock.START_MINUTE-characters.clock.minute
 	var result:=shop.next_day(int(shop.snapshot().day))
 	if result.ok:
 		world.day=int(shop.snapshot().day);world.day_phase="morning";world.free_spent=0.0
 		branches.advance_day()
 		characters.next_day(world.day)
+		# Night deliveries are booked on the new morning after expiry/day rollover.
+		# Only game-time lines advance; prepaid legacy real-second queues do not.
+		suppliers.automate()
+		suppliers.advance_game_minutes(overnight)
 		world.pantry.spoil(world.day);world.supply.collect(world.day)
 		receive_supplies()
+		prepare_management()
 		sync_commercial_map();world.map_revision+=1
 	else: commerce.restore(previous)
 	return result
 
 func order_remote(id: String, town_id: String = "", units: int = 1000, request_id: String = "") -> TDOutcome:
 	if not service.config.costs.has(id): return TDOutcome.new(false,"UNSUPPORTED_MATERIAL")
-	if not shop.market_sells(id): return TDOutcome.new(false,"INGREDIENT_LOCKED","这家菜市场没有这种原料。")
+	if not shop.market_sells(id): return TDOutcome.new(false,"INGREDIENT_LOCKED","原料不可购买；特色调料需先开放对应菜系。")
 	if not at_boundary() or shop.snapshot().phase!="PREPARE": return TDOutcome.new(false,"NOT_PREPARING")
 	if town_id.is_empty():
 		if commerce.state.routes.size()<2: return TDOutcome.new(false,"NO_REMOTE_ROUTE","目前只有本地商路，等待剧情推荐后再预订。")
@@ -434,6 +523,7 @@ func restore(data: Dictionary) -> TDOutcome:
 		data=converted.data
 		checked=validate_save(data)
 		if not checked.ok: return checked
+	main_management_auto=bool(data.get("main_management_auto",false))
 	region_layout_version=2;region_migration=data.get("region_migration",{}).duplicate(true)
 	map_migration=data.get("map_migration",{}).duplicate(true)
 	# Validation completes before any live object is changed.
@@ -475,6 +565,26 @@ func restore(data: Dictionary) -> TDOutcome:
 		branches.migrate_legacy()
 		sync_commercial_map()
 		if not residence.is_empty(): world.town_map.install_cottage(residence.plot)
+	employees=TDEmployeeRoster.new();suppliers=TDSupplierNetwork.new()
+	employees.attach(self);suppliers.attach(self);branches.managed=true
+	if int(data.schema_version)>=9:
+		checked=employees.restore(data.employees)
+		if not checked.ok: return checked
+		checked=suppliers.restore(data.suppliers)
+		if not checked.ok: return checked
+	else:
+		checked=employees.migrate_legacy(data.layout.get("crew",[]),branches.snapshot(),_legacy_staff(data.layout))
+		if not checked.ok: return checked
+		for store: Dictionary in branches.state.stores.values():
+			store.manager_id=str(employees.manager_for(str(store.id)).get("id",""))
+			store.management_auto=false
+		suppliers.migrate_legacy(world)
+	branches.migrate_construction()
+	sync_commercial_map()
+	employees.sync_main_crew()
+	if int(data.schema_version)<9:
+		if story.started(): characters.mark_met("aling")
+		if story.started() and story.beat not in ["arrive","follow"]: characters.mark_met("chen")
 	for plot: Dictionary in world.town_map.plots: plot.enabled=bool(data.world.zone_enabled.get(plot.id,plot.get("enabled",true)))
 	return TDOutcome.new(true,"MAP_MIGRATED" if map_migrated_on_load or region_migrated_on_load else "RESTORED","小镇已更新布局，经营进度已保留。" if map_migrated_on_load or region_migrated_on_load else "")
 
@@ -490,7 +600,8 @@ func initialize_legacy_commerce() -> void:
 	_wire_commerce()
 
 static func validate_save(raw: Variant) -> TDOutcome:
-	if not raw is Dictionary or not TDServiceCatalog.integer(raw.get("schema_version"),1,8) or raw.get("kind")!="town-diner-profile": return TDOutcome.new(false,"UNSUPPORTED_VERSION")
+	if not raw is Dictionary or not TDServiceCatalog.integer(raw.get("schema_version"),1,9) or raw.get("kind")!="town-diner-profile": return TDOutcome.new(false,"UNSUPPORTED_VERSION")
+	if raw.has("main_management_auto") and not raw.main_management_auto is bool: return TDOutcome.new(false,"INVALID_MAIN_MANAGEMENT")
 	if not TDServiceCatalog.integer(raw.get("region_layout_version",1),1,2): return TDOutcome.new(false,"UNKNOWN_REGION_VERSION")
 	var regions:=TDRegionMigration.validate_archive(raw.get("region_migration",{}))
 	if not regions.ok: return regions
@@ -539,10 +650,47 @@ static func validate_save(raw: Variant) -> TDOutcome:
 	checked=TDWorldSnapshot.validate(raw.world)
 	if not checked.ok: return checked
 	if int(raw.world.day)!=int(raw.shop.day) or int(raw.world.money)!=int(raw.shop.money_cents)/100: return TDOutcome.new(false,"INCONSISTENT_PROFILE")
+	var manager_ids: Array=[""]
+	if int(raw.schema_version)>=9:
+		if not raw.get("economy") is Dictionary or not raw.economy.get("home") is String: return TDOutcome.new(false,"MISSING_ECONOMY")
+		if not raw.get("branches") is Dictionary or not raw.branches.get("stores") is Dictionary: return TDOutcome.new(false,"INVALID_BRANCH_STATE")
+		for store: Variant in raw.branches.stores.values():
+			if not store is Dictionary or not store.get("town_id") is String or not store.get("supply_seen",{}) is Dictionary: return TDOutcome.new(false,"INVALID_BRANCH_STATE")
+		var roster:=TDEmployeeRoster.new()
+		checked=roster.validate_save(raw.get("employees"),raw.branches.stores.keys(),int(raw.shop.day))
+		if not checked.ok: return checked
+		roster.state=raw.employees.duplicate(true)
+		for row: Dictionary in roster.roster_rows():
+			if row.role=="manager" and row.owned: manager_ids.append(row.id)
+		var supply:=TDSupplierNetwork.new()
+		var stores: Dictionary=raw.branches.stores.duplicate(true)
+		stores["player_diner"]={"town_id":raw.economy.home}
+		checked=supply.validate_save(raw.get("suppliers"),stores,int(raw.shop.day),content.config.costs.keys())
+		if not checked.ok: return checked
+		var receipts: Dictionary={}
+		for event: Dictionary in raw.shop.ledger: receipts[str(event.reference)]=event
+		for order_row: Dictionary in raw.suppliers.orders:
+			var payment: Dictionary=receipts.get(str(order_row.token),{})
+			if payment.get("kind","")!="branch_transfer" or payment.get("extra",{}).get("store_id","")!=order_row.store_id or int(payment.get("cents",0))!=-int(order_row.total_cents) or int(payment.get("day",0))!=int(order_row.day): return TDOutcome.new(false,"INVALID_SUPPLIER_PAYMENT")
+			if not raw.shop.seen.has(order_row.token): return TDOutcome.new(false,"UNPAID_SUPPLIER_ORDER")
+			for job: Dictionary in order_row.jobs:
+				var token: String="supply-arrival:"+str(job.id)
+				var seen: Dictionary=raw.shop.seen if order_row.store_id=="player_diner" else raw.branches.stores[order_row.store_id].get("supply_seen",{})
+				if bool(job.delivered)!=seen.has(token): return TDOutcome.new(false,"INCONSISTENT_SUPPLY_RECEIPT")
+		for employee_token: String in raw.employees.seen:
+			if not raw.shop.seen.has(employee_token): return TDOutcome.new(false,"UNPAID_EMPLOYEE_RECRUITMENT")
+			var payment: Dictionary=receipts.get(employee_token,{})
+			if payment.get("kind","")!="branch_transfer" or payment.get("extra",{}).get("store_id","")!="employee-roster" or int(payment.get("cents",0))>=0: return TDOutcome.new(false,"INVALID_EMPLOYEE_PAYMENT")
+		for contract: Dictionary in raw.employees.get("contracts",{}).values():
+			var payment: Dictionary=receipts.get(contract.token,{})
+			if int(payment.get("cents",0))!=-int(contract.fee_cents) or int(payment.get("day",0))!=int(contract.day): return TDOutcome.new(false,"INVALID_EMPLOYEE_CONTRACT_PAYMENT")
+
 	if int(raw.schema_version)>=8:
 		var branch_rules := TDPlayerBranches.new()
 		if not branch_rules.error.ok: return branch_rules.error
-		checked=branch_rules.validate_save(raw.get("branches"),int(raw.shop.day),content,raw.shop.unlocked)
+		checked=branch_rules.validate_save(raw.get("branches"),int(raw.shop.day),content,raw.shop.unlocked,manager_ids,int(raw.schema_version)>=9)
+		if not checked.ok: return checked
+		checked=TDPlayerBranches.validate_payments(raw.branches,raw.shop)
 		if not checked.ok: return checked
 	var furniture:=TDRestaurantCatalog.new();checked=furniture.load_file()
 	if not checked.ok: return checked
@@ -599,6 +747,7 @@ static func _validate_social_links(raw: Dictionary) -> TDOutcome:
 		if not loaded.ok: return loaded
 	var branch_maps: Dictionary={}
 	for branch: Dictionary in raw.get("branches",{}).get("stores",{}).values():
+		if branch.get("construction",{}).get("kind","")=="unverified": continue # Archived references do not reserve land.
 		var town_id: String=branch.town_id
 		if not branch_maps.has(town_id):
 			var map := world_data.town_map if town_id==economy.home else TDTownMap.new()
@@ -651,6 +800,7 @@ func close() -> void:
 		# Keep the rejecting sink on stale references instead of silently accepting writes.
 	persistence=Callable()
 	if shop!=null:
+		shop.before_open=Callable();shop.before_settlement=Callable()
 		shop.cooking_reward=Callable()
 		shop.kitchen_gate=Callable()
 		shop.day_minute_reader=Callable()

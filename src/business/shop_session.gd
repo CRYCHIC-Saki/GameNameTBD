@@ -1,5 +1,7 @@
 class_name TDShopSession
 extends RefCounted
+var before_open: Callable
+var before_settlement: Callable
 signal day_settled(day: int)
 signal day_opened()
 ## Money, orders and stock have one owner. The kitchen provides real dish snapshots.
@@ -30,19 +32,22 @@ func _scheduled_arrival() -> float:
 	return minf(business_close_sec()+1,maxf(0,commerce.next_meal_minute()-_opening_minute))
 var crew: TDRestaurantCrew
 var _starter_override: Array = []
+var material_recipe_unlocks: Array=[]
+var material_cuisine_unlocks: Array=["cn"]
 var stock_rules: Dictionary = TDFoodStock.load_rules()
 
 func purchasable(id: String) -> bool:
 	if not catalog.config.costs.has(id): return false
-	if stock_rules.get(id,{}).get("condiment",false): return true
+	if stock_rules.get(id,{}).get("condiment",false): return TDMaterialCatalog.condiment_unlocked(id,material_cuisine_unlocks)
+	if TDMaterialCatalog.needed_by_unlocked(id,material_recipe_unlocks): return true
 	for item: Dictionary in catalog.config.offers:
 		if is_unlocked(item.id) and id in item.primary: return true
 	return false
 
 func market_sells(id: String) -> bool:
-	# The neighbourhood market sells every stocked ingredient while it is open.
-	# Research still decides which dishes can be cooked, not what can be bought.
-	return catalog != null and catalog.config.costs.has(id)
+	# D070 gates condiments; the neighbourhood market still sells all stocked foods.
+	if catalog==null or not catalog.config.costs.has(id): return false
+	return not stock_rules.get(id,{}).get("condiment",false) or TDMaterialCatalog.condiment_unlocked(id,material_cuisine_unlocks)
 
 func market_ids() -> Array[String]:
 	var result: Array[String]=[]
@@ -58,6 +63,9 @@ func purchase_ids() -> Array[String]:
 
 func stock_info(id: String) -> Dictionary:
 	var result: Dictionary=stock_rules.get(id,{"group":"vegetable","unit":"份","pack_units":1000,"shelf_days":3,"condiment":false}).duplicate(true)
+	var metadata:=TDMaterialCatalog.item(id)
+	result.supply_regions=metadata.get("supply_regions",[]);result.category=metadata.get("category",result.group)
+	result.region_label=TDMaterialCatalog.regions_text(id)
 	result.units=available(id); result.expires_on=TDFoodStock.first_expiry(_s.get("inventory_lots",{}),id)
 	result.remaining_days=maxi(0,int(result.expires_on)-int(_s.day))
 	return result
@@ -214,7 +222,7 @@ func _init(content: TDServiceCatalog, run_id: String = "", seed_value: int = 101
 	_s = {"schema_version":1,"run_id":identity,"seed":seed_value,"day":1,"phase":"PREPARE","elapsed_sec":0.0,"money_cents":int(catalog.config.settings.initial_cents),"inventory":inventory,"menu":menu,"orders":[],"ledger":[],"seen":{},"custom":[],"serial":0,"order_serial":0,"popularity":int(catalog.config.settings.initial_popularity),"reputation":0,"reputation_status":"DEFERRED","fame":fame,"settled_days":[],"grant_days":[]}
 	_rng = TDBusinessRandom.new(seed_value)
 	_s.cold_foods=[]; _s.unlocked=_initial_unlocks(); _s.progress_version=1
-	_s.stock_version=1; _s.inventory_lots=TDFoodStock.migrate(inventory,1,stock_rules)
+	_s.material_version=1; _s.stock_version=1; _s.inventory_lots=TDFoodStock.migrate(inventory,1,stock_rules)
 	_s.mastery_version=1; _s.mastery={}; _s.mastery_dishes={}
 
 func _initial_unlocks() -> Array:
@@ -361,7 +369,7 @@ func buy(cart: Dictionary, token: String, price_override: Dictionary = {}) -> TD
 	if cart.is_empty(): return TDOutcome.new(false,"EMPTY_CART")
 	var cost: int = 0; var change: Dictionary = {}
 	for id: Variant in cart:
-		if not market_sells(str(id)): return TDOutcome.new(false,"INGREDIENT_LOCKED","这家菜市场没有这种原料。")
+		if not market_sells(str(id)): return TDOutcome.new(false,"INGREDIENT_LOCKED","原料不可购买；特色调料需先开放对应菜系。")
 		if not catalog.config.costs.has(id) or not TDServiceCatalog.integer(cart[id],1,100000) or int(_s.inventory[id])+int(cart[id])>1000000: return TDOutcome.new(false,"INVALID_QUANTITY")
 		if price_override.has(id) and not TDServiceCatalog.integer(price_override[id],1,10000000): return TDOutcome.new(false,"INVALID_QUOTE")
 		change[id] = int(cart[id]); cost += amount_cost(int(cart[id]),int(price_override.get(id,catalog.config.costs[id])))
@@ -387,14 +395,14 @@ func bank_adjustment(delta_cents: int, token: String, action: String) -> TDOutco
 
 func branch_adjustment(cents: int, token: String, label: String, store_id: String) -> TDOutcome:
 	if token.is_empty() or _s.seen.has(token): return TDOutcome.new(false,"DUPLICATE")
-	if not store_id.begins_with("player-branch:") or absi(cents)>100000000 or int(_s.money_cents)+cents<0: return TDOutcome.new(false,"INSUFFICIENT_FUNDS","可用现金不足，未扣款。")
+	if (not store_id.begins_with("player-branch:") and store_id not in ["player_diner","employee-roster","supplier-network"]) or absi(cents)>100000000 or int(_s.money_cents)+cents<0: return TDOutcome.new(false,"INSUFFICIENT_FUNDS","可用现金不足，未扣款。")
 	_s.seen[token]=true
 	_record("branch_transfer",cents,{},token,{"label":label,"store_id":store_id})
 	return TDOutcome.new(true,"BRANCH_RECORDED")
 
-func receive_supply(units: Dictionary, token: String, inventory_cost_cents: int = 0) -> TDOutcome:
+func receive_supply(units: Dictionary, token: String, inventory_cost_cents: int = 0, continuous: bool = false) -> TDOutcome:
 	if inventory_cost_cents<0: return TDOutcome.new(false,"INVALID_COST")
-	if _s.phase not in ["PREPARE","SETTLED"]: return TDOutcome.new(false,"NOT_AT_BOUNDARY")
+	if _s.phase not in ["PREPARE","SETTLED"] and not continuous: return TDOutcome.new(false,"NOT_AT_BOUNDARY")
 	if token.is_empty() or _s.seen.has(token): return TDOutcome.new(false,"DUPLICATE")
 	if units.is_empty(): return TDOutcome.new(false,"EMPTY_DELIVERY")
 	for id: Variant in units:
@@ -409,6 +417,19 @@ func set_menu(id: String, enabled: bool, price_cents: int) -> TDOutcome:
 	_s.menu[id] = {"enabled":enabled,"price_cents":price_cents}
 	return TDOutcome.new(true,"MENU_UPDATED")
 
+func configure_menu(chosen: Array) -> TDOutcome:
+	# Stage the entire menu: a bad row must never leave half-applied prices behind.
+	if _s.phase not in ["PREPARE","SETTLED"]: return TDOutcome.new(false,"NOT_AT_BOUNDARY","请在筹备或日结后调整菜单。")
+	if chosen.is_empty() or chosen.size()>_s.menu.size(): return TDOutcome.new(false,"EMPTY_MENU","请至少选择一道已掌握的菜。")
+	var next: Dictionary=_s.menu.duplicate(true);var seen: Dictionary={}
+	for id: String in next: next[id].enabled=false
+	for row: Variant in chosen:
+		if not row is Dictionary or not row.get("id") is String or not next.has(row.id) or seen.has(row.id) or offer(row.id).is_empty() or not is_unlocked(family_id(row.id)): return TDOutcome.new(false,"INVALID_MENU","菜单中有未掌握、重复或未知的菜谱。")
+		if not TDServiceCatalog.integer(row.get("price_cents"),1,1000000): return TDOutcome.new(false,"INVALID_PRICE","价格必须在0.01至10000金币之间。")
+		seen[row.id]=true;next[row.id]={"enabled":true,"price_cents":int(row.price_cents)}
+	_s.menu=next
+	return TDOutcome.new(true,"MENU_UPDATED","菜单与价格已更新。")
+
 func sold_out(id: String) -> TDOutcome:
 	if not _s.menu.has(id): return TDOutcome.new(false,"UNKNOWN_RECIPE")
 	_s.menu[id].enabled = false
@@ -417,6 +438,7 @@ func sold_out(id: String) -> TDOutcome:
 func open_day(random_source: RefCounted = null) -> TDOutcome:
 	if _s.phase != "PREPARE": return TDOutcome.new(false,"INVALID_STATE")
 	if _s.menu.values().filter(func(x:Dictionary)->bool:return x.enabled).is_empty(): return TDOutcome.new(false,"EMPTY_MENU")
+	if before_open.is_valid(): before_open.call()
 	_s.phase = "OPEN"; _s.elapsed_sec = 0.0; _s.orders = []; _next_arrival = 1.0
 	_s.day_open_money_cents = int(_s.money_cents)
 	_s.day_open_popularity = int(_s.popularity)
@@ -620,6 +642,14 @@ var _crew_note: String = ""
 var crew_external: bool = false
 var crew_status_source: Callable
 var cook_step_source: Callable
+var cook_job_source: Callable
+
+func cook_job_id(person_id: String) -> String:
+	if crew_external:
+		return str(cook_job_source.call(person_id)) if cook_job_source.is_valid() else ""
+	for id: String in _crew_jobs:
+		if str(_crew_jobs[id].get("cook_id",""))==person_id: return id
+	return ""
 
 func crew_work(person_id: String) -> String:
 	if crew_external:
@@ -878,6 +908,15 @@ func _crew_midpoint(requirement: Dictionary) -> float:
 		return float(requirement.max)
 	return NAN
 
+func accrue_wage(cents: int, reference: String) -> TDOutcome:
+	if cents<0 or reference.is_empty() or commerce==null: return TDOutcome.new(false,"INVALID_WAGE")
+	if _s.seen.has(reference): return TDOutcome.new(true,"ALREADY_ACCRUED")
+	_s.seen[reference]=true
+	if cents>0:
+		commerce.state.debt_cents+=cents
+		_record("wage",0,{},reference,{"label":"员工当日日薪","wage_expense_cents":cents})
+	return TDOutcome.new(true,"WAGE_ACCRUED")
+
 func pay_wage(cents: int, reference: String) -> TDOutcome:
 	if cents <= 0 or reference.is_empty():
 		return TDOutcome.new(false, "INVALID_WAGE", "工资无效。")
@@ -967,6 +1006,7 @@ func note_night_cleanup(returned: int, waste: Dictionary) -> void:
 
 func settle_day() -> TDOutcome:
 	if _s.phase != "DRAINING" or not pending_orders().is_empty() or int(_s.day) in _s.settled_days: return TDOutcome.new(false,"INVALID_SETTLEMENT")
+	if before_settlement.is_valid(): before_settlement.call()
 	if commerce!=null:
 		var summary:=day_summary()
 		commerce.settle(_s.ledger,int(summary.received_cents)+int(summary.tip_cents)-int(summary.refunded_cents),_s.has("day_open_money_cents"))
@@ -1158,6 +1198,9 @@ func restore(data: Variant) -> TDOutcome:
 	var checked := validate_save(data)
 	if not checked.ok: return checked
 	_s = normalize_save(data)
+	for id: String in catalog.config.get("material_cost_ids",[]):
+		if not _s.inventory.has(id): _s.inventory[id]=0
+	_s.material_version=1
 	for id:String in catalog.config.get("research_cost_ids",[]):
 		if not _s.inventory.has(id): _s.inventory[id]=0
 	for item:Dictionary in catalog.config.offers:
@@ -1220,6 +1263,7 @@ static func normalize_save(data: Dictionary) -> Dictionary:
 
 func validate_save(data: Variant) -> TDOutcome:
 	if not data is Dictionary or data.get("schema_version") != 1: return TDOutcome.new(false,"UNSUPPORTED_VERSION")
+	if data.has("material_version") and data.material_version!=1: return TDOutcome.new(false,"UNKNOWN_MATERIAL_VERSION")
 	if data.has("stock_version"):
 		if data.stock_version!=1 or not data.get("inventory") is Dictionary or not TDServiceCatalog.integer(data.get("day"),1,1000000000) or not TDFoodStock.valid(data.get("inventory_lots"),data.inventory,int(data.day)): return TDOutcome.new(false,"INVALID_STOCK_BATCHES")
 	elif data.has("inventory_lots"): return TDOutcome.new(false,"INVALID_STOCK_BATCHES")
@@ -1273,7 +1317,8 @@ func validate_save(data: Variant) -> TDOutcome:
 	for event: Variant in data.ledger:
 		if not event is Dictionary or not event.get("id") is String or ids.has(event.id) or not event.get("kind") is String or not TDServiceCatalog.integer(event.get("cents"),-1000000000,1000000000) or not event.get("inventory_delta") is Dictionary or not TDServiceCatalog.integer(event.get("day"),1,int(data.day)): return TDOutcome.new(false,"INVALID_LEDGER")
 		if not event.get("reference") is String or not event.get("extra") is Dictionary or event.kind not in ["purchase","prepayment","consumption","tip","refund_cancel","refund_served","settlement","emergency_grant","recipe_unlock","failed_delivery","world_adjustment","supply_delivery","operating_payment","bank_transfer","spoilage","wage","night_cleanup","branch_transfer"]: return TDOutcome.new(false,"INVALID_LEDGER")
-		if event.kind=="branch_transfer" and (not event.extra.get("store_id") is String or not event.extra.store_id.begins_with("player-branch:") or not event.extra.get("label") is String): return TDOutcome.new(false,"INVALID_BRANCH_LEDGER")
+		if event.kind=="wage" and event.extra.has("wage_expense_cents") and (not TDServiceCatalog.integer(event.extra.wage_expense_cents,0,10000000) or event.cents!=0): return TDOutcome.new(false,"INVALID_WAGE_LEDGER")
+		if event.kind=="branch_transfer" and (not event.extra.get("store_id") is String or (not event.extra.store_id.begins_with("player-branch:") and event.extra.store_id not in ["player_diner","employee-roster","supplier-network"]) or not event.extra.get("label") is String): return TDOutcome.new(false,"INVALID_BRANCH_LEDGER")
 		if event.kind=="spoilage":
 			if int(event.cents)!=0 or not event.extra.get("cold_foods") is Array: return TDOutcome.new(false,"INVALID_LEDGER")
 			for quantity: Variant in event.inventory_delta.values():
@@ -1288,12 +1333,14 @@ func validate_save(data: Variant) -> TDOutcome:
 		for id: Variant in event.inventory_delta:
 			if not inventory.has(id) or not TDServiceCatalog.integer(event.inventory_delta[id],-1000000,1000000): return TDOutcome.new(false,"INVALID_LEDGER")
 			inventory[id]+=int(event.inventory_delta[id])
+	var optional: Array=catalog.config.get("research_cost_ids",[]).duplicate()
+	if not data.has("material_version"): optional.append_array(catalog.config.get("material_cost_ids",[]))
 	var added_missing:int=0
-	for id:String in catalog.config.get("research_cost_ids",[]):
+	for id:String in optional:
 		if not data.inventory.has(id): added_missing+=1
 	if money != int(data.money_cents) or int(data.serial)!=data.ledger.size() or (data.inventory.size()+added_missing!=inventory.size() and (data.has("progress_version") or data.inventory.size()+added_missing!=inventory.size()-1)): return TDOutcome.new(false,"LEDGER_MISMATCH")
 	for id: String in inventory:
-		if id in catalog.config.get("research_cost_ids",[]) and not data.inventory.has(id) and inventory[id]==0: continue
+		if id in optional and not data.inventory.has(id) and inventory[id]==0: continue
 		if id=="mushroom" and not data.has("progress_version") and not data.inventory.has(id): continue
 		if not TDServiceCatalog.integer(data.inventory.get(id),0,1000000) or int(data.inventory[id]) != inventory[id]: return TDOutcome.new(false,"STOCK_MISMATCH")
 	var order_ids: Dictionary={}

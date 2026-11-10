@@ -92,3 +92,35 @@
 5. 日结查看当地分店采购、销售、房租/水电/工资及利润，重新载入核对。开海外店不会开放主店进口商路。
 
 检查：`pwsh -NoProfile -File tools/check.ps1 -Suite branch-core`；地图回归`-Suite travel-core`；本地导出`pwsh -NoProfile -File tools/export.ps1 -CheckSuite branch-core`。实际引擎4.7.2稳定版、GUT9.7.1与Compatibility均未升级。
+
+
+## D067 付款施工与分店巡视（2026-11-09，DELIVERED_LOCAL_PLAYTEST_PENDING）
+实际读取 grilling 与 godot-gdscript-patterns（C:/Users/Administrator/.codex/skills/ 对应目录/SKILL.md，未声明版本），只读代理核查原迁移及地图入口。用户确认本轮室内只巡视管理、员工继续经营，暂不亲自接管分店QTE。GRILL_RESULT=NO_BLOCKING_PRODUCT_QUESTIONS（已答唯一阻塞问题）。
+- AC-PHASE-4-D067-001：框选/取消/付款失败不生成分店、不占地、不扣钱；成功确认只扣一次并持有付款凭证。用正式面板和规则集成验证。
+- AC-PHASE-4-D067-002：付款后显示施工地，1个游戏日后建成；施工中不可进入/营业/计执勤工资，保存读取不缩短工期。日期由原日循环推进，暂停和time set不推进日期。
+- AC-PHASE-4-D067-003：建成无店长不能营业、开启托管不能绕过店长；沿用三岗位齐备要求。撤任店长立即停止接受分店交易，重复结算不重复收费。
+- AC-PHASE-4-D067-004：五镇施工/建成状态同源，E进入对应分店餐厅→厨房→餐厅→原镇门外，真实移动/输入/碰撞/暂停，无主店钱物串用或第二套后台模拟。
+- AC-PHASE-4-D067-005：旧正常开办凭证和合法旧版付款保留；无凭证旧记录保留为待核对选址，不画成房屋、不营业、不自动补扣钱。主动确认付款后才能施工；付费供货/历史账引用原ID保留。
+- AC-PHASE-4-D067-006：整槽隔离往返、错误付款/工期/重复凭证拒绝；原主店经营与手动保存不变。实际图形/本地导出独立记录，人工巡视感受PENDING。
+【AI填充细节 AI-077】工期先为1个日历跨日，次日08:00建成；施工日不收房租/水电/岗位日薪，完工日开始房租；未配齐岗位不发生开门水电。旧不明凭证记录不作可营业店铺，但保留引用以保护已付供货/旧工资账。巡视内景复用既有像素资产与移动表现，布局暂不支持装修，不新增客流、菜品或存档权威。
+
+### D067 实现与实际验证
+- 原因范围：原正式open_store已经先付费；复现旧branch_open标记无Shop凭证仍迁移“原分店”的路径，并补上付款交叉校验。未读取真实玩家槽，不能证明用户该档必定源于这一条路径。待核对旧记录保留完整原状态及ID、已付款供货可继续收货，但不预留地图、不营业、不新购料；主动付款再校验原地块，已被占用时拒绝且不扣钱。
+- 真正实现：报价/支付/凭证/工期、5镇同源建筑状态、店长门槛、施工费用隔离、巡视室内/输入/碰撞/地图返回、存档迁移与校验。分店沿既有共享顾客池和后台员工经营；没有第二套经济，也没有测试替身替代正式场景。单位测试为控制边界可注入已有员工模板，最终GPU则通过真实招聘签约、派驻和定向供货。
+- 暂未实现：玩家接管分店QTE、分店独立装修、逐位顾客室内用餐演出、各镇新室内美术；巡视房间复用既有餐厅/厨房与员工呈现。开办/租金/工资原参数保留，新工期与费用起算是AI-077，人工平衡待测。
+- 新专项 `artifacts/check/pre-export-20261109-194824`：11/11、175断言、37.649秒，导入/加载/测试全部exit0，零跳过。含正式场景E键、取消、暂停、反复进出、5镇日期投影、未知旧记录与合法新店同地不冲突、真实JSON往返。
+- 旧分店/列表/主店管理 `construction-old-core`：30/30、522断言、49.554秒；员工/供应商/HUD/经营/跨镇/保存/等级/控制台 `construction-regression-final`：93/93、3605断言、204.085秒。分批共134个独立用例、4302断言，不代表全仓全量单次通过。最后只改待核对行标题和导出清单后，重新执行上述专项11项；未因此再重跑全部旧用例。
+- 图形 `artifacts/branch-construction/gpu-final.engine.log` / `gpu/summary.json`：Compatibility50项、9图、exit0、stderr空。真实按键及移动、施工拒绝进入、主镇/东京进店进厨房、本店库存和返回原镇检查通过；已人工查看自动截图，未进行玩家连续试玩。原第一轮41项画面用于发现厨房人物显示偏小和账本位置，修正后最终复验。
+- 导出首轮FAIL：正式清单把两个脚本路径误合成一个字符串，包资源检查拦下缺失branch_interior；日志完整保留在`artifacts/branch-construction/export-first-failure/`。修正为两个独立资源后重新导入、加载、11项测试、导出/清单/实际EXE启动3×4/headless94输入检查全部PASS，609资源；2026-11-09 19:49本地EXE/PCK更新。分店专用GPU在源工程执行，导出EXE分店专用GPU NOT_RUN。
+- 其他失败保留：红测6项1过5败；初轮类型/JSON数字版本比较导致旧场景存档失败；8/9轮地图覆盖层冻结检查改查真实process_mode；旧供应回归56/59发现施工期预备货被过度限制，改为已付款即可提前供货，最终93/93通过。不是把零测试/解析失败/超时判为通过。
+- AC-PHASE-4-D067-001至006工程PASS，人工PENDING，全仓全量/远程CI NOT_RUN。原始资料和真实存档未操作，未提交推送。协作检查integrator/integration通过，git diff --check退出0，仅既有CRLF规范化提示。root本轮写入锁释放。
+
+### D067 复现与试玩
+1. 启动`build/TownDiner.exe`，筹备时按G→增设店铺→地图选地；直接返回应无新店、无扣款。
+2. 重新选地确认付款，地图出现施工标识，E不能进入；主动保存或睡觉，跨日后显示建成。
+3. 暂不任命店长，查看“等待任命店长”，托管不能绕过；从H签约入仓库，在G本店店员页派驻店长、厨师、服务员并准备原料。
+4. 到建成店附近E进入餐厅，再到厨房门E；走动、查看本店库存/菜单/员工，出门回到原镇原处。外镇同样可巡视；02:00仍按原规则收尾回家。
+5. 比较施工日/完工日账本，核对前者无施工期租水电工资、后者有租金，缺岗无开门水电；主动保存读档核对。
+
+命令：`pwsh -NoProfile -File tools/check.ps1 -Suite construction -TimeoutSeconds 300`；旧相关`-Suite construction-regression -TimeoutSeconds 480`及`-Suite branch-core`。导出：`pwsh -NoProfile -File tools/export.ps1 -CheckSuite construction -CheckTimeoutSeconds 300`。
+关键文件：`src/business/branch_network.gd`、`branch_panel.gd`、`branch_interior.gd`、`game_profile.gd`、`employee_roster.gd`、`supplier_network.gd`、`src/app/game_shell.gd`、`src/town/travel_world.gd`与`content/branches.json`。

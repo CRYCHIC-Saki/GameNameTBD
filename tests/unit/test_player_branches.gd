@@ -9,6 +9,10 @@ func make_profile() -> TDGameProfile:
 	var storage:=TDProfileStore.new("res://artifacts/branch-tests/%d"%Time.get_ticks_usec(),TDGameProfile.validate_save)
 	stores.append(storage); p.persistence=storage.save_slot
 	assert_true(p.shop.world_adjustment(300000,"fixture","test funding").ok)
+	# D063 fixture owns the workers previously implicit in the anonymous crew.
+	for person: Dictionary in p.employees.config.templates:
+		var copies: int=9 if person.id=="manager.master" else (3 if person.id=="manager.host" else 1)
+		p.employees.state.owned[person.id]={"id":person.id,"copies":copies,"xp":0,"assigned":""}
 	return p
 
 func after_each() -> void:
@@ -17,14 +21,27 @@ func after_each() -> void:
 	stores.clear()
 
 func open_at(p: TDGameProfile, y: int=48, manager: String="manager.steady") -> String:
+	if not p.employees.manager_info(manager).assigned.is_empty(): manager="manager.lan"
 	var result:=p.branches.open_store("chengdu",[6,y,3,4],"cn",manager,"open:%d"%y)
 	assert_true(result.ok,result.code+": "+result.message)
-	return str(result.data.get("store_id",""))
+	var id: String=str(result.data.get("store_id",""))
+	if result.ok:
+		for role: String in ["cook","waiter"]:
+			for person: Dictionary in p.employees.config.templates:
+				if person.role==role and p.employees.employee_info(person.id).assigned=="":
+					assert_true(p.employees.assign(person.id,id).ok);break
+	return id
 
 func new_day(p: TDGameProfile) -> void:
 	if p.shop.snapshot().phase=="PREPARE": assert_true(p.shop.close_for_night().ok)
 	assert_eq(p.shop.snapshot().phase,"SETTLED")
 	assert_true(p.next_day().ok)
+
+func stock(p: TDGameProfile) -> void:
+	for store: Dictionary in p.branches.state.stores.values():
+		var result:=p.suppliers.order(str(store.town_id),str(store.id),store.menu[0].ingredients,"stock:%s:%d"%[store.id,p.shop.snapshot().day])
+		assert_true(result.ok,result.code)
+	p.suppliers.advance(100000)
 
 func test_configuration_star_stats_and_costs_increase() -> void:
 	var rules:=TDPlayerBranches.new()
@@ -60,7 +77,7 @@ func test_illegal_land_missing_manager_or_money_never_partially_changes_state() 
 	assert_false(p.branches.quote("chengdu",[int(home.x),int(home.y),3,4],"cn").ok)
 	var house: Dictionary=p.world.town_map.plots.filter(func(x:Dictionary)->bool:return x.kind=="housing")[0]
 	assert_false(p.branches.quote("chengdu",[int(house.x),int(house.y),3,4],"cn").ok)
-	assert_eq(p.branches.open_store("chengdu",[6,48,3,4],"cn","","no-manager").code,"MANAGER_REQUIRED")
+	assert_eq(p.branches.open_store("chengdu",[6,48,3,4],"cn","missing-manager","no-manager").code,"MANAGER_REQUIRED")
 	assert_eq(p.snapshot(),before)
 	p.shop.world_adjustment(-int(p.shop.snapshot().money_cents),"fixture-empty","test")
 	before=p.snapshot()
@@ -80,7 +97,7 @@ func test_town_cuisine_menu_and_overlap_gates() -> void:
 	assert_false(p.branches.configure_store(id,[{"id":before.stores[id].menu[0].id,"price_cents":0}],1000).ok)
 	assert_eq(p.branches.snapshot(),before)
 
-func test_procurement_is_atomic_bounded_and_never_takes_home_ingredients() -> void:
+func test_supplier_automation_is_bounded_and_never_takes_home_ingredients() -> void:
 	var p:=make_profile(); var id:=open_at(p)
 	new_day(p)
 	var store: Dictionary=p.branches.state.stores[id]
@@ -89,9 +106,11 @@ func test_procurement_is_atomic_bounded_and_never_takes_home_ingredients() -> vo
 	for item: String in store.menu[0].ingredients: price+=TDShopSession.amount_cost(int(store.menu[0].ingredients[item]),int(p.commerce.state.markets.chengdu.price[item]))
 	p.branches.configure_store(id,store.menu,price-1)
 	var before_money: int=int(p.shop.snapshot().money_cents)
+	p.suppliers.set_automation(id,true,price-1);p.suppliers.automate()
 	p.branches.prepare()
 	assert_true(store.inventory.is_empty())
-	assert_eq(int(p.shop.snapshot().money_cents),before_money)
+	assert_lte(before_money-int(p.shop.snapshot().money_cents),price-1,"Per-item production orders stay inside the supply budget")
+	assert_gte(int(p.shop.snapshot().money_cents),0)
 	assert_eq(p.shop.snapshot().inventory,before_home)
 	var snap:=p.snapshot(); p.branches.prepare(); assert_eq(p.snapshot(),snap)
 
@@ -101,15 +120,15 @@ func test_market_shortage_does_not_buy_half_recipe() -> void:
 	var material: String=s.menu[0].ingredients.keys()[0]
 	p.commerce.state.markets.chengdu.stock[material]=0
 	var money: int=int(p.shop.snapshot().money_cents)
-	p.branches.prepare()
+	var result:=p.suppliers.order("chengdu",id,s.menu[0].ingredients,"shortage")
+	assert_eq(result.code,"MARKET_SHORTAGE")
 	assert_true(s.inventory.is_empty()); assert_eq(int(p.shop.snapshot().money_cents),money)
-	assert_eq(s.daily.reason,"市场部分原料缺货")
 
 func test_real_market_customer_money_stock_and_book_conserve() -> void:
 	var p:=make_profile(); var id:=open_at(p); new_day(p)
 	var audit:=p.commerce.cash_audit(int(p.shop.snapshot().money_cents))
 	assert_eq(int(audit.difference_cents),0)
-	p.branches.prepare()
+	stock(p);p.branches.prepare()
 	var s: Dictionary=p.branches.state.stores[id]; var dish: Dictionary=s.menu[0]
 	assert_gt(s.inventory.size(),0)
 	var family: String=p.commerce.society.identity("chengdu",str(p.commerce.config.groups[0].id),0)
@@ -122,14 +141,14 @@ func test_real_market_customer_money_stock_and_book_conserve() -> void:
 	assert_eq(int(p.commerce.cash_audit(int(p.shop.snapshot().money_cents)).difference_cents),0)
 	p.branches.settle()
 	var d: Dictionary=s.books.back()
-	assert_eq(int(d.manager_cents),1800); assert_eq(int(d.crew_cents),1640)
-	assert_eq(int(d.profit_cents),int(d.sales_cents)-int(d.consumed_cents)-int(d.spoilage_cents)-int(d.rent_cents)-int(d.utilities_cents)-3440-int(d.tax_cents))
+	assert_eq(int(d.manager_cents),1800); assert_eq(int(d.crew_cents),5200)
+	assert_eq(int(d.profit_cents),int(d.sales_cents)-int(d.consumed_cents)-int(d.spoilage_cents)-int(d.rent_cents)-int(d.utilities_cents)-7000-int(d.tax_cents))
 	var before:=p.snapshot(); p.branches.settle(); assert_eq(p.snapshot(),before)
 	assert_eq(int(p.commerce.cash_audit(int(p.shop.snapshot().money_cents)).difference_cents),0)
 
 func test_two_stores_share_existing_finite_customer_pool() -> void:
 	var p:=make_profile(); var one:=open_at(p); var two:=open_at(p,53)
-	new_day(p); p.branches.prepare()
+	new_day(p);stock(p);p.branches.prepare()
 	var group: Dictionary=p.commerce.config.groups[0]
 	var firms:=p.commerce._firms("chengdu",group)
 	assert_true(firms.any(func(f:Dictionary)->bool:return f.id==one))
@@ -156,13 +175,13 @@ func test_debt_preserved_and_pause_still_pays_rent_and_manager() -> void:
 	p.branches.configure_store(id,s.menu,0,true)
 	p.shop.world_adjustment(-int(p.shop.snapshot().money_cents),"empty","test")
 	p.branches.settle()
-	assert_eq(TDPlayerBranches.debt_total(s),int(s.rent_cents)+1800)
-	assert_eq(int(s.daily.utilities_cents),0); assert_eq(int(s.daily.crew_cents),0)
+	assert_eq(TDPlayerBranches.debt_total(s),int(s.rent_cents)+7000)
+	assert_eq(int(s.daily.utilities_cents),0); assert_eq(int(s.daily.crew_cents),5200)
 	var before:=p.branches.snapshot(); p.branches.settle(); assert_eq(p.branches.snapshot(),before)
 
 func test_manager_dimensions_and_specials_change_real_capacity_service_and_utilities() -> void:
 	var p:=make_profile(); var a:=open_at(p); var b:=open_at(p,53,"manager.host"); var c:=open_at(p,58,"manager.master")
-	new_day(p); p.branches.prepare()
+	new_day(p);stock(p);p.branches.prepare()
 	var rows:=p.branches.candidates("chengdu",p.commerce.config.groups[0])
 	var values: Dictionary={}
 	for row: Dictionary in rows: values[row.id]=row
@@ -233,21 +252,24 @@ func test_five_towns_open_trade_locked_and_run_local_business_then_reload() -> v
 	var p:=make_profile()
 	assert_eq(p.commerce.state.routes,["chengdu"])
 	var research:=p.research.snapshot(); var home_stock: Dictionary=p.shop.snapshot().inventory
+	var managers: Array=["manager.steady","manager.host","manager.master","manager.lan","manager.fang"]
 	for town: String in TDTravelCatalog.IDS:
+		var manager: String=managers[TDTravelCatalog.IDS.find(town)]
 		# Find a fixture site; this test targets route independence, not the land formula.
 		var rect:=TDRegionMigration.find_site(p.branches.town_map(town),[6,48,3,4])
 		print("WORLD_BRANCH_SITE ",town," ",rect)
 		assert_false(rect.is_empty(),town)
-		var quote:=p.branches.quote(town,rect,"cn","manager.steady")
+		var quote:=p.branches.quote(town,rect,"cn",manager)
 		assert_true(quote.ok,town+quote.code)
-		var result:=p.branches.open_store(town,rect,"cn","manager.steady","five:"+town)
+		var result:=p.branches.open_store(town,rect,"cn",manager,"five:"+town)
 		assert_true(result.ok,town+result.code)
+		if result.ok: assert_true(p.employees.auto_assign(result.data.store_id).ok)
 		var map:=TDTravelCatalog.map_for(p,town)
 		assert_eq(map.plots.filter(func(row:Dictionary)->bool:return row.get("branch_id")==result.data.get("store_id")).size(),1)
 	assert_eq(p.branches.state.stores.size(),5)
 	assert_eq(p.commerce.state.routes,["chengdu"]);assert_true(p.commerce.state.route_events.is_empty())
 	assert_eq(p.research.snapshot(),research);assert_eq(p.shop.snapshot().inventory,home_stock)
-	new_day(p);p.branches.prepare()
+	new_day(p);stock(p);p.branches.prepare()
 	for store: Dictionary in p.branches.state.stores.values():
 		assert_gt(store.inventory.size(),0,store.town_id+" local procurement")
 		assert_gt(int(store.daily.purchase_cents),0)
@@ -264,4 +286,6 @@ func test_five_towns_open_trade_locked_and_run_local_business_then_reload() -> v
 	var q:=make_profile();var restored:=q.restore(disk.data);assert_true(restored.ok,restored.code)
 	assert_true(TDLevelProgression.same_value(q.branches.snapshot(),p.branches.snapshot()))
 	assert_eq(q.commerce.state.routes,["chengdu"])
-	var before:=q.snapshot();q.branches.settle();assert_eq(q.snapshot(),before)
+	var before:=q.snapshot();q.branches.settle()
+	for field: String in before:
+		assert_true(TDLevelProgression.same_value(q.snapshot()[field],before[field]),"repeated settlement keeps "+field)

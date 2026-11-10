@@ -70,7 +70,7 @@ func _make_buildings() -> void:
 	_buildings=[]
 	var claimed: Dictionary={}
 	for p: Dictionary in map.plots:
-		if p.get("kind")=="diner_lot" or p.get("economic_courtyard",false): continue
+		if p.get("kind") in ["diner_lot","factory_lot","supply_factory"] or p.get("economic_courtyard",false): continue
 		if p.get("kind")=="housing":
 			# Group tiny cadastral cells into humane residential blocks.
 			var cell:=Vector2i(int(p.x)/3,int(p.y)/3)
@@ -98,6 +98,7 @@ func _make_buildings() -> void:
 func _add_building(plot: Dictionary,column: int,span: Vector2,feet: Vector2) -> void:
 	var sprite:=Sprite2D.new();sprite.texture=TDTravelCatalog.sprite(town_id,column)
 	if plot.get("kind")=="harbor" and town_id in ["paris","bangkok"]: sprite.flip_h=true
+	if plot.get("construction",false): sprite.texture=TDTownArt.sprite(12)
 	var scale_value:=minf(span.x*CELL/sprite.texture.get_width(),span.y*CELL/sprite.texture.get_height())
 	sprite.scale=Vector2.ONE*scale_value;sprite.position=feet*CELL
 	sprite.offset=Vector2(0,-sprite.texture.get_height()*.5);add_child(sprite)
@@ -182,3 +183,12 @@ func close() -> void:
 func _draw() -> void:
 	if _ground==null: return
 	draw_texture_rect(_ground,Rect2(Vector2.ZERO,Vector2(map.extent+6,map.extent)*CELL),false)
+
+func set_presented(value: bool) -> void:
+	visible=value
+	if _layer!=null: _layer.visible=value
+	if camera!=null:
+		camera.enabled=value
+		if value: camera.make_current()
+	if player!=null: player.set_controls_enabled(value)
+	set_process_unhandled_input(value)

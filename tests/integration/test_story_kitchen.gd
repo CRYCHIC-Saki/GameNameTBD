@@ -42,7 +42,9 @@ func test_prepare_ingredients_are_usable_without_opening_shop() -> void:
 	assert_eq(shell.profile.shop.snapshot().phase,"PREPARE")
 	assert_true(shell.profile.shop.active_orders().is_empty())
 	assert_eq(shell.save_game().code,"KITCHEN_BUSY")
-	assert_eq(shell.profile._research_candidate(shell.profile.research.snapshot()).code,"BUFFERED_UNTIL_KITCHEN_CLEAR")
+	var checkpoint:=FileAccess.get_file_as_bytes(shell.slots.path_for("slot-01"))
+	assert_eq(shell.profile._research_candidate(shell.profile.research.snapshot()).code,"BUFFERED_UNTIL_EXPLICIT_SAVE")
+	assert_eq(FileAccess.get_file_as_bytes(shell.slots.path_for("slot-01")),checkpoint,"research stays in memory until explicit save")
 	assert_true(shell.kitchen_view.return_ingredient().ok)
 	assert_true(shell.save_game().ok)
 	var cold: Array=shell.profile.shop.snapshot().cold_foods

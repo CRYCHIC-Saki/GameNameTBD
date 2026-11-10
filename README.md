@@ -1,6 +1,53 @@
 # GameNameTBD · 小镇食堂
 
-最新本地版（2026-11-08 19:36）：分店筹建现在使用五镇世界地图。进入“分店→筹建新分店”，点镇放大，左键框选，中键拖动，滚轮缩放，再选店长确认。海外开店不要求先开进口商路；菜系、合法用地、资金与主动保存规则保持。Windows运行 `build/TownDiner.exe`（PCK同目录）；检查 `pwsh -File tools/check.ps1 -Suite branch-core`，地图回归 `-Suite travel-core`。31独立用例与实际EXE图形53项通过，人工试玩待确认；完整记录见 docs/phases/branch-expansion.md D062。
+## 调料菜系开放（D070，2026-11-10 19:34）
+运行 `build/TownDiner.exe`（同目录保留 `TownDiner.pck`）。按 **U** 查看供应商：只显示已开放菜系可用的调料，共享调料开放任一对应菜系即可；供应地区限制同时生效。菜市场也执行调料门槛，食材原有规则保留。已有库存和已付款货物不丢失，旧锁定产线等待菜系开放。
+隔离测试槽可用控制台 `debug` → `cuisine open jp` 验证日本调料开放，菜谱仍须逐个研习；修改后主动保存。相关78项测试、26项图形检查及本地导出通过；旧综合77项回归600秒超时，不计通过，人工待试玩。检查：`pwsh -File tools/check.ps1 -Suite materials` 与 `-Suite condiment-rules`；报告：`docs/phases/regional-materials.md` D070。未推送。
+
+
+## 持续供应产线（D068，2026-11-10 14:07）
+运行 `build/TownDiner.exe`，`TownDiner.pck` 保持同目录。按 **U** 选供应镇与收货店，新增原料产线，设置目标库存/产能与店铺每日预算；上方产线优先，可拖动或用↑↓调整。关闭菜单后按游戏时间持续供货，营业中也可收货。现货+在制+在途够量即停，消耗后恢复；运输不占生产产能。睡眠补算至08:00，采购计入次日预算，关闭游戏无离线生产。旧已付款订单保留原等待承诺。
+停用/删除不取消已付款批次；托管只调整托管行。手动行也受预算限制，默认50金币/店/天可调整；修改后主动保存或睡觉，普通退出不保存。76相关用例、21图形检查及导出启动通过；人工平衡待试玩。检查：`pwsh -File tools/check.ps1 -Suite supplier-release`；报告：`docs/phases/supplier-lines.md`。本轮未推送GitHub。以下旧供应时制以本段为准。
+
+
+## 本地同步版（2026-11-09 21:34）
+已整合远端3719c13，保留本地固定招聘、统一店铺管理及分店付费施工。运行 `build/TownDiner.exe`，同目录保留 `TownDiner.pck`。
+厨师按真实工序换工作点，菜先到餐厅南墙出餐口，再由服务员沿过道送桌；H/G仍使用员工仓库和统一店铺管理。街坊市场供应全部已上架原料，U供应商仍按已解锁菜谱过滤。
+747用例分批通过（整批超时/修正记录保留）、86项图形检查、导出及实际EXE启动/输入检查通过。人工试玩待确认；左上任务与餐厅状态文字存在重叠，待后续界面整理。
+检查：`pwsh -NoProfile -File tools/check.ps1 -Suite sync-current -TimeoutSeconds 600`；全量后续分批 `-Suite sync-remainder -TimeoutSeconds 1200`，迁移专项 `-Suite sync-migration -TimeoutSeconds 300`。本次重建：`pwsh -NoProfile -File tools/export.ps1 -CheckSuite sync-migration -CheckTimeoutSeconds 300`。下方构建时间均为历史交付记录，最新状态以本段和PROJECT_STATE为准。
+
+## 分店施工与巡视（D067，当前本地包）
+最新包：2026-11-09 19:49，启动 `build/TownDiner.exe`，同目录保留PCK。按G店铺→增设→选地→确认付款，取消或付款失败不生成店；支付后施工，睡觉跨到下一天建成。再从员工仓库任命店长、厨师和服务员，配置菜单与供货才能经营。靠近建成分店按E进餐厅，再进厨房查看本店库存和员工；当前为巡视管理，不接管分店做菜。
+无开办凭证的旧“原分店”只显示待核对记录，保留历史账和已付货单，不自动扣款或占地。正常主动保存/睡觉记录进度，普通退出不保存。
+134个独立相关用例分批/4302断言、Compatibility50项/9图、609运行资源及EXE启动3×4/headless94项PASS；2026-11-09 19:49本地包更新。人工试玩待反馈，本轮未推送；更早包时间均为历史记录。检查：`pwsh -NoProfile -File tools/check.ps1 -Suite construction -TimeoutSeconds 300`；相关回归`-Suite construction-regression -TimeoutSeconds 480`；重建`pwsh -NoProfile -File tools/export.ps1 -CheckSuite construction -CheckTimeoutSeconds 300`。详细限制、失败记录与试玩步骤见docs/phases/branch-expansion.md D067。
+
+## 调试控制台（D066，功能沿用，包时间为历史）
+最新包：2026-11-09 18:09，运行 `build/TownDiner.exe`，PCK同目录。反引号打开，输入 `debug`，再输入 `help`；↑↓翻历史、Tab补全、Esc返回。常用：`money add 10000`、`give tomato 10`、`inspiration add 50`、`recipe unlock C03`、`time set 18:00`、`employee market chengdu manager`、`shop list`、`check`。完整说明见 [控制台命令](docs/CONSOLE.md)。
+命令只改当前槽内存，`save`才主动保存；普通退出不保存。钱物/签约/托管仍检查合法阶段，剧情和QTE中拒绝危险修改；菜谱调试授予不冒充真实挑战成绩。
+检查：`pwsh -NoProfile -File tools/check.ps1 -Suite console -TimeoutSeconds 300`；旧入口回归单独`-Suite game -TimeoutSeconds 900`。重建：`pwsh -NoProfile -File tools/export.ps1 -CheckSuite console -CheckTimeoutSeconds 300`。29项相关用例分批/44项图形及导出检查通过；人工体验待反馈，本轮未推送。下方包时间为历史交付时点。
+
+## 店铺管理（D065，当前规则）
+最新本地包：2026-11-09 17:10。运行 `build/TownDiner.exe`，同目录保留 `TownDiner.pck`。100项相关测试、39项图形检查及导出/启动/输入检查通过，人工连续多店体验待试玩，未推送。
+按 **G 店铺**：主店置顶、全部分店逐行显示；点击一行，打开该店的 **菜单与价格 / 店员安排 / 托管与供货 / 账本与库存**。筹备或日结后可调整，营业中只读。增设店铺仍用原五镇世界地图。
+主店先在“店员安排”派驻仓库中的店长，再开启经营托管；店长在筹备时配置已掌握菜单、价格和闲置厨师/服务员，不调走其他店的人。开门打烊仍由玩家决定，厨师与服务员沿原真实流程工作。自动采购需另开供应托管并设置预算；未开启就不会替你采购。主店和分店工资、库存、钱账仍按原规则隔离，普通退出不保存。
+检查：`pwsh -NoProfile -File tools/check.ps1 -Suite branch-core`、`-Suite management`、`-Suite travel-core`。重建：`pwsh -NoProfile -File tools/export.ps1 -CheckSuite branch-core -CheckTimeoutSeconds 300`。详细验收和试玩步骤见 `docs/phases/management-ui.md` D065。
+
+## 员工招聘与仓库（D064，当前规则）
+最新本地包：2026-11-09 14:21；80项相关测试、50项图形检查及导出/启动/输入检查通过，人工长期平衡待试玩，未推送。
+H 打开“招聘市场／员工仓库”。360名固定员工，五镇各72名；每镇每岗位展示一星5名、二星2名、三星1名，缺人时留缺，候选按日期分批轮换。卡片公开姓名、星级、面板、特性、签约费和日薪。选人签约后进入仓库，待命免费；在仓库或G店铺管理中派驻，任职才计薪。撤任回库，同日调店不重复收工资。旧档已获员工保留，原抽卡和同名合成已取消。
+检查：`pwsh -NoProfile -File tools/check.ps1 -Suite management`；分店检查：`pwsh -NoProfile -File tools/check.ps1 -Suite branch-core`。详细证据见 `docs/phases/management-ui.md` D064。运行 `build/TownDiner.exe`，PCK保持同目录；最新构建/测试状态以PROJECT_STATE最新D065记录为准。
+
+## 管理界面升级（D063，历史记录，招募以D064为准）
+当前本地包：2026-11-08 21:48，运行 `build/TownDiner.exe`，`TownDiner.pck` 保持同目录。相关119独立用例分批通过、50项实际图形检查通过，EXE导出/启动/输入检查通过；人工平衡待试玩，未推送GitHub。
+右上角统一入口：**H 雇员、B 菜谱、J 任务、M 世界地图、G 分店、U 供应商、N 关系**。左上显示日期、时间、等级、金币、人气和店知名度；后者不是菜品名气之和。菜单暂停游戏，输入名字时快捷键不抢文字，烹饪QTE中不打开管理页。
+- H：用金币招募；同名唯一，累计3张二星、9张三星。员工永久保留，可派往主店或分店，待命免薪，任职按日计薪。
+- G：沿用世界地图选址。选已有待命店长开店；再安排厨师/服务员，设置菜单、价格及采购预算，查看分项账目。缺岗不营业。可独立开启经营托管。
+- U：五镇供应商直接开放，先选供货镇与收货店，再下单生产。跨镇距离增加费用和生产时间，队列/产能可查；时间标为实际活动秒，暂停冻结。供应托管默认关闭，可按店开启并限制预算。
+- N：只显示已认识的剧情居民及现有好感。旧地图的招工、菜谱架和建厂入口撤下，门、港口、账本、市场和NPC保留。
+改动仍须睡觉或主动保存，普通退出不会保存。旧槽员工与已付订单迁移保留。检查：`pwsh -File tools/check.ps1 -Suite management`；相关回归：`-Suite management-regression`。报告见 `docs/phases/management-ui.md`，下方D060–D062为历史行为，以本段覆盖处为准。
+
+
+此前本地包（2026-11-08 19:36）：分店筹建现在使用五镇世界地图。进入“分店→筹建新分店”，点镇放大，左键框选，中键拖动，滚轮缩放，再选店长确认。海外开店不要求先开进口商路；菜系、合法用地、资金与主动保存规则保持。Windows运行 `build/TownDiner.exe`（PCK同目录）；检查 `pwsh -File tools/check.ps1 -Suite branch-core`，地图回归 `-Suite travel-core`。31独立用例与实际EXE图形53项通过，人工试玩待确认；完整记录见 docs/phases/branch-expansion.md D062。
 
 ## 世界地图与四镇旅行（D061-R1）
 港口附近按E免费前往四镇。WASD移动、Shift疾跑；M打开五镇世界地图，滚轮缩放、按住鼠标拖动，双击小镇放大，M/Esc返回。日本为海岛、欧洲为河谷、东南亚为河网三角洲、墨西哥为高原峡谷。
@@ -245,3 +292,16 @@ CI配置在 `.github/workflows/check.yml`，推送和Pull Request调用同一 `t
 新档在开篇输入昵称前显示“？？？”；跟随阿铃走正门，靠近老陈食材铺门口按E。教程番茄/鸡蛋用尽可在冰箱免费重领，已取出/切好的食材优先使用；用同一炒锅放入两种主料后按F，完成后E端盘、到出餐台E交付。交付后停止补给，余料回普通库存。
 
 专项检查：`pwsh -NoProfile -File tools/check.ps1 -Suite story-fixes`；实际图形核查：锁定Godot `--path . --script res://tools/story_playtest_probe.gd`（使用artifacts下隔离槽）；完整检查与导出沿用 `tools/export.ps1`。
+
+
+### 五菜系食材与地区供货（D069）
+按U→新增产线选择供应地与收货店。基础原料多镇供应，特色原料按地区，鼠标悬停商品可看地区；旧已付货继续交付。M6按菜系/谱面显示对应调料并真实消耗库存，长按量会影响风味。当前100节点材料已录入，正式可玩厨房仍9菜。配置与来源见content/culinary_materials.json、docs/phases/regional-materials.md，AI-079数值待平衡。
+
+```powershell
+pwsh -File tools/check.ps1 -Suite materials -TimeoutSeconds 420
+pwsh -File tools/check.ps1 -Suite materials-regression -TimeoutSeconds 600
+pwsh -File tools/export.ps1 -CheckSuite materials -CheckTimeoutSeconds 420
+.\build\TownDiner.exe
+```
+
+外系调料环使用真实厨房接口联调，不能将测试样例当作新增正式菜谱；人工手感/平衡仍待试玩。保存沿用睡觉或主动保存，普通退出不保存。

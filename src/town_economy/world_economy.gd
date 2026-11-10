@@ -35,6 +35,7 @@ func _init(base_costs: Dictionary = {}, home: String = "chengdu", seed_value: in
 	society=TDCommunitySociety.new(config,config.active_towns,config.groups,day)
 	expansion=TDBusinessExpansion.new(config.expansion)
 	state={"schema_version":1,"day":day,"seed":seed_value,"home":home,"routes":[home],"route_events":{},"markets":{},"competitors":{},"shipments":[],"shipping_serial":0,"debt_cents":0,"lease":{"parcel_id":"player_diner","owned":true,"daily_cents":0,"through_day":2147483647},"reputation":{},"awareness":0.35,"brand":0.3,"popularity":50.0,"familiarity":{},"food_memory":{},"residents":{},"books":[],"day_stats":{},"cost_stock":{},"cost_consumed":0,"cost_cursor":0,"last_settled_day":day-1,"last_operated_day":0,"economy_open":false,"cells":{}}
+	state.material_version=1
 	for id: String in config.initial_routes:
 		if id not in state.routes and state.routes.size()<3: state.routes.append(id)
 	for group: Dictionary in config.groups: state.reputation[group.id]={"food":[0.0,0.0],"service":[0.0,0.0],"value":[0.0,0.0]}
@@ -318,7 +319,14 @@ func player_store(menu: Array, waiting: int, group: Dictionary, origin: String =
 		dish.familiarity=float(state.familiarity.get(group.id+":"+str(dish.get("culture","chinese")),0.7 if dish.get("culture","chinese")=="chinese" else 0.25))
 	var service:=reputation(group.id,"service")
 	if state.residents.has(resident_id): service=lerpf(service,float(state.residents[resident_id].last_experience),0.25)
-	return {"id":"player","open":true,"reachable":place.reachable,"visibility":place.visibility,"awareness":state.awareness,"brand":state.brand,"service":service,"travel_minutes":place.travel_minutes.get(origin,5.0),"wait_minutes":waiting*35.0,"decor_match":decor_match_for(float(place.attractiveness)),"menu":actual_menu}
+	var attraction: float=0.0
+	if player_branches!=null and player_branches.managed:
+		var manager: Dictionary=player_branches.owner_profile().employees.manager_for("player_diner")
+		if not manager.is_empty():
+			attraction=float(manager.attraction)*.002
+			service=clampf(service+float(manager.operations)*.001+float(manager.service_bonus),0,1)
+			for dish: Dictionary in actual_menu: dish.food=clampf(float(dish.food)+float(manager.quality)*.001+float(manager.quality_bonus),0,1)
+	return {"id":"player","open":true,"reachable":place.reachable,"visibility":clampf(float(place.visibility)+attraction,0,1),"awareness":state.awareness,"brand":state.brand,"service":service,"travel_minutes":place.travel_minutes.get(origin,5.0),"wait_minutes":waiting*35.0,"decor_match":decor_match_for(float(place.attractiveness)),"menu":actual_menu}
 
 func decor_match_for(attractiveness: float) -> float:
 	var base := clampf(attractiveness, 0.0, 1.0)
@@ -537,6 +545,9 @@ func settle(ledger: Array, receipts: int, opened_today: bool = true) -> Dictiona
 	society.finish_day(int(state.day))
 	for town: String in config.active_towns: expansion.review(town,state.competitors[town],society,int(state.day))
 	var utility: int=roundi((float(config.fees.opening_cents) if opened_today else 0.0)+int(state.day_stats.admitted)*float(config.fees.guest_cents)+float(state.day_stats.cooking_seconds)*float(config.fees.cooking_second_cents))
+	if player_branches!=null and player_branches.managed:
+		var manager: Dictionary=player_branches.owner_profile().employees.manager_for("player_diner")
+		if not manager.is_empty(): utility=roundi(utility*(1.0-float(manager.utility_discount)))
 	var rent: int=0 if state.lease.owned else int(state.lease.daily_cents)
 	# A wage paid after yesterday's settlement belongs to the next business day.
 	# The ledger settlement marker makes this boundary survive save/reload without
@@ -544,7 +555,7 @@ func settle(ledger: Array, receipts: int, opened_today: bool = true) -> Dictiona
 	var wage: int=0
 	for event: Dictionary in ledger:
 		if event.kind=="settlement": wage=0
-		elif event.kind=="wage": wage-=int(event.cents)
+		elif event.kind=="wage": wage+=int(event.extra.get("wage_expense_cents",-int(event.cents)))
 	var before_tax:=receipts-int(state.cost_consumed)-utility-rent-wage-int(state.today_interest_cents)
 	var tax:=roundi(float(maxi(0,before_tax))*int(config.society.profit_tax_bps)/10000)
 	state.tax_due_cents+=tax
@@ -671,6 +682,7 @@ func restore(raw: Dictionary) -> TDOutcome:
 	if not checked.ok: return checked
 	if int(raw.schema_version)==1: return _migrate_v1(raw)
 	state=raw.duplicate(true)
+	_extend_material_markets()
 	society.restore(state.society);state.society=society.state
 	expansion.state=state.expansion
 	return TDOutcome.new(true,"RESTORED")
@@ -707,7 +719,19 @@ func _migrate_v1(raw: Dictionary) -> TDOutcome:
 	fresh.society.state.last_day=int(raw.last_settled_day);fresh.society.bank.state.last_day=int(raw.last_settled_day)
 	# No historical wages, interest or tax. Existing balances become the new opening balance.
 	config=fresh.config;state=fresh.state;society=fresh.society;expansion=fresh.expansion
+	_extend_material_markets()
 	return TDOutcome.new(true,"MIGRATED_FIVE_TOWNS","历史在途货物和原店位置保留；旧区域停止新增模拟。")
+
+func _extend_material_markets() -> void:
+	# Only newly introduced identities are eligible. Existing stock/price is never reset.
+	for market_town: String in state.markets:
+		var market: Dictionary=state.markets[market_town]
+		for id: String in costs:
+			if not TDMaterialCatalog.added(id) or market.stock.has(id): continue
+			market.stock[id]=int(config.market.initial_units)
+			market.price[id]=maxi(1,roundi(float(costs[id])*source_factor(market_town,id)))
+			market.premium[id]=0.0;market.opening[id]=int(market.stock[id])
+	state.material_version=1
 
 func _copy(value: Variant) -> Variant:
 	return value.duplicate(true) if value is Dictionary or value is Array else value
@@ -716,7 +740,9 @@ func validate_save(raw: Variant) -> TDOutcome:
 	if not raw is Dictionary or not TDServiceCatalog.integer(raw.get("schema_version"),1,2): return TDOutcome.new(false,"INVALID_ECONOMY_VERSION")
 	var legacy: bool=int(raw.schema_version)==1
 	var towns: Array=TDTownCatalog.PLAYABLE_IDS if legacy else config.active_towns
+	if raw.has("material_version") and raw.material_version!=1: return TDOutcome.new(false,"UNKNOWN_MATERIAL_VERSION")
 	for field: String in state:
+		if field=="material_version": continue
 		if field in ["after_hours_cost_cents","after_hours_seconds"]: continue
 		if legacy and field in SOCIETY_FIELDS: continue
 		if not raw.has(field): return TDOutcome.new(false,"MISSING_ECONOMY_FIELD",field)
@@ -768,6 +794,7 @@ func validate_save(raw: Variant) -> TDOutcome:
 		for field: String in ["stock","price","premium","requested","sold","produced","imports","exports","spoilage","opening"]:
 			if not raw.markets[town].get(field) is Dictionary: return TDOutcome.new(false,"INVALID_MARKET")
 		for item: String in costs:
+			if not raw.has("material_version") and TDMaterialCatalog.added(item) and not raw.markets[town].stock.has(item) and not raw.markets[town].price.has(item) and not raw.markets[town].premium.has(item): continue
 			if not TDServiceCatalog.integer(raw.markets[town].stock.get(item),0,10000000) or not TDServiceCatalog.integer(raw.markets[town].price.get(item),1,10000000) or not TDEconomicCustomer.finite_range(raw.markets[town].premium.get(item),-2,2): return TDOutcome.new(false,"INVALID_MARKET")
 		for firm: Variant in raw.competitors[town]:
 			var model: Dictionary=state.competitors[config.active_towns[0]][0].duplicate(true)

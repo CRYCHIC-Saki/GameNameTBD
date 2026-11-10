@@ -11,6 +11,8 @@ func _initialize() -> void:
 		return
 	var catalog := TDCatalog.new()
 	var levels := TDLevelProgression.new()
+	for model: RefCounted in [TDEmployeeRoster.new(),TDSupplierNetwork.new()]:
+		if not model.error.ok: printerr(model.error.code);failures+=1
 	var branches := TDPlayerBranches.new()
 	if not branches.error.ok:
 		printerr(branches.error.code); failures += 1

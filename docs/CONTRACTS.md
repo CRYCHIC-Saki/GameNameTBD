@@ -1,5 +1,15 @@
 # 公共契约：v3完整烹饪，兼容v1/v2历史入口
 
+## D063 集成契约
+Profile新增employees/suppliers，schema9明确兼容1–8；唯一钱账仍Shop，分店库存仍Branches，员工唯一权威EmployeeRoster，Layout的Crew是主店投影。新采购任务含来源镇/目标店/物品量/成本/真实剩余秒/幂等token，旧货单沿原路完成，不复制旧队列。经营与供应自动开关分别存档，关闭不取消已付订单。分店receive_supply原子接收带成本库存，不经过主店；有效店引用必须完整校验。
+GameHUD只发action_requested，Shell唯一负责窗口/暂停/快捷键；面板调用规则方法，不改余额/库存/好感。岗位工资按日首次履职锁定归属，不靠调岗重复付/免付，低现金欠费仍计当日经营费用。新抽卡不算经营材料成本/经营净利润。
+
+- EmployeeRoster: `draw(count,role,token)` returns paid results and exact disclosed pool probabilities; `assign(id,store)` accepts only owned IDs and existing stores. Total copies 1/3/9 imply stars; maximum 9. `payroll_for(store,day)` preserves the first duty attribution even after moves; SETTLED assignment begins the next day.
+- SupplierNetwork: `quote/order(town,store,cart,token)` use integer milli-units and cents, `advance(seconds)` uses active real seconds. Completed home orders wait while OPEN/DRAINING. `set_automation` does not cancel prepaid orders; `automate` accounts for current and in-flight material needs. `legacy_lines` preserves the sum of old purchased production lines.
+- Profile schema9 requires employees/suppliers; schemas1–8 explicitly migrate old workers/managers/crew/line entitlements without retroactive charges. Payment and receipt IDs must match the central ledger and target store; unknown versions, stores, items, stars or malformed records reject before mutating the live slot. The old factory data remains solely for fulfilling old queues and compatibility experiments.
+- `CharacterRoster.mark_met` writes a stable string key in existing flags; relationships do not create a second NPC class or infer all characters are known. Actual visible dialogue and completed named meals establish acquaintance.
+
+
 ## 217cd34拉取后的兼容契约（2026-11-08）
 - ShopView挂载时设Shop.crew_external=true并注入crew_status_source，关停解除所属回调，不回退旧计时器。tick_staff同时适用于现场/离店，要求真实订单、厨师、空锅与材料；每位厨师只占一个会话，不重复接玩家正在制作的菜。cook_seconds旧倒计时/模拟属性只保留独立兼容测试；正式耗时/成品由FullKitchen/Lane/BeatSheet给出。
 - Restaurant.bind_dining_clock后advance_dining同时推进客人和服务员，_process只取显示位置；暂停/剧情冻结不移动、不交盘。雇用waiter抵达才hand_plate，独立runner岗位保持兼容，不新增钱物账或第二张订单。
@@ -527,3 +537,59 @@ D031当前实现接口补充：begin返回token并创建未挂树的TDResearchLe
 - 来源：用户报告餐厅人物在无障碍处卡住。隐藏场景不得贡献其他房间的物理阻挡。厨房墙体/人物掩码为1/2（第1/2层），餐厅为4/8（第3/4层），小镇为16/32（第5/6层）；各人物只检测自己的墙体层。层名已写入project.godot。场景切换仍保留原会话/营业时钟。
 - 空地规则修正：功能分区仅限制家具放置，不再将空的迎宾/点餐/用餐地砖当墙；可通行性由边界/门面与实际blocks家具占地决定。玩家物理碰撞和顾客寻路读取同一is_walkable。家具服务落脚点仍须在movement过道，保持旧合法存档与布局约束，不把区域/家具定义重写入存档。
 - 等距呈现以人物脚底为位置基准；显示落脚点和物理脚底投影一致，家具用占地底影展示阻挡范围。不修改原位图、烹饪输入或移动速度。
+
+### D063-R1 员工抽取修订契约
+EmployeeRoster内部schema2明确接受并迁移schema1，Profile9不变。生成身份employee.v1.<surname_id>.<given_id>，组件ID固定、显示名字和数组排序不作持久身份。给定组件确定岗位/能力原型；原18模板只作为能力原型及历史员工兼容。保存只存实际获得的ID/份数/XP/派驻，不展开组合池。
+每次独立抽drawn_stars；copy_value=1/3/9，合并copies=min(9,old+value)，最终stars仍用3/9阈值。结果同时含抽取星级和合并后星级；已满星不再抽取，溢出进度不补发新员工或金钱。保留新伙伴保底，但不修改星级概率。原资金事务、执勤工资冻结和主动保存不变。旧已拥有且未满星员工仍以原身份参与同名抽取，满星后移出。
+
+## D064 固定招聘契约
+Roster内部schema3读取1/2。config.fixed_employees是新签约权威，每人稳定ID/固定星级/四维/特性/日薪/签约费/来源镇/简介；头像从稳定ID映射到既有6种通用形象；旧templates/name_generator只读兼容已有员工。market_rows(town,role)返回只读候选快照；sign_employee(id,token,offer_key)检查当批候选及有效期、仓库唯一、边界与真实资金，失败不变更，成功记contracts[id]={token,day,fee_cents}并入仓库，绝不自动派驻。draw旧入口返回RECRUITMENT_REPLACED。
+Profile验证签约与Shop真实负支出金额/日期/付款主体/唯一token一致。旧draw seen保留作账证，不重新扣费。签约不计工资，assign才按已有首次执勤规则冻结工资；SETTLED变更及未来开业店次日/开业日生效。查看/换页/托管不签约、不落盘。
+
+## D065 统一店铺管理接口（2026-11-09，已实现）
+列表稳定主店ID player_diner 加既有player-branch:N；UI导航只读。Profile只新增可选布尔main_management_auto（缺省false），schema9不变，错误类型拒绝；不把主店插入branches.stores。Profile.main_menu_rows给主店已掌握菜谱视图，Shop.configure_menu批量全验证后一次替换菜单、只允许PREPARE/SETTLED；失败不部分改价格/开关。set_main_management须已派店长，筹备自动选择菜单并补闲置厨服；工资沿EmployeeRoster，无新制作或结算计时器。关闭后配置保留，不撤现任员工。
+店铺详情页以id路由：主店菜单→Shop，分店菜单/预算/暂停→Branches，员工→EmployeeRoster，供货开关→Suppliers，账本→既有Commerce或分店books。动作成功只改槽内存，禁止UI写盘。
+
+## D066 控制台契约（先于实现登记）
+DebugCommands按调用参数取得当前Shell，不持有旧Profile。纯文本tokenizer支持双/单引号，无eval/脚本/任意存档字段写入。未知命令、坏数量/歧义名先拒绝，无部分动作。事务令牌带debug命名与run/serial唯一值，钱物仍走Shop/Branches，签约必须当前候选并真实付款。
+Research新增显式debug_unlock事件：仅含kind与recipe稳定ID，校验该菜存在且已解锁、菜系开放；调试授予同时补祖先和菜系，不改best/attempts/license，不假装研习通过。新可选事件种类在原schema1下校验，旧档不变，未知/坏事件拒绝。其余系统仍经changed同步正式研究。
+控制台不直接设置任务beat或剧情奖励，不模拟整天运行；time set只改合法筹备/日结钟表并同步NPC日程，原保存纪律保持。所有修改有当前槽反馈，只有显式save写盘。
+
+
+## D067 分店生命周期（2026-11-09）
+Branches内部schema2，Profile仍9；schema1先验证再按Shop真实开办流水补construction。新开办保存construction{schema_version:1,kind:paid,token,paid_cents,paid_day,ready_day}，ready_day==start_day；旧world_adjustment付款为legacy_paid；缺付款为unverified，不能形成可进店/营业地块，原记录与供货引用保留。一个付款token只能对应一个店。只有明确确认付款才创建或修复记录，UI框选纯本地。
+施工以日期跨度计算，默认1日；built是只读查询，不通过UI或debug time set修改。店长由Roster唯一授权，正式新建不强制提前任命，完工后仍须分配店长和厨服。员工可提前派驻但施工不计薪；管理托管不能自动补出首位店长。施工/未核对禁止营业销售，完工无班组不收开门水电，日租按建成日起计。
+分店巡视只绑定profile+store_id，复用餐厅绘制/厨房场景和原玩家移动；不复制Shop/World会话，不接主店订单/库存写操作，查看内容由当前分店查询。Shell管理室内生命周期、原镇返回、暂停与02:00回家。保存不记录临时巡视场景，仍按床边/港口锚点恢复。
+
+D067补充：unverified原记录保留在legacy.unverified_archive；整槽产权重建排除这些不占地记录，真实已付/施工店铺仍严格互斥。供应可在明确开启后为施工店提前下单备货，禁止为unverified新增采购；旧已付收货仍引用同一店ID。readiness与销售/费用均检查建成；旧带薪职责不补退款。
+
+
+## 2026-11-09 整合3719c13：厨师真实工序与当前员工权威
+市场market_ids/market_sells允许全部实际上架原料，supplier catalogue仍读purchase_ids按解锁过滤。餐厅只有当前仓库派驻服务员负责出餐口取菜/过道送餐及原收银兼岗，不恢复旧直接雇佣按钮；工序由ShopView实际CookingLane提供，crew_external保持true。新增只读cook_job_id(person_id)返回当前真实session_id，未知/已关闭返回空串；KitchenWorld只按身份切换清理显示工位，不能清除菜品或瞬移角色。ShopView.close按自身绑定身份释放状态/工序/会话三个回调，防切槽旧回调；分店巡视不绑定主店订单。
+验收AC-SYNC-3719-001保留远端取餐路径/厨师动作与本地仓库、日期、施工；002连续两次真实制作复位显示工位，不并行旧做菜计时器；003市场与供应过滤分离，关闭回调失效；004原资料字节保留，导入加载及全量检查真实记录，未验证项不得判通过。
+
+整合补充：floor_service=false仅供原自动楼面表现兼容，正式场景true仍须真实端菜；员工仓库外部投影为空不能回退旧雇工。当前题页测试只计可见按钮且显式校验HUD隐藏；移动按D059地砖轴，研究仅缓存在槽内存。schema5旧地图测试必须去除后来的region标记并以旧几何生成，跨两次地图升级的备份为before-region-v2；施工测试先真实付款，不虚构默认店长。上述为测试样本校正，不放宽生产存档校验。AC-SYNC-3719-001至004工程通过；证据见game-shell最新整合报告，人工试玩待验收。
+
+
+## D068 持续供应契约
+TDSupplierNetwork仍唯一供应权威。内部schema2读1（迁入空lines/line_serial，不复制旧货）；Profile仍9。lines有稳定supply-line:N、town_id/store_id/item_id、target_units(库存内部单位)、slots、enabled、managed；数组顺序为优先级。create/configure/remove/move为请求接口；line_rows/snapshot返回深拷贝，重复同源/同店/同原料拒绝DUPLICATE_LINE，非法容量/目标原子拒绝。手动改行收回托管所有权。
+新批沿用orders及supplier-order:N，新增line_id；新job.seconds/elapsed为游戏秒，transit_minutes/transit_elapsed为游戏分钟；没有line_id的旧job仍是真实活动秒。钱先经Shop.branch_adjustment，真实源镇库存一次预留，完成经唯一receive_supply收货。连续单给主店显式continuous=true，旧调用保持边界限制。分店沿原receive_supply/成本/付款验证。
+advance_active_time(real_seconds,game_minutes)统一长帧分段；Shell由真实clock差传游戏分钟。sleep在真实成功跨日后一次推进到08:00的余时，仅新产线推进，旧单无离线/睡眠加速。配置/存档校验区分版本、单位、目标引用、进度、幂等token，收款入库仍由Profile对中央账核验。
+费用预算按store共享：所有持续行累计，同天关闭/开启不清零；分店还受budget_cents减今日采购限制。现货+在制+在途含旧工厂及已付世界货运，所有权不迁移。UI仅发意图。SupplierPanel为U正式入口；GameShell控制暂停，不能另启后台计时器。
+
+
+## D069 材料、地区与调料盘接口
+- `TDMaterialCatalog`：唯一新增材料注册表，`data/item/definition/recipes`返回深拷贝，`supplies(town,id)`读供应地区；`culture_tags`是来源文化，不用于供应判定。`culinary_materials.json` schema/revision1，未知版本/地区、重复节点、引用/包装/保质期非法会拒绝。旧运行ID不重解释。原250身份展示索引ingredient_index继续只读追溯，不作为运行供应表。
+- `TDServiceCatalog.load_file`显式装配材料定义/费用，TDResearchRuntime增量安装既有3菜而不重复材料。原定义与新注册表职责见AI-079。四个库存大组保持与冰箱/工厂一致，细类在material.category。新的运行菜谱可带`cuisine_id:cn|eu|jp|sea|lat`及可选`seasoning_palette`；无字段旧菜按cn。
+- `Shop.material_recipe_unlocks`是Research已解锁节点的只读投影，初次装配、研究changed和读档刷新；不是第二份存档。主料门槛沿用；调料不限研究进度。`stock_info`提供供应地区/标签/细类。报价与产线必须用Supplier catalogue规则，不直接读旧common_items/local_items作为权威。旧工厂兼容入口也按所在镇筛选，新正式入口仍为U五供应商。
+- 付费旧单校验稳定材料ID、目标、付款凭证、量/成本/进度；不因新的产区规则拒收已付旧货。新起批必须重新通过报价，因此旧不合地区产线只能排空已付货。Shop仍唯一玩家钱物账，WorldEconomy只记录源市场库存/成本，不创建免费玩家材料。
+- `TDCookingLane.recipe_spices/spice_choices`供实际绘制、命中矩形与控制器allowed_actions共用；谱面必需调料优先，随后菜系盘，模板只读、每锅独立。真实M6长按沿用session.pour_material→Shop消耗，不由UI改味觉/数量。归零灰显且不能点，取消不退已经加入的量。
+- Shop/Economy可选`material_version=1`，省略表示旧材料范围；只允许新增ID的完整缺省迁移，不吞旧ID缺损。恢复时新品玩家库存0/空批次，源市场补默认新库存；当前版本漏项、部分字段缺损、未来版本均拒绝。Profile9/Supplier2/Research1不变，普通退出不保存，旧主动保存时点不变。
+
+
+## D070 调料菜系采购权限
+- MaterialCatalog.items[id].unlock_cuisines：调料必填、非空、去重的cn/eu/jp/sea/lat数组；只表达菜系使用，独立于supply_regions。注册表schema1/revision1增加必需内容校验，存档不持有这份模板。
+- Shop.material_cuisine_unlocks是Profile从Research.snapshot().cuisines同步的只读用途投影（构造、changed、restore），不单独保存；独立旧测试入口默认cn。不能用它伪造研究或重复持久化。
+- market_sells/buy与purchasable/purchase_ids使用统一condiment_unlocked判断；完整购物车先校验再扣款。Profile.buy/order_remote、Supplier.catalogue/quote/order/create_line/_start_batch及旧factory_products沿现有权威门槛。非调料原行为保持。
+- consume_materials/receive_supply/已付供应货物交付不受新购门槛限制，旧调料批次/钱账不会删除或重扣。锁定旧产线显示“等待调料菜系开放”，已付批次继续。
+- SupplierPanel只订阅当前槽Research.changed刷新货架，重配置与退出断开订阅。不修改研究；已打开面板可立即反映正式推荐事件。QTE继续按现有菜谱盘和真实库存呈现，不篡改已拥有调料的使用权。

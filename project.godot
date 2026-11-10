@@ -27,6 +27,27 @@ window/stretch/aspect="expand"
 
 [input]
 
+employees_menu={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":72)]
+}
+
+branches_menu={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":71)]
+}
+
+suppliers_menu={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":85)]
+}
+
+relationships_menu={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":78)]
+}
+
+
 world_map={
 "deadzone": 0.2,
 "events": [Object(InputEventKey,"physical_keycode":77)]

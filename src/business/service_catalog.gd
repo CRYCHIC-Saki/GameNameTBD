@@ -89,7 +89,7 @@ func load_data(raw: Variant) -> TDOutcome:
 	var stock: Dictionary=TDFoodStock.load_rules()
 	for id: String in config.costs:
 		if not stock.has(id): return TDOutcome.new(false,"MISSING_STOCK_DEFINITION",id)
-	return TDOutcome.new(true,"LOADED")
+	return TDMaterialCatalog.install(self)
 
 static func integer(value: Variant, low: int, high: int) -> bool:
 	return (value is int or value is float) and is_finite(float(value)) and float(value) == floorf(float(value)) and value >= low and value <= high
@@ -126,7 +126,9 @@ func request_profile(family: String, customer: Dictionary, entry: Dictionary = {
 				data.pc_operations.document_sheets[cut.id]=cut; recipe.preparation_sheets[ingredient]=cut.id
 		if requirement.get("kind")=="flavor":
 			for target: Dictionary in rules.get("flavor_targets",[]):
-				if int(requirement.get("taste",-1))==int(target.taste): targets[target.ingredient_id]=float(target.amount)
+				if int(requirement.get("taste",-1))==int(target.taste):
+					var spice: String=TDMaterialCatalog.preference_spice(str(recipe.get("cuisine_id","cn")),int(target.taste),str(target.ingredient_id))
+					if not spice.is_empty(): targets[spice]=float(target.amount)
 	var chart: Dictionary=source_chart.duplicate(true)
 	chart.id="request.cook"; recipe.guided_profile=chart.id
 	var notes: Array=[]

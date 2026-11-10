@@ -59,6 +59,7 @@ func begin_arrival() -> void:
 func _process(delta: float) -> void:
 	if shell==null or shell.profile==null: return
 	var story:=shell.profile.story
+	if presenting() and dialogue.talk!=null and dialogue.talk.display_kind=="line": shell.profile.characters.mark_met(dialogue.talk.portrait_id)
 	if shell.atlas!=null and shell.atlas.selected_id=="C02" and story.waiting_cook(): story.recipe_viewed=true
 	var hidden:=shell.location=="voyage" or presenting() or shell._modal!=null or shell.atlas!=null or shell.kitchen_view._popup!=null or not story.started()
 	var pending_home: bool=not shell.profile.has_residence() and shell.profile.residence.stage!="locked"

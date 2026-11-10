@@ -132,3 +132,54 @@ economy/town/cook工作区在artifacts/game-shell-work/对应角色目录；cook
 - 完整tools/export.ps1通过；pre-export-20261024-181028：41脚本、380/380测试、8377断言、444.939秒、0失败/0跳过，各阶段退出0。保留已有Float/Int比较warning及研习用例临时孤立节点提示，无引擎退出泄露错误。393资源白名单通过，exe/PCK于2026-10-24 18:18更新，包含上游83888da。
 - 实际导出程序headless/GPU各29/29、退出0，232条开放路径无阻挡。GPU为4.7.2.stable.official/Compatibility/NVIDIA RTX3050；日志artifacts/export/rebuild-native-gpu.log，9张截图artifacts/rebuild-native-gpu/run-1735674，已核对标题、小镇与餐厅。隔离验证PCK不写入交付包，真实玩家档未改。
 - AC-G15 PASS，ENGINEERING_READY / 人工PENDING / 远程CI NOT_RUN。共享锁释放，未提交推送，不扩展其他玩法；再次打包运行pwsh -File tools/export.ps1，日常检查仍使用tools/check.ps1。
+
+## D066 控制台扩展（2026-11-09，DELIVERED_LOCAL_PLAYTEST_PENDING）
+用户授权完善控制台便于调试。已读取grilling与godot-gdscript-patterns（C:/Users/Administrator/.codex/skills/{grilling,godot-gdscript-patterns}/SKILL.md，无版本声明），按前者要求只读代理核查事实。GRILL_RESULT=NO_BLOCKING_PRODUCT_QUESTIONS；不改变正式玩法，只提供显式调试操作。既有单槽权威、真实派驻、正常保存边界充分，数值/输出上限记AI-076。
+- AC-PHASE-4-D066-001：反引号打开、debug门槛、分类help、滚动可复制输出、上下历史/Tab补全、Esc关闭恢复暂停；真实输入不穿透。
+- 002：金额/数量/ID/参数完整校验，坏输入不改状态；金额用金币转整数分、食材份转千分单位；输出明确结果或失败原因，唯一debug事务令牌。
+- 003：money/give/inspiration/cuisine/recipe调试只调用权威接口；菜谱调试解锁独立标记来源、不伪造80分或历史迁移，真实掌握/菜单同步；读回验证通过。
+- 004：员工候选/仓库/签约/派驻、店铺托管、供应/订单/任务查询复用原规则；不伪造工资、NPC任务完成或免费签约。
+- 005：改钟表只在筹备/日结、08:00–次日01:59，不快进订单/生产、不触发02:00自动写盘；剧情/研习/QTE中拒绝危险修改；无活动槽有明确提示。
+- 006：check只读整槽与资金核对，save显式走原规则；普通调试不写盘，退出后未保存调试一起回退；旧tools继续隔离。
+- 007：真实场景/旧入口回归/图形/本地导出分别记录，人工调试易用性PENDING。
+
+### D066 最终实现与证据
+- 新TDDebugCommands无持久Profile引用；金额精确十进制→整数分、数量→千分单位，ID/完整名称先匹配，歧义拒绝。24类命令见docs/CONSOLE.md，按原Shop/Branches/Roster/Suppliers/Research/Story/Shell接口处理，无第二套钱物或自动写盘。员工签约真实付款/合同，调试补料保质期/成本批次不省略；查询任务不改beat/赠料/奖励。
+- 控制台原LineEdit提交后会失焦，已启用keep_editing_on_text_submit；连续回车、上下历史恢复草稿和Tab均用真实引擎输入验证。纯文本输出可复制且有长度/数量上限；旧tools营业可查看列表，点击进入原型仍须打烊，旧文件隔离保持。
+- recipe unlock根目标须已配置运行时映射；前置树节点可以尚无可做内容，原子补祖先/菜系并写debug:recipe:<ID>事件。校验ID、来源键、解锁/菜系/前置完整性，不写best/attempts/legacy。旧Research1和Profile9仍读；调试事件可保存和恢复，但不能用此证明料理体验已经完成。
+- `artifacts/check/pre-export-20261109-180801`：最终22/22、325断言，导入/146项加载/测试退出0，0失败/跳过。含11个新增真实入口/规则用例与11个原研习用例。覆盖非法命令全槽不变、金额精度、主店/分店补料隔离、资金守恒、菜谱调试标记及坏档拒绝/恢复、真实员工费用和派驻、时间边界、命令历史/焦点、显式保存和不自动保存。
+- 首轮`console-first`在新测试中暴露前置无runtime不应阻断调试树授予、回车失焦；并在旧综合三日经营期间300秒TIMEOUT，整批FAIL保留。修正后的`console-r2`22/22、322断言通过，之后增加读回/旧tools场景覆盖及列表筛选，最终以上述325断言为准，不重复计数。
+- 旧入口单独`artifacts/check/console-game-final`（允许900秒）：7项中6通过，407.5秒，实际3日制作交付/睡觉保存重载、旧档导入/银行和隔离入口成功；唯一失败为营业时tools列表被过严拦住。修复仅放宽列表查看，原工具进入边界不变。`artifacts/console/legacy-pause`用锁定GUT定向重跑原失败方法：1/1、15断言、0失败/跳过、exit0；不是重新宣称整批7/7。上述6+1再加最终22，去重29用例、501断言。GUT原研究孤立节点提示/Float-Int警告保留，无最终引擎泄漏或解析错误。
+- `artifacts/console/gpu-first.*` 与 `gpu/summary.json`：Compatibility图形44检查/5截图PASS，exit0/stderr空。真实反引号、回车、历史、Tab、剧情期间拒绝修改、钱物/签约/派驻/主店托管/菜谱/钟表/check、无隐式写盘/明确save、open shops与退标题清理。已目视复核帮助和滚动结果，源工程GPU和实际EXE headless检查分别计。
+- 2026-11-09 18:09更新本地EXE/PCK：607运行资源，显式包含debug_commands.gd；导出、包清单、启动3次每次4项、实际EXE headless输入94项均exit0，artifacts/export/summary.json PASS。全量全仓和远程CI未运行；人工调试易用性PENDING。
+- 关键文件：src/app/debug_commands.gd、src/app/game_shell.gd、src/cooking/research_session.gd、tests/integration/test_debug_console.gd，以及统一check/export入口。5份起点备份在artifacts/console/baseline，无原资料或真实玩家档操作；未提交推送，写入锁释放。
+
+### D066 试玩（4步）
+1. 运行最新build/TownDiner.exe，进入测试槽；按反引号，输入debug、help，检查历史、Tab、滚动和Esc。
+2. 筹备时试money add 10000、give tomato 10、inspiration add 50、recipe unlock C03；再用status/items/recipes/check核对。非法数量和未知ID应有提示，且状态不变。
+3. employee market chengdu manager查候选，employee hire <ID>签约、employee assign <ID> main派驻，shop auto main on；open shops核对实际人员和托管。time set 18:00预览夜色，不代表生产已快进。
+4. 先普通退出确认未保存修改回退，再重试后save并读取；营业/剧情/QTE中尝试修改应受限制，查询仍可用。记录最常缺的调试命令和反馈是否清楚。
+
+AC-PHASE-4-D066-001至007工程PASS；人工体验PENDING，停在本轮控制台交付，不继续新玩法或推送。
+
+## 2026-11-09 远端3719c13与D063–D067兼容整合
+
+范围：用户要求git pull并本地兼容；当前集成分支83c3564→3719c13，1远端提交、21文件。起点108改动/未跟踪文件逐字节备份，stash e57befd保留。5处文本冲突逐段保留双方有效内容，原始资料34份校验完全相同。无提交、推送或真实玩家存档操作。
+
+实现：保留远端真实厨师工序、南墙出餐口及服务员过道送餐、市场全架原料；固定员工Roster仍唯一派驻/工资权威，Shop真实自动谱仍唯一制作链，供应商保持已解锁过滤，分店巡视不绑定主店订单。用当前session_id解决连续两菜未出现idle帧时厨师停在旧工位；close按所有者释放三回调。旧非手动楼面表现模式兼容，不放宽正式人工/服务员送餐条件。
+
+验证分层：
+- 导入/脚本场景加载退出0，加载147资源。初轮sync-3719-first 80/81，旧数组下标地块断言改用稳定ID；sync-3719-all发现旧自动楼面表现失败后受控终止，日志保留。
+- sync-3719-all-r2：2400秒超时FAIL，40完整文件296测试中291通过；未完成文件不计覆盖。旧主菜单断言误计隐藏HUD、研究旧缓冲提示、旧屏幕移动方向以及旧地图混合版本样本逐项校正。生产规则和存档严格校验不放宽。
+- sync-3719-remainder：57文件476项，474通过，15530/15534断言，465.344秒，exit1。余下两项是跨区域升级备份后缀旧断言、分店样本仍指定旧未拥有默认店长。改为实际区域备份字节核对、真实付费两店且无默认经理。
+- pre-export-20261109-213258：迁移14/14、512断言、63.318秒，exit0，0跳过/错误。coverage-by-file.json按最后通过文件去重：93文件747测试全部覆盖，无遗漏；不是宣称单次all完整通过。早期失败/超时日志不删除。
+- Compatibility GPU：正式场景员工36项/4图、分店50项/9图，共86项/13图，均exit0/stderr空。真实签约派驻、真实QTE耗料出菜、服务员取餐送桌、不重复收款、不加手工熟练度、关闭清理；本镇/东京付费施工、完工/店长门槛、真实E进入餐厅和厨房、返回、显式保存均验证。前三次新crew探针因直接关闭序章留下模拟时钟/前厅冻结而FAIL，保留crew-attempt-1..3；改用正式dialogue.finish_now结束演出再关闭测试引导后通过，未用伪造订单替代落座或做菜。
+- 21:34实际本地EXE/PCK，609运行资源；导出、清单、启动3×4、EXE headless输入94项exit0，汇总PASS。本轮未额外跑导出包GPU；源工程GPU与导出验证分开记录。之前导出证据另存previous-export-evidence，本轮final-export-evidence保留。
+
+AC-SYNC-3719-001至004工程PASS。人工连续营业、音画手感仍PENDING，远程CI NOT_RUN。目视检查已发现既有左上任务与餐厅状态文字重叠，记录为界面整理待办，不宣称美术验收完成。当前停在本地同步交付，不自行新开玩法。
+
+试玩（4步）：
+1. 运行build/TownDiner.exe，用测试槽；H签约厨师/服务员，G派往主店。
+2. 市场备好菜谱所需原料，开门到厨房，观察厨师随真实工序移动；回餐厅看出餐口取菜与沿过道送桌。
+3. G选址但不付款应无店；付款后施工，次日完成，分配经理及厨服，再从地图E进入餐厅/厨房并返回。
+4. 主动保存后读回，检查店铺/员工/库存；普通退出仍不保存。

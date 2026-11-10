@@ -83,7 +83,8 @@ func test_real_input_and_repeated_room_switches_keep_passages_clear() -> void:
 		var new_screen:=TDRestaurantIsoView.project(room.player_position().x/64.0,room.player_position().y/64.0)
 		# The room grid can change display scale; walking speed is a screen-space contract.
 		assert_gt(new_screen.x,old_screen.x+30.0,"WASD moves in a clear passage on screen")
-		assert_almost_eq(new_screen.y,old_screen.y,.1,"D moves horizontally on screen")
+		var displacement:=new_screen-old_screen
+		assert_almost_eq(displacement.y,displacement.x*.5,.1,"D follows the visible 2:1 tile axis (D059)")
 		get_tree().paused=true;before=room.player_position()
 		Input.action_press("world_down");await wait_physics_frames(3);Input.action_release("world_down")
 		assert_eq(room.player_position(),before);get_tree().paused=false

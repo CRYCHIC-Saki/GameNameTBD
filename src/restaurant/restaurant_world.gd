@@ -154,7 +154,7 @@ func _ready() -> void:
 		_set_status(room)
 	_pull_layout_staff()
 	if player_mode:
-		_set_status("WASD 走动 · Shift 疾跑 · 招工处可雇厨师或服务员 · 门牌、账本、装修桌或门按 E · B 菜谱 · Esc 暂停")
+		_set_status("WASD 走动 · Shift 疾跑 · H 雇员 · B 菜谱 · J 任务 · M 地图 · G 店铺 · U 供应 · N 关系 · 门牌、账本、装修桌或门按 E · B 菜谱 · Esc 暂停" if floor_service else "WASD 走动 · Shift 疾跑 · 招工处可雇厨师或服务员 · 门牌、账本、装修桌或门按 E · B 菜谱 · Esc 暂停")
 		_iso.interaction_markers=interaction_points()
 
 func _process(delta: float) -> void:
@@ -1907,9 +1907,7 @@ func interaction_points() -> Array[Dictionary]:
 		{"action":"town","name":"店门 · 小镇","cell":Vector2(layout.entrance())},
 		{"action":"menu","name":"营业牌","cell":Vector2(0,3)},
 		{"action":"ledger","name":"账本","cell":ledger_cell,"bounds":ledger_bounds,"on_counter":not cashier.is_empty()},
-		{"action":"recipes","name":"菜谱架","cell":Vector2(maxi(3,layout.columns/2),0)},
 		{"action":"decorate","name":"装修图板","cell":Vector2(0,layout.rows-3)},
-		{"action":"hire","name":"招工处","cell":Vector2(layout.columns-2,0)},
 		{"action":"kitchen","name":"后厨","cell":Vector2(layout.columns-2,layout.rows-2)}]
 
 func bind_dining_clock() -> void:
@@ -2061,7 +2059,7 @@ func _sync_business_guests() -> void:
 			if guest.has_meta("settled_at"):
 				guest.remove_meta("settled_at")
 		else:
-			var plated := (duty_on("runner") and layout.crew.waiters().is_empty()) or bool(guest.get_meta("plated", false))
+			var plated := not floor_service or (duty_on("runner") and layout.crew.waiters().is_empty()) or bool(guest.get_meta("plated", false))
 			if status == "SERVED" and not plated:
 				if guest.has_meta("settled_at"):
 					guest.remove_meta("settled_at")
@@ -2113,9 +2111,9 @@ func _queue_cell() -> Vector2i:
 	return layout.entrance()
 
 func duty_on(role: String) -> bool:
-	if role=="runner" and layout!=null and not layout.crew.waiters().is_empty(): return true
-	if not floor_service:
-		return true
+	if not floor_service: return true
+	if role in ["runner","cashier","greeter"] and layout!=null and not layout.crew.waiters().is_empty(): return true
+	if layout!=null and layout.crew.external: return false
 	var active := _session()
 	if active == null or not active.ready:
 		return false
@@ -2326,7 +2324,7 @@ func _refresh_order_board(orders: Array, now: float) -> void:
 		else:
 			lines.append("还没有客人。开门后，客人会比较本店、竞品和在家吃饭。")
 	if unified_dining_clock:
-		lines.append("客人自己入座点单。菜先放到出餐口，再由%s端上桌。没雇收银时由你送客。" % ("服务员" if _waiter_serving() else "你"))
+		lines.append("客人自己入座点单。菜先放到出餐口，再由%s端上桌。服务员也负责收银；未派服务员时由你送客。" % ("服务员" if _waiter_serving() else "你"))
 	elif floor_service:
 		lines.append("靠近客人按 E。菜放在出餐口后，雇了服务员就由服务员去取，没雇就由你端。")
 	else:
