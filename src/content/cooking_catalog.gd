@@ -81,6 +81,16 @@ func load_data(raw: Variant, source: String = "<memory>") -> TDOutcome:
 		var path: String = "recipes." + id
 		if not _id(recipe.get("name")) or recipe.get("scope") not in ["PROTOTYPE", "TEST_ONLY"] or not _range(recipe.get("version"), 1, 100000) or int(recipe.version) != recipe.version or not recipe.get("is_custom") is bool or not recipe.get("expects_aroma") is bool:
 			return _bad(path, "version and identity required")
+		if recipe.has("cuisine_id") and recipe.cuisine_id not in ["cn","eu","jp","sea","lat"]:
+			return _bad(path+".cuisine_id","unknown cuisine")
+		if recipe.has("seasoning_palette"):
+			if not _strings(recipe.seasoning_palette) or recipe.seasoning_palette.size()>10:
+				return _bad(path+".seasoning_palette","at most ten spice IDs required")
+			var palette_seen: Dictionary={}
+			for spice: String in recipe.seasoning_palette:
+				if palette_seen.has(spice) or spice not in raw.active.ingredients or indexed.ingredients[spice].category!="seasoning":
+					return _bad(path+".seasoning_palette","distinct active seasoning IDs required")
+				palette_seen[spice]=true
 		if not recipe.get("required_ingredients") is Array:
 			return _bad(path + ".required_ingredients", "array required")
 		var required_seen: Dictionary = {}

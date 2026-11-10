@@ -62,6 +62,12 @@ static func validate_config(raw: Variant) -> TDOutcome:
 func _reset_record(id: String) -> void:
 	records[id]={"affection":0,"last_chat_day":0,"last_meal_day":0,"last_attempt_day":0,"last_visit_day":0,"last_meal_token":"","flags":{}}
 
+func mark_met(id: String) -> void:
+	if records.has(id): records[id].flags["met"]=true
+
+func has_met(id: String) -> bool:
+	return bool(records.get(id,{}).get("flags",{}).get("met",false))
+
 func definition(id: String) -> Dictionary:
 	return definitions.get(id,{}).duplicate(true)
 
@@ -129,6 +135,7 @@ func complete_chat(context: Dictionary, completed: bool, picks: Array) -> TDOutc
 	var id:=str(context.get("character_id",""))
 	if context.get("kind")!="resident" or not records.has(id) or int(context.get("day",0))!=clock.day: return TDOutcome.new(false,"STALE_CONVERSATION")
 	if not completed or not picks.any(func(p: Variant)->bool:return p in ["chat","about"]): return TDOutcome.new(true,"CHAT_CANCELLED")
+	mark_met(id)
 	if int(records[id].last_chat_day)==clock.day: return TDOutcome.new(true,"CHAT_ALREADY_COUNTED")
 	records[id].last_chat_day=clock.day
 	records[id].affection=clampi(int(records[id].affection)+int(settings.chat_gain),0,100)
@@ -139,6 +146,7 @@ func observe_orders(orders: Array) -> void:
 		var id:=character_for(order.get("economic_profile",{}))
 		if id.is_empty() or int(order.get("economic_intent",{}).get("day",0))!=clock.day: continue
 		var r: Dictionary=records[id]
+		if order.status=="SERVED": mark_met(id)
 		if order.status=="SERVED" and int(r.last_meal_day)<clock.day and not order.get("score",{}).is_empty():
 			var score:=float(order.score.get("satisfaction",0))
 			var gain:=int(settings.good_meal_gain) if score>=float(settings.good_meal_score) else (int(settings.bad_meal_gain) if score<float(settings.bad_meal_score) else 0)
@@ -344,6 +352,8 @@ func restore(raw: Dictionary, day: int) -> TDOutcome:
 	var valid:=validate_save(raw,day)
 	if not valid.ok: return valid
 	clock.restore(raw.clock);records=raw.records.duplicate(true);runtime.clear();pinned.clear();_held.clear()
+	for id: String in records:
+		if int(records[id].last_chat_day)>0 or int(records[id].last_meal_day)>0: mark_met(id)
 	return TDOutcome.new(true,"CHARACTERS_RESTORED")
 
 func migrate(day: int, settled: bool) -> void:

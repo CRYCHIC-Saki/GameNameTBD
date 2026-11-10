@@ -1,5 +1,47 @@
 # 当前协作波次
 
+## 2026-11-10 上传集成（CANDIDATE_FROZEN，源代码锁释放）
+CI 修复由 root 独占 src/business/service_catalog.gd、src/business/shop_session.gd、tests/unit/test_regional_materials.gd、tests/integration/test_town_economy_integration.gd 、tools/check.ps1、.github/workflows/check.yml 和本段/PROJECT_STATE；备份 ci-fix-baseline。AC-UPLOAD-001：扩展材料配置可重复加载且非法成本拒绝；002：存档读回类型与数量一致，故意中断仍恢复旧档；003：十三镇旧档库存原量不变，仅注册新材料补零。必须复验失败用例及远端全量，不能绕过失败合并。AC-UPLOAD-004：远端同入口按文件四组并行，覆盖原全量集合且无重复；每组保留导入、加载、数量/跳过/失败门槛，默认本地 all 不变。
+用户授权推送并合并main。root唯一集成者，冻结103个发布候选工程文件；远端main经官方API确认3719c13，无新增提交。源文件/罗厄34项排除，43个保护文件哈希与全部候选备份在artifacts/upload-20261110。Git直连不稳定，优先使用官方GitHub API传输并验证相同Git对象；禁止强推、覆盖他人更新或上传凭据/原始资料。保持当前已验证功能及验收限制，干净副本检查后执行合并。
+
+## D070 调料菜系门槛（DELIVERED_LOCAL_PLAYTEST_PENDING，2026-11-10，锁释放）
+root唯一写入材料目录/元数据、Shop可购门槛、Profile研究投影、供应UI/Shell市场文案及对应测试、记录。备份artifacts/condiment-unlocks/baseline；原资料与真实存档不动，保留D063–D069未提交成果，不推送。 最终78独立用例/3208断言、GPU26项/5图、612资源/EXE启动3×4/headless94通过，2026-11-10 19:34本地包更新。整批旧77项600秒超时保留、不计通过；全仓/远程CI未跑，人工PENDING。31原资料一致，root本轮全部写入锁释放。
+
+## D069 五菜系材料与地区供货（DELIVERED_LOCAL_PLAYTEST_PENDING，2026-11-10，锁释放）
+root唯一写入content/culinary_materials.json、新材料目录/CookingCatalog可选菜系校验、Service/ResearchRuntime/Shop/WorldEconomy/Profile/SupplierNetwork、GuidedCookingView/CookingLane/IngredientIcon/ManagementPanels、厨房库存规则和测试/导出/记录。ingredient_region_facts仅只读调查。起点备份artifacts/regional-materials/baseline。用户确认允许多地区标签，基础共享、特色分区；范围为100菜树的材料，已有厨房动态调味，不新增全部关卡。原资料/真实档不动、不推送。 最终专项12+回归77用例/3607断言、GPU191项/10图、612资源及EXE启动3×4/headless94 PASS；17:37包更新，31原资料一致。人工PENDING，全仓all/远程CI未跑；root本轮锁释放。
+
+## D068 持续供应产线（DELIVERED_LOCAL_PLAYTEST_PENDING，2026-11-10，锁释放）
+root唯一写入SupplierNetwork/Shop接收/Profile睡眠/Shell时钟/ManagementPanels及src/business/branch_panel.gd供货托管回调、供应配置、专项测试/检查及记录。supplier_line_facts只读调查已完成。起点备份artifacts/supplier-lines/baseline；保留所有已有未提交成果，原资料/真实档只读，不推送。用户确认营业持续供货、预算与库存目标封顶、游戏时间推进与睡觉补算、旧付款单保留原约定。 最终76/76用例959断言、GPU21项/5图、609资源/EXE启动3×4/headless94通过，14:07本地包更新。原资料31文件一致；人工PENDING，全量/远程CI未跑，root全部本轮写入锁释放。
+
+## 2026-11-09 拉取 3719c13 兼容整合（INTEGRATED_LOCAL_PLAYTEST_PENDING，锁释放）
+root 唯一写入远端21文件与本地D063–D067重叠兼容、必要测试/导出/记录；branch_existing_facts仅只读审计。备份与原始哈希见artifacts/sync-20261109-3719c13，原资料/真实档不改，不提交推送。Grill审核无新产品阻塞，按远端工序/出餐流程与本地员工仓库/分店施工权威整合，不恢复旧招工入口。
+完成：93文件/747独立用例分批通过（整批2400秒超时及修正记录保留），86图形检查/13图、609资源和EXE启动3×4/headless94通过。21:34包更新；人工PENDING、远程CI未跑。108份备份、34原资料字节相同与安全stash保留。root本轮写入锁释放，未提交推送；详见game-shell整合报告及artifacts/sync-20261109-3719c13。
+
+## D067 分店付费施工与到店（DELIVERED_LOCAL_PLAYTEST_PENDING，2026-11-09）
+root 唯一写入 Branches/Panel/Profile/Roster、Shell、必要地图与新增室内呈现、配置/测试/检查/导出/记录；branch_existing_facts 仅只读审计。14份起点文件备份 artifacts/branch-construction/baseline。保留现有未提交成果，不动原资料和真实存档，不推送。用户已确认先巡视管理、员工继续经营；本轮实现完成。134个独立相关用例分批/4302断言、Compatibility50项/9图、609运行资源及EXE启动3×4/headless94项PASS；2026-11-09 19:49本地包更新。人工PENDING，全仓全量/远程CI未跑；root写入锁释放。
+
+
+## D066 控制台（DELIVERED_LOCAL_PLAYTEST_PENDING，2026-11-09）
+root唯一写src/app/debug_commands.gd、game_shell.gd、Research显式调试解锁、相关测试/检查/导出和记录。recruitment_facts只读核查完成，无其他写入者。沿集成分支增量，5份起点备份artifacts/console/baseline，不动原资料/真实档，不提交推送。
+29独立用例分批/501断言、GPU44项/5图、607资源/启动3×4/EXE headless94项PASS；18:09本地包更新。首轮超时及旧7项批次6过1败保留，原失败方法修正后定向1/1通过。人工PENDING，全仓全量/远程CI未跑，root本轮写入锁释放。
+
+## D065 统一店铺管理（DELIVERED_LOCAL_PLAYTEST_PENDING，2026-11-09）
+root唯一写BranchPanel/Profile/Shop批量菜单、HUD/Shell/Restaurant帮助文案、必要测试/检查和文档。recruitment_facts仅只读事实核查。复用集成分支与既有未提交成果，7文件起点备份artifacts/store-management/baseline；不改真实存档/原资料，不推送。
+100独立相关用例/3634断言、GPU39项/7图、605运行资源与EXE启动3×4/headless94项PASS，17:10本地包更新。人工PENDING，全量/远程CI未跑；失败日志和备份保留。root全部本轮写入锁释放，未提交推送。
+
+
+## D064 固定招聘（DELIVERED_LOCAL_PLAYTEST_PENDING，2026-11-09）
+root唯一写employees配置/Roster、Profile签约凭证校验、管理面板、分店/入口文字、测试和记录；recruitment_facts只读。沿现有集成分支，9份起点备份artifacts/recruitment/baseline。原资料、真实存档及既有D063成果保留，不提交推送。
+实现完成：80相关用例/3362断言、GPU50项/5图、605运行资源、EXE启动3×4及headless94项PASS；14:21包更新。人工PENDING，全量/远程CI未跑，失败日志保留。全部本轮写入锁释放，无提交推送。
+
+
+## D063-R1 姓名池与抽取星级（DELIVERED_LOCAL_PLAYTEST_PENDING）
+root唯一写入employee_roster、employees.json、management_panels、branch_panel店长分页及必要测试/文档/导出；gacha_revision_review仅只读。沿当前集成分支保留D063未提交成果，8文件增量备份artifacts/gacha-r1/baseline。原资料/真实存档不动，不提交推送。79相关用例、26项GPU/4图、605资源EXE启动3×4/headless94项PASS，23:27包更新；所有本轮写入锁释放。人工PENDING，全量/远程CI未跑。
+
+## D063 管理界面（DELIVERED_LOCAL_PLAYTEST_PENDING）
+分支integration/phase-4-wave-management-ui，root唯一集成者：Profile/Shop/BranchNetwork/BranchPanel/Shell/InputMap、地图入口、角色认识、经济工资、检查导出及文档。management_staff_facts唯一写employee_roster、employees.json、restaurant_crew适配及对应测试；management_supply_facts唯一写supplier_network、suppliers.json及对应测试；management_ui_facts唯一写game_hud/management_panels及HUD测试。禁止跨范围写入。原始资料与罗厄34文件保持；基线83c3564，无推送授权。三个分工实现完成并交还root，最终所有权检查后释放全部本轮写入锁。119独立相关用例分批PASS、图形50项/9图、605资源EXE启动3×4/headless94项PASS，21:48包更新；完整证据见management-ui报告。人工PENDING，全量/远程CI未跑。
+
+
 ## 2026-11-08 上传D057–D062
 用户已授权上传，root负责现有integration/phase-4-wave-decor-ui提交及非强制推送，不合main。fetch确认基线217cd34未变化。原资料和未接入罗厄素材不暂存、不上传，既有安全备份/stash保留。本次仅整理提交与验证，不改玩法；前述131用例和74图形检查有效，另验证实际待上传的干净副本不依赖本机缓存。远程结果以push回执为准，远程CI不冒称已通过。
 

@@ -87,7 +87,11 @@ func test_player_pot_and_missing_cook_are_never_taken_over() -> void:
 	assert_true(lane.perform("add",{"ingredient_id":"tomato","amount":1.0}).ok)
 	var before:=lane.snapshot();view.staff_away=true;view.tick_staff()
 	assert_eq(lane.snapshot(),before)
-	assert_true(shell.profile.layout.crew.hire("cook-he").ok)
+	shell.profile.employees.state.owned["cook-he"]={"id":"cook-he","copies":1,"xp":0,"assigned":""}
+	assert_eq(shell.profile.employees.assign("cook-he","player_diner").code,"NOT_AT_BOUNDARY")
+	# Staffing fixture for the takeover boundary; player reassignment during OPEN remains forbidden.
+	shell.profile.employees.state.owned["cook-he"].assigned="player_diner"
+	shell.profile.employees.sync_main_crew()
 	view.tick_staff();assert_eq(lane.snapshot(),before)
 	shell._pause(true);view.tick_staff();assert_eq(lane.snapshot(),before);shell._pause(false)
 

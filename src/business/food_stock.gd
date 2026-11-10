@@ -6,6 +6,8 @@ const PATH := "res://content/markets/kitchen_stock.json"
 static func load_rules() -> Dictionary:
 	var raw: Variant = JSON.parse_string(FileAccess.get_file_as_string(PATH))
 	if not raw is Dictionary or raw.get("schema_version") != 1 or not raw.get("items") is Dictionary: return {}
+	var materials: Dictionary=TDMaterialCatalog.data().get("items",{})
+	for id: String in materials: raw.items[id]=materials[id].stock.duplicate(true)
 	for id: Variant in raw.items:
 		var item: Variant = raw.items[id]
 		if not id is String or not item is Dictionary or item.get("group") not in ["seasoning","vegetable","meat","fruit"]: return {}

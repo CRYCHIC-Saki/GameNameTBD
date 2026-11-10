@@ -1,5 +1,33 @@
 # 项目架构与接入边界
 
+## D067 分店生命周期与巡视（2026-11-09）
+TDPlayerBranches拥有construction凭证和施工合同，状态由funded/is_built/status_text只读推导，继续由原日期推进，不新增计时器或后台经济。Profile在整槽校验时关联Shop付款；旧branches1明确迁移到2，未知版本拒绝，Profile9不变。无凭证记录保留原引用但不进入地图/销售/执勤。
+TDBranchInterior是可释放的呈现组合：复用RestaurantIso/Layout与KitchenWorld/Player，只读取profile+store_id并发管理意图，不复制TDShopSession/Phase3Session、不绑定主店钱物订单、不模拟分店收入。室内碰撞使用独立层256/512、1024/2048，不与仍运行的主店场景碰撞；主店员工与统一时钟继续运行。Shell保留原镇视图/门外位置，退出只释放巡视显示；暂停、研习覆盖、02:00和切槽完整清理。
+
+
+## D066 调试命令适配层（2026-11-09）
+TDDebugCommands是无持久状态RefCounted适配器，每次调用从当前Shell取得Profile，不能保留旧槽引用。解析/十进制转整数/稳定ID查找/补全为纯查询；动作转交Shop、Branches、Roster、Research和Shell已有方法。Shell只负责暂停弹窗、50条历史/240行滚动日志与输入焦点，继续使用原InputMap。Research唯一新增显式调试授予方法与事件校验，确保不伪造挑战成绩或历史迁移。
+未增加任意eval、文件访问、通用全局命令总线、第二本资金库存账、额外时间推进器或自动写盘。查任务只读StoryGuide.objective，追踪只改原tracked；旧独立原型仍与正式槽隔离。
+
+## D065 店铺列表与主店配置（2026-11-09）
+TDBranchPanel保留既有类型和世界选址，G显示名为店铺。主店player_diner只作为读取Profile/Shop/Commerce的视图条目，不进入Branches.stores，不新增地块、租金或第二套日结模拟；分店仍由Branches负责。详情页只路由意图，员工统一走Roster，供货统一走Suppliers。
+Profile持有可选main_management_auto，prepare_management在供应自动下单之前先配置主店菜单和闲置人员；Shop.configure_menu先复制并验证全部行，再提交。Main菜单价格与真实ShopView同步，不使用UI中间值作为经营权威。主店实际员工生产、传菜、收银保持现有调度；关闭管理托管不撤岗位。没有新增Autoload或计时器，整槽保存纪律不变。
+
+## D064 recruitment replacement (2026-11-09)
+EmployeeRoster remains the only authority for owned identities, assignments and daily payroll. It now indexes 360 immutable fixed definitions and derives read-only date-scoped offers. Sign requests validate candidate/offer/token/cash before one Shop ledger transfer and one warehouse insertion. Contract receipts bind fixed ID, payment token, day and fee; Profile verifies the corresponding payment. Roster schema3 explicitly reads v1/v2; Profile schema9 stays unchanged. Legacy generated IDs resolve only through frozen old component/archetype data. Gacha returns RECRUITMENT_REPLACED with no mutation. UI has no separate wallet, staff roster or autosave. Existing Crew projections and branch staffing/automation remain consumers; no added singleton or per-candidate scene outside the visible cards.
+
+
+## D063-R1 组合员工
+EmployeeRoster内部schema2显式读取旧1，Profile9不变；由固定组件ID组成稳定员工ID，按需派生并缓存只读定义，不预建13,824个实体或控件。原18模板及v1能力映射保留。roster_rows默认仍返回完整已拥有名单供分店/存档校验，UI显式传分页参数；不会用界面当前页决定哪些经理存在。只读名册/概率不推进抽取序列。
+
+## D063 管理装配
+`TDGameProfile` owns `TDEmployeeRoster` and `TDSupplierNetwork` in the same schema9 slot. The shell assembles a single `TDGameHUD` and three thin management panels; branch UI reuses the original world rectangle picker. No Autoload or separate employee/supply save is added.
+- EmployeeRoster owns card counts, stars, work assignments and day-frozen payroll. Layout.Crew projects only assigned main-shop cooks/waiters, forwards served-order XP to the roster and emits no duplicate saved crew state. Main shop wages accrue to the existing debt/operating ledger; branch wages use their original book. Old prepaid main-shop wages are credited once.
+- SupplierNetwork owns prepaid production jobs, not inventory or a wallet. Purchase reserves the existing finite town market stock and charges Shop. A completed job sends an idempotent receipt to Shop or Branches, retaining actual paid cost and shelf life. Old paid factory and freight jobs stay with their existing owners until fulfilled; no copied deliveries.
+- Branch management and supply automation are independent. Staffing uses only idle owned characters; missing any required role prevents sales. Supply spending is capped by the supplier plan, the branch's remaining purchasing budget and actual cash. Neither system opens stores, draws employees, borrows money or writes a checkpoint.
+- Active seconds come from Shell's existing kitchen clock. Pause/menu/story freezes production. The day boundary receives ready goods before considering replenishment or opening. Static town/recipe/employee templates remain read-only.
+
+
 ## D062 世界选址复用（2026-11-08）
 分店入口使用现有 TDTravelMapView 的 SiteMap 子视图，共用世界图、五镇地图快照和坐标变换；仅增加可读地籍覆盖及矩形输入状态。Shell 装配暂停弹窗，Panel 收到镇/矩形意图后交 TDPlayerBranches 报价、聘店长及提交。所在地采购和结算继续走既有 WorldEconomy/Shop/Profile。五镇开店资格与主店进口商路解耦，研究解锁不变，无新地图/金钱/存档权威。
 
@@ -291,3 +319,10 @@ Phase 2库存通过供料/消耗适配器与烹饪边界交互，经济订阅唯
 # D042 NPC Lifeline结构审计入口
 
 正式经济仍以TDEconomicCustomer＋TDMealIntent＋Shop订单为权威；TDRestaurantGuest/TDGuestVisit负责展示。TDTownCaller是独立具名访客表现，当前未绑定稳定经济居民ID，只给首个现有订单客人套显示名；不能将其视为完整的原NPC画像接入。历史Phase3调试画像另存兼容。详细功能、重复检查与生命周期缺口见docs/phases/npc-lifeline-audit.md；本轮未重构NPC。
+
+
+D068：供应商沿用SupplierNetwork，新增持久产线和短批次，生产/运输分相。Shell统一活动时间与Profile跨日驱动，无额外Autoload/定时器。UI按镇展示共享产能、产线优先级，预算按收货店；分店/主店库存与Shop现金继续独立权威。内部供货schema2兼容1，整槽Profile9保持，详细见CONTRACTS及phases/supplier-lines.md。
+
+
+### D069 地区材料装配
+新增TDMaterialCatalog一次读取content/culinary_materials.json、按需复制条目，Service装配进既有CookingCatalog，FoodStock装配保质期；不新增Autoload。Research节点投影→Shop购料许可，与Material供应地区相交→Supplier报价/产线→现有Shop库存。CookingLane按实际菜谱/谱面选择M6调料，GuidedView只呈现与传输入。WorldEconomy旧档只扩充新增市场货品，保持历史账。原250食材身份索引、100研究节点、9可玩厨房offer分别保留语义；不能把材料齐备当作关卡齐备。

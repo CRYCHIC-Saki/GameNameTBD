@@ -10,6 +10,9 @@ func before_each() -> void:
 	assert_true(shell.create_game("slot-01","分店测试").ok)
 	shell.guide.dialogue.finish_now()
 	shell.profile.shop.world_adjustment(300000,"fixture","test")
+	# D063: selection is from owned cards, never free anonymous managers.
+	for id: String in ["manager.steady","manager.host","manager.master"]:
+		shell.profile.employees.state.owned[id]={"id":id,"copies":1,"xp":0,"assigned":""}
 
 func after_each() -> void:
 	shell.go_title(); get_tree().paused=false
@@ -33,12 +36,11 @@ func test_real_entry_rectangle_drag_manager_selection_creation_and_reentry() -> 
 	assert_true(view.create_button.disabled)
 	assert_eq(shell.profile.snapshot(),before)
 	view.site_button.pressed.emit()
-	view._choose_manager("manager.host")
 	assert_false(view.create_button.disabled)
 	view.create_button.pressed.emit()
 	await wait_process_frames(2)
 	assert_eq(shell.profile.branches.state.stores.size(),1)
-	assert_eq(shell.profile.branches.state.stores.values()[0].manager_id,"manager.host")
+	assert_eq(shell.profile.branches.state.stores.values()[0].manager_id,"")
 	assert_eq(int(before.shop.money_cents)-int(shell.profile.shop.snapshot().money_cents),30800)
 	shell._close_dialog(); shell.show_branch()
 	assert_eq(shell.profile.branches.state.stores.size(),1)
@@ -94,7 +96,6 @@ func test_world_atlas_selects_all_five_towns_resets_selection_and_never_teleport
 		assert_eq(atlas.town_id,"chengdu","selection does not move player marker")
 	assert_eq(shell.visiting_town,location);assert_eq(shell.profile.snapshot(),before)
 	atlas.choose_town("chengdu");click_map(atlas,Vector2i(6,48),true);click_map(atlas,Vector2i(8,51),false)
-	view._choose_manager("manager.host")
 	atlas.choose_town("tokyo")
 	assert_eq(view.selected_rect,[]);assert_eq(view.selected_manager,"");assert_true(view.create_button.disabled)
 
@@ -121,3 +122,17 @@ func test_zoom_pan_reverse_rectangle_and_aborted_drags_keep_last_valid_selection
 	motion.position=Vector2(-20,200);atlas._gui_input(motion)
 	click_map(atlas,Vector2i(11,51),false);assert_eq(atlas.selection,expected)
 	assert_eq(view.selected_rect,[6,48,3,4]);assert_eq(shell.profile.snapshot(),before)
+
+func test_large_manager_roster_does_not_force_hiring_before_construction() -> void:
+	for n: int in 40:
+		var id: String="employee.v1.s001.n%03d"%(n*3+1)
+		shell.profile.employees.state.owned[id]={"id":id,"copies":3,"xp":0,"assigned":""}
+	shell.show_branch();var view:=panel();view.begin_site();await wait_process_frames(2)
+	view.map_view.choose_town("chengdu");view.selected_rect=[6,48,3,4];view._update_quote();view._toggle_site()
+	assert_eq(view.manager_box.find_children("ManagerCards","",true,false).size(),0)
+	assert_false(view.create_button.disabled)
+	var roster:=shell.profile.employees.snapshot()
+	view._toggle_site();view._toggle_site();view.confirm();await wait_process_frames(2)
+	assert_eq(shell.profile.branches.state.stores.values()[0].manager_id,"")
+	assert_eq(shell.profile.employees.snapshot(),roster)
+	var checked:=TDGameProfile.validate_save(shell.profile.snapshot());assert_true(checked.ok,checked.code)

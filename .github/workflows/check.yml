@@ -5,6 +5,10 @@ permissions:
 jobs:
   check:
     runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
     steps:
       - uses: actions/checkout@v4
       - name: Acquire locked Godot
@@ -21,9 +25,9 @@ jobs:
           "GODOT_BIN=$((Get-ChildItem engine -Filter '*console.exe').FullName)" >> $env:GITHUB_ENV
       - name: Run shared check entry
         shell: pwsh
-        run: ./tools/check.ps1 -ReportName ci
+        run: ./tools/check.ps1 -ShardCount 4 -ShardIndex ${{ matrix.shard }} -ReportName ci-${{ matrix.shard }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: validation-evidence
+          name: validation-evidence-${{ matrix.shard }}
           path: artifacts/check/

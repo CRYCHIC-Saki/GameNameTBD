@@ -20,13 +20,24 @@ const ROSTER: Array[Dictionary] = [
 
 var hired: Array[String] = []
 var progress: Dictionary = {}
+var external: bool = false
+var external_definitions: Dictionary = {}
+var external_growth: Callable
+
+func use_external(rows: Array, growth: Callable) -> void:
+	external=true; external_definitions.clear(); hired.clear(); progress.clear()
+	external_growth=growth
+	for row: Dictionary in rows:
+		var id: String=str(row.id)
+		external_definitions[id]=row.duplicate(true)
+		hired.append(id); progress[id]=int(row.get("xp",0))
 
 func roster() -> Array[Dictionary]:
 	var rows: Array[Dictionary] = []
-	for item: Dictionary in ROSTER:
+	for item: Dictionary in (external_definitions.values() if external else ROSTER):
 		var row := item.duplicate()
 		row["hired"] = hired.has(String(item["id"]))
-		row["wage_cents"] = int(item["wage_yuan"]) * 100
+		row["wage_cents"] = int(item.get("wage_cents", roundi(float(item["wage_yuan"]) * 100.0)))
 		row["level"] = level_of(String(item["id"]))
 		row["xp"] = xp_of(String(item["id"]))
 		row["blurb"] = describe(String(item["id"]))
@@ -34,12 +45,14 @@ func roster() -> Array[Dictionary]:
 	return rows
 
 func person(id: String) -> Dictionary:
+	if external: return external_definitions.get(id,{}).duplicate(true)
 	for item: Dictionary in ROSTER:
 		if String(item["id"]) == id:
 			return item
 	return {}
 
 func can_hire(id: String) -> TDOutcome:
+	if external: return TDOutcome.new(false,"ROSTER_MANAGED","请在雇员面板分配已招募员工。")
 	var who := person(id)
 	if who.is_empty():
 		return TDOutcome.new(false, "MISSING", "没有这个应聘者。")
@@ -60,6 +73,7 @@ func hire(id: String) -> TDOutcome:
 	return TDOutcome.new(true, "HIRED", "%s入职，目前%d级。今日日薪%d元。同一加成不叠加。" % [String(who["name"]), level_of(id), int(who["wage_yuan"])])
 
 func dismiss(id: String) -> TDOutcome:
+	if external: return TDOutcome.new(false,"ROSTER_MANAGED","请在雇员面板调整岗位。")
 	if not hired.has(id):
 		return TDOutcome.new(false, "MISSING", "这个人没在店里。")
 	hired.erase(id)
@@ -72,7 +86,8 @@ func waiters() -> Array[Dictionary]:
 	return _role("waiter")
 
 func level_of(id: String) -> int:
-	return clampi(1 + xp_of(id) / ORDERS_PER_LEVEL, 1, MAX_LEVEL)
+	var experience_level: int=clampi(1 + xp_of(id) / ORDERS_PER_LEVEL, 1, MAX_LEVEL)
+	return maxi(experience_level,int(person(id).get("stars",1))*2-1) if external else experience_level
 
 func xp_of(id: String) -> int:
 	return int(progress.get(id, 0))
@@ -88,6 +103,7 @@ func record_served_order() -> Array[String]:
 	for id: String in hired:
 		var before := level_of(id)
 		progress[id] = mini(cap, xp_of(id) + 1)
+		if external and external_growth.is_valid(): external_growth.call(id,xp_of(id))
 		var after := level_of(id)
 		if after > before:
 			notes.append("%s升到%d级" % [String(person(id).get("name", id)), after])
@@ -132,6 +148,7 @@ func export_ids() -> Array:
 	return rows
 
 func export_state() -> Array:
+	if external: return [] # Profile employee roster is the sole persistent owner.
 	var rows: Array = []
 	var listed := {}
 	for id: String in hired:

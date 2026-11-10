@@ -25,6 +25,12 @@ func staff_step(person_id: String) -> String:
 		if _staff_cooks.get(index,"")==person_id and kitchen.lanes[index].snapshot().session_id==_staff_lanes[index]: return kitchen.lanes[index].cook_step()
 	return ""
 
+func staff_job_id(person_id: String) -> String:
+	if _closed or kitchen==null: return ""
+	for index: int in _staff_lanes:
+		if _staff_cooks.get(index,"")==person_id and kitchen.lanes[index].snapshot().session_id==_staff_lanes[index]: return str(_staff_lanes[index])
+	return ""
+
 func tick_staff() -> void:
 	if _closed or kitchen==null or shop==null or get_tree().paused: return
 	# Continue only jobs owned by this scheduler; never take over a player's pot.
@@ -123,7 +129,7 @@ func _ready() -> void:
 		if not loaded.ok: add_child(TDUI.label("营业配置错误："+loaded.message)); return
 		linked=TDKitchenLink.install(service, learned_dishes)
 		shop=TDShopSession.new(service,"",101,recipe_unlocks); shop.cooking_reward=cooking_reward; store=TDShopStore.new(save_path,shop)
-	shop.crew_external=true;shop.crew_status_source=staff_work;shop.cook_step_source=staff_step
+	shop.crew_external=true;shop.crew_status_source=staff_work;shop.cook_step_source=staff_step;shop.cook_job_source=staff_job_id
 	if resume_saved and not embedded:
 		var saved:=store.load_game()
 		if saved.ok:
@@ -149,8 +155,9 @@ func _build_shell() -> void:
 	actions.add_child(TDUI.button("经营账本",_show_ledger))
 	actions.add_child(TDUI.button("暂停 / 恢复",func()->void:pause_requested.emit()))
 	actions.add_child(TDUI.button("返回主界面",request_back))
-	if embedded: actions.hide()
+	if embedded: actions.hide();_title.hide()
 	day_clock_label=TDUI.label("",22,TDUI.ORANGE);day_clock_label.position=Vector2(1050,110);day_clock_label.size=Vector2(200,36);add_child(day_clock_label)
+	if embedded: day_clock_label.hide()
 	_holder=Control.new(); _holder.position=Vector2(12,174); _holder.size=Vector2(920,575); add_child(_holder)
 	var scroll:=ScrollContainer.new(); scroll.position=Vector2(953,166); scroll.size=Vector2(303,610); scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED; add_child(scroll)
 	_sidebar=VBoxContainer.new(); _sidebar.size_flags_horizontal=Control.SIZE_EXPAND_FILL; _sidebar.add_theme_constant_override("separation",10); scroll.add_child(_sidebar)
@@ -197,7 +204,7 @@ func refresh(force: bool = false) -> void:
 	var fame: int=0
 	for id: String in state.menu:
 		if state.menu[id].enabled: fame+=int(state.fame.get(id,0))
-	_title.text="小镇食堂  ·  第 %d 天     ¥ %.2f     人气 %d   店名气 %d" % [state.day,float(state.money_cents)/100.0,state.popularity,fame]
+	_title.text="小镇食堂  ·  第 %d 天     ¥ %.2f     人气 %d   菜品名气合计 %d" % [state.day,float(state.money_cents)/100.0,state.popularity,fame]
 	var boundary: bool=state.phase in ["PREPARE","SETTLED"]
 	if embedded and _last_phase!=state.phase:
 		_message.text={"PREPARE":"厨房随时可用 · E 取放 · F 开灶 · 营业牌确认菜单与价格后迎客。","OPEN":"营业中 · 按订单备菜，做好的菜交到出餐台 · B 查看菜谱","DRAINING":"已停止接新客，请处理最后的订单。","SETTLED":"已打烊，仍可练习做菜。原料放回冰箱，成品出餐或清理后去小屋保存、休息。"}.get(state.phase,"")
@@ -798,6 +805,8 @@ func set_paused(value: bool) -> void:
 func close() -> void:
 	_closed=true
 	if shop!=null and shop.crew_status_source==staff_work: shop.crew_status_source=Callable()
+	if shop!=null and shop.cook_step_source==staff_step: shop.cook_step_source=Callable()
+	if shop!=null and shop.cook_job_source==staff_job_id: shop.cook_job_source=Callable()
 	if kitchen!=null: kitchen.close()
 
 func _status_name(value: String) -> String:

@@ -4,8 +4,9 @@ extends RefCounted
 const SOURCE := "res://content/branches.json"
 const CULTURES := {"cn":"chinese","eu":"continental","jp":"japanese","sea":"southeast_asian","lat":"latin_american"}
 const TITLES := {"cn":"中餐馆","eu":"欧陆餐馆","jp":"日料馆","sea":"东南亚餐馆","lat":"拉美餐馆"}
+var managed: bool = false # Profile enables D063; standalone legacy rules remain testable.
 var config: Dictionary = {}
-var state: Dictionary = {"schema_version":1,"serial":0,"stores":{},"legacy":{}}
+var state: Dictionary = {"schema_version":2,"serial":0,"stores":{},"legacy":{}}
 var error := TDOutcome.new(true)
 var _owner: WeakRef
 var _maps: Dictionary = {}
@@ -18,9 +19,9 @@ func _init() -> void:
 
 static func validate_config(raw: Variant) -> TDOutcome:
 	if not raw is Dictionary or raw.get("schema_version") != 1: return TDOutcome.new(false,"BRANCH_CONFIG_VERSION")
-	for key: String in ["min_side","max_side","max_area","opening_base_cents","opening_cell_cents","crew_base_cents","crew_cell_cents","default_budget_cents","target_portions","cook_seconds"]:
+	for key: String in ["construction_days","min_side","max_side","max_area","opening_base_cents","opening_cell_cents","crew_base_cents","crew_cell_cents","default_budget_cents","target_portions","cook_seconds"]:
 		if not TDServiceCatalog.integer(raw.get(key),1,1000000): return TDOutcome.new(false,"BRANCH_CONFIG_NUMBER",key)
-	if raw.min_side>raw.max_side or raw.max_side>24 or raw.target_portions>100: return TDOutcome.new(false,"BRANCH_CONFIG_RANGE")
+	if int(raw.construction_days)>30 or raw.min_side>raw.max_side or raw.max_side>24 or raw.target_portions>100: return TDOutcome.new(false,"BRANCH_CONFIG_RANGE")
 	if not raw.get("managers") is Array or raw.managers.size()!=3: return TDOutcome.new(false,"BRANCH_CONFIG_MANAGERS")
 	var ids: Dictionary = {}; var stars: Dictionary = {}
 	for m: Variant in raw.managers:
@@ -44,6 +45,7 @@ func snapshot() -> Dictionary:
 	return state.duplicate(true)
 
 func manager(id: String) -> Dictionary:
+	if managed and owner_profile()!=null: return owner_profile().employees.manager_info(id)
 	for row: Dictionary in config.managers:
 		if row.id==id: return row.duplicate(true)
 	return {}
@@ -75,7 +77,7 @@ func _rectangle(raw: Variant) -> Rect2i:
 		if not TDServiceCatalog.integer(n,0,73): return Rect2i()
 	return Rect2i(int(raw[0]),int(raw[1]),int(raw[2]),int(raw[3]))
 
-func quote(town: String, raw: Array, cuisine: String, manager_id: String="") -> TDOutcome:
+func quote(town: String, raw: Array, cuisine: String, manager_id: String="", ignore_id: String="") -> TDOutcome:
 	var p := owner_profile()
 	if not p._alive or not p.at_boundary(): return TDOutcome.new(false,"NOT_AT_BOUNDARY","请先结束当天营业。")
 	if town not in p.commerce.config.active_towns: return TDOutcome.new(false,"TOWN_LOCKED","这座小镇尚未开放选址。")
@@ -85,7 +87,7 @@ func quote(town: String, raw: Array, cuisine: String, manager_id: String="") -> 
 	var map := town_map(town)
 	if map==null or rect.end.x>map.extent or rect.end.y>map.extent: return TDOutcome.new(false,"OUT_OF_MAP")
 	for other: Dictionary in state.stores.values():
-		if other.town_id==town and _rectangle(other.rect).intersects(rect): return TDOutcome.new(false,"OCCUPIED","这里已经有一家分店。")
+		if other.id!=ignore_id and funded(str(other.id)) and other.town_id==town and _rectangle(other.rect).intersects(rect): return TDOutcome.new(false,"OCCUPIED","这里已经有一家分店。")
 	for y: int in range(rect.position.y,rect.end.y):
 		for x: int in range(rect.position.x,rect.end.x):
 			if map.is_road(x,y) or not map.terrain_at(Vector2i(x,y)).buildable or not map.plot_at(x,y).is_empty(): return TDOutcome.new(false,"PROTECTED_LAND","选区含道路、住宅、建筑或不可建设地形。")
@@ -96,27 +98,37 @@ func quote(town: String, raw: Array, cuisine: String, manager_id: String="") -> 
 		for x: int in range(rect.position.x,rect.end.x): rent+=int(geo.cell(Vector2i(x,y)).rent_quote_cents_per_day)
 	var cell := geo.cell(rect.get_center())
 	var m := manager(manager_id)
+	if managed and not manager_id.is_empty() and not str(m.get("assigned","")).is_empty(): return TDOutcome.new(false,"EMPLOYEE_BUSY","店长已在其他店任职，请先调回待命。")
 	if manager_id!="" and m.is_empty(): return TDOutcome.new(false,"MANAGER_REQUIRED")
 	var ops: int=int(m.get("operations",40))
-	return TDOutcome.new(true,"QUOTED","",{"town_id":town,"rect":raw.duplicate(),"cuisine_id":cuisine,"manager_id":manager_id,"opening_cents":int(config.opening_base_cents)+rect.get_area()*int(config.opening_cell_cents),"rent_cents":rent,"crew_cents":int(config.crew_base_cents)+rect.get_area()*int(config.crew_cell_cents),"manager_cents":int(m.get("wage_cents",0)),"capacity":maxi(6,roundi(rect.get_area()*(0.5+ops/100.0))),"place":cell})
+	return TDOutcome.new(true,"QUOTED","",{"town_id":town,"rect":raw.duplicate(),"cuisine_id":cuisine,"manager_id":manager_id,"opening_cents":int(config.opening_base_cents)+rect.get_area()*int(config.opening_cell_cents),"rent_cents":rent,"crew_cents":0 if managed else int(config.crew_base_cents)+rect.get_area()*int(config.crew_cell_cents),"manager_cents":int(m.get("wage_cents",0)),"capacity":maxi(6,roundi(rect.get_area()*(0.5+ops/100.0))),"place":cell})
 
 func open_store(town: String, rect: Array, cuisine: String, manager_id: String, token: String) -> TDOutcome:
 	var p := owner_profile()
 	if token.is_empty() or p.shop.snapshot().seen.has(token): return TDOutcome.new(false,"DUPLICATE")
-	if manager(manager_id).is_empty(): return TDOutcome.new(false,"MANAGER_REQUIRED","请选择店长。")
+	if not manager_id.is_empty() and manager(manager_id).is_empty(): return TDOutcome.new(false,"MANAGER_REQUIRED","店长必须来自员工仓库。")
 	var checked := quote(town,rect,cuisine,manager_id)
 	if not checked.ok: return checked
 	var q := checked.data
 	var id := "player-branch:%d"%(int(state.serial)+1)
+	var previous_shop:=p.shop.snapshot();var previous_state:=snapshot()
 	var paid := _cash(-int(q.opening_cents),token,"分店开办",id)
 	if not paid.ok: return paid
 	p.commerce.society.state.sectors.services+=int(q.opening_cents)
 	state.serial+=1
 	var menu: Array=[recipes(cuisine)[0].duplicate(true)]
 	var day: int=int(p.shop.snapshot().day)
-	state.stores[id]={"id":id,"name":"%s · %d号店"%[TITLES[cuisine],state.serial],"town_id":town,"cuisine_id":cuisine,"rect":rect.duplicate(),"manager_id":manager_id,"rent_cents":int(q.rent_cents),"crew_cents":int(q.crew_cents),"capacity":int(q.capacity),"opening_cents":int(q.opening_cents),"start_day":day+1,"menu":menu,"budget_cents":int(config.default_budget_cents),"inventory":{},"lots":{},"basis":{},"debt":{},"day":day,"daily":{},"books":[],"awareness":0.35,"popularity":50.0,"place":q.place.duplicate(true),"paused":false}
+	state.stores[id]={"id":id,"name":"%s · %d号店"%[TITLES[cuisine],state.serial],"town_id":town,"cuisine_id":cuisine,"rect":rect.duplicate(),"manager_id":manager_id,"rent_cents":int(q.rent_cents),"crew_cents":int(q.crew_cents),"capacity":int(q.capacity),"opening_cents":int(q.opening_cents),"start_day":day+int(config.construction_days),"menu":menu,"budget_cents":int(config.default_budget_cents),"inventory":{},"lots":{},"basis":{},"debt":{},"day":day,"daily":{},"books":[],"awareness":0.35,"popularity":50.0,"place":q.place.duplicate(true),"paused":false}
+	state.stores[id].construction=_construction(token,int(q.opening_cents),day,int(state.stores[id].start_day))
+	if managed:
+		state.stores[id].management_auto=false
+	if managed and not manager_id.is_empty():
+		var appointed: TDOutcome=p.employees.assign(manager_id,id)
+		if not appointed.ok:
+			p.shop.restore(previous_shop);state=previous_state;p.commerce.society.state.sectors.services-=int(q.opening_cents)
+			return appointed
 	p.sync_commercial_map(); p.world.map_revision+=1
-	return TDOutcome.new(true,"BRANCH_OPENED","分店已筹建，明日起由店长带队营业。请记得主动保存。",{"store_id":id})
+	return TDOutcome.new(true,"BRANCH_OPENED","已付款开工。第%d天建成，之后任命店长、配齐厨服并备料才能营业。请主动保存。"%int(state.stores[id].start_day)+"",{"store_id":id})
 
 func configure_store(id: String, menu: Array, budget: int, paused: bool=false) -> TDOutcome:
 	var p := owner_profile()
@@ -137,6 +149,76 @@ func _cash(cents: int, token: String, label: String, id: String) -> TDOutcome:
 	if p==null or not p._alive: return TDOutcome.new(false,"STALE_PROFILE")
 	return p.shop.branch_adjustment(cents,token,label,id)
 
+func effective_manager(store: Dictionary) -> Dictionary:
+	if managed:
+		var found: Dictionary=owner_profile().employees.manager_for(str(store.id))
+		if not found.is_empty():
+			for role: String in ["cook","waiter"]:
+				var people: Array=owner_profile().employees.assigned(str(store.id),role)
+				var best: int=0
+				for person: Dictionary in people: best=maxi(best,int(person.quality if role=="cook" else person.operations))
+				if role=="cook": found.quality_bonus=minf(.5,float(found.quality_bonus)+best*.0015)
+				else: found.service_bonus=minf(.5,float(found.service_bonus)+best*.0015)
+			return found
+		return {"id":"","name":"待分配","special":"请先分配店长。","attraction":0,"operations":0,"quality":0,"economy":0,"stars":0,"wage_cents":0,"service_bonus":0.0,"quality_bonus":0.0,"utility_discount":0.0}
+	return manager(str(store.manager_id))
+
+func set_management(id: String, enabled: bool) -> TDOutcome:
+	var p:=owner_profile()
+	if p==null or not p._alive or not p.at_boundary(): return TDOutcome.new(false,"NOT_AT_BOUNDARY")
+	if not state.stores.has(id): return TDOutcome.new(false,"UNKNOWN_BRANCH")
+	if enabled and not is_built(id): return TDOutcome.new(false,"UNDER_CONSTRUCTION","请等待店铺建成。")
+	if enabled and managed and p.employees.manager_for(id).is_empty(): return TDOutcome.new(false,"MANAGER_REQUIRED","请先从员工仓库任命店长。")
+	state.stores[id].management_auto=enabled
+	if enabled: automate()
+	return TDOutcome.new(true,"AUTOMATION_UPDATED","经营托管已开启。" if enabled else "经营托管已关闭，当前配置保留。")
+
+func automate() -> void:
+	var p:=owner_profile()
+	if not managed or p==null or not p._alive or not p.at_boundary(): return
+	for id: String in state.stores:
+		var store: Dictionary=state.stores[id]
+		if not bool(store.get("management_auto",false)) or store.paused or not is_built(id) or p.employees.manager_for(id).is_empty(): continue
+		p.employees.auto_assign(id)
+		var choices:=recipes(str(store.cuisine_id))
+		choices.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return int(a.reference_cents)<int(b.reference_cents))
+		var menu: Array=[]
+		for dish: Dictionary in choices.slice(0,3):
+			var cost: int=0
+			for item: String in dish.ingredients:
+				cost+=TDShopSession.amount_cost(int(dish.ingredients[item]),int(p.commerce.state.markets[store.town_id].price.get(item,0)))
+			var price: int=clampi(maxi(int(dish.reference_cents),roundi(cost*1.8)),1,1000000)
+			menu.append({"id":dish.id,"price_cents":price})
+		if not menu.is_empty(): configure_store(id,menu,int(store.budget_cents),false)
+
+func note_supply_purchase(id: String, cents: int) -> void:
+	if not state.stores.has(id) or cents<0: return
+	var store: Dictionary=state.stores[id]
+	_day(store,int(owner_profile().shop.snapshot().day))
+	store.daily.purchase_cents+=cents
+	if bool(store.daily.get("settled",false)) and not store.books.is_empty() and int(store.books.back().day)==int(store.day):
+		store.books.back().purchase_cents+=cents # Cash flow only; settled profit does not change.
+
+func receive_supply(id: String, cart: Dictionary, costs: Dictionary, token: String) -> TDOutcome:
+	var p:=owner_profile()
+	if p==null or not p._alive: return TDOutcome.new(false,"STALE_PROFILE")
+	if not state.stores.has(id): return TDOutcome.new(false,"UNKNOWN_BRANCH")
+	var store: Dictionary=state.stores[id]
+	if token.is_empty() or store.get("supply_seen",{}).has(token): return TDOutcome.new(false,"DUPLICATE")
+	if cart.is_empty() or cart.keys().size()!=costs.keys().size(): return TDOutcome.new(false,"INVALID_DELIVERY")
+	for item: Variant in cart:
+		if not p.service.config.costs.has(item) or not TDServiceCatalog.integer(cart[item],1,1000000) or int(store.inventory.get(item,0))+int(cart[item])>1000000 or not TDServiceCatalog.integer(costs.get(item),0,100000000): return TDOutcome.new(false,"INVALID_DELIVERY")
+	var day: int=int(p.shop.snapshot().day)
+	for item: String in cart:
+		var units: int=int(cart[item])
+		store.inventory[item]=int(store.inventory.get(item,0))+units
+		TDFoodStock.add(store.lots,item,units,day,int(_stock_rules.get(item,{}).get("shelf_days",3)))
+		var basis: Dictionary=store.basis.get(item,{"units":0,"value_cents":0})
+		basis.units+=units;basis.value_cents+=int(costs[item]);store.basis[item]=basis
+	if not store.has("supply_seen"): store.supply_seen={}
+	store.supply_seen[token]=true
+	return TDOutcome.new(true,"RECEIVED","原料已送达指定分店。")
+
 func _day(store: Dictionary, day: int) -> void:
 	if int(store.day)==day and not store.daily.is_empty(): return
 	store.day=day
@@ -155,11 +237,16 @@ func prepare() -> void:
 	var day: int=int(p.commerce.state.day)
 	for store: Dictionary in state.stores.values():
 		_day(store,day)
-		if store.daily.prepared or day<int(store.start_day): continue
+		if store.daily.prepared or not is_built(str(store.id)): continue
+		if managed:
+			store.capacity=maxi(6,roundi(_rectangle(store.rect).get_area()*(.5+float(effective_manager(store).operations)/100.0)))
 		store.daily.prepared=true
 		_pay_debt(store)
 		if store.paused: store.daily.reason="暂停营业（仍承担房租）"; continue
 		if not store.debt.is_empty(): store.daily.reason="有欠费，暂停补货，现有原料可继续经营"; continue
+		if managed:
+			if not p.employees.ready_for(store.id): store.daily.reason="缺少店长、厨师或服务员，暂停营业"
+			continue # D063 purchases are exclusively SupplierNetwork orders.
 		var market: Dictionary=p.commerce.state.markets[store.town_id]
 		var remaining: int=mini(int(store.budget_cents),int(p.shop.snapshot().money_cents))
 		# Atomic baskets, round robin across dishes. Retained stock counts toward target.
@@ -197,8 +284,9 @@ func candidates(town: String, group: Dictionary) -> Array:
 	if owner_profile()==null or not owner_profile()._alive: return rows
 	var day: int=int(owner_profile().commerce.state.day)
 	for store: Dictionary in state.stores.values():
-		if store.town_id!=town or store.paused or day<int(store.start_day): continue
-		var m := manager(store.manager_id); var menu: Array=[]
+		if store.town_id!=town or store.paused or not is_built(str(store.id)): continue
+		if managed and not owner_profile().employees.ready_for(store.id): continue
+		var m := effective_manager(store); var menu: Array=[]
 		for dish: Dictionary in store.menu:
 			menu.append({"id":dish.id,"family_id":dish.id,"price_cents":int(dish.price_cents),"reference_cents":int(dish.reference_cents),"available":_enough(store,dish),"food":clampf(.55+float(m.quality)*.003+float(m.quality_bonus),0,1),"familiarity":.75 if CULTURES[store.cuisine_id]==str(owner_profile().commerce.config.towns[town].culture) else .4,"taste":{}})
 		var served: int=int(store.daily.get("served",0)) if int(store.day)==day else 0
@@ -209,7 +297,8 @@ func sell(id: String, recipe_id: String, family: String) -> bool:
 	if owner_profile()==null or not owner_profile()._alive: return false
 	if not state.stores.has(id): return false
 	var p := owner_profile(); var store: Dictionary=state.stores[id]; var day: int=int(p.commerce.state.day)
-	if day<int(store.start_day) or store.paused or bool(store.daily.get("settled",false)) or int(store.daily.get("served",0))>=int(store.capacity): return false
+	if managed and not p.employees.ready_for(id): return false
+	if not is_built(id) or store.paused or bool(store.daily.get("settled",false)) or int(store.daily.get("served",0))>=int(store.capacity): return false
 	var found: Array=store.menu.filter(func(d:Dictionary)->bool:return d.id==recipe_id)
 	if found.is_empty() or not _enough(store,found[0]): return false
 	var dish: Dictionary=found[0]; var price: int=int(dish.price_cents)
@@ -220,7 +309,7 @@ func sell(id: String, recipe_id: String, family: String) -> bool:
 	var material_cost: int=0
 	for item: String in dish.ingredients: material_cost+=_take(store,item,int(dish.ingredients[item]))
 	# Lower waste means fewer real ingredient units consumed after a successful meal.
-	var m := manager(store.manager_id)
+	var m := effective_manager(store)
 	var waste: bool=p.commerce.unit("branch:waste:%s:%d:%d"%[id,day,serial])<.12*(1.0-float(m.economy)/100.0)
 	if waste:
 		for item: String in dish.ingredients:
@@ -254,12 +343,15 @@ func settle() -> void:
 	prepare()
 	var p := owner_profile(); var day: int=int(p.commerce.state.day)
 	for store: Dictionary in state.stores.values():
-		if day<int(store.start_day) or store.daily.settled: continue
-		var d: Dictionary=store.daily; var m := manager(store.manager_id)
+		if not is_built(str(store.id)) or store.daily.settled: continue
+		var d: Dictionary=store.daily; var m := effective_manager(store)
 		d.rent_cents=int(store.rent_cents)
 		d.manager_cents=int(m.wage_cents)
-		if not store.paused:
-			d.crew_cents=int(store.crew_cents)
+		if managed:
+			var payroll: Dictionary=p.employees.payroll_for(store.id,day)
+			d.manager_cents=int(payroll.manager_cents);d.crew_cents=int(payroll.crew_cents)
+		if not store.paused and (not managed or p.employees.ready_for(str(store.id))):
+			if not managed: d.crew_cents=int(store.crew_cents)
 			d.utilities_cents=roundi((float(p.commerce.config.fees.opening_cents)+int(d.served)*(float(p.commerce.config.fees.guest_cents)+float(config.cook_seconds)*float(p.commerce.config.fees.cooking_second_cents)))*(1.0-float(m.utility_discount)))
 		var before_tax: int=int(d.sales_cents)-int(d.consumed_cents)-int(d.spoilage_cents)-int(d.manager_cents)-int(d.crew_cents)-int(d.utilities_cents)-int(d.rent_cents)
 		d.tax_cents=roundi(maxi(0,before_tax)*float(p.commerce.config.society.profit_tax_bps)/10000.0); d.profit_cents=before_tax-int(d.tax_cents)
@@ -281,9 +373,9 @@ static func debt_total(store: Dictionary) -> int:
 func plots(town: String) -> Array:
 	var result: Array=[]
 	for store: Dictionary in state.stores.values():
-		if store.town_id!=town: continue
+		if store.town_id!=town or not funded(str(store.id)): continue
 		var r := _rectangle(store.rect)
-		result.append({"id":store.id,"kind":"player_diner","name":store.name,"x":r.position.x,"y":r.position.y,"w":r.size.x,"h":r.size.y,"enabled":true,"walkable":false,"pool":0,"budget_shift":0,"foreign_scale":1.0,"size":"small","branch_id":store.id,"approach_x":r.position.x,"approach_y":r.end.y,"venue":CULTURES[store.cuisine_id]})
+		result.append({"id":store.id,"kind":"player_diner","name":store.name,"x":r.position.x,"y":r.position.y,"w":r.size.x,"h":r.size.y,"enabled":true,"walkable":false,"pool":0,"budget_shift":0,"foreign_scale":1.0,"size":"small","branch_id":store.id,"construction":not is_built(str(store.id)),"ready_day":int(store.start_day),"approach_x":r.position.x,"approach_y":r.end.y,"venue":CULTURES[store.cuisine_id]})
 	return result
 
 func level_rows(day: int) -> Array:
@@ -294,20 +386,25 @@ func level_rows(day: int) -> Array:
 		rows.append({"store_id":store.id,"scale_milli":maxi(1000,roundi(int(store.capacity)*1000.0/12.0)),"profit_cents":int(d.profit_cents),"popularity_before":float(d.popularity_before),"popularity_after":float(d.popularity_after),"awareness_before":float(d.awareness_before)*100,"awareness_after":float(d.awareness_after)*100})
 	return rows
 
-func validate_save(raw: Variant, day: int, service: TDServiceCatalog, unlocked: Array) -> TDOutcome:
-	if not raw is Dictionary or raw.get("schema_version")!=1 or not TDServiceCatalog.integer(raw.get("serial"),0,1000000) or not raw.get("stores") is Dictionary or raw.stores.size()>1000 or not raw.get("legacy") is Dictionary: return TDOutcome.new(false,"INVALID_BRANCH_VERSION")
+func validate_save(raw: Variant, day: int, service: TDServiceCatalog, unlocked: Array, employee_managers: Array=[], managed_save: bool=false) -> TDOutcome:
+	if not raw is Dictionary or not TDServiceCatalog.integer(raw.get("schema_version"),1,2) or not TDServiceCatalog.integer(raw.get("serial"),0,1000000) or not raw.get("stores") is Dictionary or raw.stores.size()>1000 or not raw.get("legacy") is Dictionary: return TDOutcome.new(false,"INVALID_BRANCH_VERSION")
 	for id: Variant in raw.stores:
 		var s: Variant=raw.stores[id]
 		if not id is String or not s is Dictionary or s.get("id")!=id or not id.begins_with("player-branch:") or not s.get("name") is String or s.name.length()>100: return TDOutcome.new(false,"INVALID_BRANCH_ID")
 		var suffix: String=str(id).trim_prefix("player-branch:")
 		if not suffix.is_valid_int() or int(suffix)<1 or int(suffix)>int(raw.serial) or str(int(suffix))!=suffix: return TDOutcome.new(false,"INVALID_BRANCH_SERIAL")
-		if s.get("town_id") not in TDHarbor.TOWNS or not CULTURES.has(s.get("cuisine_id")) or manager(str(s.get("manager_id",""))).is_empty() or not s.get("paused") is bool: return TDOutcome.new(false,"INVALID_BRANCH_TYPE")
+		if s.get("town_id") not in TDHarbor.TOWNS or not CULTURES.has(s.get("cuisine_id")) or not s.get("manager_id") is String or (str(s.manager_id) not in employee_managers if managed_save else manager(str(s.manager_id)).is_empty()) or not s.get("paused") is bool: return TDOutcome.new(false,"INVALID_BRANCH_TYPE")
+		if int(raw.schema_version)>=2:
+			var build_check:=validate_construction(s,day)
+			if not build_check.ok: return build_check
+		if s.has("management_auto") and not s.management_auto is bool: return TDOutcome.new(false,"INVALID_BRANCH_AUTOMATION")
+		if s.has("supply_seen") and (not s.supply_seen is Dictionary or s.supply_seen.values().any(func(v:Variant)->bool:return v!=true)): return TDOutcome.new(false,"INVALID_BRANCH_RECEIPTS")
 		var rect := _rectangle(s.get("rect"))
 		if rect.size.x<1 or rect.size.y<1 or rect.end.x>73 or rect.end.y>73: return TDOutcome.new(false,"INVALID_BRANCH_RECT")
 		if not (id=="player-branch:1" and bool(raw.legacy.get("branch_open",false))) and (rect.size.x<int(config.min_side) or rect.size.y<int(config.min_side) or rect.size.x>int(config.max_side) or rect.size.y>int(config.max_side) or rect.get_area()>int(config.max_area)): return TDOutcome.new(false,"INVALID_BRANCH_AREA")
 		for key: String in ["rent_cents","crew_cents","capacity","opening_cents","budget_cents"]:
 			if not TDServiceCatalog.integer(s.get(key),0,100000000): return TDOutcome.new(false,"INVALID_BRANCH_NUMBER",key)
-		if int(s.capacity)<1 or not TDServiceCatalog.integer(s.get("day"),1,day) or not TDServiceCatalog.integer(s.get("start_day"),1,day+1): return TDOutcome.new(false,"INVALID_BRANCH_DAY")
+		if int(s.capacity)<1 or not TDServiceCatalog.integer(s.get("day"),1,day) or not TDServiceCatalog.integer(s.get("start_day"),1,day+30): return TDOutcome.new(false,"INVALID_BRANCH_DAY")
 		for key: String in ["inventory","lots","basis","debt","daily","place"]:
 			if not s.get(key) is Dictionary: return TDOutcome.new(false,"INVALID_BRANCH_FIELD",key)
 		if not TDEconomicCell.validate(s.place).ok or s.place.town_id!=s.town_id: return TDOutcome.new(false,"INVALID_BRANCH_PLACE")
@@ -402,3 +499,92 @@ func migrate_legacy() -> void:
 	state.stores[s.id]=s
 	state.legacy["unmapped_stock"]=retained
 	state.legacy["migration_notice"]="旧分店已升级为店长托管，原位置可用时保留，不重收开办费，明日起按新规则营业。旧员工/历史账与未映射原料完整归档。"
+
+static func _construction(token: String, cents: int, day: int, ready: int, kind: String="paid") -> Dictionary:
+	return {"schema_version":1,"kind":kind,"token":token,"paid_cents":cents,"paid_day":day,"ready_day":ready}
+
+func funded(id: String) -> bool:
+	var store: Dictionary=state.stores.get(id,{})
+	return not store.is_empty() and store.get("construction",{}).get("kind","") in ["paid","legacy_paid"]
+
+func is_built(id: String) -> bool:
+	var p:=owner_profile()
+	return p!=null and p._alive and funded(id) and int(p.shop.snapshot().day)>=int(state.stores[id].start_day)
+
+func paid_ids() -> Array:
+	return state.stores.keys().filter(func(id:String)->bool:return funded(id))
+
+func status_text(id: String) -> String:
+	if not funded(id): return "待核对旧选址 · 尚无付款凭证"
+	if not is_built(id): return "施工中 · 第%d天建成"%int(state.stores[id].start_day)
+	if managed and owner_profile().employees.manager_for(id).is_empty(): return "已建成 · 等待任命店长"
+	if managed and not owner_profile().employees.ready_for(id): return "已建成 · 厨师或服务员缺岗"
+	return "暂停营业" if state.stores[id].paused else "已建成 · 人员齐备"
+
+static func validate_construction(store: Dictionary, day: int) -> TDOutcome:
+	var c: Variant=store.get("construction")
+	if not c is Dictionary or c.get("schema_version")!=1 or c.get("kind") not in ["paid","legacy_paid","unverified"] or not c.get("token") is String: return TDOutcome.new(false,"INVALID_BRANCH_CONSTRUCTION")
+	if not TDServiceCatalog.integer(c.get("paid_cents"),0,100000000) or not TDServiceCatalog.integer(c.get("paid_day"),0,day) or not TDServiceCatalog.integer(c.get("ready_day"),1,day+30) or c.ready_day!=store.start_day: return TDOutcome.new(false,"INVALID_BRANCH_CONSTRUCTION")
+	if c.kind=="unverified":
+		if c.token!="" or c.paid_cents!=0 or c.paid_day!=0: return TDOutcome.new(false,"INVALID_BRANCH_CONSTRUCTION")
+	elif c.token.is_empty() or c.paid_cents<=0 or c.paid_day<1 or (c.kind=="paid" and (c.ready_day<=c.paid_day or c.paid_cents!=store.opening_cents)):
+		return TDOutcome.new(false,"INVALID_BRANCH_CONSTRUCTION")
+	return TDOutcome.new(true,"VALID_CONSTRUCTION")
+
+static func validate_payments(raw: Dictionary, shop: Dictionary) -> TDOutcome:
+	if int(raw.get("schema_version",1))<2: return TDOutcome.new(true)
+	var receipts: Dictionary={};var used: Dictionary={}
+	for event: Dictionary in shop.ledger: receipts[str(event.reference)]=event
+	for store: Dictionary in raw.stores.values():
+		var checked:=validate_construction(store,int(shop.day))
+		if not checked.ok: return checked
+		var c: Dictionary=store.construction
+		if c.kind=="unverified": continue
+		var event: Dictionary=receipts.get(c.token,{})
+		if used.has(c.token) or not shop.seen.has(c.token) or int(event.get("cents",0))!=-int(c.paid_cents) or int(event.get("day",0))!=int(c.paid_day): return TDOutcome.new(false,"INVALID_BRANCH_PAYMENT")
+		if c.kind=="paid":
+			if event.get("kind")!="branch_transfer" or event.get("extra",{}).get("store_id")!=store.id or event.get("extra",{}).get("label")!="分店开办": return TDOutcome.new(false,"INVALID_BRANCH_PAYMENT")
+		elif not _legacy_payment(event): return TDOutcome.new(false,"INVALID_BRANCH_PAYMENT")
+		used[c.token]=true
+	return TDOutcome.new(true,"VALID_BRANCH_PAYMENTS")
+
+static func _legacy_payment(event: Dictionary) -> bool:
+	return event.get("kind")=="world_adjustment" and int(event.get("cents",0))==-TDPhase3Session.CLAIM_FEE*100 and str(event.get("extra",{}).get("label","")) in ["开分店","旧分店","分店划地"]
+
+func migrate_construction() -> void:
+	var p:=owner_profile();var events: Array=p.shop.snapshot().ledger;var any_unverified: bool=false
+	for store: Dictionary in state.stores.values():
+		if store.has("construction"): continue
+		var receipt: Dictionary={};var kind: String="paid"
+		for event: Dictionary in events:
+			if event.kind=="branch_transfer" and event.extra.get("store_id")==store.id and event.extra.get("label")=="分店开办" and int(event.cents)==-int(store.opening_cents) and int(store.opening_cents)>0: receipt=event;break
+		if receipt.is_empty() and store.id=="player-branch:1" and bool(state.legacy.get("branch_open",false)):
+			for event: Dictionary in events:
+				if _legacy_payment(event): receipt=event;kind="legacy_paid";break
+		if receipt.is_empty():
+			if not state.legacy.has("unverified_archive"): state.legacy.unverified_archive={}
+			state.legacy.unverified_archive[store.id]=store.duplicate(true)
+			store.construction=_construction("",0,0,int(store.start_day),"unverified");any_unverified=true
+		else: store.construction=_construction(str(receipt.reference),-int(receipt.cents),int(receipt.day),int(store.start_day),kind)
+	state.schema_version=2
+	if any_unverified: state.legacy["migration_notice"]="发现无付款凭证的旧分店记录，已保留为待核对选址，不占地图、不营业。请核对后明确付款施工；旧钱物与已付供货均保留。"
+
+func fund_unverified(id: String, token: String) -> TDOutcome:
+	var p:=owner_profile()
+	if p==null or not p._alive or not p.at_boundary(): return TDOutcome.new(false,"NOT_AT_BOUNDARY")
+	if not state.stores.has(id) or funded(id): return TDOutcome.new(false,"NOT_PENDING")
+	if token.is_empty() or p.shop.snapshot().seen.has(token): return TDOutcome.new(false,"DUPLICATE")
+	var store: Dictionary=state.stores[id]
+	var quoted:=quote(store.town_id,store.rect,store.cuisine_id,"",id)
+	if not quoted.ok: return quoted
+	var paid:=_cash(-int(quoted.data.opening_cents),token,"分店开办",id)
+	if not paid.ok: return paid
+	p.commerce.society.state.sectors.services+=int(quoted.data.opening_cents)
+	store.opening_cents=int(quoted.data.opening_cents);store.start_day=int(p.shop.snapshot().day)+int(config.construction_days)
+	store.rent_cents=int(quoted.data.rent_cents);store.place=quoted.data.place.duplicate(true)
+	store.construction=_construction(token,int(store.opening_cents),int(p.shop.snapshot().day),int(store.start_day))
+	# Previously synthesized staff must not make a paid repair open automatically.
+	for employee: Dictionary in p.employees.assigned(id): p.employees.assign(str(employee.id),"")
+	store.manager_id="";store.management_auto=false
+	p.sync_commercial_map();p.world.map_revision+=1
+	return TDOutcome.new(true,"CONSTRUCTION_STARTED","已确认付款施工。建成后请从员工仓库任命店长。",{"store_id":id})

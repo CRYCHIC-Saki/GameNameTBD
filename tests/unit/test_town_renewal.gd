@@ -60,11 +60,14 @@ func test_planned_map_terrain_roads_and_facilities() -> void:
 
 func legacy_snapshot() -> Dictionary:
 	var p:=TDGameProfile.new();p.slot_id="slot-01"
+	# A schema-5 fixture predates both the hometown and foreign-region map upgrades.
+	p.region_layout_version=1
 	p.world.map_version=1;p.world.town_map.cottage={};p.world._rebuild_map()
 	p.world.factory_built["chengdu:factory-2"]=true;p.world._rebuild_map()
 	p.commerce=TDWorldEconomy.new(p.service.config.costs,"chengdu",101,1)
 	p._wire_commerce();p.initialize_residence()
 	var raw:=p.snapshot();raw.schema_version=5;raw.world.erase("map_version")
+	raw.erase("region_layout_version");raw.erase("region_migration")
 	raw.residence={"schema_version":1,"anchor":"cottage_bed","plot":raw.residence.plot}
 	p.close();return raw
 

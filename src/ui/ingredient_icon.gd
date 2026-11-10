@@ -84,7 +84,24 @@ static func draw_on(canvas: CanvasItem, item_id: String, rect: Rect2, muted: boo
 		"ginger", "peanut":
 			for i: int in 3: _ellipse(canvas,rect,.3+i*.19,.5+float(i%2)*.17,.15,.18,Color("ba8c4e") if item_id=="ginger" else Color("b17c55"))
 		_:
-			_ellipse(canvas, rect, 0.5, 0.5, 0.28, 0.28, Color(0.75, 0.82, 0.9))
+			_catalog_icon(canvas,item_id,rect)
+
+static func _catalog_icon(canvas: CanvasItem,id: String,rect: Rect2) -> void:
+	var spec: Dictionary=TDMaterialCatalog.item(id).get("icon",{})
+	var color:=Color(str(spec.get("color","aac69a")))
+	match spec.get("shape",""):
+		"bottle":
+			_bottle(canvas,rect,color.darkened(.25),color.darkened(.55),color)
+			canvas.draw_rect(Rect2(_at(rect,.37,.48),rect.size*Vector2(.26,.13)),Color("efdfac"))
+		"fish": _fish(canvas,rect)
+		"meat": _chop(canvas,rect,Color("dc9a80"),.25)
+		"grain":
+			canvas.draw_rect(Rect2(_at(rect,.2,.23),rect.size*Vector2(.6,.62)),Color("d3bb85"))
+			canvas.draw_rect(Rect2(_at(rect,.24,.34),rect.size*Vector2(.52,.14)),color)
+			for x: int in 3: canvas.draw_line(_at(rect,.35+x*.13,.55),_at(rect,.4+x*.13,.67),Color("f6e5b7"),3)
+		"leaf":
+			for x: int in 3: canvas.draw_colored_polygon(PackedVector2Array([_at(rect,.5,.82),_at(rect,.15+x*.2,.36),_at(rect,.3+x*.2,.15),_at(rect,.52+x*.15,.45)]),Color("7eaa63").darkened(x*.12))
+		_: _ellipse(canvas,rect,.5,.5,.28,.28,color)
 
 static func _at(rect: Rect2, x: float, y: float) -> Vector2:
 	return rect.position + Vector2(rect.size.x * x, rect.size.y * y)

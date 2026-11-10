@@ -80,7 +80,7 @@ func test_bed_saves_next_day_once_and_loads_there_with_existing_progress() -> vo
 	assert_false(shell.restaurant.interaction_points().any(func(p:Dictionary)->bool:return p.action=="rest"))
 	var old:=before.duplicate(true);old.schema_version=3;old.erase("residence")
 	var migrated:=TDGameProfile.new();var result:=migrated.restore(old)
-	assert_true(result.ok,result.code);assert_eq(migrated.snapshot().schema_version,8)
+	assert_true(result.ok,result.code);assert_eq(migrated.snapshot().schema_version,9)
 	assert_true(TDLevelProgression.same_value(migrated.research.snapshot(),shell.profile.research.snapshot()));migrated.close()
 	var invalid:=before.duplicate(true);invalid.residence.schema_version=99
 	var unchanged:=shell.profile.snapshot()

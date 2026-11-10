@@ -159,6 +159,7 @@ func _draw_town(id: String, origin: Vector2) -> void:
 			draw_rect(rect.grow(1),Color(.1,.2,.15,.35));draw_rect(rect,Color(color,.45))
 		if str(plot.kind) not in ["housing","factory_lot"] and float(plot.w)>=3:
 			var tex: Texture2D=TDTownArt.sprite(0) if id=="chengdu" else TDTravelCatalog.sprite(id,2 if plot.kind=="plaza" else (1 if plot.kind in ["urban_village","rich_district"] else 0))
+			if plot.get("construction",false): tex=TDTownArt.sprite(12)
 			var width:=30.0*scale_factor();var span:=Vector2(width,width*tex.get_height()/tex.get_width())
 			draw_texture_rect(tex,Rect2(rect.get_center()-span*.5,span),false)
 		if zoom>=1.8 and plot.kind in ["market","plaza","bank","player_diner","cottage"]:

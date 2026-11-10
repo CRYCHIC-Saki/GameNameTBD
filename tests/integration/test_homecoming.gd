@@ -78,6 +78,6 @@ func test_pending_route_restores_harbor_and_legacy_home_is_not_taken_away() -> v
 	var old:=shell.profile.snapshot();old.schema_version=6
 	old.residence={"schema_version":1,"anchor":"cottage_bed","plot":old.residence.plot.duplicate(true)}
 	var restored:=TDGameProfile.new();assert_true(restored.restore(old).ok);assert_true(restored.has_residence())
-	assert_eq(restored.snapshot().schema_version,8);restored.close()
+	assert_eq(restored.snapshot().schema_version,9);restored.close()
 	var bad:=shell.profile.snapshot();bad.residence.anchor="cottage_bed"
 	assert_eq(TDGameProfile.validate_save(bad).code,"INVALID_RESIDENCE_ANCHOR")

@@ -49,7 +49,12 @@ func load_data(raw: Variant) -> TDOutcome:
 	if not checked.ok: return checked
 	var names: Dictionary = {}
 	for item: Dictionary in data.ingredients: names[item.id] = item
+	# config also contains installed regional costs after the first load.
+	# Resolve those IDs from the same registry used by install(), never caller metadata.
 	for id: Variant in raw.costs:
+		if id is String and (TDMaterialCatalog.added(id) or not names.has(id)):
+			var definition: Dictionary=TDMaterialCatalog.definition(id)
+			if not definition.is_empty(): names[id]=definition
 		if not id is String or not names.has(id) or not integer(raw.costs[id],1,1000000) or names[id].scope == "TEST_ONLY": return TDOutcome.new(false,"INVALID_COST")
 	var seen: Dictionary = {}
 	if raw.offers.size() < 5 or raw.offers.size() > 8: return TDOutcome.new(false,"INVALID_MENU_COUNT")
@@ -89,7 +94,7 @@ func load_data(raw: Variant) -> TDOutcome:
 	var stock: Dictionary=TDFoodStock.load_rules()
 	for id: String in config.costs:
 		if not stock.has(id): return TDOutcome.new(false,"MISSING_STOCK_DEFINITION",id)
-	return TDOutcome.new(true,"LOADED")
+	return TDMaterialCatalog.install(self)
 
 static func integer(value: Variant, low: int, high: int) -> bool:
 	return (value is int or value is float) and is_finite(float(value)) and float(value) == floorf(float(value)) and value >= low and value <= high
@@ -126,7 +131,9 @@ func request_profile(family: String, customer: Dictionary, entry: Dictionary = {
 				data.pc_operations.document_sheets[cut.id]=cut; recipe.preparation_sheets[ingredient]=cut.id
 		if requirement.get("kind")=="flavor":
 			for target: Dictionary in rules.get("flavor_targets",[]):
-				if int(requirement.get("taste",-1))==int(target.taste): targets[target.ingredient_id]=float(target.amount)
+				if int(requirement.get("taste",-1))==int(target.taste):
+					var spice: String=TDMaterialCatalog.preference_spice(str(recipe.get("cuisine_id","cn")),int(target.taste),str(target.ingredient_id))
+					if not spice.is_empty(): targets[spice]=float(target.amount)
 	var chart: Dictionary=source_chart.duplicate(true)
 	chart.id="request.cook"; recipe.guided_profile=chart.id
 	var notes: Array=[]

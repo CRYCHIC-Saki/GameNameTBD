@@ -309,9 +309,11 @@ func _sync_staff() -> void:
 			var cook: Dictionary = cooks[index]
 			var work := ""
 			var step := ""
+			var job_id := ""
 			if order_shop != null:
 				work = order_shop.crew_work(str(cook.id))
 				step = str(order_shop.cook_step(str(cook.id)))
+				job_id = order_shop.cook_job_id(str(cook.id))
 			var caption := "厨师 %s %d级" % [String(cook["name"]), int(cook.get("level", 1))]
 			if work == "做菜":
 				if step == "":
@@ -319,7 +321,7 @@ func _sync_staff() -> void:
 				caption = "厨师 %s 做菜 · %s" % [String(cook["name"]), step]
 			elif work != "":
 				caption = "厨师 %s %s" % [String(cook["name"]), work]
-			wanted.append({"caption": caption, "name": String(cook["name"]), "color": Color("#c46a3a"), "work": work, "step": step, "index": index})
+			wanted.append({"caption": caption, "name": String(cook["name"]), "color": Color("#c46a3a"), "work": work, "step": step, "job_id": str(cook.id)+":"+job_id, "index": index})
 	while _staff_nodes.size() < wanted.size():
 		var root := Node2D.new()
 		var sprite := Sprite2D.new()
@@ -351,7 +353,7 @@ func _sync_staff() -> void:
 		var task := str(info.get("work", ""))
 		var cooking := task == "做菜"
 		var step := str(info.get("step", ""))
-		var place := _held_place(root, step, cooking)
+		var place := _held_place(root, step, cooking, str(info.job_id))
 		var goal := cook_station(int(info.index), place) if cooking else home
 		if not root.has_meta("placed"):
 			root.position = home
@@ -374,7 +376,12 @@ func _sync_staff() -> void:
 			name_label.text = "厨师 %s 做菜 · %s" % [String(info.get("name", "")), shown]
 		name_label.add_theme_color_override("font_color", info.color)
 
-func _held_place(root: Node2D, reported: String, cooking: bool) -> String:
+func _held_place(root: Node2D, reported: String, cooking: bool, job_id: String="") -> String:
+	# A scheduler may finish one dish and begin another without an idle frame.
+	# Only presentation state is reset; position and the real cooking session stay intact.
+	if str(root.get_meta("cook_job_id",""))!=job_id:
+		root.set_meta("cook_job_id",job_id)
+		if root.has_meta("cook_place"): root.remove_meta("cook_place")
 	if not cooking:
 		if root.has_meta("cook_place"):
 			root.remove_meta("cook_place")

@@ -66,7 +66,7 @@ static func _draw_housing(canvas: CanvasItem,map: TDTownMap,origin: Vector2,cell
 		canvas.draw_style_box(_label_style(true),plate)
 		canvas.draw_string(ThemeDB.fallback_font,plate.position+Vector2(10,24),"青瓦巷 · 居民区",HORIZONTAL_ALIGNMENT_CENTER,204,22,Color("fff1cd"))
 
-static func draw_world(canvas: Node2D, session: TDPhase3Session, selected: Dictionary) -> void:
+static func draw_world(canvas: Node2D, session: TDPhase3Session, selected: Dictionary, management_menus: bool=false) -> void:
 	var map:=session.town_map;var origin:=Vector2(300,24);var cell: float=TDTownWorld.CELL
 	canvas.draw_texture_rect(ground(map),Rect2(origin,Vector2.ONE*map.extent*cell),false)
 	TDTownScenery.draw_wilds(canvas,origin,cell)
@@ -75,6 +75,7 @@ static func draw_world(canvas: Node2D, session: TDPhase3Session, selected: Dicti
 	plots.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return int(a.y+a.h)<int(b.y+b.h) or (int(a.y+a.h)==int(b.y+b.h) and int(a.x)<int(b.x)))
 	_draw_housing(canvas,map,origin,cell)
 	for p: Dictionary in plots:
+		if management_menus and p.get("kind","") in ["factory_lot","supply_factory"]: continue
 		var rect:=TDInteractionRange.plot_bounds(p,cell,origin)
 		var feet:=rect.position+Vector2(rect.size.x*.5,rect.size.y)
 		var kind: String=str(p.kind)
@@ -120,6 +121,7 @@ static func draw_world(canvas: Node2D, session: TDPhase3Session, selected: Dicti
 			TDTownScenery.pots(canvas,rect)
 		var active: bool=str(selected.get("id",""))==str(p.id)
 		var label: String="小镇食堂" if p.id=="player_diner" else str(p.name)
+		if p.has("branch_id") and p.get("construction",false): label+=" · 施工至第%d天"%int(p.ready_day)
 		if kind in ["urban_village","rich_district"]: label+=" · 居民院落"
 		var text_width: float=ThemeDB.fallback_font.get_string_size(label,HORIZONTAL_ALIGNMENT_LEFT,-1,14).x
 		var plate:=Rect2(feet+Vector2(-text_width*.5-7,5),Vector2(text_width+14,22))

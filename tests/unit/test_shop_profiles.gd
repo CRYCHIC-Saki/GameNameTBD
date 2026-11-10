@@ -126,6 +126,7 @@ func test_unknown_version_and_invalid_slot_never_overwrite() -> void:
 func test_world_rng_layout_dimensions_and_map_flags_round_trip() -> void:
 	var a:=create_profile("slot-01")
 	a.world.san=57
+	var disabled_plot_id: String=str(a.world.town_map.plots[0].id)
 	a.world.town_map.plots[0].enabled=false
 	a.world.rng.unit()
 	assert_true(a.save().ok)
@@ -133,7 +134,10 @@ func test_world_rng_layout_dimensions_and_map_flags_round_trip() -> void:
 	var b:=create_profile("slot-02")
 	assert_true(b.restore(store.load_slot("slot-01").data).ok)
 	assert_eq(b.world.san,57)
-	assert_false(b.world.town_map.plots[0].enabled)
+	# Commercial projections may reorder plots; persistence is keyed by stable ID.
+	var restored_plot: Array=b.world.town_map.plots.filter(func(plot:Dictionary)->bool:return plot.id==disabled_plot_id)
+	assert_eq(restored_plot.size(),1)
+	assert_false(restored_plot[0].enabled)
 	assert_eq(b.world.rng.unit(),next)
 	assert_eq(b.layout.to_dict(),a.layout.to_dict())
 

@@ -63,6 +63,7 @@ var thermal_progress: Dictionary = {}
 var sheet: TDBeatSheet
 var temperature_view: TDTemperatureView
 var _pc_toolbar: HFlowContainer
+var _spice_ids: Array[String]=[]
 var _cabinet: HBoxContainer
 var _cut_beats: SpinBox
 var _pc_buttons: Dictionary = {}
@@ -198,6 +199,9 @@ func perform(kind: String, args: Dictionary = {}) -> TDOutcome:
 		if settings.kind == "rhythm" and not pc_controls:
 			_audio.prepare(settings)
 			settings.lead_in_sec = float(settings.lead_in_sec) + _audio.begin()
+		if kind=="season" and settings.get("cabinet",false):
+			_spice_ids=recipe_spices(settings.get("sequence",[]))
+			settings.allowed_actions=_spice_ids.map(func(id:String)->String:return "spice:"+id)
 		var controller := TDCookingQTE.new(request, settings, clock, _qte_random)
 		if automatic: controller.enable_automatic()
 		if kind=="season" and (settings.has("hold_durations_sec") or settings.get("free_seasoning",false)):
@@ -648,6 +652,26 @@ func use_recipe_profile(value: TDCookingCatalog, identity: String, customer: Dic
 	catalog = value; _content = value.data(); base_recipe_id = identity
 	customer_override = [customer.duplicate(true)] if not customer.is_empty() else []
 	return changed
+
+func spice_choices() -> Array[String]:
+	return _spice_ids.duplicate() if qte!=null and not _spice_ids.is_empty() else recipe_spices()
+
+func recipe_spices(commands: Array=[]) -> Array[String]:
+	var recipe: Dictionary={}
+	for row: Dictionary in _content.get("recipes",[]):
+		if row.id==base_recipe_id: recipe=row;break
+	var required: Array=commands.duplicate()
+	if required.is_empty():
+		var chart: Dictionary=_content.get("pc_operations",{}).get("document_sheets",{}).get(recipe.get("guided_profile",""),{})
+		for beat: Dictionary in chart.get("beats",[]):
+			for entry: Dictionary in beat.get("lanes",{}).values():
+				if str(entry.get("input","")).begins_with("spice:"): required.append(entry.input)
+	required.append_array(recipe.get("seasoning_palette",[]))
+	var ids:=TDMaterialCatalog.palette(str(recipe.get("cuisine_id","cn")),required)
+	var available: Array[String]=[]
+	for row: Dictionary in _content.get("ingredients",[]):
+		if row.category=="seasoning": available.append(row.id)
+	return ids.filter(func(id:String)->bool:return id in available)
 
 func feedback_remaining() -> float:
 	return maxf(0,float(judgement_feedback.get("shown_at_sec",-10)) + float(_content.pc_operations.document_rules.get("feedback_sec",.9)) - clock.qte_sec)

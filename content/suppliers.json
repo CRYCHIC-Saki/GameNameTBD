@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "parameter_status": "PROPOSED_AI_072",
+  "note": "Five external suppliers. Distances use the shared world-map coordinates, not claimed real geography. Local ingredient lists, fees and durations are adjustable gameplay values. Production uses active real seconds: one production hour = 3600 seconds. Existing factory orders remain in their original owner. D068/AI-078: 新产线base_seconds按游戏秒解释，运输另计；旧单保持真实秒。",
+  "distance_unit": 400.0,
+  "distance_price_rate": 0.18,
+  "distance_time_rate": 0.35,
+  "upgrade_base_cents": 3000,
+  "max_level": 3,
+  "level_time_factor": 0.75,
+  "max_order_units": 8000,
+  "max_pending_orders": 100,
+  "automation_target_portions": 8,
+  "base_seconds": {
+    "vegetable": 1800.0,
+    "fruit": 1800.0,
+    "seasoning": 1800.0,
+    "meat": 3600.0
+  },
+  "common_items": [
+    "tomato",
+    "egg",
+    "chicken",
+    "rice",
+    "noodles",
+    "wheat_noodles",
+    "water",
+    "oil",
+    "starch",
+    "salt",
+    "sugar",
+    "vinegar",
+    "soy_sauce",
+    "wine",
+    "ginger",
+    "garlic",
+    "pepper",
+    "scallion",
+    "bean_paste"
+  ],
+  "towns": {
+    "chengdu": {
+      "name": "成都食材供应社",
+      "position": [
+        800,
+        280
+      ],
+      "local_items": [
+        "beef",
+        "pork",
+        "tofu",
+        "peanut",
+        "chili",
+        "mushroom"
+      ]
+    },
+    "paris": {
+      "name": "巴黎食材供应社",
+      "position": [
+        430,
+        120
+      ],
+      "local_items": [
+        "beef",
+        "pork",
+        "mushroom"
+      ]
+    },
+    "tokyo": {
+      "name": "东京食材供应社",
+      "position": [
+        1175,
+        170
+      ],
+      "local_items": [
+        "beef",
+        "pork",
+        "tofu",
+        "mushroom"
+      ]
+    },
+    "bangkok": {
+      "name": "曼谷食材供应社",
+      "position": [
+        930,
+        590
+      ],
+      "local_items": [
+        "beef",
+        "pork",
+        "tofu",
+        "peanut",
+        "chili"
+      ]
+    },
+    "mexico_city": {
+      "name": "墨西哥城食材供应社",
+      "position": [
+        80,
+        380
+      ],
+      "local_items": [
+        "beef",
+        "pork",
+        "peanut",
+        "chili"
+      ]
+    }
+  },
+  "continuous": {
+    "default_budget_cents": 5000,
+    "transport_minutes_per_distance": 30,
+    "max_lines": 100
+  }
+}

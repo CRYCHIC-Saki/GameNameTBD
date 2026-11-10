@@ -1,13 +1,16 @@
-#Requires -Version 7.2
+﻿#Requires -Version 7.2
 [CmdletBinding()]
 param(
   [string]$GodotPath = $env:GODOT_BIN,
-  [ValidateSet('pull-core','pull-scenes','regions','travel-core','travel','branch-core','branches','seated-art','restaurant-feedback','diners','decoration','all','content','cooking','qte','platform','scoring','integration','business','service','research','profiles','game','title','movement','commerce','stock','progression','habitat','protagonist','locomotion','story','characters','town-renewal','town-polish','residential','visual-unity','story-expansion','arrival-coast','story-fixes','homecoming')]
+  [ValidateSet('condiment-rules','materials','materials-regression','supplier-release','supplier-lines','supplier-compat','sync-current','sync-remainder','sync-migration','construction-regression','construction','console','management','management-regression','pull-core','pull-scenes','regions','travel-core','travel','branch-core','branches','seated-art','restaurant-feedback','diners','decoration','all','content','cooking','qte','platform','scoring','integration','business','service','research','profiles','game','title','movement','commerce','stock','progression','habitat','protagonist','locomotion','story','characters','town-renewal','town-polish','residential','visual-unity','story-expansion','arrival-coast','story-fixes','homecoming')]
   [string]$Suite = 'all',
   [int]$TimeoutSeconds = 1800,
+  [ValidateRange(1,16)][int]$ShardCount = 1,
+  [ValidateRange(0,15)][int]$ShardIndex = 0,
   [string]$ReportName = ''
 )
 $ErrorActionPreference = 'Stop'
+if ($ShardIndex -ge $ShardCount) { throw 'ShardIndex must be less than ShardCount' }
 $root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $lock = Get-Content -LiteralPath (Join-Path $root 'dependencies.lock.json') -Raw | ConvertFrom-Json
 if (-not $GodotPath) { $GodotPath = $lock.godot.local_path }
@@ -67,12 +70,26 @@ try {
   if ($plugin -notmatch ('version="' + [regex]::Escape($lock.gut.version) + '"')) { throw 'GUT version mismatch' }
 
   $testMap = @{
+    'condiment-rules' = @('tests/unit/test_shop_profiles.gd','tests/unit/test_supplier_network.gd','tests/unit/test_season_hold.gd','tests/unit/test_shop_stock.gd','tests/unit/test_supply_lines.gd','tests/integration/test_supply_lines.gd')
+    'materials' = @('tests/unit/test_regional_materials.gd','tests/integration/test_regional_materials.gd')
+    'materials-regression' = @('tests/unit/test_shop_profiles.gd','tests/unit/test_supplier_network.gd','tests/unit/test_season_hold.gd','tests/unit/test_shop_stock.gd','tests/integration/test_shop_application.gd')
+    'supplier-release' = @('tests/unit/test_supply_lines.gd','tests/integration/test_supply_lines.gd','tests/unit/test_supplier_network.gd','tests/unit/test_game_hud.gd','tests/integration/test_management_system.gd','tests/integration/test_checkpoint_save.gd','tests/unit/test_branch_construction.gd','tests/integration/test_store_management.gd')
+    'supplier-lines' = @('tests/unit/test_supply_lines.gd','tests/integration/test_supply_lines.gd')
+    'supplier-compat' = @('tests/unit/test_supplier_network.gd','tests/unit/test_game_hud.gd','tests/integration/test_management_system.gd','tests/integration/test_checkpoint_save.gd','tests/unit/test_branch_construction.gd')
+    'sync-migration' = @('tests/unit/test_town_renewal.gd','tests/integration/test_town_renewal_world.gd','tests/unit/test_region_migration.gd')
+    'sync-remainder' = @('tests/integration/test_guided_kitchen.gd','tests/integration/test_story_kitchen.gd','tests/integration/test_town_motion.gd','tests/integration/test_town_renewal_world.gd','tests/integration/test_world_travel.gd') + @(Get-ChildItem -LiteralPath (Join-Path $root 'tests/unit') -Filter 'test_*.gd' -File | ForEach-Object { [IO.Path]::GetRelativePath($root, $_.FullName).Replace('\','/') })
+    'sync-current' = @('tests/integration/test_pull_current.gd','tests/integration/test_kitchen_world.gd','tests/integration/test_restaurant_world.gd','tests/integration/test_pull_merge.gd','tests/unit/test_shop_stock.gd','tests/unit/test_shop_profiles.gd','tests/unit/test_supplier_network.gd','tests/unit/test_branch_construction.gd','tests/integration/test_branch_visit.gd')
+    'management-regression' = @('tests/unit/test_shop_profiles.gd','tests/integration/test_checkpoint_save.gd','tests/integration/test_level_progression.gd','tests/integration/test_game_shell.gd','tests/integration/test_branch_panel.gd','tests/integration/test_world_travel.gd','tests/integration/test_diner_flow.gd')
+    management = @('tests/unit/test_employee_roster.gd','tests/unit/test_supplier_network.gd','tests/unit/test_game_hud.gd','tests/integration/test_management_system.gd')
     'pull-core' = @('tests/unit/test_restaurant_crew.gd','tests/unit/test_phase4_branch.gd','tests/unit/test_restaurant_layout.gd','tests/unit/test_town_polish.gd','tests/unit/test_research_rules.gd','tests/unit/test_regional_layout.gd','tests/unit/test_region_migration.gd','tests/unit/test_player_branches.gd','tests/unit/test_shop_profiles.gd')
     'pull-scenes' = @('tests/integration/test_pull_merge.gd','tests/integration/test_restaurant_world.gd','tests/integration/test_diner_flow.gd','tests/integration/test_restaurant_feedback.gd','tests/integration/test_world_travel.gd','tests/integration/test_checkpoint_save.gd','tests/integration/test_branch_panel.gd')
     'regions' = @('tests/unit/test_regional_layout.gd','tests/unit/test_region_migration.gd')
     'travel-core' = @('tests/integration/test_world_travel.gd')
     travel = @('tests/unit/test_regional_layout.gd','tests/unit/test_region_migration.gd','tests/integration/test_world_travel.gd','tests/integration/test_branch_panel.gd','tests/integration/test_checkpoint_save.gd','tests/integration/test_habitat.gd','tests/integration/test_game_shell.gd')
-    'branch-core' = @('tests/unit/test_player_branches.gd','tests/integration/test_branch_panel.gd')
+    'construction-regression' = @('tests/unit/test_employee_roster.gd','tests/unit/test_supplier_network.gd','tests/unit/test_game_hud.gd','tests/integration/test_management_system.gd','tests/integration/test_world_travel.gd','tests/integration/test_checkpoint_save.gd','tests/integration/test_level_progression.gd','tests/integration/test_debug_console.gd')
+    construction = @('tests/unit/test_branch_construction.gd','tests/integration/test_branch_visit.gd')
+    console = @('tests/integration/test_debug_console.gd','tests/unit/test_research_rules.gd')
+    'branch-core' = @('tests/unit/test_player_branches.gd','tests/integration/test_branch_panel.gd','tests/integration/test_store_management.gd')
     branches = @('tests/unit/test_player_branches.gd','tests/integration/test_branch_panel.gd','tests/unit/test_shop_profiles.gd','tests/integration/test_level_progression.gd','tests/integration/test_checkpoint_save.gd','tests/unit/test_town_economy_rules.gd','tests/unit/test_phase4_branch.gd','tests/integration/test_habitat.gd','tests/integration/test_homecoming.gd','tests/integration/test_town_economy_integration.gd','tests/integration/test_town_renewal_world.gd')
     'seated-art' = @('tests/integration/test_restaurant_feedback.gd','tests/integration/test_diner_flow.gd','tests/integration/test_decoration_ui.gd')
     'restaurant-feedback' = @('tests/integration/test_restaurant_feedback.gd','tests/integration/test_game_shell.gd','tests/integration/test_level_progression.gd','tests/integration/test_checkpoint_save.gd','tests/unit/test_shop_profiles.gd','tests/integration/test_habitat.gd','tests/integration/test_homecoming.gd','tests/integration/test_player_motion.gd','tests/integration/test_protagonist.gd','tests/integration/test_diner_flow.gd')
@@ -111,6 +128,12 @@ try {
   $files = if ($Suite -eq 'all') {
     @(Get-ChildItem -LiteralPath (Join-Path $root 'tests') -Filter 'test_*.gd' -File -Recurse | ForEach-Object { [IO.Path]::GetRelativePath($root, $_.FullName).Replace('\','/') })
   } else { @($testMap[$Suite]) }
+  $allFiles = @($files | Sort-Object -CaseSensitive)
+  $files = @(for ($i = 0; $i -lt $allFiles.Count; $i++) {
+    if (($i % $ShardCount) -eq $ShardIndex) { $allFiles[$i] }
+  })
+  [ordered]@{suite=$Suite;shard_index=$ShardIndex;shard_count=$ShardCount;total_files=$allFiles.Count;files=$files} |
+    ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $report 'selection.json') -Encoding utf8
   $discovered = 0
   foreach ($file in $files) {
     $text = Get-Content -LiteralPath (Join-Path $root $file) -Raw
@@ -133,7 +156,7 @@ try {
   if ($executed -ne $discovered -or $executed -eq 0 -or $failures -gt 0 -or $skipped -gt 0 -or $errors -gt 0) {
     throw "TEST_GATE: discovered=$discovered executed=$executed failures=$failures skipped=$skipped errors=$errors"
   }
-  $summary = [ordered]@{status='PASS';engine=$version;suite=$Suite;discovered=$discovered;executed=$executed;passed=$executed;failed=$failures;skipped=$skipped;exit_code=0;stages=$stages}
+  $summary = [ordered]@{status='PASS';engine=$version;suite=$Suite;shard_index=$ShardIndex;shard_count=$ShardCount;discovered=$discovered;executed=$executed;passed=$executed;failed=$failures;skipped=$skipped;exit_code=0;stages=$stages}
   $summary | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $report 'summary.json') -Encoding utf8
   Write-Host "PASS discovered=$discovered executed=$executed failed=0 skipped=0 exit=0"
   Write-Host "REPORT=$report"
