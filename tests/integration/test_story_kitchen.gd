@@ -165,7 +165,8 @@ func test_selected_art_uses_distinct_read_only_directional_resources() -> void:
 			var sprite:=TDStoryArt.sprite(who,facing) as AtlasTexture
 			assert_not_null(sprite);assert_false(sprite in textures);textures.append(sprite)
 			assert_same(sprite,TDStoryArt.sprite(who,facing))
-			assert_true(sprite.atlas.resource_path.contains("archive/2026-10-29"))
-			assert_gte(sprite.region.size.y,578.0)
+			assert_true(sprite.atlas.resource_path.contains("assets/redraw-v1/walker-"))
+			assert_gt(sprite.region.size.y,100.0)
 		assert_not_null(TDStoryArt.portrait(who))
-	assert_null(TDStoryArt.portrait("luo"),"No invented portrait assignment for a missing asset")
+	assert_not_null(TDStoryArt.portrait("luo"),"User supplied Luo reference now has a portrait")
+	assert_null(TDStoryArt.portrait("missing-person"),"Unknown identities still have no invented asset")

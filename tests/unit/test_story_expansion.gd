@@ -74,14 +74,14 @@ func test_navigation_detours_solid_target_and_unreachable_regions() -> void:
 	assert_lte(route[-1].distance_to(Vector2i(4,1)),1.0)
 	assert_true(TDQuestPath.find(Vector2i(2,0),Vector2i(4,1),Rect2i(0,0,5,5),walk).is_empty())
 
-func test_emotions_keep_original_happy_art_and_unique_other_poses() -> void:
-	for who: String in ["hero","aling","chen"]:
+func test_reference_expression_sheets_keep_pose_and_unique_emotions() -> void:
+	for who: String in ["hero","aling","chen","luo"]:
 		for emotion: String in TDStoryArt.EMOTIONS:
 			var art:=TDStoryArt.portrait(who,emotion);assert_not_null(art);assert_gt(art.get_width(),0)
-	assert_same(TDStoryArt.portrait("aling","happy"),TDStoryArt.portrait("aling"))
-	assert_same(TDStoryArt.portrait("chen","happy"),TDStoryArt.portrait("chen"))
+	assert_ne(TDStoryArt.portrait("aling","happy"),TDStoryArt.portrait("aling"))
+	assert_ne(TDStoryArt.portrait("chen","happy"),TDStoryArt.portrait("chen"))
 	assert_ne(TDStoryArt.portrait("hero","sad"),TDStoryArt.portrait("hero","angry"))
-	assert_same(TDStoryArt.portrait("hero","happy","握住锅柄"),TDStoryArt.action_pose(3))
+	assert_same(TDStoryArt.portrait("hero","happy","握住锅柄"),TDStoryArt.portrait("hero","happy"))
 
 func test_bad_story_state_is_rejected_before_restore() -> void:
 	for raw: Variant in [null,[],{"script_version":3},{"tutorials":["M1","M1"]},{"tutorials":[1]},{"tracked":"false"},{"assessment":{"satisfaction":-1}},{"assessment":{"satisfaction":101}},{"assessment":{"satisfaction":"90"}},{"assessment":{"satisfaction":NAN}},{"assessment":{"satisfaction":90,"reasons":[1]}}]:

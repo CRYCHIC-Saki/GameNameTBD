@@ -5,10 +5,10 @@ extends Control
 ## The host samples seconds; this scene never changes world, camera, or save state.
 const SEGMENTS := {"arrival":"A_arrival","hungry":"B_hungry","messenger":"C_aling"}
 const SPANS := {"arrival":14.0,"hungry":6.0,"messenger":10.0}
-const HERO: Texture2D=preload("res://assets/story/arrival-hero-v1.png")
-const ALING: Texture2D=preload("res://assets/story/arrival-aling-v2.png")
-const BACKGROUND: Texture2D=preload("res://assets/story/arrival-coast-v1.png")
-const PROPS: Texture2D=preload("res://assets/story/arrival-props-v1.png")
+const HERO: Texture2D=preload("res://assets/redraw-v1/arrival-hero.png")
+const ALING: Texture2D=preload("res://assets/redraw-v1/arrival-aling.png")
+const BACKGROUND: Texture2D=preload("res://assets/redraw-v1/coast.png")
+const PROPS: Texture2D=preload("res://assets/redraw-v1/arrival-props.png")
 
 @export_range(1,9) var shot_index: int=1
 @export var focus: Vector2=Vector2(640,400)
@@ -32,7 +32,7 @@ static var _poses: Dictionary={}
 
 func _ready() -> void:
 	mouse_filter=Control.MOUSE_FILTER_IGNORE
-	texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST
+	texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
 	clip_contents=true
 	_build_map()
 
@@ -118,15 +118,6 @@ func _draw_actor(who: String, index: int, feet: Vector2, height: float) -> void:
 	var dimensions:=art.get_size()*(height/art.get_height())
 	draw_rect(Rect2(feet+Vector2(-36,-3),Vector2(72,7)),Color(0.14,0.19,0.22,.18))
 	draw_texture_rect(art,Rect2((feet-Vector2(dimensions.x*.5,dimensions.y)).round(),dimensions),false)
-	if who=="aling":
-		# Lettering is a game-rendered cover detail: preserve the source pose atlas.
-		var atlas:=art as AtlasTexture
-		var labels: Array[Vector2]=[Vector2(193,249),Vector2(729,198),Vector2(1247,213),Vector2(232,728),Vector2(743,728),Vector2(1253,727)]
-		var point:=feet-Vector2(dimensions.x*.5,dimensions.y)+(labels[index]-atlas.region.position)*dimensions/atlas.region.size
-		var letter_scale:=height/atlas.region.size.y
-		draw_set_transform_matrix(_view_transform*Transform2D(.22 if index<2 else -.12,Vector2.ONE*letter_scale,0,point))
-		draw_string(ThemeDB.fallback_font,Vector2(-12,0),"密令",HORIZONTAL_ALIGNMENT_LEFT,-1,16,Color("f7d77d"))
-		draw_set_transform_matrix(_view_transform)
 
 func _draw_map() -> void:
 	var art:=TDStoryArt.cropped_view("arrival:map",PROPS,Rect2i(0,0,1030,500))
@@ -141,7 +132,7 @@ func _draw_book(center: Vector2, openness: float) -> void:
 	draw_texture_rect(art,box,false)
 	if index<2:
 		var title_at:=box.position+box.size*(Vector2(.34,.22) if index==0 else Vector2(.74,.25))
-		draw_string(ThemeDB.fallback_font,title_at,"密令",HORIZONTAL_ALIGNMENT_LEFT,-1,42 if index==0 else 27,Color("f3d580"))
+		draw_string(TDUI.font(),title_at,"密令",HORIZONTAL_ALIGNMENT_LEFT,-1,42 if index==0 else 27,Color("f3d580"))
 	if index==0: return
 	var pages: Array[Rect2]=[Rect2(.16,.20,.31,.56),Rect2(.53,.20,.32,.56)]
 	if index==1: pages.assign([Rect2(.37,.22,.08,.58),Rect2(.515,.22,.10,.58)])

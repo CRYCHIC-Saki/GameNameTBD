@@ -5,25 +5,25 @@
     "dev.hold_probe"
   ],
   "samples": [
-    {
-      "id": "dev.hold_probe",
-      "schema_version": 1,
-      "scope": "DEV_ONLY",
-      "operation": "probe_hold",
-      "rate_units_per_sec": 10,
-      "target_sec": [
-        1.2,
-        1.8
-      ],
-      "timeout_sec": 6,
-      "material": {
-        "id": "dev.material",
-        "metadata": {
-          "labels": [
+	{
+	  "id": "dev.hold_probe",
+	  "schema_version": 1,
+	  "scope": "DEV_ONLY",
+	  "operation": "probe_hold",
+	  "rate_units_per_sec": 10,
+	  "target_sec": [
+		1.2,
+		1.8
+	  ],
+	  "timeout_sec": 6,
+	  "material": {
+		"id": "dev.material",
+		"metadata": {
+		  "labels": [
             "DEV_ONLY"
-          ]
-        }
-      }
-    }
+		  ]
+		}
+	  }
+	}
   ]
 }

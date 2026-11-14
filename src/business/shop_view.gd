@@ -118,9 +118,9 @@ var legacy_loaded: Callable
 func _ready() -> void:
 	process_mode=Node.PROCESS_MODE_ALWAYS; theme=TDUI.theme(); set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	for state: String in ["normal","hover","pressed","focus"]:
-		var style:=theme.get_stylebox(state,"Button") as StyleBoxFlat
+		var style:=theme.get_stylebox(state,"Button") as StyleBox
 		style.content_margin_left=10; style.content_margin_right=10; style.content_margin_top=8; style.content_margin_bottom=8
-	var background:=ColorRect.new(); background.color=Color("17251f"); background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); background.mouse_filter=Control.MOUSE_FILTER_IGNORE; add_child(background)
+	var background:=Panel.new();background.add_theme_stylebox_override("panel",TDUI.wood(TDUI.Surface.FRAME,0)); background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); background.mouse_filter=Control.MOUSE_FILTER_IGNORE; add_child(background)
 	var linked: Array=[]
 	if embedded and shop!=null:
 		service=shop.catalog
@@ -145,8 +145,8 @@ func _ready() -> void:
 	if _load_blocked: _show_recovery()
 
 func _build_shell() -> void:
-	_title=TDUI.label("",28,TDUI.ORANGE); _title.position=Vector2(24,17); _title.size=Vector2(1190,42); add_child(_title)
-	_message=TDUI.label("筹备：补货、定价，然后开门迎客。",17,TDUI.MUTED); _message.position=Vector2(24,59); _message.size=Vector2(1210,44); add_child(_message)
+	_title=TDUI.label("",TDUI.FONT_TITLE,TDUI.ORANGE); _title.position=Vector2(24,17); _title.size=Vector2(1190,42); add_child(_title)
+	_message=TDUI.label("筹备：补货、定价，然后开门迎客。",TDUI.FONT_BODY,TDUI.MUTED); _message.position=Vector2(24,59); _message.size=Vector2(1210,44); add_child(_message)
 	var actions:=HBoxContainer.new(); actions.position=Vector2(24,104); actions.add_theme_constant_override("separation",12); add_child(actions)
 	_open_button=TDUI.button("开门营业",open_day); actions.add_child(_open_button)
 	_save_button=TDUI.button("保存进度",save_boundary); actions.add_child(_save_button)
@@ -156,7 +156,7 @@ func _build_shell() -> void:
 	actions.add_child(TDUI.button("暂停 / 恢复",func()->void:pause_requested.emit()))
 	actions.add_child(TDUI.button("返回主界面",request_back))
 	if embedded: actions.hide();_title.hide()
-	day_clock_label=TDUI.label("",22,TDUI.ORANGE);day_clock_label.position=Vector2(1050,110);day_clock_label.size=Vector2(200,36);add_child(day_clock_label)
+	day_clock_label=TDUI.label("",TDUI.FONT_SECTION,TDUI.ORANGE);day_clock_label.position=Vector2(1050,110);day_clock_label.size=Vector2(200,36);add_child(day_clock_label)
 	if embedded: day_clock_label.hide()
 	_holder=Control.new(); _holder.position=Vector2(12,174); _holder.size=Vector2(920,575); add_child(_holder)
 	var scroll:=ScrollContainer.new(); scroll.position=Vector2(953,166); scroll.size=Vector2(303,610); scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED; add_child(scroll)
@@ -229,40 +229,40 @@ func _planning_page(state: Dictionary) -> void:
 	_empty(_page)
 	var scroll:=ScrollContainer.new(); scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED; _page.add_child(scroll)
 	var column:=VBoxContainer.new(); column.size_flags_horizontal=Control.SIZE_EXPAND_FILL; column.add_theme_constant_override("separation",12); scroll.add_child(column)
-	column.add_child(TDUI.label("菜单与备货" if state.phase=="PREPARE" else "今日收益总结",25,TDUI.ORANGE))
-	column.add_child(TDUI.label("顾客自动排队；同菜优先先到的客人。备货包括主料和调料，实际拿取 / 倒入时扣除。",15,TDUI.MUTED))
+	column.add_child(TDUI.label("菜单与备货" if state.phase=="PREPARE" else "今日收益总结",TDUI.FONT_TITLE,TDUI.ORANGE))
+	column.add_child(TDUI.label("顾客自动排队；同菜优先先到的客人。备货包括主料和调料，实际拿取 / 倒入时扣除。",TDUI.FONT_CAPTION,TDUI.MUTED))
 	if state.phase=="PREPARE":
 		var forecast: Dictionary=shop.visitor_forecast()
-		column.add_child(TDUI.label("第 %d 天 · 预计到店 %d—%d 位客人" % [forecast.day,forecast.min_visitors,forecast.max_visitors],22,TDUI.ORANGE))
-		column.add_child(TDUI.label("按当前人气估算，可据此分配菜单备货；售罄或提前打烊会减少实际接单数。",15,TDUI.MUTED))
+		column.add_child(TDUI.label("第 %d 天 · 预计到店 %d—%d 位客人" % [forecast.day,forecast.min_visitors,forecast.max_visitors],TDUI.FONT_SECTION,TDUI.ORANGE))
+		column.add_child(TDUI.label("按当前人气估算，可据此分配菜单备货；售罄或提前打烊会减少实际接单数。",TDUI.FONT_CAPTION,TDUI.MUTED))
 		for id: String in state.menu:
 			var row:=HBoxContainer.new(); column.add_child(row)
 			var check:=CheckBox.new(); check.text=shop.recipe_name(id); check.custom_minimum_size.x=215; check.button_pressed=state.menu[id].enabled; check.disabled=not shop.is_unlocked(shop.family_id(id)); check.text+="（未解锁）" if check.disabled else ""; row.add_child(check)
 			var price:=SpinBox.new(); price.min_value=.01; price.max_value=10000; price.step=.5; price.value=float(state.menu[id].price_cents)/100; price.prefix="¥ "; price.custom_minimum_size.x=125; row.add_child(price)
 			check.toggled.connect(func(v:bool)->void:_show(shop.set_menu(id,v,roundi(price.value*100))))
 			price.value_changed.connect(func(v:float)->void:_show(shop.set_menu(id,check.button_pressed,roundi(v*100))))
-			var reference:=TDUI.label("参考 %.2f" % (float(shop.offer(id).reference_cents)/100),15,TDUI.MUTED)
+			var reference:=TDUI.label("参考 %.2f" % (float(shop.offer(id).reference_cents)/100),TDUI.FONT_CAPTION,TDUI.MUTED)
 			reference.custom_minimum_size.x=105; reference.autowrap_mode=TextServer.AUTOWRAP_OFF; row.add_child(reference)
 			row.add_child(TDUI.button("补齐 ¥%.2f" % (float(shop.kit_cost(id,true))/100),func()->void:buy_kit(id)))
 			row.add_child(TDUI.button("再备1份",func()->void:buy_kit(id,false)))
 		column.add_child(TDUI.button("资金困难 · 申请应急补助",func()->void:_show(shop.claim_grant());refresh(true)))
 	else:
 		_summary_page(column, shop.day_summary())
-	column.add_child(TDUI.label("库存 · 单位：标准份",20,TDUI.ORANGE))
+	column.add_child(TDUI.label("库存 · 单位：标准份",TDUI.FONT_BODY,TDUI.ORANGE))
 	var stock_lines: Array[String]=[]
 	for id: String in state.inventory:
 		var definition: Dictionary=_ingredient(id)
 		stock_lines.append("%s %.2f" % [definition.get("name",id),float(state.inventory[id])/1000.0])
-	column.add_child(TDUI.label("  ·  ".join(stock_lines),16,TDUI.MUTED))
+	column.add_child(TDUI.label("  ·  ".join(stock_lines),TDUI.FONT_CAPTION,TDUI.MUTED))
 	for entry: Dictionary in state.custom:
 		var row:=HBoxContainer.new(); column.add_child(row)
 		var rename:=LineEdit.new(); rename.text=entry.name; rename.custom_minimum_size.x=250; row.add_child(rename)
 		row.add_child(TDUI.button("改名 / 保存新版本",func()->void:_show(shop.save_plan(rename.text,entry.plan,entry.id));refresh(true)))
-	column.add_child(TDUI.label("声望：本阶段未启用。菜品名气分别累计；店名气只统计当前上架菜。",15,TDUI.MUTED))
+	column.add_child(TDUI.label("声望：本阶段未启用。菜品名气分别累计；店名气只统计当前上架菜。",TDUI.FONT_CAPTION,TDUI.MUTED))
 
 func _summary_page(column: VBoxContainer, report: Dictionary) -> void:
 	for id: String in report.get("spoiled_units",{}):
-		column.add_child(TDUI.label("到期损耗：%s %.2f%s"%[_ingredient(id).name,float(report.spoiled_units[id])/1000,shop.stock_info(id).unit],16,TDUI.ORANGE))
+		column.add_child(TDUI.label("到期损耗：%s %.2f%s"%[_ingredient(id).name,float(report.spoiled_units[id])/1000,shop.stock_info(id).unit],TDUI.FONT_CAPTION,TDUI.ORANGE))
 	var reason := "今日已结算"
 	if str(report.reason) == "early":
 		reason = "提前打烊"
@@ -270,46 +270,46 @@ func _summary_page(column: VBoxContainer, report: Dictionary) -> void:
 		reason = "凌晨02:00收摊"
 	elif str(report.reason) == "time":
 		reason = "营业时间结束"
-	column.add_child(TDUI.label("第 %d 天 · %s" % [int(report.day), reason], 22, TDUI.ORANGE))
+	column.add_child(TDUI.label("第 %d 天 · %s" % [int(report.day), reason], TDUI.FONT_SECTION, TDUI.ORANGE))
 	var net_color := Color("de755d")
 	if int(report.net_cents) >= 0:
 		net_color = TDUI.ORANGE
-	column.add_child(TDUI.label("今日净收支 %+.2f 元" % (float(report.net_cents) / 100.0), 28, net_color))
+	column.add_child(TDUI.label("今日净收支 %+.2f 元" % (float(report.net_cents) / 100.0), TDUI.FONT_TITLE, net_color))
 	var money_line := "备货支出 ¥%.2f    菜款 ¥%.2f    小费 ¥%.2f    退款 ¥%.2f" % [float(report.purchased_cents) / 100.0, float(report.received_cents) / 100.0, float(report.tip_cents) / 100.0, float(report.refunded_cents) / 100.0]
 	if int(report.grant_cents) != 0:
 		money_line += "    应急补助 ¥%.2f" % (float(report.grant_cents) / 100.0)
-	column.add_child(TDUI.label(money_line, 16))
+	column.add_child(TDUI.label(money_line, TDUI.FONT_CAPTION))
 	var cash_caption: String="开门 ¥%.2f → 打烊 ¥%.2f，开门后现金变化 %+.2f 元。采购换成库存；投入成本与应付费用见下方经营利润。" if shop.commerce!=null else "开门 ¥%.2f → 打烊 ¥%.2f，营业盈亏 %+.2f 元。备货算在今日净收支里，不算进开门后的营业盈亏。"
-	column.add_child(TDUI.label(cash_caption % [float(report.open_money_cents) / 100.0, float(report.money_cents) / 100.0, float(report.service_cents) / 100.0], 15, TDUI.MUTED))
+	column.add_child(TDUI.label(cash_caption % [float(report.open_money_cents) / 100.0, float(report.money_cents) / 100.0, float(report.service_cents) / 100.0], TDUI.FONT_CAPTION, TDUI.MUTED))
 	var pop_color := TDUI.MUTED
 	if int(report.popularity_delta) > 0:
 		pop_color = Color("9fc48f")
 	elif int(report.popularity_delta) < 0:
 		pop_color = Color("de755d")
-	column.add_child(TDUI.label("人气 %d → %d（%+d）" % [int(report.open_popularity), int(report.popularity), int(report.popularity_delta)], 22, pop_color))
-	column.add_child(TDUI.label("每一单", 20, TDUI.ORANGE))
+	column.add_child(TDUI.label("人气 %d → %d（%+d）" % [int(report.open_popularity), int(report.popularity), int(report.popularity_delta)], TDUI.FONT_SECTION, pop_color))
+	column.add_child(TDUI.label("每一单", TDUI.FONT_BODY, TDUI.ORANGE))
 	var orders: Array = report.orders
 	if orders.is_empty():
-		column.add_child(TDUI.label("今天没有客人留下订单。", 16, TDUI.MUTED))
+		column.add_child(TDUI.label("今天没有客人留下订单。", TDUI.FONT_CAPTION, TDUI.MUTED))
 	for row: Dictionary in orders:
 		var panel := PanelContainer.new()
 		column.add_child(panel)
 		var body := VBoxContainer.new()
 		body.add_theme_constant_override("separation", 4)
 		panel.add_child(body)
-		body.add_child(TDUI.label("%s · %s · %s" % [str(row.customer), str(row.name), _status_name(str(row.status))], 18, TDUI.ORANGE))
+		body.add_child(TDUI.label("%s · %s · %s" % [str(row.customer), str(row.name), _status_name(str(row.status))], TDUI.FONT_BODY, TDUI.ORANGE))
 		var effect := "本单 %+.2f 元（小费 ¥%.2f，退款 ¥%.2f）    人气 %+d" % [float(row.money_cents) / 100.0, float(row.tip_cents) / 100.0, float(row.refunded_cents) / 100.0, int(row.popularity_delta)]
 		if shop.commerce!=null: effect="本单 %+.2f 元（小费 ¥%.2f，退款 ¥%.2f）"%[float(row.money_cents)/100,float(row.tip_cents)/100,float(row.refunded_cents)/100]
 		if int(row.fame_delta) != 0:
 			effect += "    名气 %+d" % int(row.fame_delta)
-		body.add_child(TDUI.label(effect, 16))
+		body.add_child(TDUI.label(effect, TDUI.FONT_CAPTION))
 		if float(row.satisfaction) >= 0.0:
-			body.add_child(TDUI.label("评价 %.1f 分 · %d 星" % [float(row.satisfaction), int(row.stars)], 16))
+			body.add_child(TDUI.label("评价 %.1f 分 · %d 星" % [float(row.satisfaction), int(row.stars)], TDUI.FONT_CAPTION))
 			var reasons: Array = row.reasons
 			for note: Dictionary in reasons.slice(0, 3):
-				body.add_child(TDUI.label(_feedback_text(str(note.message)), 14, TDUI.MUTED))
+				body.add_child(TDUI.label(_feedback_text(str(note.message)), TDUI.FONT_CAPTION, TDUI.MUTED))
 		if str(row.feedback) != "":
-			body.add_child(TDUI.label(str(row.feedback), 15, TDUI.MUTED))
+			body.add_child(TDUI.label(str(row.feedback), TDUI.FONT_CAPTION, TDUI.MUTED))
 		if str(row.status) == "SERVED":
 			var order_id := str(row.id)
 			body.add_child(TDUI.button("退还此单款项", func() -> void: _show(shop.refund(order_id)); refresh(true)))
@@ -325,35 +325,35 @@ func _summary_page(column: VBoxContainer, report: Dictionary) -> void:
 
 func _orders_panel(state: Dictionary) -> void:
 	_empty(_sidebar)
-	_sidebar.add_child(TDUI.label("等候订单 · %d / %d"%[shop.active_orders().size(),service.config.settings.max_orders],24,TDUI.ORANGE))
+	_sidebar.add_child(TDUI.label("等候订单 · %d / %d"%[shop.active_orders().size(),service.config.settings.max_orders],TDUI.FONT_SECTION,TDUI.ORANGE))
 	var clock_text: String="筹备中 · 尚未营业" if state.phase=="PREPARE" else ("今日已结算" if state.phase=="SETTLED" else ("停止接客 · 完成剩余订单" if state.phase=="DRAINING" else "营业中 · 主动打烊或02:00收摊" if shop.day_minute_reader.is_valid() else "营业剩余 %d 秒" % maxi(0,int(service.config.settings.day_sec)-int(state.elapsed_sec))))
-	_sidebar.add_child(TDUI.label(clock_text,17))
-	_sidebar.add_child(TDUI.label("同菜先到先服务；不同菜可乱序出餐。",14,TDUI.MUTED))
+	_sidebar.add_child(TDUI.label(clock_text,TDUI.FONT_BODY))
+	_sidebar.add_child(TDUI.label("同菜先到先服务；不同菜可乱序出餐。",TDUI.FONT_CAPTION,TDUI.MUTED))
 	if shop.crew != null and not shop.crew.duty_line().is_empty():
-		_sidebar.add_child(TDUI.label(shop.crew.duty_line(),15,TDUI.ORANGE))
-	if _new_needs_confirmation: _sidebar.add_child(TDUI.label("新店尚未覆盖旧档；首次保存前会确认。",15,TDUI.ORANGE))
+		_sidebar.add_child(TDUI.label(shop.crew.duty_line(),TDUI.FONT_CAPTION,TDUI.ORANGE))
+	if _new_needs_confirmation: _sidebar.add_child(TDUI.label("新店尚未覆盖旧档；首次保存前会确认。",TDUI.FONT_CAPTION,TDUI.ORANGE))
 	for item: Dictionary in state.orders:
 		if item.status not in ["WAITING","COOKING"]: continue
 		var panel:=PanelContainer.new(); _sidebar.add_child(panel)
 		var column:=VBoxContainer.new(); column.add_theme_constant_override("separation",5); panel.add_child(column)
-		column.add_child(TDUI.label(shop.order_label(str(item.id)),15,TDUI.MUTED))
-		column.add_child(TDUI.label("%s · ¥%.2f"%[shop.recipe_name(item.recipe_id),float(item.price_cents)/100],19,TDUI.ORANGE))
+		column.add_child(TDUI.label(shop.order_label(str(item.id)),TDUI.FONT_CAPTION,TDUI.MUTED))
+		column.add_child(TDUI.label("%s · ¥%.2f"%[shop.recipe_name(item.recipe_id),float(item.price_cents)/100],TDUI.FONT_BODY,TDUI.ORANGE))
 		var materials: Array[String]=[]
 		for ingredient: String in shop.offer(item.recipe_id).primary: materials.append(str(_ingredient(ingredient).name))
-		column.add_child(TDUI.label("材料："+" ＋ ".join(materials),16))
+		column.add_child(TDUI.label("材料："+" ＋ ".join(materials),TDUI.FONT_CAPTION))
 		var wishes: Array[String]=[]
 		for requirement: Dictionary in item.customer.requirements: wishes.append(str(requirement.label))
-		column.add_child(TDUI.label("要求："+" / ".join(wishes),14,TDUI.MUTED))
+		column.add_child(TDUI.label("要求："+" / ".join(wishes),TDUI.FONT_CAPTION,TDUI.MUTED))
 		var patience:=ProgressBar.new(); patience.max_value=float(item.deadline_sec)-float(item.get("ordered_sec",item.get("arrival_sec",float(item.deadline_sec)-float(service.config.settings.patience_sec)))); patience.value=maxf(0,float(item.deadline_sec)-float(state.elapsed_sec)); patience.show_percentage=false; patience.custom_minimum_size.y=13; column.add_child(patience)
-		column.add_child(TDUI.label("耐心 %d 秒 · %s" % [ceili(patience.value),_status_name(item.status)],15))
+		column.add_child(TDUI.label("耐心 %d 秒 · %s" % [ceili(patience.value),_status_name(item.status)],TDUI.FONT_CAPTION))
 	var done: Array=state.orders.filter(func(o:Dictionary)->bool:return o.status not in ["ARRIVING","WAITING","COOKING"])
 	if not done.is_empty():
 		var last: Dictionary=done.back()
-		_sidebar.add_child(TDUI.label("最近一单 · "+_status_name(last.status),18,TDUI.ORANGE))
-		if last.has("feedback"): _sidebar.add_child(TDUI.label(str(last.feedback)+(" 评价已记入账本。" if shop.commerce!=null else " 人气小幅下降。"),15,TDUI.MUTED))
+		_sidebar.add_child(TDUI.label("最近一单 · "+_status_name(last.status),TDUI.FONT_BODY,TDUI.ORANGE))
+		if last.has("feedback"): _sidebar.add_child(TDUI.label(str(last.feedback)+(" 评价已记入账本。" if shop.commerce!=null else " 人气小幅下降。"),TDUI.FONT_CAPTION,TDUI.MUTED))
 		if not last.score.is_empty():
-			_sidebar.add_child(TDUI.label("%.1f 分  ·  小费 ¥%.2f" % [last.score.satisfaction,float(last.tip_cents)/100],17))
-			for reason: Dictionary in last.score.reasons.slice(0,3): _sidebar.add_child(TDUI.label(_feedback_text(str(reason.message)),14,TDUI.MUTED))
+			_sidebar.add_child(TDUI.label("%.1f 分  ·  小费 ¥%.2f" % [last.score.satisfaction,float(last.tip_cents)/100],TDUI.FONT_BODY))
+			for reason: Dictionary in last.score.reasons.slice(0,3): _sidebar.add_child(TDUI.label(_feedback_text(str(reason.message)),TDUI.FONT_CAPTION,TDUI.MUTED))
 
 func _feedback_text(value: String) -> String:
 	var terms: Dictionary={"M1操作品质":"备菜节奏","M2操作品质":"点火时机","M3操作品质":"翻炒与拌料","M4操作品质":"炒制火候","M5操作品质":"炖煮火候","M6操作品质":"调味节奏","M7操作品质":"出锅时机","stale_oil":"油耗味","burnt":"焦糊味"}
@@ -455,7 +455,7 @@ func _station_action(id: String, action: String) -> void:
 	lane.document_rules=true; lane.dual=true
 	if shop.mastery(lane.base_recipe_id).automatic_available:
 		var column:=_dialog(shop.recipe_name(lane.base_recipe_id)+" · 已熟练")
-		column.add_child(TDUI.label("自动制作占用这口锅，按固定程序消耗食材、调味料和时间；完成后按 E 端盘。",18))
+		column.add_child(TDUI.label("自动制作占用这口锅，按固定程序消耗食材、调味料和时间；完成后按 E 端盘。",TDUI.FONT_BODY))
 		column.add_child(TDUI.button("自动制作",func()->void:_close_popup();_station_done(start_automatic(lane.lane_index))))
 		column.add_child(TDUI.button("亲手制作",func()->void:_close_popup();_begin_manual(lane,id)))
 		column.add_child(TDUI.button("返回厨房",_close_popup));return
@@ -487,7 +487,7 @@ func _recognize(lane: TDCookingLane, method: String, complete: bool) -> TDOutcom
 
 func _show_cut_choices() -> void:
 	var column:=_dialog("选择切型 · 然后按谱切菜")
-	column.add_child(TDUI.label("切型由你选择；顾客的要求显示在订单上，做错切型仍可以继续做菜。",18))
+	column.add_child(TDUI.label("切型由你选择；顾客的要求显示在订单上，做错切型仍可以继续做菜。",TDUI.FONT_BODY))
 	var row:=HBoxContainer.new(); row.add_theme_constant_override("separation",18); column.add_child(row)
 	for shape: String in service.config.preparation_choices:
 		var button:=TDUI.button({"chunk":"大块","dice":"小丁","slice":"薄片","strip":"长条"}[shape],func()->void:choose_cut(shape))
@@ -556,16 +556,17 @@ func _show_pantry() -> void:
 	var supply:=shop.replenish_practice_materials()
 	if not supply.ok: _show(supply)
 	var column:=_dialog("大冰箱 · 每次携带一份食材")
-	column.add_child(TDUI.label("先用快到期的原料；取出再放回不会刷新保质期。调味时直接使用剩余瓶/袋。",16,TDUI.MUTED))
+	column.add_child(TDUI.label("先用快到期的原料；取出再放回不会刷新保质期。调味时直接使用剩余瓶/袋。",TDUI.FONT_CAPTION,TDUI.MUTED))
 	if shop.practice_supply_policy.is_valid() and not shop.practice_supply_policy.call().is_empty():
-		column.add_child(TDUI.label("教程补给 ∞：番茄、鸡蛋用完可再领；试做交付后停止补给。",18,TDUI.ORANGE))
-		column.add_child(TDUI.label("番茄在「蔬菜」页，鸡蛋在「肉类」页。已有切配食材请直接取用。",17,TDUI.ORANGE))
+		column.add_child(TDUI.label("教程补给 ∞：番茄、鸡蛋用完可再领；试做交付后停止补给。",TDUI.FONT_BODY,TDUI.ORANGE))
+		column.add_child(TDUI.label("番茄在「蔬菜」页，鸡蛋在「肉类」页。已有切配食材请直接取用。",TDUI.FONT_BODY,TDUI.ORANGE))
 	var tabs:=TabContainer.new();tabs.custom_minimum_size=Vector2(730,340);column.add_child(tabs)
 	for group: String in ["vegetable","meat","seasoning","fruit"]:
 		var scroll:=ScrollContainer.new();scroll.name={"vegetable":"蔬菜","meat":"肉类","seasoning":"调料","fruit":"水果"}[group];tabs.add_child(scroll)
 		var grid:=GridContainer.new();grid.columns=2;grid.add_theme_constant_override("h_separation",12);grid.add_theme_constant_override("v_separation",10);scroll.add_child(grid)
 		var entries:=pantry_entries(group)
-		if entries.is_empty(): grid.add_child(TDUI.label("这一类暂时没有库存。",18,TDUI.MUTED))
+		if entries.is_empty():
+			var empty:=TDUI.label("这一类暂时没有库存。",TDUI.FONT_BODY,TDUI.MUTED);empty.custom_minimum_size.x=600;grid.add_child(empty)
 		for entry: Dictionary in entries:
 			var row:=HBoxContainer.new();grid.add_child(row);row.add_child(TDIngredientIcon.make(entry.ingredient_id,40))
 			var text: String="%s%s\n余 %.2f%s · 剩%d天"%[_ingredient(entry.ingredient_id).name,entry.label,float(entry.units)/1000,entry.unit,entry.remaining_days]
@@ -748,11 +749,11 @@ func _dialog(title: String) -> VBoxContainer:
 	_close_popup()
 	_scrim=ColorRect.new(); _scrim.color=Color(0,0,0,.65); _scrim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); _scrim.z_index=29; add_child(_scrim)
 	_popup=PanelContainer.new(); _popup.position=Vector2(210,185); _popup.size=Vector2(790,475); _popup.z_index=30
-	var style:=StyleBoxFlat.new(); style.bg_color=Color("213d34"); style.border_color=TDUI.ORANGE; style.set_border_width_all(2); style.set_corner_radius_all(12); _popup.add_theme_stylebox_override("panel",style); add_child(_popup)
+	var style:=TDUI.wood(); _popup.add_theme_stylebox_override("panel",style); add_child(_popup)
 	kitchen.world.set_controls_enabled(false); kitchen.set_process_input(false)
 	var margin:=MarginContainer.new(); for side: String in ["left","right","top","bottom"]: margin.add_theme_constant_override("margin_"+side,20)
 	_popup.add_child(margin)
-	var column:=VBoxContainer.new(); column.add_theme_constant_override("separation",12); margin.add_child(column); column.add_child(TDUI.label(title,25,TDUI.ORANGE)); return column
+	var column:=VBoxContainer.new(); column.add_theme_constant_override("separation",12); margin.add_child(column); column.add_child(TDUI.label(title,TDUI.FONT_TITLE,TDUI.ORANGE)); return column
 
 func _close_popup() -> void:
 	if is_instance_valid(_popup): remove_child(_popup); _popup.queue_free()
@@ -776,7 +777,7 @@ func _show_ledger() -> void:
 
 func _show_recovery() -> void:
 	var result:=store.load_game(); var column:=_dialog("存档未能读取 · "+result.code)
-	column.add_child(TDUI.label("原文件保持不变。可以明确选择有效备份恢复；未知版本请保留文件，不能降级覆盖。",18))
+	column.add_child(TDUI.label("原文件保持不变。可以明确选择有效备份恢复；未知版本请保留文件，不能降级覆盖。",TDUI.FONT_BODY))
 	for temporary: bool in [false,true]:
 		var button:=TDUI.button("恢复已校验临时文件" if temporary else "恢复上一份有效备份",func()->void:
 			var recovered:=store.recover(temporary)

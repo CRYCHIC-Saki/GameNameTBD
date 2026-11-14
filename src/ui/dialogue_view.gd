@@ -1,6 +1,6 @@
 class_name TDDialogueView
 extends Control
-const CHEF_STAND_IN := preload("res://assets/kitchen/chef-v1.png")
+const CHEF_STAND_IN := preload("res://assets/redraw-v1/chef.png")
 ## Portrait, dimmed room, and a bottom dialogue box.
 ## Left click advances. Holding the left button fast-forwards. Skip jumps ahead.
 
@@ -12,7 +12,7 @@ class Portrait extends Control:
 	var action: String = ""
 
 	func _draw() -> void:
-		texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST
+		texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
 		TDDialogueView.paint_bust(self, who, Rect2(Vector2.ZERO, size),emotion,action)
 
 var talk: TDDialogue
@@ -30,6 +30,7 @@ var _skip: Button
 var _choices: VBoxContainer
 var _choice_sig: String = ""
 var _dim: ColorRect
+var _vn_background: TextureRect
 var _cg: TDCutsceneView
 var _film_controls: HBoxContainer
 var _film_pause: Button
@@ -52,6 +53,13 @@ func _ready() -> void:
 	theme = TDUI.theme()
 	visible = false
 	set_process(false)
+	_vn_background=TextureRect.new();_vn_background.name="VNBackground"
+	_vn_background.texture=TDStoryArt.background(0)
+	_vn_background.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+	_vn_background.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_vn_background.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	_vn_background.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(_vn_background);_vn_background.hide()
 	_dim = ColorRect.new()
 	_dim.name = "Dim"
 	_dim.color = Color(0, 0, 0, 0.58)
@@ -61,7 +69,7 @@ func _ready() -> void:
 	_cg=TDCutsceneView.new();_cg.position=Vector2.ZERO;_cg.size=Vector2(1280,550);add_child(_cg);_cg.hide()
 	_portrait = Portrait.new()
 	_portrait.name = "Portrait"
-	_portrait.z_index = 1
+	_portrait.z_index = 0
 	_portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_portrait.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
 	_portrait.offset_left = 32.0
@@ -76,23 +84,20 @@ func _ready() -> void:
 	var panel := Panel.new()
 	_panel=panel
 	panel.name = "Box"
+	panel.z_index=2
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
 	panel.offset_left = 28.0
 	panel.offset_right = -28.0
 	panel.offset_top = -248.0
 	panel.offset_bottom = -18.0
-	var plate := StyleBoxFlat.new()
-	plate.bg_color = Color(0.08, 0.07, 0.06, 0.94)
-	plate.border_color = Color("#ecb36e")
-	plate.set_border_width_all(2)
-	plate.set_corner_radius_all(12)
+	var plate:=TDUI.parchment(0)
 	panel.add_theme_stylebox_override("panel", plate)
 	add_child(panel)
 	_name = Label.new()
 	_name.name = "Speaker"
 	_name.position = Vector2(300, 16)
-	_name.add_theme_font_size_override("font_size", 26)
+	_name.add_theme_font_size_override("font_size", TDUI.FONT_TITLE)
 	_name.add_theme_color_override("font_color", TDUI.ORANGE)
 	panel.add_child(_name)
 	_skip = Button.new()
@@ -111,7 +116,7 @@ func _ready() -> void:
 	_body.position = Vector2(300, 58)
 	_body.size = Vector2(760, 78)
 	_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_body.add_theme_font_size_override("font_size", 22)
+	_body.add_theme_font_size_override("font_size", TDUI.FONT_SECTION)
 	_body.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_child(_body)
 	_choices = VBoxContainer.new()
@@ -124,7 +129,7 @@ func _ready() -> void:
 	_hint = Label.new()
 	_hint.name = "Hint"
 	_hint.position = Vector2(300, 206)
-	_hint.add_theme_font_size_override("font_size", 14)
+	_hint.add_theme_font_size_override("font_size", TDUI.FONT_CAPTION)
 	_hint.add_theme_color_override("font_color", TDUI.MUTED)
 	_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_child(_hint)
@@ -255,6 +260,8 @@ func _refresh() -> void:
 		_cg.show_shot(_arrival_hold,TDArrivalCutscene.SPANS[_arrival_hold],TDArrivalCutscene.SPANS[_arrival_hold],true)
 		_cg.stop_audio()
 	else: _cg.show_shot(talk.cg_id if film else "",talk.cg_elapsed,talk.cg_duration)
+	_vn_background.visible=intro and not film
+	if intro and not film: _cg.hide()
 	_panel.visible=not film;_dim.visible=not film and not intro;_film_controls.visible=film or intro
 	_film_pause.text="继续播放" if presentation_paused or talk.cg_paused else "暂停"
 	_skip_clip.disabled=not film or presentation_paused
@@ -262,9 +269,10 @@ func _refresh() -> void:
 
 	_portrait.visible=talk.display_kind=="line"
 	_right_portrait.visible=talk.presentation=="story" and talk.display_kind=="line"
-	# During this introduction the actors remain in the scene; Aling's offscreen
-	# call must not reveal her before her entrance. Later Gal portraits are unchanged.
-	if intro: _portrait.hide();_right_portrait.hide()
+	# Keep the offscreen call offscreen; reveal Aling only after her entrance clip.
+	if intro:
+		_portrait.visible=not film
+		_right_portrait.visible=not film and talk.display_kind=="line" and _arrival_hold=="messenger"
 	_portrait.emotion=talk.left_emotion if talk.presentation=="story" else talk.emotion
 	_right_portrait.emotion=talk.right_emotion
 	_portrait.action=talk.action if talk.active_side=="left" else ""
@@ -282,6 +290,7 @@ func _refresh() -> void:
 	elif _portrait != null and talk.portrait_id == "":
 		_portrait.who = "guest"
 		_portrait.queue_redraw()
+	_portrait.queue_redraw()
 	var signature := ""
 	for option: Variant in talk.options():
 		signature += String((option as Dictionary).get("id", "")) + "|"
@@ -290,12 +299,24 @@ func _refresh() -> void:
 		_rebuild_choices()
 	_choices.visible = talk.choices_open
 	_body.visible = true
-	var left:=36.0 if talk.presentation=="story" else 300.0
+	var left:=36.0
 	_body.position = Vector2(left, 54)
 	var plate := _body.get_parent() as Control
 	var plate_width := plate.size.x if plate != null else 1100.0
 	_body.size = Vector2(maxf(280.0, plate_width-left-40.0), 46.0 if talk.choices_open else 120.0)
 	_choices.position = Vector2(left, 104)
+	_panel.offset_top = -248.0
+	_hint.position.y = 206.0
+	if talk.choices_open:
+		var width := maxf(280.0, plate_width-left-40.0)
+		var text_height := TDUI.font().get_multiline_string_size(_body.text,HORIZONTAL_ALIGNMENT_LEFT,width,TDUI.FONT_SECTION).y
+		_body.size = Vector2(width,maxf(46.0,text_height))
+		_choices.position.y = _body.position.y+_body.size.y+12.0
+		var replies_height := talk.options().size()*48.0+maxi(0,talk.options().size()-1)*8.0
+		_choices.size = Vector2(width,replies_height)
+		var plate_height := _choices.position.y+replies_height+54.0
+		_panel.offset_top = -plate_height-18.0
+		_hint.position.y = plate_height-30.0
 	if talk.choices_open:
 		_hint.text = "请点选一句回复。跳过要等选完。"
 		_skip.text = "跳过"
@@ -354,7 +375,7 @@ func _rebuild_choices() -> void:
 		button.text = String(item.get("label", id))
 		button.focus_mode = Control.FOCUS_NONE
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		button.custom_minimum_size = Vector2(640, 42)
+		button.custom_minimum_size = Vector2(640, 48)
 		button.pressed.connect(_choose.bind(id))
 		_choices.add_child(button)
 
@@ -369,24 +390,20 @@ func _apply_layout() -> void:
 	var story_mode:=talk.presentation=="story"
 	_right_portrait.visible=story_mode
 	_portrait.modulate=Color.WHITE
-	_portrait.z_index=0 if story_mode else 1
+	_portrait.z_index=0;_right_portrait.z_index=0
 	_portrait.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-	_portrait.offset_left=75.0 if story_mode else 32.0
-	_portrait.offset_right=555.0 if story_mode else 308.0
-	_portrait.offset_top=-760.0 if story_mode else -620.0
-	_portrait.offset_bottom=-248.0 if story_mode else -36.0
+	_portrait.offset_left=-32.0;_portrait.offset_right=728.0
+	_portrait.offset_top=-760.0;_portrait.offset_bottom=0.0
 	_right_portrait.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-	_right_portrait.offset_left=-555.0;_right_portrait.offset_right=-75.0
-	_right_portrait.offset_top=-760.0;_right_portrait.offset_bottom=-248.0
-	_name.position.x=36.0 if story_mode else 300.0
+	_right_portrait.offset_left=-728.0;_right_portrait.offset_right=32.0
+	_right_portrait.offset_top=-760.0;_right_portrait.offset_bottom=0.0
+	_name.position.x=36.0
 	_hint.position.x=_name.position.x
-	_choices.size.x=1080.0 if story_mode else 760.0
+	_choices.size.x=1080.0
 
 static func paint_bust(canvas: CanvasItem, who: String, box: Rect2, emotion: String="", action: String="") -> void:
 	if box.size.x < 8.0 or box.size.y < 8.0:
 		return
-	if who=="luo":
-		var frame:=TDStoryArt.prop(5);canvas.draw_texture_rect(frame,TDStoryArt.fit(frame,box),false);return
 	var art:=TDStoryArt.portrait(who,emotion,action)
 	if art!=null:
 		canvas.draw_texture_rect(art,TDStoryArt.fit(art,box),false)

@@ -44,7 +44,7 @@ var station_names: Dictionary={}
 var single_fridge: bool = false
 var pot_contents: Array=[]
 var crew: TDRestaurantCrew
-const CHEF_SPRITE := preload("res://assets/kitchen/chef-v1.png")
+const CHEF_SPRITE := preload("res://assets/redraw-v1/chef.png")
 const COOK_POSTS: Array[Vector2] = [Vector2(640, 400), Vector2(850, 400)]
 const COOK_WALK_SPEED := 140.0
 const COOK_LEG_SEC := 1.2
@@ -68,16 +68,16 @@ func stations() -> Array[Dictionary]:
 
 
 func _ready() -> void:
-	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	_player = $Player as TDKitchenPlayer
 	$Background.z_index = -10
 	$Background.scale=Vector2(1280.0/$Background.texture.get_width(),800.0/$Background.texture.get_height())
 	_player.z_index = 1
 	_make_hud()
 	_hud.z_index=2
-	_near_prompt=TDUI.label("[ E ]",20,TDUI.ORANGE); _near_prompt.size=Vector2(72,30); _near_prompt.autowrap_mode=TextServer.AUTOWRAP_OFF; _near_prompt.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER; _hud.add_child(_near_prompt)
+	_near_prompt=TDUI.label("[ E ]",TDUI.FONT_BODY,TDUI.ORANGE); _near_prompt.size=Vector2(72,30); _near_prompt.autowrap_mode=TextServer.AUTOWRAP_OFF; _near_prompt.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER; _hud.add_child(_near_prompt)
 	for station: Dictionary in stations():
-		var label := TDUI.label(str(station_names.get(station.id,station.name)), 16, TDUI.ORANGE)
+		var label := TDUI.label(str(station_names.get(station.id,station.name)), TDUI.FONT_CAPTION, TDUI.ORANGE)
 		label.position = (station.get("visual",station.position+Vector2(0,-120)) as Vector2) + Vector2(-60,8)
 		label.size = Vector2(120,28); label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		_hud.add_child(label)
@@ -198,15 +198,15 @@ func _make_hud() -> void:
 	_hud.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_hud.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(_hud)
-	var heading := TDUI.label("小镇食堂  /  厨房", 24)
+	var heading := TDUI.label("小镇食堂  /  厨房", TDUI.FONT_SECTION)
 	heading.position = Vector2(28.0, 16.0)
 	heading.size = Vector2(350.0, 36.0)
 	heading.add_theme_color_override("font_shadow_color", Color("#172724"))
 	heading.add_theme_constant_override("shadow_offset_x", 2)
 	heading.add_theme_constant_override("shadow_offset_y", 2)
 	_hud.add_child(heading)
-	_held_label = TDUI.label("手上：空", 18, TDUI.ORANGE); _held_label.position = Vector2(28,60); _held_label.size = Vector2(900,30); _hud.add_child(_held_label)
-	_simmer_label = TDUI.label("",16); _simmer_label.position = Vector2(28,588); _simmer_label.size = Vector2(540,44); _hud.add_child(_simmer_label)
+	_held_label = TDUI.label("手上：空", TDUI.FONT_BODY, TDUI.ORANGE); _held_label.position = Vector2(28,60); _held_label.size = Vector2(900,30); _hud.add_child(_held_label)
+	_simmer_label = TDUI.label("",TDUI.FONT_CAPTION); _simmer_label.position = Vector2(28,588); _simmer_label.size = Vector2(540,44); _hud.add_child(_simmer_label)
 	_back_button = TDUI.button("返回主界面", _back)
 	_back_button.position = Vector2(1070.0, 14.0)
 	_back_button.size = Vector2(182.0, 50.0)
@@ -221,12 +221,12 @@ func _make_hud() -> void:
 	style.set_border_width_all(2)
 	bar.add_theme_stylebox_override("panel", style)
 	_hud.add_child(bar)
-	_prompt = TDUI.label("", 20)
+	_prompt = TDUI.label("", TDUI.FONT_BODY)
 	_prompt.position = Vector2(18.0, 11.0)
 	_prompt.size = Vector2(816.0, 30.0)
 	_prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	bar.add_child(_prompt)
-	var note := TDUI.label("像素场景原型 · 美术与动作可继续迭代", 14)
+	var note := TDUI.label("像素场景原型 · 美术与动作可继续迭代", TDUI.FONT_CAPTION)
 	note.position = Vector2(28.0, 776.0)
 	note.size = Vector2(420.0, 23.0)
 	_hud.add_child(note)
@@ -337,7 +337,7 @@ func _sync_staff() -> void:
 		caption.position = Vector2(-60, -102)
 		caption.size = Vector2(120, 24)
 		caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		caption.add_theme_font_size_override("font_size", 14)
+		caption.add_theme_font_size_override("font_size", TDUI.FONT_CAPTION)
 		root.add_child(caption)
 		root.name = "Cook%d" % _staff_nodes.size()
 		add_child(root)
@@ -417,7 +417,7 @@ func _draw_service_door() -> void:
 	draw_circle(Vector2(seam - 14.0, frame.position.y + frame.size.y * 0.55), 3.0, Color("e2ba69"))
 	draw_circle(Vector2(seam + 14.0, frame.position.y + frame.size.y * 0.55), 3.0, Color("e2ba69"))
 	if _hud != null:
-		draw_string(_hud.get_theme_default_font(), frame.position + Vector2(frame.size.x * 0.5 - 20.0, -8.0), "餐厅", HORIZONTAL_ALIGNMENT_LEFT, 80, 16, TDUI.ORANGE)
+		draw_string(_hud.get_theme_default_font(), frame.position + Vector2(frame.size.x * 0.5 - 20.0, -8.0), "餐厅", HORIZONTAL_ALIGNMENT_LEFT, 80, TDUI.FONT_CAPTION, TDUI.ORANGE)
 
 func _draw() -> void:
 	if service_door:
@@ -427,14 +427,14 @@ func _draw() -> void:
 			var box:=Rect2(530+i*220,350,210,62)
 			draw_rect(box,Color("172b24")); draw_rect(box,Color("c5a46c"),false,2)
 			draw_colored_polygon(PackedVector2Array([box.position+Vector2(124,0),box.position+Vector2(144,-18),box.position+Vector2(153,0)]),Color("172b24"))
-			draw_string(_hud.get_theme_default_font(),box.position+Vector2(10,23),str(pot_contents[i].title),HORIZONTAL_ALIGNMENT_LEFT,232,17,TDUI.ORANGE)
-			draw_string(_hud.get_theme_default_font(),box.position+Vector2(10,46),str(pot_contents[i].materials),HORIZONTAL_ALIGNMENT_LEFT,232,16,TDUI.INK)
+			draw_string(_hud.get_theme_default_font(),box.position+Vector2(10,23),str(pot_contents[i].title),HORIZONTAL_ALIGNMENT_LEFT,232,TDUI.FONT_BODY,TDUI.ORANGE)
+			draw_string(_hud.get_theme_default_font(),box.position+Vector2(10,46),str(pot_contents[i].materials),HORIZONTAL_ALIGNMENT_LEFT,232,TDUI.FONT_CAPTION,TDUI.INK)
 	if _simmer_label!=null: _simmer_label.visible=simmer_meters.is_empty()
 	for i: int in simmer_meters.size():
 		var r:=Rect2(24,654-i*78,342,22)
 		draw_rect(Rect2(r.position-Vector2(4,33),Vector2(350,59)),Color("1d3028"))
 		draw_rect(r,Color("263c32")); draw_rect(Rect2(r.position+Vector2(3,3),Vector2(269*float(simmer_meters[i].ratio),16)),Color("92ae76"))
-		if _hud!=null: draw_string(_hud.get_theme_default_font(),r.position+Vector2(5,-10),"%s  ·  稳定 %d%%  ·  %.1fs"%[simmer_meters[i].name,roundi(float(simmer_meters[i].ratio)*100),float(simmer_meters[i].remaining_sec)],HORIZONTAL_ALIGNMENT_LEFT,-1,16,TDUI.INK)
+		if _hud!=null: draw_string(_hud.get_theme_default_font(),r.position+Vector2(5,-10),"%s  ·  稳定 %d%%  ·  %.1fs"%[simmer_meters[i].name,roundi(float(simmer_meters[i].ratio)*100),float(simmer_meters[i].remaining_sec)],HORIZONTAL_ALIGNMENT_LEFT,-1,TDUI.FONT_CAPTION,TDUI.INK)
 	for station: Dictionary in stations():
 		var feet: Vector2=station.get("visual",station.position-Vector2(0,70))
 		var index: int={"fridge":4,"board":5,"steamer":7,"serve":8,"trash":9,"supply":14}.get(str(station.get("kind","")),6)

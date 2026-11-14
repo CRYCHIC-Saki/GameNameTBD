@@ -1,10 +1,10 @@
 class_name TDDinerArt
 extends RefCounted
 ## Two diner identities, three clothing palettes; presentation never draws economic RNG.
-const ATLAS: Texture2D=preload("res://assets/characters/diners/diners-four-directions-v1.png")
-const SEATED: Texture2D=preload("res://assets/characters/diners/diners-seated-v1.png")
-const ISO_SEATED: Texture2D=preload("res://assets/characters/diners/diners-isometric-seated-v2.png")
-const OCCUPIED: Texture2D=preload("res://assets/characters/diners/diners-occupied-seat-v4.png")
+const ATLAS: Texture2D=preload("res://assets/redraw-v1/diner-walk.png")
+const SEATED: Texture2D=preload("res://assets/redraw-v1/diner-seated.png")
+const ISO_SEATED: Texture2D=preload("res://assets/redraw-v1/diner-iso.png")
+const OCCUPIED: Texture2D=preload("res://assets/redraw-v1/occupied.png")
 const VARIANTS: int=6
 const CLOTH_HUES: Array[float]=[0.48,0.08,0.96]
 static var _sprites: Dictionary={}
@@ -22,11 +22,9 @@ static func occupied_sprite(variant: int, character_id: String="") -> Texture2D:
 	if _occupied_source==null:
 		_occupied_source=OCCUPIED.get_image()
 		if _occupied_source.is_compressed(): _occupied_source.decompress()
-	# Explicit row split: the generated atlas is not an even square grid.
-	var top: int=0 if index<2 else 600
 	var width: int=_occupied_source.get_width()/2
-	var height: int=600 if index<2 else _occupied_source.get_height()-600
-	var pose:=_occupied_source.get_region(Rect2i(index%2*width,top,width,height))
+	var height: int=_occupied_source.get_height()/2
+	var pose:=_occupied_source.get_region(Rect2i(index%2*width,index/2*height,width,height))
 	pose=pose.get_region(TDStoryArt._walk_bounds(pose))
 	if character_id=="":
 		for y: int in pose.get_height():

@@ -260,14 +260,14 @@ func _build_ui() -> void:
 	var root_column := TDUI.column(margin, 10)
 	var header := HBoxContainer.new()
 	root_column.add_child(header)
-	var title := TDUI.label("番茄炒蛋 / 试作厨房", 29)
+	var title := TDUI.label("番茄炒蛋 / 试作厨房", TDUI.FONT_DISPLAY)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
 	header.add_child(TDUI.button("返回", func() -> void: back_requested.emit()))
 	_pause_button = TDUI.button("暂停 Esc", func() -> void: pause_requested.emit())
 	header.add_child(_pause_button)
 	header.add_child(TDUI.button("重试 R", func() -> void: restart_requested.emit()))
-	root_column.add_child(TDUI.label("PHASE 1 · 图形/音效均为占位 · 自由工序 · 建议数值 · 无经济惩罚", 15, TDUI.ORANGE))
+	root_column.add_child(TDUI.label("PHASE 1 · 图形/音效均为占位 · 自由工序 · 建议数值 · 无经济惩罚", TDUI.FONT_CAPTION, TDUI.ORANGE))
 	var columns := HBoxContainer.new()
 	columns.add_theme_constant_override("separation", 18)
 	columns.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -276,14 +276,14 @@ func _build_ui() -> void:
 	left.custom_minimum_size.x = 245
 	left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	left.size_flags_stretch_ratio = 0.8
-	left.add_child(TDUI.label("01  接单与备料", 21, TDUI.ORANGE))
+	left.add_child(TDUI.label("01  接单与备料", TDUI.FONT_SECTION, TDUI.ORANGE))
 	_customer_choice = OptionButton.new()
 	for customer: Dictionary in config["customers"]:
 		_customer_choice.add_item(str(customer["name"]))
 	_customer_choice.select(customer_index)
 	_customer_choice.item_selected.connect(func(index: int) -> void: customer_index = index; _render())
 	left.add_child(_customer_choice)
-	_order = TDUI.label("", 17)
+	_order = TDUI.label("", TDUI.FONT_BODY)
 	left.add_child(_order)
 	_accept_button = TDUI.button("接下这单", accept_order)
 	left.add_child(_accept_button)
@@ -300,12 +300,12 @@ func _build_ui() -> void:
 	left.add_child(seasoning)
 	_add_action(seasoning, "加糖 +1", "season", {"ingredient_id": "sugar", "amount": 1})
 	_add_action(seasoning, "加盐 +1", "season", {"ingredient_id": "salt", "amount": 1})
-	left.add_child(TDUI.label("必需：番茄、鸡蛋、切番茄、加热。漏项也能交付，反馈会指出原因。", 15, TDUI.MUTED))
+	left.add_child(TDUI.label("必需：番茄、鸡蛋、切番茄、加热。漏项也能交付，反馈会指出原因。", TDUI.FONT_CAPTION, TDUI.MUTED))
 	var center := TDUI.column(columns, 8)
 	center.custom_minimum_size.x = 410
 	center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	center.size_flags_stretch_ratio = 1.25
-	center.add_child(TDUI.label("02  操作与属性", 21, TDUI.ORANGE))
+	center.add_child(TDUI.label("02  操作与属性", TDUI.FONT_SECTION, TDUI.ORANGE))
 	_board = TDCookingBoard.new()
 	center.add_child(_board)
 	_progress = ProgressBar.new()
@@ -320,7 +320,7 @@ func _build_ui() -> void:
 	center.add_child(heat_row)
 	_add_action(heat_row, "加热 · 控火", "heat")
 	_add_action(heat_row, "出锅并交付", "plate")
-	center.add_child(TDUI.label("火力 0–100%% · 稳定区 %.0f–%.0f%%" % [float(config["qte"]["heat"]["target_power_min"]) * 100.0, float(config["qte"]["heat"]["target_power_max"]) * 100.0], 16))
+	center.add_child(TDUI.label("火力 0–100%% · 稳定区 %.0f–%.0f%%" % [float(config["qte"]["heat"]["target_power_min"]) * 100.0, float(config["qte"]["heat"]["target_power_max"]) * 100.0], TDUI.FONT_CAPTION))
 	_power = HSlider.new()
 	_power.min_value = 0.0
 	_power.max_value = 1.0
@@ -334,7 +334,7 @@ func _build_ui() -> void:
 	_attributes = _text_box(center, 115)
 	var calibration := HBoxContainer.new()
 	left.add_child(calibration)
-	var calibration_label := TDUI.label("输入补偿 ms", 15)
+	var calibration_label := TDUI.label("输入补偿 ms", TDUI.FONT_CAPTION)
 	calibration_label.custom_minimum_size.x = 110
 	calibration.add_child(calibration_label)
 	_offset = SpinBox.new()
@@ -345,16 +345,16 @@ func _build_ui() -> void:
 	_offset.value = input_offset_sec * 1000.0
 	_offset.value_changed.connect(func(value: float) -> void: input_offset_sec = value / 1000.0)
 	calibration.add_child(_offset)
-	left.add_child(TDUI.label("若总是慢于听到的拍点，可调正值。设备同步待试玩校准。", 13, TDUI.MUTED))
+	left.add_child(TDUI.label("若总是慢于听到的拍点，可调正值。设备同步待试玩校准。", TDUI.FONT_CAPTION, TDUI.MUTED))
 	var right := TDUI.column(columns, 10)
 	right.custom_minimum_size.x = 285
 	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	right.size_flags_stretch_ratio = 1.0
-	right.add_child(TDUI.label("03  工序变化与反馈", 21, TDUI.ORANGE))
+	right.add_child(TDUI.label("03  工序变化与反馈", TDUI.FONT_SECTION, TDUI.ORANGE))
 	_history = _text_box(right, 240)
 	_feedback_label = _text_box(right, 250)
 	_feedback_label.text = "交付后显示评分与主要原因。\n\n选择不同客人，比较同一做法是否合适。\n\n未声明的要求不会额外扣需求分。"
-	_status = TDUI.label("先选客人并接单，再决定做法。", 17, TDUI.ORANGE)
+	_status = TDUI.label("先选客人并接单，再决定做法。", TDUI.FONT_BODY, TDUI.ORANGE)
 	_status.custom_minimum_size.y = 46
 	root_column.add_child(_status)
 
@@ -368,7 +368,7 @@ func _text_box(parent: Node, height: float) -> RichTextLabel:
 	var label := RichTextLabel.new()
 	label.custom_minimum_size.y = height
 	label.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	label.add_theme_font_size_override("normal_font_size", 16)
+	label.add_theme_font_size_override("normal_font_size", TDUI.FONT_CAPTION)
 	parent.add_child(label)
 	return label
 

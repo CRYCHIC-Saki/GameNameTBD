@@ -1,9 +1,9 @@
 [gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://src/world/kitchen_world.gd" id="1_world"]
-[ext_resource type="Texture2D" path="res://assets/kitchen/kitchen-background-v2.png" id="2_background"]
+[ext_resource type="Texture2D" path="res://assets/redraw-v1/kitchen.png" id="2_background"]
 [ext_resource type="Script" path="res://src/world/kitchen_player.gd" id="3_player"]
-[ext_resource type="Texture2D" path="res://assets/kitchen/chef-v1.png" id="4_chef"]
+[ext_resource type="Texture2D" path="res://assets/redraw-v1/chef.png" id="4_chef"]
 
 [sub_resource type="RectangleShape2D" id="TopShape"]
 size = Vector2(1280, 280)
@@ -17,13 +17,13 @@ height = 28.0
 
 [node name="KitchenWorld" type="Node2D"]
 process_mode = 1
-texture_filter = 1
+texture_filter = 2
 script = ExtResource("1_world")
 
 [node name="Background" type="Sprite2D" parent="."]
 texture = ExtResource("2_background")
 centered = false
-scale = Vector2(0.8070618, 0.8064516)
+scale = Vector2(0.80757098, 0.80645161)
 
 [node name="CountersAndWalls" type="StaticBody2D" parent="."]
 collision_layer = 1

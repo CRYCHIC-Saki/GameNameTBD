@@ -103,7 +103,7 @@ func _polygon(points: Array, color: Color) -> void:
 	draw_colored_polygon(vertices,color)
 	vertices.append(vertices[0]);draw_polyline(vertices,Color("b8b48a"),2,true)
 
-func _text(at: Vector2, value: String, font_size: int=16, color: Color=Color("f5e4bb")) -> void:
+func _text(at: Vector2, value: String, font_size: int=TDUI.FONT_CAPTION, color: Color=Color("f5e4bb")) -> void:
 	var font:=get_theme_default_font()
 	draw_string_outline(font,at,value,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size,4,Color("233c3d"))
 	draw_string(font,at,value,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size,color)
@@ -127,14 +127,14 @@ func _draw() -> void:
 	if show_player:
 		var p:=world_to_screen(ORIGINS[town_id]+marker/73.0*TOWN_SIZE)
 		draw_circle(p,9,Color("263e40"));draw_circle(p,6,Color("fff3ad"));draw_arc(p,12,0,TAU,24,Color("ffe298"),1.5,true)
-		_text(p+Vector2(13,5),"你在这里",14)
+		_text(p+Vector2(13,5),"你在这里",TDUI.FONT_CAPTION)
 	draw_rect(Rect2(0,0,size.x,68),Color(.08,.16,.18,.88))
-	_text(Vector2(20,30),heading,24)
-	_text(Vector2(20,54),controls_hint,15)
-	_text(Vector2(size.x-124,30),"N  ↑",20)
-	_text(Vector2(size.x-124,53),"%d%%"%roundi(zoom*100),15)
+	_text(Vector2(20,30),heading,TDUI.FONT_SECTION)
+	_text(Vector2(20,54),controls_hint,TDUI.FONT_CAPTION)
+	_text(Vector2(size.x-124,30),"N  ↑",TDUI.FONT_BODY)
+	_text(Vector2(size.x-124,53),"%d%%"%roundi(zoom*100),TDUI.FONT_CAPTION)
 	draw_rect(Rect2(0,size.y-36,size.x,36),Color(.08,.16,.18,.88))
-	_text(Vector2(14,size.y-12),caption_text(),14)
+	_text(Vector2(14,size.y-12),caption_text(),TDUI.FONT_CAPTION)
 
 func caption_text() -> String:
 	return str(TDTravelCatalog.info(_hover if not _hover.is_empty() else town_id).caption)
@@ -163,8 +163,8 @@ func _draw_town(id: String, origin: Vector2) -> void:
 			var width:=30.0*scale_factor();var span:=Vector2(width,width*tex.get_height()/tex.get_width())
 			draw_texture_rect(tex,Rect2(rect.get_center()-span*.5,span),false)
 		if zoom>=1.8 and plot.kind in ["market","plaza","bank","player_diner","cottage"]:
-			_text(rect.position+Vector2(0,-4),TDTravelCatalog.label(plot,id),13)
+			_text(rect.position+Vector2(0,-4),TDTravelCatalog.label(plot,id),TDUI.FONT_CAPTION)
 	var port:=world_to_screen(_port_point(id));draw_circle(port,4,Color("81d6e6"))
-	if zoom>=1.8: _text(port+Vector2(7,-4),"港口" if id!="mexico_city" else "港站",13)
+	if zoom>=1.8: _text(port+Vector2(7,-4),"港口" if id!="mexico_city" else "港站",TDUI.FONT_CAPTION)
 	var label:=world_to_screen(origin+Vector2(0,-14))
 	_text(label,str(TDTravelCatalog.info(id).name),18 if id==town_id else 16,Color("ffdc8c") if id==town_id else Color("f5e4bb"))

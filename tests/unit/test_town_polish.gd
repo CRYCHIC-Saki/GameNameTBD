@@ -78,7 +78,16 @@ func test_diner_front_has_a_closed_wooden_door() -> void:
 	var image := tile.atlas.get_image()
 	if image.is_compressed():
 		image.decompress()
-	var door := image.get_pixel(int(tile.region.position.x + tile.region.size.x * 0.5), int(tile.region.position.y + tile.region.size.y * 0.78))
-	assert_gt(door.a, 0.9, "The doorway is solid")
-	assert_gt(door.r, door.b + 0.15, "The doorway is wood, not the open stall")
+	# A single pixel can hit a dark plank seam or metal handle in a new skin.
+	# Check the lower central door panel as a surface instead of one RGB value.
+	var panel:=Rect2i(tile.region.position+tile.region.size*Vector2(.45,.84),tile.region.size*Vector2(.10,.09))
+	var solid: int=0;var wood: int=0
+	for y: int in range(panel.position.y,panel.end.y):
+		for x: int in range(panel.position.x,panel.end.x):
+			var pixel:=image.get_pixel(x,y)
+			if pixel.a>.9: solid+=1
+			if pixel.a>.9 and pixel.r>pixel.b+.08 and pixel.r>pixel.g: wood+=1
+	var area: float=panel.size.x*panel.size.y
+	assert_gt(solid/area,.95,"The doorway is solid, not a transparent opening")
+	assert_gt(wood/area,.60,"Most of the door panel is warm wood")
 	assert_lt(image.get_pixel(2, 2).a, 0.05, "The sheet background stays transparent")

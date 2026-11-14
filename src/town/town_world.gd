@@ -109,7 +109,7 @@ func _ready() -> void:
 	_player.walk_cycle_distance=96.0
 	var sprite := Sprite2D.new()
 	sprite.name = "Sprite2D"
-	sprite.texture = preload("res://assets/kitchen/chef-v1.png") if player_mode else TDRestaurantArt.guest_texture()
+	sprite.texture = preload("res://assets/redraw-v1/chef.png") if player_mode else TDRestaurantArt.guest_texture()
 	if player_mode: sprite.scale=Vector2(.055,.055)
 	_player.add_child(sprite)
 	_player.body_lift = 24.0 if player_mode else 0.0
@@ -238,10 +238,10 @@ func _draw() -> void:
 			continue
 		if String(plot["kind"]) == "diner_lot":
 			draw_rect(rect, Color("#f4e27a"), false, 3.0)
-		var font := ThemeDB.fallback_font
+		var font := TDUI.font()
 		if font != null:
 			var at := rect.position + Vector2(6, maxf(18.0, rect.size.y * 0.55))
-			draw_string(font, at, "%s  %d×%d" % [String(plot["name"]), width, height], HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 8, 14, Color.WHITE)
+			draw_string(font, at, "%s  %d×%d" % [String(plot["name"]), width, height], HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 8, TDUI.FONT_CAPTION, Color.WHITE)
 	if session != null:
 		var shade := TDSanRules.vignette_alpha(float(session.san))
 		if shade > 0.01:
@@ -263,7 +263,7 @@ func _draw_economic_places() -> void:
 			draw_rect(Rect2(bank_at,Vector2(bank_size.x,14)),Color("514837"))
 			draw_rect(Rect2(bank_at+Vector2(bank_size.x*.5-9,bank_size.y-18),Vector2(18,16)),Color("483b2a"))
 			draw_rect(Rect2(bank_at+Vector2(0,16),Vector2(bank_size.x,20)),Color("483b2a"))
-			draw_string(ThemeDB.fallback_font,bank_at+Vector2(2,31),"钱庄",HORIZONTAL_ALIGNMENT_CENTER,bank_size.x-4,14,Color("f6d88a"))
+			draw_string(TDUI.font(),bank_at+Vector2(2,31),"钱庄",HORIZONTAL_ALIGNMENT_CENTER,bank_size.x-4,TDUI.FONT_CAPTION,Color("f6d88a"))
 		if not plot.has("economic_parcel_id"): continue
 		var rect:=Rect2(_origin()+Vector2(plot.x,plot.y)*CELL,Vector2(plot.w,plot.h)*CELL).grow(-3)
 		var constructing: bool=plot.get("construction",false)
@@ -276,7 +276,7 @@ func _draw_economic_places() -> void:
 			draw_rect(Rect2(rect.position+Vector2(rect.size.x*.5-9,rect.size.y-door_height-2),Vector2(18,door_height)),Color("46392f"))
 		var plate:=Rect2(rect.position+Vector2(0,20),Vector2(rect.size.x,22))
 		draw_rect(plate,Color("443a2b"))
-		draw_string(ThemeDB.fallback_font,plate.position+Vector2(2,16),"施工中" if constructing else ("食堂" if plate.size.x<60 else "街坊食堂"),HORIZONTAL_ALIGNMENT_CENTER,plate.size.x-4,12,Color("f0d392"))
+		draw_string(TDUI.font(),plate.position+Vector2(2,16),"施工中" if constructing else ("食堂" if plate.size.x<60 else "街坊食堂"),HORIZONTAL_ALIGNMENT_CENTER,plate.size.x-4,TDUI.FONT_MICRO,Color("f0d392"))
 
 func _unhandled_input(event: InputEvent) -> void:
 	if _closed or session == null:
@@ -459,7 +459,7 @@ func _status_bar() -> void:
 	_status = Label.new()
 	_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_status.custom_minimum_size = Vector2(view.x - 32.0, 28)
-	_status.add_theme_font_size_override("font_size", 16)
+	_status.add_theme_font_size_override("font_size", TDUI.FONT_CAPTION)
 	_status.add_theme_color_override("font_color", GLASS_INK)
 	box.add_child(_status)
 	if player_mode:
@@ -472,7 +472,7 @@ func _status_bar() -> void:
 	_pack_button = _button("背包 0", _open_backpack)
 	row.add_child(_pack_button)
 	if player_mode:
-		_target_hint=TDUI.label("靠近建筑或人物按 E",18)
+		_target_hint=TDUI.label("靠近建筑或人物按 E",TDUI.FONT_BODY)
 		_target_hint.custom_minimum_size=Vector2(500,30)
 		_target_hint.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 		_target_hint.autowrap_mode=TextServer.AUTOWRAP_OFF
@@ -729,11 +729,11 @@ func _open_factory_panel(plot: Dictionary) -> void:
 	title.text = String(plot.get("name", "原料厂"))
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title.add_theme_font_override("font", _glass_font(600))
-	title.add_theme_font_size_override("font_size", 26)
+	title.add_theme_font_size_override("font_size", TDUI.FONT_TITLE)
 	title.add_theme_color_override("font_color", GLASS_INK)
 	header.add_child(title)
 	_factory_level_label = Label.new()
-	_factory_level_label.add_theme_font_size_override("font_size", 16)
+	_factory_level_label.add_theme_font_size_override("font_size", TDUI.FONT_CAPTION)
 	_factory_level_label.add_theme_color_override("font_color", GLASS_BLUE)
 	header.add_child(_factory_level_label)
 	var stats := HBoxContainer.new()
@@ -762,11 +762,11 @@ func _open_factory_panel(plot: Dictionary) -> void:
 	for item: Variant in products:
 		var row_item: Dictionary = item
 		grid.add_child(_factory_card(String(row_item.get("id", ""))))
-	if products.is_empty(): grid.add_child(TDUI.label("暂无可供货原料\n解锁相关菜谱后会增加品种。",17))
+	if products.is_empty(): grid.add_child(TDUI.label("暂无可供货原料\n解锁相关菜谱后会增加品种。",TDUI.FONT_BODY))
 	_factory_hover = Label.new()
 	_factory_hover.text = "拖到右侧产线"
 	_factory_hover.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_factory_hover.add_theme_font_size_override("font_size", 15)
+	_factory_hover.add_theme_font_size_override("font_size", TDUI.FONT_CAPTION)
 	_factory_hover.add_theme_color_override("font_color", GLASS_MUTED)
 	box.add_child(_factory_hover)
 	body.add_child(_factory_status_panel())
@@ -796,11 +796,11 @@ func _stat_chip(parent: Node, caption: String) -> Label:
 	chip.add_child(column)
 	var cap := Label.new()
 	cap.text = caption
-	cap.add_theme_font_size_override("font_size", 15)
+	cap.add_theme_font_size_override("font_size", TDUI.FONT_CAPTION)
 	cap.add_theme_color_override("font_color", GLASS_MUTED)
 	column.add_child(cap)
 	var value := Label.new()
-	value.add_theme_font_size_override("font_size", 18)
+	value.add_theme_font_size_override("font_size", TDUI.FONT_BODY)
 	value.add_theme_color_override("font_color", GLASS_INK)
 	column.add_child(value)
 	return value
@@ -843,7 +843,7 @@ func _factory_button(text: String, callback: Callable, _accent: Color, width: in
 	button.text = text
 	button.focus_mode = Control.FOCUS_NONE
 	button.custom_minimum_size = Vector2(width, 40)
-	button.add_theme_font_size_override("font_size", 16)
+	button.add_theme_font_size_override("font_size", TDUI.FONT_CAPTION)
 	button.add_theme_color_override("font_color", GLASS_INK)
 	button.add_theme_color_override("font_disabled_color", Color(0.78, 0.86, 0.96, 0.55))
 	for state: String in ["normal", "hover", "pressed", "focus", "disabled"]:
@@ -885,7 +885,7 @@ func _glass_card(radius: int) -> StyleBoxFlat:
 
 func _glass_font(weight: int = 400) -> Font:
 	var font := SystemFont.new()
-	font.font_names = PackedStringArray(["Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC"])
+	font.font_names = PackedStringArray(["SimHei"])
 	font.font_weight = weight
 	font.antialiasing = TextServer.FONT_ANTIALIASING_GRAY
 	font.hinting = TextServer.HINTING_LIGHT
@@ -896,11 +896,11 @@ func _glass_theme() -> Theme:
 	var theme := TDUI.theme()
 	var body := _glass_font(400)
 	theme.default_font = body
-	theme.default_font_size = 17
+	theme.default_font_size = TDUI.FONT_BODY
 	theme.set_font("font", "Label", body)
 	theme.set_font("font", "Button", body)
-	theme.set_font_size("font_size", "Label", 17)
-	theme.set_font_size("font_size", "Button", 16)
+	theme.set_font_size("font_size", "Label", TDUI.FONT_BODY)
+	theme.set_font_size("font_size", "Button", TDUI.FONT_CAPTION)
 	theme.set_color("font_color", "Label", GLASS_INK)
 	theme.set_color("font_color", "Button", GLASS_INK)
 	theme.set_constant("line_spacing", "Label", 3)
@@ -964,7 +964,7 @@ func _factory_status_panel() -> PanelContainer:
 	var title := Label.new()
 	title.text = "正在生产"
 	title.add_theme_font_override("font", _glass_font(600))
-	title.add_theme_font_size_override("font_size", 20)
+	title.add_theme_font_size_override("font_size", TDUI.FONT_BODY)
 	title.add_theme_color_override("font_color", GLASS_INK)
 	column.add_child(title)
 	_factory_mill = FactoryMill.new()
@@ -1072,7 +1072,7 @@ func _ask_factory_qty(line_no: int, item_id: String) -> void:
 	var title := Label.new()
 	title.text = "产线%d 生产%s" % [line_no, name]
 	title.add_theme_font_override("font", _glass_font(600))
-	title.add_theme_font_size_override("font_size", 22)
+	title.add_theme_font_size_override("font_size", TDUI.FONT_SECTION)
 	title.add_theme_color_override("font_color", GLASS_INK)
 	heading.add_child(title)
 	var stepper := HBoxContainer.new()
@@ -1084,13 +1084,13 @@ func _ask_factory_qty(line_no: int, item_id: String) -> void:
 	count.name = "QtyCount"
 	count.custom_minimum_size = Vector2(48, 0)
 	count.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	count.add_theme_font_size_override("font_size", 22)
+	count.add_theme_font_size_override("font_size", TDUI.FONT_SECTION)
 	count.add_theme_color_override("font_color", GLASS_INK)
 	stepper.add_child(count)
 	stepper.add_child(_factory_button("+", _raise_factory_qty, GLASS_BLUE, 48))
 	_qty_summary = Label.new()
 	_qty_summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_qty_summary.add_theme_font_size_override("font_size", 16)
+	_qty_summary.add_theme_font_size_override("font_size", TDUI.FONT_CAPTION)
 	_qty_summary.add_theme_color_override("font_color", GLASS_MUTED)
 	box.add_child(_qty_summary)
 	var actions := HBoxContainer.new()
@@ -1208,12 +1208,12 @@ func _open_backpack() -> void:
 	var title := Label.new()
 	title.text = "背包"
 	title.add_theme_font_override("font", _glass_font(600))
-	title.add_theme_font_size_override("font_size", 26)
+	title.add_theme_font_size_override("font_size", TDUI.FONT_TITLE)
 	title.add_theme_color_override("font_color", GLASS_INK)
 	box.add_child(title)
 	var note := Label.new()
 	note.text = "这里是已经生产完成的一级原料。"
-	note.add_theme_font_size_override("font_size", 15)
+	note.add_theme_font_size_override("font_size", TDUI.FONT_CAPTION)
 	note.add_theme_color_override("font_color", GLASS_MUTED)
 	box.add_child(note)
 	var scroll := ScrollContainer.new()
@@ -1248,7 +1248,7 @@ func _open_backpack() -> void:
 			if label.ends_with("厂"):
 				label = label.substr(0, label.length() - 1)
 			head.text = label
-			head.add_theme_font_size_override("font_size", 18)
+			head.add_theme_font_size_override("font_size", TDUI.FONT_BODY)
 			head.add_theme_color_override("font_color", _supply_color(supply_id, true))
 			list.add_child(head)
 			for item: Variant in rows:
@@ -1261,7 +1261,7 @@ func _open_backpack() -> void:
 				var caption := Label.new()
 				caption.text = "%s    ×%d" % [String(row.get("name", "")), int(row.get("qty", 0))]
 				caption.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-				caption.add_theme_font_size_override("font_size", 16)
+				caption.add_theme_font_size_override("font_size", TDUI.FONT_CAPTION)
 				caption.add_theme_color_override("font_color", GLASS_INK)
 				line.add_child(caption)
 	var actions := HBoxContainer.new()
@@ -1420,7 +1420,7 @@ func _draw_story() -> void:
 	_draw_stall_sign()
 	if story!=null and story.beat in ["soup","bowl"]:
 		var point:=chen_door_point()
-		draw_string(ThemeDB.fallback_font,point+Vector2(-58,-103),"老陈家 · 门口 E",HORIZONTAL_ALIGNMENT_LEFT,-1,16,Color("ffdfa2"))
+		draw_string(TDUI.font(),point+Vector2(-58,-103),"老陈家 · 门口 E",HORIZONTAL_ALIGNMENT_LEFT,-1,TDUI.FONT_CAPTION,Color("ffdfa2"))
 	for person: Variant in _story_people():
 		var item: Dictionary = person
 		var cell: Vector2i = item.cell
@@ -1431,12 +1431,12 @@ func _draw_story() -> void:
 		var gait: TDNpcGait=_npc_gaits.get(str(item.id))
 		var art:=TDStoryArt.sprite(str(item.id),gait.facing if gait!=null and gait.frame>=0 else facing,gait.frame if gait!=null else -1)
 		if art!=null: draw_texture_rect(art,TDStoryArt.fit(art,Rect2(at+Vector2(-36,-72),Vector2(72,72))),false)
-		draw_string(ThemeDB.fallback_font, at + Vector2(-18, -78), String(item.name), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("#fff6df"))
+		draw_string(TDUI.font(), at + Vector2(-18, -78), String(item.name), HORIZONTAL_ALIGNMENT_LEFT, -1, TDUI.FONT_CAPTION, Color("#fff6df"))
 		if item.id=="aling" and _escort_waiting and story!=null and escort_leg() in ["follow","return","home"]:
 			draw_rect(Rect2(at+Vector2(-69,-130),Vector2(138,32)),Color("f6edce"))
-			draw_string(ThemeDB.fallback_font,at+Vector2(-58,-108),"快跟上来",HORIZONTAL_ALIGNMENT_LEFT,-1,20,Color("564332"))
+			draw_string(TDUI.font(),at+Vector2(-58,-108),"快跟上来",HORIZONTAL_ALIGNMENT_LEFT,-1,TDUI.FONT_BODY,Color("564332"))
 		if player_mode and facing_plot().is_empty() and _story_faced()==str(item.id):
-			draw_string(ThemeDB.fallback_font,at+Vector2(-16,-98),"[ E ]",HORIZONTAL_ALIGNMENT_LEFT,-1,18,Color("fff0c4"))
+			draw_string(TDUI.font(),at+Vector2(-16,-98),"[ E ]",HORIZONTAL_ALIGNMENT_LEFT,-1,TDUI.FONT_BODY,Color("fff0c4"))
 
 func _draw_stall_sign() -> void:
 	if story == null or story.beat not in ["founded", "done"] or session == null:
@@ -1447,8 +1447,8 @@ func _draw_stall_sign() -> void:
 	var at := _origin() + Vector2(int(diner.x), int(diner.y)) * CELL + Vector2(8, 8)
 	var sign := story.stall_sign
 	draw_rect(Rect2(at, Vector2(120, 36)), Color("#f6f1e4"))
-	draw_string(ThemeDB.fallback_font, at + Vector2(6, 16), "讨伐军本部", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("#6a2a2a"))
-	draw_string(ThemeDB.fallback_font, at + Vector2(6, 32), sign, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("#5c4630"))
+	draw_string(TDUI.font(), at + Vector2(6, 16), "讨伐军本部", HORIZONTAL_ALIGNMENT_LEFT, -1, TDUI.FONT_CAPTION, Color("#6a2a2a"))
+	draw_string(TDUI.font(), at + Vector2(6, 32), sign, HORIZONTAL_ALIGNMENT_LEFT, -1, TDUI.FONT_MICRO, Color("#5c4630"))
 
 func chen_door_point() -> Vector2:
 	var shop:=_plot_of_kind("market")
@@ -1769,7 +1769,7 @@ class FactoryMill extends Control:
 		var right := bounds.x - 16.0
 		var top := 22.0
 		var lane_h := (bounds.y - 36.0) / float(count)
-		var font := ThemeDB.fallback_font
+		var font := TDUI.font()
 		for index in count:
 			var lane: Dictionary = lanes[index] if index < lanes.size() else {}
 			var running := bool(lane.get("running", false))
@@ -1791,10 +1791,10 @@ class FactoryMill extends Control:
 			draw_rect(belt_rect, Color(0.04, 0.08, 0.14, 0.98))
 			draw_rect(Rect2(belt_rect.position, Vector2(belt_w, 2.0)), Color(0.82, 0.92, 1.0, 0.7))
 			draw_rect(Rect2(Vector2(left, y + track_h * 0.5 - 2.0), Vector2(belt_w, 2.0)), Color(0.82, 0.92, 1.0, 0.7))
-			draw_string(font, Vector2(left, y - track_h * 0.5 - 4.0), "产线 %d" % line_no, HORIZONTAL_ALIGNMENT_LEFT, left_w, 16, Color(0.82, 0.9, 1.0, 0.9))
+			draw_string(font, Vector2(left, y - track_h * 0.5 - 4.0), "产线 %d" % line_no, HORIZONTAL_ALIGNMENT_LEFT, left_w, TDUI.FONT_CAPTION, Color(0.82, 0.9, 1.0, 0.9))
 			var goods := String(lane.get("item_id", ""))
 			if not running:
-				draw_string(font, Vector2(left + left_w + 12.0, y + 7.0), "拖到这里", HORIZONTAL_ALIGNMENT_LEFT, belt_w - left_w - 24.0, 16, Color(0.76, 0.86, 0.98, 0.55))
+				draw_string(font, Vector2(left + left_w + 12.0, y + 7.0), "拖到这里", HORIZONTAL_ALIGNMENT_LEFT, belt_w - left_w - 24.0, TDUI.FONT_CAPTION, Color(0.76, 0.86, 0.98, 0.55))
 				continue
 			var ratio := clampf(float(lane.get("ratio", 0.0)), 0.0, 1.0)
 			var badge_w := 72.0
@@ -1818,10 +1818,10 @@ class FactoryMill extends Control:
 			FactoryIcon.draw_on(self, goods, Rect2(box_x, y - 44.0, 34.0, 34.0))
 			var waiting := Rect2(left, y - track_h * 0.5, left_w, track_h)
 			draw_rect(waiting, Color(0.1, 0.24, 0.46, 1.0))
-			draw_string(font, Vector2(waiting.position.x, y + 8.0), "还剩 %d" % remain, HORIZONTAL_ALIGNMENT_CENTER, left_w, 20, Color(0.97, 0.99, 1.0, 1.0))
+			draw_string(font, Vector2(waiting.position.x, y + 8.0), "还剩 %d" % remain, HORIZONTAL_ALIGNMENT_CENTER, left_w, TDUI.FONT_BODY, Color(0.97, 0.99, 1.0, 1.0))
 			var badge := Rect2(fill_left + fill_room, y - track_h * 0.5, badge_w, track_h)
 			draw_rect(badge, Color(0.08, 0.16, 0.3, 1.0))
-			draw_string(font, Vector2(badge.position.x, y + 8.0), "%d%%" % int(round(ratio * 100.0)), HORIZONTAL_ALIGNMENT_CENTER, badge_w, 20, Color(0.95, 0.98, 1.0, 1.0))
+			draw_string(font, Vector2(badge.position.x, y + 8.0), "%d%%" % int(round(ratio * 100.0)), HORIZONTAL_ALIGNMENT_CENTER, badge_w, TDUI.FONT_BODY, Color(0.95, 0.98, 1.0, 1.0))
 
 class FactoryDrag extends PanelContainer:
 	var item_id: String = ""

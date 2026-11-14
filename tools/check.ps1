@@ -1,8 +1,8 @@
-﻿#Requires -Version 7.2
+#Requires -Version 7.2
 [CmdletBinding()]
 param(
   [string]$GodotPath = $env:GODOT_BIN,
-  [ValidateSet('condiment-rules','materials','materials-regression','supplier-release','supplier-lines','supplier-compat','sync-current','sync-remainder','sync-migration','construction-regression','construction','console','management','management-regression','pull-core','pull-scenes','regions','travel-core','travel','branch-core','branches','seated-art','restaurant-feedback','diners','decoration','all','content','cooking','qte','platform','scoring','integration','business','service','research','profiles','game','title','movement','commerce','stock','progression','habitat','protagonist','locomotion','story','characters','town-renewal','town-polish','residential','visual-unity','story-expansion','arrival-coast','story-fixes','homecoming')]
+  [ValidateSet('ui-wood-core','ui-wood','redraw-assets','redraw','condiment-rules','materials','materials-regression','supplier-release','supplier-lines','supplier-compat','sync-current','sync-remainder','sync-migration','construction-regression','construction','console','management','management-regression','pull-core','pull-scenes','regions','travel-core','travel','branch-core','branches','seated-art','restaurant-feedback','diners','decoration','all','content','cooking','qte','platform','scoring','integration','business','service','research','profiles','game','title','movement','commerce','stock','progression','habitat','protagonist','locomotion','story','characters','town-renewal','town-polish','residential','visual-unity','story-expansion','arrival-coast','story-fixes','homecoming')]
   [string]$Suite = 'all',
   [int]$TimeoutSeconds = 1800,
   [ValidateRange(1,16)][int]$ShardCount = 1,
@@ -70,6 +70,10 @@ try {
   if ($plugin -notmatch ('version="' + [regex]::Escape($lock.gut.version) + '"')) { throw 'GUT version mismatch' }
 
   $testMap = @{
+    'ui-wood-core' = @('tests/unit/test_ui_wood.gd','tests/unit/test_game_hud.gd','tests/unit/test_dialogue.gd','tests/unit/test_redraw_art.gd')
+    'ui-wood' = @('tests/unit/test_ui_wood.gd','tests/unit/test_game_hud.gd','tests/unit/test_dialogue.gd','tests/unit/test_redraw_art.gd','tests/integration/test_game_shell.gd','tests/integration/test_title_entry.gd','tests/integration/test_management_system.gd','tests/integration/test_decoration_ui.gd','tests/integration/test_story_expansion.gd','tests/integration/test_arrival_coast.gd','tests/integration/test_kitchen_research.gd')
+    'redraw-assets' = @('tests/unit/test_redraw_art.gd')
+    redraw = @('tests/unit/test_redraw_art.gd','tests/unit/test_story_expansion.gd','tests/unit/test_dialogue.gd','tests/integration/test_arrival_coast.gd','tests/integration/test_story_expansion.gd','tests/integration/test_protagonist.gd','tests/integration/test_restaurant_feedback.gd','tests/integration/test_decoration_ui.gd','tests/integration/test_diner_flow.gd','tests/integration/test_kitchen_research.gd','tests/integration/test_title_entry.gd','tests/integration/test_habitat.gd')
     'condiment-rules' = @('tests/unit/test_shop_profiles.gd','tests/unit/test_supplier_network.gd','tests/unit/test_season_hold.gd','tests/unit/test_shop_stock.gd','tests/unit/test_supply_lines.gd','tests/integration/test_supply_lines.gd')
     'materials' = @('tests/unit/test_regional_materials.gd','tests/integration/test_regional_materials.gd')
     'materials-regression' = @('tests/unit/test_shop_profiles.gd','tests/unit/test_supplier_network.gd','tests/unit/test_season_hold.gd','tests/unit/test_shop_stock.gd','tests/integration/test_shop_application.gd')

@@ -1,0 +1,46 @@
+{
+  "date": "2026-11-12",
+  "tool": "image_gen",
+  "assets": [
+    {
+      "key": "wood",
+      "file": "wood-light.png",
+      "prompt": "Game UI material texture, full-bleed seamless pale honey maple wood, smooth finely sanded natural wood grain running horizontally, warm light cream-beige, very subtle tiny grain detail, soft hand-painted cozy illustration finish, low contrast and uniformly bright so dark text is highly readable. Flat orthographic material scan, no perspective, no object, no planks, no joints, no border, no frame, no text, no symbols, no vignetting or lighting gradients, no knot holes. One continuous texture square, edge-to-edge opaque.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-3eeafb9d-80aa-4197-b16c-dd277408642b.png"
+    },
+    {
+      "key": "parchment",
+      "file": "parchment.png",
+      "prompt": "A wide horizontal full-bleed parchment material for a visual novel dialogue panel, aspect ratio about 4:1. Warm pale ivory and cream sheep parchment, delicate visible paper fibres, softly aged tan edges occupying only the outer 4 percent, broad clean softly textured pale centre for dark text readability. Cozy hand-drawn game illustration finish, restrained subtle detail. Flat front view, no scroll, no curling corners, no writing, no marks, no symbols, no illustrations or ornaments, no large stains, no transparency. Rectangular texture completely filling canvas.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-841f54ca-b4c9-439b-9c72-90bac233b871.png"
+    },
+    {
+      "key": "portrait-hero",
+      "file": "portrait-hero-v2.png",
+      "ref": "C:/Users/myzpw/Desktop/画画/project nju gaming/焰子.png",
+      "prompt": "Precise facial-expression edit of the supplied ORIGINAL character artwork for a game. Make a 3 column x 2 row expression atlas: each of six EQUAL SQUARE cells repeats the EXACT complete original square composition, at identical size, position, pose and framing. Preserve original simple hand-drawn black lines, original colours, all clothing, every prop, background decorative element and alpha coverage. DO NOT make a new character illustration, DO NOT redraw the body, DO NOT crop or remove the surrounding elements, DO NOT perform background extraction. Only change eyebrows, eyes, mouth and subtle blush. Six expressions row-major: calm, happy, surprised, puzzled, angry, sad. Preserve all original floating swords and pink flames for Luo, all floating paper for the priest, the bird/book for Aling and the pan/spatula for the chef. Identical body and accessories in every cell. Full original head to feet and decorative extent fit inside each cell with same original margins. No labels, no grid lines, no extra text. Preserve original transparent pixels outside the full original composition; never create an extra glow or remove illustrated background decorations.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-89734906-a307-45f7-9eab-e63f1714a6fd.png"
+    },
+    {
+      "key": "portrait-aling",
+      "file": "portrait-aling-v2.png",
+      "ref": "C:/Users/myzpw/Desktop/画画/project nju gaming/阿铃.png",
+      "prompt": "Precise facial-expression edit of the supplied ORIGINAL character artwork for a game. Make a 3 column x 2 row expression atlas: each of six EQUAL SQUARE cells repeats the EXACT complete original square composition, at identical size, position, pose and framing. Preserve original simple hand-drawn black lines, original colours, all clothing, every prop, background decorative element and alpha coverage. DO NOT make a new character illustration, DO NOT redraw the body, DO NOT crop or remove the surrounding elements, DO NOT perform background extraction. Only change eyebrows, eyes, mouth and subtle blush. Six expressions row-major: calm, happy, surprised, puzzled, angry, sad. Preserve all original floating swords and pink flames for Luo, all floating paper for the priest, the bird/book for Aling and the pan/spatula for the chef. Identical body and accessories in every cell. Full original head to feet and decorative extent fit inside each cell with same original margins. No labels, no grid lines, no extra text. Preserve original transparent pixels outside the full original composition; never create an extra glow or remove illustrated background decorations.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-78ddda58-5346-4b84-9e31-16b6f758a8aa.png"
+    },
+    {
+      "key": "portrait-luo",
+      "file": "portrait-luo-v2.png",
+      "ref": "C:/Users/myzpw/Desktop/画画/project nju gaming/罗厄.png",
+      "prompt": "Precise facial-expression edit of the supplied ORIGINAL character artwork for a game. Make a 3 column x 2 row expression atlas: each of six EQUAL SQUARE cells repeats the EXACT complete original square composition, at identical size, position, pose and framing. Preserve original simple hand-drawn black lines, original colours, all clothing, every prop, background decorative element and alpha coverage. DO NOT make a new character illustration, DO NOT redraw the body, DO NOT crop or remove the surrounding elements, DO NOT perform background extraction. Only change eyebrows, eyes, mouth and subtle blush. Six expressions row-major: calm, happy, surprised, puzzled, angry, sad. Preserve all original floating swords and pink flames for Luo, all floating paper for the priest, the bird/book for Aling and the pan/spatula for the chef. Identical body and accessories in every cell. Full original head to feet and decorative extent fit inside each cell with same original margins. No labels, no grid lines, no extra text. Preserve original transparent pixels outside the full original composition; never create an extra glow or remove illustrated background decorations.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-e4724ee5-bbac-49a1-87ba-481b7d584c6e.png"
+    },
+    {
+      "key": "portrait-chen",
+      "file": "portrait-chen-v2.png",
+      "ref": "C:/Users/myzpw/Desktop/画画/project nju gaming/灰烬司祭.png",
+      "prompt": "Precise facial-expression edit of the supplied ORIGINAL character artwork for a game. Make a 3 column x 2 row expression atlas: each of six EQUAL SQUARE cells repeats the EXACT complete original square composition, at identical size, position, pose and framing. Preserve original simple hand-drawn black lines, original colours, all clothing, every prop, background decorative element and alpha coverage. DO NOT make a new character illustration, DO NOT redraw the body, DO NOT crop or remove the surrounding elements, DO NOT perform background extraction. Only change eyebrows, eyes, mouth and subtle blush. Six expressions row-major: calm, happy, surprised, puzzled, angry, sad. Preserve all original floating swords and pink flames for Luo, all floating paper for the priest, the bird/book for Aling and the pan/spatula for the chef. Identical body and accessories in every cell. Full original head to feet and decorative extent fit inside each cell with same original margins. No labels, no grid lines, no extra text. Preserve original transparent pixels outside the full original composition; never create an extra glow or remove illustrated background decorations.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-c04b1f03-85f4-4959-a5e6-53bec58fb83a.png"
+    }
+  ]
+}

@@ -2,7 +2,7 @@ class_name TDGameShell
 extends Control
 ## Presentation and dependency assembly. Economy remains in the existing shop model.
 signal debug_entry_requested(entry: String)
-const TITLE_ART := preload("res://assets/town/title-town-v1.png")
+const TITLE_ART := preload("res://assets/redraw-v1/title.png")
 var profile_root: String="user://profiles"
 var preferences_path: String="user://player-settings.json"
 var legacy_shop_path: String="user://shop-v1.json"
@@ -59,14 +59,6 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter=Control.MOUSE_FILTER_IGNORE
 	theme=TDUI.theme()
-	# Crisp wooden panels fit the pixel scene; text remains native and readable.
-	for state: String in ["normal","hover","pressed","focus"]:
-		var style:=theme.get_stylebox(state,"Button") as StyleBoxFlat
-		style.set_corner_radius_all(2);style.set_border_width_all(2)
-		style.bg_color=Color("65523c") if state=="hover" else Color("3b4235")
-		style.border_color=Color("c8a56a") if state=="hover" else Color("8e815d")
-	var panel_style:=StyleBoxFlat.new();panel_style.bg_color=Color("242d26");panel_style.border_color=Color("b79b68");panel_style.set_border_width_all(3)
-	theme.set_stylebox("panel","PanelContainer",panel_style)
 	slots=TDProfileStore.new(profile_root,TDGameProfile.validate_save)
 	preferences=TDPlayerPreferences.new(preferences_path)
 	preferences.apply()
@@ -82,18 +74,18 @@ func _build_title() -> void:
 	if is_instance_valid(_title_screen): _title_screen.queue_free()
 	_title_screen=Control.new();_title_screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);add_child(_title_screen)
 	var art:=TextureRect.new();art.texture=TITLE_ART;art.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;art.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_COVERED;art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);art.mouse_filter=Control.MOUSE_FILTER_IGNORE;_title_screen.add_child(art)
-	var shade:=ColorRect.new();shade.color=Color(.08,.12,.12,.65);shade.position=Vector2(40,60);shade.size=Vector2(360,670);shade.mouse_filter=Control.MOUSE_FILTER_IGNORE;_title_screen.add_child(shade)
+	var shade:=Panel.new();shade.add_theme_stylebox_override("panel",TDUI.wood());shade.position=Vector2(40,60);shade.size=Vector2(360,670);shade.mouse_filter=Control.MOUSE_FILTER_IGNORE;_title_screen.add_child(shade)
 	var column:=VBoxContainer.new();column.position=Vector2(76,108);column.size=Vector2(288,560);column.add_theme_constant_override("separation",18);_title_screen.add_child(column)
-	column.add_child(TDUI.label("小 镇 食 堂",48,Color("f5dfb6")))
-	column.add_child(TDUI.label("一餐烟火，一日小镇",18,Color("d7c5a0")))
+	column.add_child(TDUI.label("小 镇 食 堂",48,TDUI.INK))
+	column.add_child(TDUI.label("一餐烟火，一日小镇",TDUI.FONT_BODY,TDUI.MUTED))
 	var space:=Control.new();space.custom_minimum_size.y=28;column.add_child(space)
 	column.add_child(TDUI.button("开始游戏",start_game))
 	var resume:=TDUI.button("继续游戏",continue_game);resume.disabled=slots.latest().is_empty();column.add_child(resume)
 	column.add_child(TDUI.button("载入存档",func()->void:show_slots(false)))
 	column.add_child(TDUI.button("设置",show_settings))
 	column.add_child(TDUI.button("退出游戏",request_quit))
-	column.add_child(TDUI.label("WASD 移动 · Shift 疾跑  ·  E 交互",15,Color("b7c6b8")))
-	_title_notice=TDUI.label("",20,Color("f5dfb6"));_title_notice.position=Vector2(440,660);_title_notice.size=Vector2(780,100)
+	column.add_child(TDUI.label("WASD 移动 · Shift 疾跑  ·  E 交互",TDUI.FONT_CAPTION,Color("b7c6b8")))
+	_title_notice=TDUI.label("",TDUI.FONT_BODY,TDUI.INK);_title_notice.position=Vector2(440,660);_title_notice.size=Vector2(780,100)
 	_title_notice.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;_title_screen.add_child(_title_notice)
 
 func _process(_delta: float) -> void:
@@ -230,9 +222,9 @@ func _dialog(title: String, freeze: bool=false) -> VBoxContainer:
 	var scroll:=ScrollContainer.new();scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;margin.add_child(scroll)
 	_modal_box=VBoxContainer.new();_modal_box.size_flags_horizontal=Control.SIZE_EXPAND_FILL;_modal_box.add_theme_constant_override("separation",14);scroll.add_child(_modal_box)
 	var top:=HBoxContainer.new();_modal_box.add_child(top)
-	var heading:=TDUI.label(title,30,TDUI.ORANGE);heading.size_flags_horizontal=Control.SIZE_EXPAND_FILL;top.add_child(heading)
+	var heading:=TDUI.label(title,TDUI.FONT_DISPLAY,TDUI.ORANGE);heading.size_flags_horizontal=Control.SIZE_EXPAND_FILL;top.add_child(heading)
 	top.add_child(TDUI.button("返回",_close_dialog))
-	_notice=TDUI.label("",17,Color("edc280"));_modal_box.add_child(_notice)
+	_notice=TDUI.label("",TDUI.FONT_BODY,TDUI.ORANGE);_modal_box.add_child(_notice)
 	return _modal_box
 
 func _message(text: String) -> void:
@@ -283,7 +275,7 @@ func show_slots(new_game: bool) -> void:
 	else: box.add_child(TDUI.button("新建存档",func()->void:show_slots(true)))
 	for row: Dictionary in slots.slots():
 		var line:=HBoxContainer.new();box.add_child(line)
-		var label:=TDUI.label("%d · "%[int(row.slot_id.trim_prefix("slot-"))]+("空存档" if row.empty else ("%s · 第%d天 · ¥%.2f · 已学%d道菜"%[row.title,row.day,float(row.money_cents)/100.0,row.unlocked] if row.ok else "存档不可读取："+str(row.code))),18)
+		var label:=TDUI.label("%d · "%[int(row.slot_id.trim_prefix("slot-"))]+("空存档" if row.empty else ("%s · 第%d天 · ¥%.2f · 已学%d道菜"%[row.title,row.day,float(row.money_cents)/100.0,row.unlocked] if row.ok else "存档不可读取："+str(row.code))),TDUI.FONT_BODY)
 		label.size_flags_horizontal=Control.SIZE_EXPAND_FILL;line.add_child(label)
 		var id:String=row.slot_id
 		if new_game and row.empty: line.add_child(TDUI.button("从这里开始",func()->void:_enter_game(create_game.bind(id,name_input.text),"正在创建新生活……")))
@@ -293,7 +285,7 @@ func show_slots(new_game: bool) -> void:
 			if row.get("temporary_available",false): line.add_child(TDUI.button("恢复完整临时档",func()->void:_recover_slot(id,true)))
 		if not new_game and not row.empty: line.add_child(TDUI.button("删除",_confirm_delete_slot.bind(id)))
 	if new_game: box.add_child(TDUI.button("导入旧进度（原文件保留）",func()->void:_enter_game(import_legacy,"正在导入旧进度……")))
-	box.add_child(TDUI.label("每个存档独立保存经营、菜谱、餐厅与小镇。营业期间不保存做菜现场。",16,TDUI.MUTED))
+	box.add_child(TDUI.label("每个存档独立保存经营、菜谱、餐厅与小镇。营业期间不保存做菜现场。",TDUI.FONT_CAPTION,TDUI.MUTED))
 
 func _confirm_delete_slot(id: String) -> void:
 	if profile!=null or _entry_busy or not slots.valid_id(id): return
@@ -302,8 +294,8 @@ func _confirm_delete_slot(id: String) -> void:
 		if item.slot_id==id: row=item
 	if row.is_empty() or row.empty: return
 	var box:=_dialog("删除存档？",true)
-	box.add_child(TDUI.label(("%s · 第%d天"%[row.title,row.day]) if row.ok else id+" · 无法读取的存档",24))
-	box.add_child(TDUI.label("这个存档将从载入列表移除，腾出新游戏的位置。原文件会保留在本机删除归档中。",20))
+	box.add_child(TDUI.label(("%s · 第%d天"%[row.title,row.day]) if row.ok else id+" · 无法读取的存档",TDUI.FONT_SECTION))
+	box.add_child(TDUI.label("这个存档将从载入列表移除，腾出新游戏的位置。原文件会保留在本机删除归档中。",TDUI.FONT_BODY))
 	box.add_child(TDUI.button("取消",func()->void:show_slots(false)))
 	box.add_child(TDUI.button("确认删除",func()->void:
 		if profile!=null or _entry_busy: return
@@ -559,8 +551,8 @@ func _place(kind: String, id: String) -> void:
 	elif kind=="harbor": show_harbor()
 	elif kind in ["urban_village","rich_district"]:
 		var box:=_dialog("居民区 · "+str(profile.world._plot_by_id(id).get("name","青瓦巷")))
-		box.add_child(TDUI.label("青瓦屋檐下，几户街坊围着小院生活。巷道通往集市和食堂。",22))
-		box.add_child(TDUI.label("院门里是街坊的家。沿街走走，也许会遇到熟悉的人。",18,TDUI.MUTED))
+		box.add_child(TDUI.label("青瓦屋檐下，几户街坊围着小院生活。巷道通往集市和食堂。",TDUI.FONT_SECTION))
+		box.add_child(TDUI.label("院门里是街坊的家。沿街走走，也许会遇到熟悉的人。",TDUI.FONT_BODY,TDUI.MUTED))
 	elif kind in ["commercial_street","bank"]: show_bank()
 	elif kind=="competitor": show_competitor(id)
 	elif kind=="market":
@@ -579,30 +571,30 @@ func _place(kind: String, id: String) -> void:
 			profile.commerce.attach_map(profile.world.town_map.plots,profile.world.map_version)
 			var site:=profile.commerce.geography.cell(Vector2i(int(plot.x),int(plot.y)))
 			var quote:=profile.commerce.geography.parcel_quote(id)
-			box.add_child(TDUI.label("地块参考总价 ¥%.2f · 日租报价 ¥%.2f\n可见度 %.0f%% · 区位吸引力 %.0f%%\n报价不是当前租约；自有主店免现金房租。"%[float(quote.land_value_cents)/100,float(quote.rent_quote_cents_per_day)/100,100*float(site.visibility),100*float(site.attractiveness)],18))
-		box.add_child(TDUI.label("这里是"+str(profile.world._plot_by_id(id).get("name","小镇街区"))+"。",22))
+			box.add_child(TDUI.label("地块参考总价 ¥%.2f · 日租报价 ¥%.2f\n可见度 %.0f%% · 区位吸引力 %.0f%%\n报价不是当前租约；自有主店免现金房租。"%[float(quote.land_value_cents)/100,float(quote.rent_quote_cents_per_day)/100,100*float(site.visibility),100*float(site.attractiveness)],TDUI.FONT_BODY))
+		box.add_child(TDUI.label("这里是"+str(profile.world._plot_by_id(id).get("name","小镇街区"))+"。",TDUI.FONT_SECTION))
 		if kind in ["factory_lot","supply_factory","diner_lot"]:
-			box.add_child(TDUI.label("地块管理",20))
-			if kind=="factory_lot": box.add_child(TDUI.label("靠近这块空地，按 E 建设。",18))
+			box.add_child(TDUI.label("地块管理",TDUI.FONT_BODY))
+			if kind=="factory_lot": box.add_child(TDUI.label("靠近这块空地，按 E 建设。",TDUI.FONT_BODY))
 		elif not TDSanRules.recovery(kind).is_empty():
 			var offer:=TDSanRules.recovery(kind)
-			box.add_child(TDUI.label("歇歇脚 · %.0f小时 · %d元 · 精神恢复%d"%[offer.hours,offer.cost,offer.san],18))
+			box.add_child(TDUI.label("歇歇脚 · %.0f小时 · %d元 · 精神恢复%d"%[offer.hours,offer.cost,offer.san],TDUI.FONT_BODY))
 			box.add_child(TDUI.button("在这里逛一逛",func()->void:_outcome(profile.world_transaction(profile.world.visit_zone.bind(kind),"visit:"+kind))))
-		else: box.add_child(TDUI.label("走访街区，回店经营。",18,TDUI.MUTED))
+		else: box.add_child(TDUI.label("走访街区，回店经营。",TDUI.FONT_BODY,TDUI.MUTED))
 		var pool:=int(plot.get("pool",0));var shift:=int(plot.get("budget_shift",0))
 		if pool!=0 or shift!=0:
-			box.add_child(TDUI.label("这个功能区计入客流：人数 %+d，预算 %+d。客人进店时仍会和竞品比较装修、价格和等待。"%[pool,shift],18))
+			box.add_child(TDUI.label("这个功能区计入客流：人数 %+d，预算 %+d。客人进店时仍会和竞品比较装修、价格和等待。"%[pool,shift],TDUI.FONT_BODY))
 
 func show_harbor() -> void:
 	if profile==null: return
 	var box:=_dialog("港口 · 小镇间客运",true)
-	box.add_child(TDUI.label("客运免费，即时抵达。旅行不会自动开放菜系、采购商路或分店资格。",19))
-	box.add_child(TDUI.label(kitchen_view.staff_status(),18,TDUI.ORANGE))
+	box.add_child(TDUI.label("客运免费，即时抵达。旅行不会自动开放菜系、采购商路或分店资格。",TDUI.FONT_BODY))
+	box.add_child(TDUI.label(kitchen_view.staff_status(),TDUI.FONT_BODY,TDUI.ORANGE))
 	for id: String in TDTravelCatalog.IDS:
 		if id==visiting_town: continue
 		var row:=TDTravelCatalog.info(id)
 		box.add_child(TDUI.button("前往 "+str(row.name),func()->void:_outcome(voyage(id))))
-	box.add_child(TDUI.label("营业期间订单与耐心继续推进；02:00仍收尾回小屋。",17,TDUI.MUTED))
+	box.add_child(TDUI.label("营业期间订单与耐心继续推进；02:00仍收尾回小屋。",TDUI.FONT_BODY,TDUI.MUTED))
 
 func voyage(destination: String) -> TDOutcome:
 	if profile==null or location not in ["town","voyage"]: return TDOutcome.new(false,"NOT_AT_PORT")
@@ -640,8 +632,8 @@ func _clear_visit() -> void:
 func _travel_landmark(plot: Dictionary) -> void:
 	if plot.has("branch_id"): _outcome(enter_branch(str(plot.branch_id)));return
 	var box:=_dialog(TDTravelCatalog.label(plot,visiting_town),true)
-	box.add_child(TDUI.label(TDTravelCatalog.info(visiting_town).caption,20))
-	box.add_child(TDUI.label("这里的街坊经营着自己的生活。当地故事与室内互动将在后续加入。\n采购合作仍需商路推荐；可在主店账本查看世界行情。",18,TDUI.MUTED))
+	box.add_child(TDUI.label(TDTravelCatalog.info(visiting_town).caption,TDUI.FONT_BODY))
+	box.add_child(TDUI.label("这里的街坊经营着自己的生活。当地故事与室内互动将在后续加入。\n采购合作仍需商路推荐；可在主店账本查看世界行情。",TDUI.FONT_BODY,TDUI.MUTED))
 
 func show_world_map() -> void:
 	if profile==null: return
@@ -669,20 +661,20 @@ func show_market() -> void:
 	var title:=String(stall.get("name","街坊菜市")) if not stall.is_empty() else "街坊菜市"
 	var box:=_dialog(title+" · 现货采购")
 	if profile.shop.snapshot().phase=="SETTLED":
-		box.add_child(TDUI.label("今天已经打烊。回店休息后，明早再来挑新鲜食材。",20));return
+		box.add_child(TDUI.label("今天已经打烊。回店休息后，明早再来挑新鲜食材。",TDUI.FONT_BODY));return
 	var forecast:=profile.shop.visitor_forecast()
 	box.add_child(TDUI.label("用餐高峰 08–10 / 11–13 / 17–19 · 少量错峰
-持续营业至主动打烊或02:00；错过的时段不补客。",17,TDUI.MUTED))
-	box.add_child(TDUI.label("从现在开门预计 %d—%d 位客人 · 买好食材后回店挂牌营业"%[forecast.min_visitors,forecast.max_visitors],20,TDUI.ORANGE))
-	box.add_child(TDUI.label("食材按现货供应；调料随菜系开放，共享调料开放任一对应菜系即可购买。",17,TDUI.MUTED))
+持续营业至主动打烊或02:00；错过的时段不补客。",TDUI.FONT_BODY,TDUI.MUTED))
+	box.add_child(TDUI.label("从现在开门预计 %d—%d 位客人 · 买好食材后回店挂牌营业"%[forecast.min_visitors,forecast.max_visitors],TDUI.FONT_BODY,TDUI.ORANGE))
+	box.add_child(TDUI.label("食材按现货供应；调料随菜系开放，共享调料开放任一对应菜系即可购买。",TDUI.FONT_BODY,TDUI.MUTED))
 	for id: String in profile.shop.spoiled_today():
-		box.add_child(TDUI.label("今日过期：%s %.2f%s，已清理。"%[_ingredient_name(id),float(profile.shop.spoiled_today()[id])/1000,profile.shop.stock_info(id).unit],17,TDUI.ORANGE))
+		box.add_child(TDUI.label("今日过期：%s %.2f%s，已清理。"%[_ingredient_name(id),float(profile.shop.spoiled_today()[id])/1000,profile.shop.stock_info(id).unit],TDUI.FONT_BODY,TDUI.ORANGE))
 	for id: String in profile.shop.market_ids():
 		var row:=HBoxContainer.new();box.add_child(row)
 		row.add_child(TDIngredientIcon.make(id))
 		var market:Dictionary=profile.commerce.state.markets[profile.commerce.state.home]
 		var info:=profile.shop.stock_info(id)
-		var caption:=TDUI.label(_market_caption(id),18)
+		var caption:=TDUI.label(_market_caption(id),TDUI.FONT_BODY)
 		caption.size_flags_horizontal=Control.SIZE_EXPAND_FILL;row.add_child(caption)
 		var amount:=SpinBox.new();amount.min_value=1;amount.max_value=30;amount.step=1;amount.value=1;row.add_child(amount)
 		row.add_child(TDUI.button("购买",func()->void:
@@ -714,7 +706,7 @@ func show_remote_market(town_id: String) -> void:
 		var row:=HBoxContainer.new();box.add_child(row)
 		row.add_child(TDIngredientIcon.make(id))
 		var info:=profile.shop.stock_info(id)
-		var label:=TDUI.label("%s · 现货%.1f%s · 含运费¥%.2f/%s"%[_ingredient_name(id),float(market.stock[id])/1000,info.unit,float(int(market.price[id])+profile.commerce.freight(town_id))/100,info.unit],18)
+		var label:=TDUI.label("%s · 现货%.1f%s · 含运费¥%.2f/%s"%[_ingredient_name(id),float(market.stock[id])/1000,info.unit,float(int(market.price[id])+profile.commerce.freight(town_id))/100,info.unit],TDUI.FONT_BODY)
 		label.size_flags_horizontal=Control.SIZE_EXPAND_FILL;row.add_child(label)
 		var amount:=SpinBox.new();amount.min_value=1;amount.max_value=16;amount.value=1;row.add_child(amount)
 		var token: String="remote-ui:%s:%d:%s"%[profile.shop.snapshot().run_id,profile.shop.snapshot().serial+1,id]
@@ -735,7 +727,7 @@ func show_menu() -> void:
 	var state:=profile.shop.snapshot()
 	var box:=_dialog("今日菜单 · 营业牌")
 	if state.phase in ["OPEN","DRAINING"]:
-		box.add_child(TDUI.label("正在营业。打烊后可出门采购、研究菜谱和布置餐厅。",20))
+		box.add_child(TDUI.label("正在营业。打烊后可出门采购、研究菜谱和布置餐厅。",TDUI.FONT_BODY))
 		box.add_child(TDUI.button("提前打烊",func()->void:_outcome(profile.shop.close_early());_close_dialog()))
 		return
 	if state.phase=="SETTLED":
@@ -750,11 +742,11 @@ func show_menu() -> void:
 		var price:=SpinBox.new();price.min_value=.01;price.max_value=10000;price.step=.5;price.value=float(state.menu[id].price_cents)/100;price.prefix="¥ ";price.custom_minimum_size=Vector2(150,52);row.add_child(price)
 		enabled.toggled.connect(func(value:bool)->void:_outcome(profile.shop.set_menu(id,value,roundi(price.value*100))))
 		price.value_changed.connect(func(value:float)->void:_outcome(profile.shop.set_menu(id,enabled.button_pressed,roundi(value*100))))
-		var stock:=TDUI.label("有料" if profile.shop.menu_available(id) else "缺料 / 售罄",17,TDUI.MUTED)
+		var stock:=TDUI.label("有料" if profile.shop.menu_available(id) else "缺料 / 售罄",TDUI.FONT_BODY,TDUI.MUTED)
 		stock.custom_minimum_size.x=125;stock.autowrap_mode=TextServer.AUTOWRAP_OFF;row.add_child(stock)
-	box.add_child(TDUI.label("确认菜单和价格后开门。缺料菜自动停售，营业可外出，现货采购仍限筹备。请提前雇好厨师和服务员：厨师在后厨按流程做菜，菜放在出餐口，服务员去取再端到桌上。",17,TDUI.MUTED))
-	box.add_child(TDUI.label("用餐高峰 08–10 / 11–13 / 17–19 · 少量错峰\n持续营业至主动打烊或02:00；错过的时段不补客。",17,TDUI.MUTED))
-	var demand:=TDUI.label("",18,TDUI.ORANGE);box.add_child(demand)
+	box.add_child(TDUI.label("确认菜单和价格后开门。缺料菜自动停售，营业可外出，现货采购仍限筹备。请提前雇好厨师和服务员：厨师在后厨按流程做菜，菜放在出餐口，服务员去取再端到桌上。",TDUI.FONT_BODY,TDUI.MUTED))
+	box.add_child(TDUI.label("用餐高峰 08–10 / 11–13 / 17–19 · 少量错峰\n持续营业至主动打烊或02:00；错过的时段不补客。",TDUI.FONT_BODY,TDUI.MUTED))
+	var demand:=TDUI.label("",TDUI.FONT_BODY,TDUI.ORANGE);box.add_child(demand)
 	var forecast_update:=func()->void:
 		var estimated:=profile.shop.visitor_forecast()
 		var ready: Array=profile.shop.economic_menu()
@@ -830,32 +822,32 @@ func show_ledger() -> void:
 	box.add_child(TDUI.button("店铺",show_branch))
 	var state:=profile.shop.snapshot()
 	if state.phase=="SETTLED": kitchen_view._summary_page(box,profile.shop.day_summary())
-	else: box.add_child(TDUI.label("第%d天 · 余额 ¥%.2f · 人气%d"%[state.day,float(state.money_cents)/100.0,state.popularity],21))
+	else: box.add_child(TDUI.label("第%d天 · 余额 ¥%.2f · 人气%d"%[state.day,float(state.money_cents)/100.0,state.popularity],TDUI.FONT_SECTION))
 	var economy:Dictionary=profile.commerce.state
-	box.add_child(TDUI.label("未付费用 ¥%.2f · 店铺认知 %.0f%% · 品牌信任 %.0f%%"%[float(economy.debt_cents)/100,float(economy.awareness)*100,float(economy.brand)*100],19,TDUI.ORANGE))
+	box.add_child(TDUI.label("未付费用 ¥%.2f · 店铺认知 %.0f%% · 品牌信任 %.0f%%"%[float(economy.debt_cents)/100,float(economy.awareness)*100,float(economy.brand)*100],TDUI.FONT_BODY,TDUI.ORANGE))
 	if not economy.books.is_empty():
 		var report:Dictionary=economy.books.back()
-		box.add_child(TDUI.label("第%d天：耗料成本 ¥%.2f · 水电 ¥%.2f · 房租 ¥%.2f\n经营利润 ¥%.2f（采购是现金换库存，不再次扣利润）\n全镇用餐机会%d · 考虑本店%d · 接待%d · 完成%d · 离开%d"%[report.day,float(report.consumed_cost_cents)/100,float(report.utilities_cents)/100,float(report.rent_cents)/100,float(report.profit_cents)/100,report.funnel.opportunities,report.funnel.considered,report.funnel.admitted,report.funnel.completed,report.funnel.abandoned],18))
+		box.add_child(TDUI.label("第%d天：耗料成本 ¥%.2f · 水电 ¥%.2f · 房租 ¥%.2f\n经营利润 ¥%.2f（采购是现金换库存，不再次扣利润）\n全镇用餐机会%d · 考虑本店%d · 接待%d · 完成%d · 离开%d"%[report.day,float(report.consumed_cost_cents)/100,float(report.utilities_cents)/100,float(report.rent_cents)/100,float(report.profit_cents)/100,report.funnel.opportunities,report.funnel.considered,report.funnel.admitted,report.funnel.completed,report.funnel.abandoned],TDUI.FONT_BODY))
 	for group:Dictionary in profile.commerce.config.groups:
-		box.add_child(TDUI.label("%s：味道%.0f / 服务%.0f / 划算%.0f"%[group.name,100*profile.commerce.reputation(group.id,"food"),100*profile.commerce.reputation(group.id,"service"),100*profile.commerce.reputation(group.id,"value")],17,TDUI.MUTED))
+		box.add_child(TDUI.label("%s：味道%.0f / 服务%.0f / 划算%.0f"%[group.name,100*profile.commerce.reputation(group.id,"food"),100*profile.commerce.reputation(group.id,"service"),100*profile.commerce.reputation(group.id,"value")],TDUI.FONT_BODY,TDUI.MUTED))
 	for item: Dictionary in state.ledger.slice(maxi(0,state.ledger.size()-16)):
-		box.add_child(TDUI.label("第%d天 · %s · %+.2f元"%[item.day,item.extra.get("label",_ledger_name(item.kind)),float(item.cents)/100.0],16,TDUI.MUTED))
+		box.add_child(TDUI.label("第%d天 · %s · %+.2f元"%[item.day,item.extra.get("label",_ledger_name(item.kind)),float(item.cents)/100.0],TDUI.FONT_CAPTION,TDUI.MUTED))
 	if profile.at_boundary(): box.add_child(TDUI.button("保存当前进度",func()->void:_outcome(save_game())))
 	var account:=profile.commerce.society.bank.account("player")
-	box.add_child(TDUI.label("钱庄存款 ¥%.2f · 贷款本金 ¥%.2f · 未付利息 ¥%.2f\n借还本金和存取款不计入经营利润。商业街钱庄可办理。"%[float(account.deposit_cents)/100,float(account.principal_cents)/100,float(account.interest_cents)/100],18))
+	box.add_child(TDUI.label("钱庄存款 ¥%.2f · 贷款本金 ¥%.2f · 未付利息 ¥%.2f\n借还本金和存取款不计入经营利润。商业街钱庄可办理。"%[float(account.deposit_cents)/100,float(account.principal_cents)/100,float(account.interest_cents)/100],TDUI.FONT_BODY))
 	if not economy.books.is_empty():
 		var last: Dictionary=economy.books.back()
-		box.add_child(TDUI.label("利润税 ¥%.2f · 本日利息 ¥%.2f · 税前利润 ¥%.2f"%[float(last.get("tax_cents",0))/100,float(last.get("interest_cents",0))/100,float(last.get("profit_before_tax_cents",last.profit_cents))/100],18))
+		box.add_child(TDUI.label("利润税 ¥%.2f · 本日利息 ¥%.2f · 税前利润 ¥%.2f"%[float(last.get("tax_cents",0))/100,float(last.get("interest_cents",0))/100,float(last.get("profit_before_tax_cents",last.profit_cents))/100],TDUI.FONT_BODY))
 	var society: Dictionary=profile.commerce.society.state
-	if not society.daily.is_empty(): box.add_child(TDUI.label("五镇家庭：工资 ¥%.2f · 外食 ¥%.2f · 基本生活 ¥%.2f\n未满足基本生活支出 ¥%.2f（没有暗中补款）"%[float(society.daily.wages_cents)/100,float(society.daily.dining_cents)/100,float(society.daily.necessities_cents)/100,float(society.daily.unmet_needs_cents)/100],17,TDUI.MUTED))
-	box.add_child(TDUI.label("本镇公共账户 ¥%.2f · 工资税与利润税收入分别记账"%(float(society.public[economy.home])/100),17,TDUI.MUTED))
+	if not society.daily.is_empty(): box.add_child(TDUI.label("五镇家庭：工资 ¥%.2f · 外食 ¥%.2f · 基本生活 ¥%.2f\n未满足基本生活支出 ¥%.2f（没有暗中补款）"%[float(society.daily.wages_cents)/100,float(society.daily.dining_cents)/100,float(society.daily.necessities_cents)/100,float(society.daily.unmet_needs_cents)/100],TDUI.FONT_BODY,TDUI.MUTED))
+	box.add_child(TDUI.label("本镇公共账户 ¥%.2f · 工资税与利润税收入分别记账"%(float(society.public[economy.home])/100),TDUI.FONT_BODY,TDUI.MUTED))
 
 func show_levels() -> void:
 	if profile==null: return
 	var box := _dialog("经营等级 · 升级奖励")
 	var view := TDLevelRewardsView.new()
 	box.add_child(view);view.setup(profile.progression,int(profile.research.snapshot().points))
-	if not profile.at_boundary(): box.add_child(TDUI.label("查阅期间营业继续；按 Esc 返回。",16,TDUI.MUTED))
+	if not profile.at_boundary(): box.add_child(TDUI.label("查阅期间营业继续；按 Esc 返回。",TDUI.FONT_CAPTION,TDUI.MUTED))
 
 func show_bank() -> void:
 	if profile==null or not profile.at_boundary(): return
@@ -863,9 +855,9 @@ func show_bank() -> void:
 	var box:=_dialog("商业街钱庄")
 	var bank:=profile.commerce.society.bank
 	var account:=bank.account("player")
-	box.add_child(TDUI.label("手头 ¥%.2f · 存款 ¥%.2f\n贷款本金 ¥%.2f · 应付利息 ¥%.2f"%[float(profile.shop.snapshot().money_cents)/100,float(account.deposit_cents)/100,float(account.principal_cents)/100,float(account.interest_cents)/100],22))
-	box.add_child(TDUI.label("授信上限 ¥%.2f · 借款日息 %.2f%% · 存款日息最高 %.2f%%\n期限%d天；到期日结尽力偿还，逾期停新增贷款，仍可继续经营。"%[float(bank.config.loan_limit_cents)/100,float(bank.config.loan_daily_bps)/100,float(bank.config.deposit_daily_bps)/100,bank.config.term_days],18,TDUI.MUTED))
-	if int(account.principal_cents)>0: box.add_child(TDUI.label("到期：第%d天%s"%[account.due_day," · 已逾期" if int(profile.shop.snapshot().day)>int(account.due_day) else ""],19,TDUI.ORANGE))
+	box.add_child(TDUI.label("手头 ¥%.2f · 存款 ¥%.2f\n贷款本金 ¥%.2f · 应付利息 ¥%.2f"%[float(profile.shop.snapshot().money_cents)/100,float(account.deposit_cents)/100,float(account.principal_cents)/100,float(account.interest_cents)/100],TDUI.FONT_SECTION))
+	box.add_child(TDUI.label("授信上限 ¥%.2f · 借款日息 %.2f%% · 存款日息最高 %.2f%%\n期限%d天；到期日结尽力偿还，逾期停新增贷款，仍可继续经营。"%[float(bank.config.loan_limit_cents)/100,float(bank.config.loan_daily_bps)/100,float(bank.config.deposit_daily_bps)/100,bank.config.term_days],TDUI.FONT_BODY,TDUI.MUTED))
+	if int(account.principal_cents)>0: box.add_child(TDUI.label("到期：第%d天%s"%[account.due_day," · 已逾期" if int(profile.shop.snapshot().day)>int(account.due_day) else ""],TDUI.FONT_BODY,TDUI.ORANGE))
 	var amount:=SpinBox.new();amount.min_value=.01;amount.max_value=10000;amount.step=.01;amount.value=100;amount.prefix="¥ ";amount.name="BankAmount";box.add_child(amount)
 	for action: String in ["deposit","withdraw","borrow","repay"]:
 		var labels: Dictionary={"deposit":"存入","withdraw":"取出","borrow":"借款","repay":"还款（先息后本）"}
@@ -875,7 +867,7 @@ func show_bank() -> void:
 			var result:=target.bank_action(action,roundi(amount.value*100),token)
 			_outcome(result)
 			if result.ok: show_bank()))
-	box.add_child(TDUI.label("存取借还只在筹备或日结办理，随当前存档保存。利率是游戏内可调参数。",16,TDUI.MUTED))
+	box.add_child(TDUI.label("存取借还只在筹备或日结办理，随当前存档保存。利率是游戏内可调参数。",TDUI.FONT_CAPTION,TDUI.MUTED))
 
 func show_competitor(parcel_id: String) -> void:
 	var box:=_dialog("街坊餐馆 · 经营告示")
@@ -884,15 +876,15 @@ func show_competitor(parcel_id: String) -> void:
 	var selected:=firms.filter(func(f:Dictionary)->bool:return f.parcel_id==parcel_id)
 	if selected.is_empty(): selected=firms
 	for firm: Dictionary in selected:
-		box.add_child(TDUI.label("%s · %s\n售价 ¥%.2f · 今日接待%d/%d · 在岗%d人\n最近经营利润 ¥%.2f · 现金 ¥%.2f"%[firm.name,"第%d天开业"%int(firm.open_day) if firm.status=="construction" else "营业中",float(firm.price_cents)/100,firm.served,firm.capacity,economy.society.staff(firm.id).size(),float(firm.last_profit_cents)/100,float(firm.cash_cents)/100],19))
-	box.add_child(TDUI.label("商业街可交易商铺剩余%d处。竞争者按盈利、人员和资金决定投资，不增加全镇用餐机会。"%economy.expansion.candidates(economy.state.home).size(),17,TDUI.MUTED))
+		box.add_child(TDUI.label("%s · %s\n售价 ¥%.2f · 今日接待%d/%d · 在岗%d人\n最近经营利润 ¥%.2f · 现金 ¥%.2f"%[firm.name,"第%d天开业"%int(firm.open_day) if firm.status=="construction" else "营业中",float(firm.price_cents)/100,firm.served,firm.capacity,economy.society.staff(firm.id).size(),float(firm.last_profit_cents)/100,float(firm.cash_cents)/100],TDUI.FONT_BODY))
+	box.add_child(TDUI.label("商业街可交易商铺剩余%d处。竞争者按盈利、人员和资金决定投资，不增加全镇用餐机会。"%economy.expansion.candidates(economy.state.home).size(),TDUI.FONT_BODY,TDUI.MUTED))
 	var decor:=TDEconomyMath.decor_of(profile.layout.pieces(),profile.world.catalog.wildcards)
-	box.add_child(TDUI.label("每个用餐机会只选择一次：比较本店菜单、这些竞品和在家吃饭。预算、菜价、路程、等待、品牌和装修一起决定。\n你的装修效果 %.0f（统一 %.0f，高端 %.0f）。到店后的改价不改已经生成的订单。"%[float(decor.effect),float(decor.unity),float(decor.luxury)],18))
+	box.add_child(TDUI.label("每个用餐机会只选择一次：比较本店菜单、这些竞品和在家吃饭。预算、菜价、路程、等待、品牌和装修一起决定。\n你的装修效果 %.0f（统一 %.0f，高端 %.0f）。到店后的改价不改已经生成的订单。"%[float(decor.effect),float(decor.unity),float(decor.luxury)],TDUI.FONT_BODY))
 	var stats:Dictionary=economy.state.day_stats
 	if int(stats.get("opportunities",0))>0:
-		box.add_child(TDUI.label("今日用餐机会 %d · 选本店 %d · 选竞品 %d · 在家或没买成 %d"%[int(stats.opportunities),int(stats.considered),int(stats.competitor),int(stats.outside)],18,TDUI.ORANGE))
+		box.add_child(TDUI.label("今日用餐机会 %d · 选本店 %d · 选竞品 %d · 在家或没买成 %d"%[int(stats.opportunities),int(stats.considered),int(stats.competitor),int(stats.outside)],TDUI.FONT_BODY,TDUI.ORANGE))
 	for event: Dictionary in economy.expansion.state.events:
-		if event.town_id==economy.state.home: box.add_child(TDUI.label("第%d天买地建店 · 支出 ¥%.2f · 第%d天开业"%[event.day,float(event.cost_cents)/100,event.open_day],16,TDUI.MUTED))
+		if event.town_id==economy.state.home: box.add_child(TDUI.label("第%d天买地建店 · 支出 ¥%.2f · 第%d天开业"%[event.day,float(event.cost_cents)/100,event.open_day],TDUI.FONT_CAPTION,TDUI.MUTED))
 
 func _ledger_name(id: String) -> String:
 	return {"purchase":"采购","consumption":"食材消耗","prepayment":"菜款","tip":"小费","refund_cancel":"取消退款","refund_served":"退菜退款","settlement":"日结","emergency_grant":"应急补助","world_adjustment":"小镇支出 / 收入","supply_delivery":"预订原料到货","operating_payment":"水电税费 / 偿还欠费","bank_transfer":"钱庄存取 / 借还","wage":"雇员工资"}.get(id,id)
@@ -995,10 +987,10 @@ func show_rest() -> void:
 	if profile==null or location!="cottage" or not profile.has_residence(): return
 	var box:=_dialog("小屋 · 床")
 	if profile.shop.snapshot().phase!="SETTLED":
-		box.add_child(TDUI.label("完成营业并打烊后，可以休息到下一天。读档会回到床边。",20))
+		box.add_child(TDUI.label("完成营业并打烊后，可以休息到下一天。读档会回到床边。",TDUI.FONT_BODY))
 		if profile.at_boundary(): box.add_child(TDUI.button("保存进度",func()->void:_outcome(save_game())))
 		return
-	box.add_child(TDUI.label("今日进度将保存，明早可以去集市重新备货。",20))
+	box.add_child(TDUI.label("今日进度将保存，明早可以去集市重新备货。",TDUI.FONT_BODY))
 	var owner:=profile;var day:=int(profile.shop.snapshot().day)
 	box.add_child(TDUI.button("休息到明天",func()->void:
 		if _rest_busy or profile!=owner or int(owner.shop.snapshot().day)!=day or owner.shop.snapshot().phase!="SETTLED": return
@@ -1027,24 +1019,24 @@ func show_pause() -> void:
 	var save:=TDUI.button("保存进度",func()->void:_outcome(save_game()));save.disabled=not profile.at_boundary();box.add_child(save)
 	box.add_child(TDUI.button("设置",show_settings))
 	box.add_child(TDUI.button("返回主菜单",request_title))
-	box.add_child(TDUI.label("睡觉或主动保存才记录进度（新档与02:00强制收尾除外）。退出不自动保存；未保存的装修、库存、金钱和研习都会回退。营业中及厨房未整理时不能保存。",16,TDUI.MUTED))
+	box.add_child(TDUI.label("睡觉或主动保存才记录进度（新档与02:00强制收尾除外）。退出不自动保存；未保存的装修、库存、金钱和研习都会回退。营业中及厨房未整理时不能保存。",TDUI.FONT_CAPTION,TDUI.MUTED))
 
 func show_settings() -> void:
 	var box:=_dialog("设置",true)
-	box.add_child(TDUI.label("主音量",20))
+	box.add_child(TDUI.label("主音量",TDUI.FONT_BODY))
 	var volume:=HSlider.new();volume.min_value=0;volume.max_value=1;volume.step=.05;volume.value=preferences.values.volume;volume.custom_minimum_size=Vector2(600,35);box.add_child(volume)
 	var fullscreen:=CheckBox.new();fullscreen.text="全屏显示";fullscreen.button_pressed=preferences.values.fullscreen;box.add_child(fullscreen)
 	box.add_child(TDUI.button("应用并保存",func()->void:_outcome(preferences.change(volume.value,fullscreen.button_pressed))))
 	if profile!=null:
-		box.add_child(TDUI.label("研习输入校准（毫秒）",20))
+		box.add_child(TDUI.label("研习输入校准（毫秒）",TDUI.FONT_BODY))
 		var offset:=SpinBox.new();offset.min_value=-200;offset.max_value=200;offset.step=5;offset.value=profile.research.snapshot().input_offset_sec*1000;box.add_child(offset)
 		box.add_child(TDUI.button("应用校准（随进度保存）",func()->void:_outcome(profile.research.calibrate(offset.value/1000.0))))
-	box.add_child(TDUI.label("WASD 移动 · Shift 疾跑 · E 交互 / 放取 · F 开灶 · Q 取锅料 · B 菜谱 · Esc 暂停",17,TDUI.MUTED))
+	box.add_child(TDUI.label("WASD 移动 · Shift 疾跑 · E 交互 / 放取 · F 开灶 · Q 取锅料 · B 菜谱 · Esc 暂停",TDUI.FONT_BODY,TDUI.MUTED))
 
 func request_title() -> void:
 	if profile==null: return
 	var box:=_dialog("放弃未保存的进度？",true)
-	box.add_child(TDUI.label("返回主菜单不会自动保存。未保存的装修、金钱、库存、研习与任务进度会一起回到上次存档。",20))
+	box.add_child(TDUI.label("返回主菜单不会自动保存。未保存的装修、金钱、库存、研习与任务进度会一起回到上次存档。",TDUI.FONT_BODY))
 	var save:=TDUI.button("保存并返回主菜单",func()->void:
 		var result:=save_game()
 		if result.ok: go_title()
@@ -1056,7 +1048,7 @@ func request_quit() -> void:
 	if _quitting: return
 	if profile==null: _finish_quit();return
 	var box:=_dialog("退出游戏",true)
-	box.add_child(TDUI.label("退出不会自动保存。未保存的装修、金钱、库存、研习与任务进度都会回退。需要保留时，请选择保存并退出。",20))
+	box.add_child(TDUI.label("退出不会自动保存。未保存的装修、金钱、库存、研习与任务进度都会回退。需要保留时，请选择保存并退出。",TDUI.FONT_BODY))
 	var save:=TDUI.button("保存并退出",func()->void:
 		var result:=save_game()
 		if result.ok: _finish_quit()
@@ -1123,9 +1115,9 @@ func show_console() -> void:
 	_notice.hide()
 	var frame: PanelContainer=box.get_parent().get_parent().get_parent()
 	frame.position=Vector2(80,48);frame.size=Vector2(1120,704)
-	box.add_child(TDUI.label("反引号 / Esc 返回 · ↑↓历史 · Tab补全 · 修改仅在内存，save主动保存",17,TDUI.MUTED))
+	box.add_child(TDUI.label("反引号 / Esc 返回 · ↑↓历史 · Tab补全 · 修改仅在内存，save主动保存",TDUI.FONT_BODY,TDUI.MUTED))
 	_console_output=RichTextLabel.new();_console_output.custom_minimum_size=Vector2(0,380);_console_output.selection_enabled=true;_console_output.scroll_following=true;_console_output.bbcode_enabled=false
-	_console_output.add_theme_font_size_override("normal_font_size",18);box.add_child(_console_output)
+	_console_output.add_theme_font_size_override("normal_font_size",TDUI.FONT_BODY);box.add_child(_console_output)
 	_console=LineEdit.new();_console.placeholder_text="先输入 debug，再输入 help；例 money add 10000";_console.custom_minimum_size.y=46;box.add_child(_console)
 	_console.keep_editing_on_text_submit=true
 	_console.max_length=512
@@ -1180,7 +1172,7 @@ func execute_command(command: String) -> String:
 func show_debug_tools() -> void:
 	if not debug_enabled: return
 	var box:=_dialog("调试工具 · 独立试验入口",true)
-	box.add_child(TDUI.label("这些旧原型用于复现和检查，与当前存档分开。",18))
+	box.add_child(TDUI.label("这些旧原型用于复现和检查，与当前存档分开。",TDUI.FONT_BODY))
 	for entry: String in ["厨房","营业","小镇","餐厅"]:
 		box.add_child(TDUI.button(entry,func()->void:
 			# Leave the real slot at a defined boundary; debug prototypes never own it.

@@ -26,7 +26,7 @@ func _ready() -> void:
 	_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_label.custom_minimum_size = Vector2(760, 0)
 	_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_label.add_theme_font_size_override("font_size", 15)
+	_label.add_theme_font_size_override("font_size", TDUI.FONT_CAPTION)
 	scroll.add_child(_label)
 	var row := HFlowContainer.new()
 	row.add_theme_constant_override("h_separation", 6)

@@ -32,7 +32,7 @@ func _input(event: InputEvent) -> void:
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	font = SystemFont.new(); font.font_names = PackedStringArray(["Microsoft YaHei UI","Microsoft YaHei"])
+	font = SystemFont.new(); font.font_names = PackedStringArray(["SimHei"])
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 func _gui_input(event: InputEvent) -> void:
@@ -87,8 +87,8 @@ func _draw() -> void:
 		for x: int in range(0,1280,160): draw_line(Vector2(x+13,y+18),Vector2(x+128,y+18),Color("3a483f"),2)
 	draw_rect(Rect2(0,0,1280,119),Color("17231f"))
 	draw_line(Vector2(28,119),Vector2(1252,119),Color("816945"),2)
-	_text("小 镇 食 堂",Vector2(32,34),20,GOLD)
-	_text(navigation_hint,Vector2(994,34),15,Color("9daa94"))
+	_text("小 镇 食 堂",Vector2(32,34),TDUI.FONT_BODY,GOLD)
+	_text(navigation_hint,Vector2(994,34),TDUI.FONT_CAPTION,Color("9daa94"))
 	_boxes.clear()
 	if not feedback.is_empty():
 		_draw_feedback()
@@ -98,17 +98,17 @@ func _draw() -> void:
 	_draw_beat()
 	if show_san and not lanes.is_empty() and lanes[0].day_san>=0.0:
 		draw_rect(Rect2(0,0,1280,800),Color(0,0,0,TDSanRules.vignette_alpha(lanes[0].day_san)))
-		_text("SAN %d"%int(lanes[0].day_san),Vector2(820,34),18,GOLD)
+		_text("SAN %d"%int(lanes[0].day_san),Vector2(820,34),TDUI.FONT_BODY,GOLD)
 
 func _draw_feedback() -> void:
-	_text("已送达 · 客人反馈",Vector2(32,85),26,GOLD)
+	_text("已送达 · 客人反馈",Vector2(32,85),TDUI.FONT_TITLE,GOLD)
 	for i: int in mini(2,customer_feedback.size()):
 		var result: Dictionary=customer_feedback[i]
 		var r:=Rect2(46+i*620,157,588,510); _panel(r,Color("283a31"))
-		_text(str(result.customer_name),r.position+Vector2(25,43),22,INK)
+		_text(str(result.customer_name),r.position+Vector2(25,43),TDUI.FONT_SECTION,INK)
 		_text("%.1f"%float(result.satisfaction),r.position+Vector2(25,102),42,GOLD)
-		_text("分   ·   %d 星"%int(result.stars),r.position+Vector2(138,99),18,GOLD)
-		_text("完成度 %.0f  ·  搭配度 %.0f"%[result.quality,result.harmony],r.position+Vector2(25,140),17,Color("b3c1a5"))
+		_text("分   ·   %d 星"%int(result.stars),r.position+Vector2(138,99),TDUI.FONT_BODY,GOLD)
+		_text("完成度 %.0f  ·  搭配度 %.0f"%[result.quality,result.harmony],r.position+Vector2(25,140),TDUI.FONT_BODY,Color("b3c1a5"))
 		draw_line(r.position+Vector2(25,164),r.position+Vector2(562,164),Color("536049"),1)
 		var reasons: Array=result.reasons.duplicate(true)
 		reasons.sort_custom(func(a:Dictionary,b:Dictionary)->bool: return float(a.get("penalty",0))>float(b.get("penalty",0)))
@@ -120,9 +120,9 @@ func _draw_feedback() -> void:
 			else:
 				var labels: Dictionary={"QTE_M1":"切菜节拍不稳","QTE_M2":"点火偏离目标","QTE_M3":"翻炒指令有失误","QTE_M4":"控温不够稳定","QTE_M5":"炖煮温度不稳","QTE_M6":"调味顺序或节拍出错","QTE_M7":"出锅时机偏早或偏晚","NEGATIVE_AROMA":"出现焦糊或油脂异味","MISSING_REQUIRED":"菜谱必需食材或工序缺失","EXTRA_INGREDIENTS":"加入了配方之外的材料","MISSING_AROMA":"还未做出菜谱期待的香气"}
 				message=labels.get(str(reason.id),str(reason.label))+"，影响了菜品品质。"
-			y+=_wrapped("• "+message,Vector2(r.position.x+25,y),530,18,2)*27+13
-		if reasons.is_empty(): _text("这次做法符合客人的期待。",r.position+Vector2(25,208),19,GREEN)
-	_text("E 返回厨房 · 再做一份，试试调整落刀、翻炒与控温的表现",Vector2(46,692),16,INK)
+			y+=_wrapped("• "+message,Vector2(r.position.x+25,y),530,TDUI.FONT_BODY,2)*27+13
+		if reasons.is_empty(): _text("这次做法符合客人的期待。",r.position+Vector2(25,208),TDUI.FONT_BODY,GREEN)
+	_text("E 返回厨房 · 再做一份，试试调整落刀、翻炒与控温的表现",Vector2(46,692),TDUI.FONT_CAPTION,INK)
 
 func _wrapped(value: String,at: Vector2,width: float,font_size: int,max_lines: int) -> int:
 	var line: String=""; var count: int=0
@@ -141,8 +141,8 @@ func _draw_lane(lane: TDCookingLane, area: Rect2, slot: int) -> void:
 	var p: Dictionary = lane.progress if lane.qte != null else (lane.thermal_progress if lane.thermal_qte != null else (lane.progress if lane.feedback_remaining()>0 else {}))
 	var module: String = str(p.get("pc_module",""))
 	var top_x: float = 32+slot*620 if lanes.size()>1 else 32
-	_text(("左锅 · " if lane.lane_index==0 else ("右锅 · " if lane.lane_index==1 else "砧板 · "))+str(dish.recipe_name),Vector2(top_x,71),24,INK)
-	_text("要求："+_requirements(lane),Vector2(top_x,99),15,Color("c0c8b0"))
+	_text(("左锅 · " if lane.lane_index==0 else ("右锅 · " if lane.lane_index==1 else "砧板 · "))+str(dish.recipe_name),Vector2(top_x,71),TDUI.FONT_SECTION,INK)
+	_text("要求："+_requirements(lane),Vector2(top_x,99),TDUI.FONT_CAPTION,Color("c0c8b0"))
 	_panel(area,Color("283a31"))
 	var label: String = lane.stage_label
 	if lane.qte==null and lane.thermal_qte!=null: label="炖煮控温" if p.get("kind")=="boil" else "炒制控温"
@@ -150,17 +150,17 @@ func _draw_lane(lane: TDCookingLane, area: Rect2, slot: int) -> void:
 	if lane.qte != null and lane.thermal_qte != null: label += "  /  控温"
 	if p.is_empty(): label = "准备 · " + _next_label(lane)
 	if dish.state=="plated": label="已出锅 · 返回灶台端起"
-	_text(label,area.position+Vector2(24,34),21,GOLD)
-	if lane.last_result != null and not lane.last_result.ok and lane.last_result.code=="INSUFFICIENT_STOCK": _text("调料不足 · 本次加料未生效",area.position+Vector2(24,62),18,Color("ef9371"))
+	_text(label,area.position+Vector2(24,34),TDUI.FONT_SECTION,GOLD)
+	if lane.last_result != null and not lane.last_result.ok and lane.last_result.code=="INSUFFICIENT_STOCK": _text("调料不足 · 本次加料未生效",area.position+Vector2(24,62),TDUI.FONT_BODY,Color("ef9371"))
 	var fine: float = 0
 	for item: Dictionary in dish.ingredients.values(): fine=maxf(fine,float(item.fine))
 	if module=="M1" and lane.qte != null: fine=minf(1,fine+float(p.get("cut_hits",0))/8)
 	var stats: Vector2 = area.position+Vector2(area.size.x-150,64)
-	_text("%.0f ℃"%float(attrs.temperature_c),stats,20,INK)
+	_text("%.0f ℃"%float(attrs.temperature_c),stats,TDUI.FONT_BODY,INK)
 	draw_rect(Rect2(stats+Vector2(100,-18),Vector2(7,66)),Color("455b4c"))
 	var h: float=clampf(float(attrs.temperature_c)/200,0,1)*62
 	draw_rect(Rect2(stats+Vector2(102,46-h),Vector2(3,h)),RED)
-	_text("细碎  %d / 8"%roundi(fine*8),stats+Vector2(0,24),14,Color("b3c1a5"))
+	_text("细碎  %d / 8"%roundi(fine*8),stats+Vector2(0,24),TDUI.FONT_CAPTION,Color("b3c1a5"))
 	for i: int in 8: _rect(stats+Vector2(i*11,31),Vector2(8,4),GREEN if i<roundi(fine*8) else Color("455949"))
 	var taste: float=0
 	var dominant: int=0
@@ -168,27 +168,27 @@ func _draw_lane(lane: TDCookingLane, area: Rect2, slot: int) -> void:
 		if float(attrs.flavor[i][1])/100>taste: taste=float(attrs.flavor[i][1])/100; dominant=i
 	draw_arc(stats+Vector2(36,55),14,-PI*.5,TAU-PI*.5,32,Color("465949"),4)
 	draw_arc(stats+Vector2(36,55),14,-PI*.5,TAU*clampf(taste,0.01,1)-PI*.5,32,GOLD,4)
-	_text(["酸","甜","苦","辣","咸","鲜","麻"][dominant],stats+Vector2(58,60),14,INK)
+	_text(["酸","甜","苦","辣","咸","鲜","麻"][dominant],stats+Vector2(58,60),TDUI.FONT_CAPTION,INK)
 	var center: Vector2=area.position+Vector2(area.size.x*(.5 if module=="M6" else .46),232 if module=="M6" else 200)
 	var s: float=.78 if lanes.size()>1 else 1.0
 	if module=="M6": s *= .68
 	_draw_food_action(center,s,lane,p,module)
 	if lane.automatic:
-		_text("熟练制作 · "+("已完成，返回后按 E 端盘" if dish.state=="plated" else "正在"+label),area.position+Vector2(26,area.size.y-54),21,GOLD)
-		_text("无需操作 · 可返回厨房处理其他订单 · 暂停时一起停止",area.position+Vector2(26,area.size.y-23),17,Color("c7cfb5"))
+		_text("熟练制作 · "+("已完成，返回后按 E 端盘" if dish.state=="plated" else "正在"+label),area.position+Vector2(26,area.size.y-54),TDUI.FONT_SECTION,GOLD)
+		_text("无需操作 · 可返回厨房处理其他订单 · 暂停时一起停止",area.position+Vector2(26,area.size.y-23),TDUI.FONT_BODY,Color("c7cfb5"))
 		return
 	if module=="M6": _cabinet(lane,area,p)
 	else: _symbols(lane,area,p)
 	if module=="M1":
-		_text("切面："+["横切","竖切","斜切"][int(p.get("cut_direction",0))]+"  ·  连击 ×%d"%int(p.get("combo",0)),area.position+Vector2(25,61),15,GREEN)
+		_text("切面："+["横切","竖切","斜切"][int(p.get("cut_direction",0))]+"  ·  连击 ×%d"%int(p.get("combo",0)),area.position+Vector2(25,61),TDUI.FONT_CAPTION,GREEN)
 	elif module=="M3" and p.get("qte_kind")=="sequence":
-		_text("连击 ×%d"%int(p.get("combo",0)),area.position+Vector2(25,68),16,GREEN)
+		_text("连击 ×%d"%int(p.get("combo",0)),area.position+Vector2(25,68),TDUI.FONT_CAPTION,GREEN)
 	if lane.thermal_qte != null:
 		if lanes.size()==1: _thermal(area,lane.thermal_progress)
 	elif not p.is_empty() and module!="M6":
 		var instruction: String={"M1":"按菜谱打谱  ·  空格落刀 / A、D 转向","M2":"游标到绿区中心时按空格","M3":"按谱按键  ·  最后一拍空格收势","M6":"左键按住调料 → 到量松开 · 无需控温","M7":"看提示按住空格  →  绿区中心松开"}.get(module,"跟随拍点")
 		if p.get("qte_kind")=="charge" and module=="M3": instruction="长按空格 · 上笼八拍后松开"
-		_text(instruction,area.position+Vector2(26,area.size.y-23),17,Color("c7cfb5"))
+		_text(instruction,area.position+Vector2(26,area.size.y-23),TDUI.FONT_BODY,Color("c7cfb5"))
 	_draw_judgement(lane,area)
 
 func _requirements(lane: TDCookingLane) -> String:
@@ -300,7 +300,7 @@ func _symbols(lane: TDCookingLane,area: Rect2,p: Dictionary) -> void:
 			var preview: float=float(p.get("preview_remaining_sec",0))
 			var hint: String="准备  %.1f 秒后按住空格"%preview if preview>0 else ("现在按住空格" if not p.get("charge_started",false) else "保持按住  ·  到中心松开")
 			if p.get("ready_to_finish",false): hint="本步完成"
-			_text(hint,c+Vector2(-155,-43),20,GOLD)
+			_text(hint,c+Vector2(-155,-43),TDUI.FONT_BODY,GOLD)
 		draw_rect(Rect2(bar.position+Vector2(bar.size.x*low,0),Vector2(bar.size.x*(high-low),bar.size.y)),GREEN)
 		draw_line(bar.position+Vector2(bar.size.x*(low+high)*.5,-6),bar.position+Vector2(bar.size.x*(low+high)*.5,34),GOLD,2)
 		draw_rect(Rect2(bar.position+Vector2(bar.size.x*position-3,-5),Vector2(6,38)),INK)
@@ -329,7 +329,7 @@ func _cabinet(lane: TDCookingLane,area: Rect2,p: Dictionary) -> void:
 		var label: String=spice_name(choices[i])
 		var label_size: int=clampi(floori(76.0/maxi(1,label.length())),10,16)
 		_text(label,r.position+Vector2(32,25),label_size,Color("888e88") if empty else INK)
-		_text("已用完" if empty else "余%.2f"%(float(lane.session.material_units(choices[i]))/1000),r.position+Vector2(30,43),12,Color("929992") if empty else GOLD)
+		_text("已用完" if empty else "余%.2f"%(float(lane.session.material_units(choices[i]))/1000),r.position+Vector2(30,43),TDUI.FONT_MICRO,Color("929992") if empty else GOLD)
 		if active and bool(p.get("hold_pressed",false)):
 			draw_circle(r.end-Vector2(9,9),6,GREEN)
 		_boxes.append({"rect":r,"lane":lane.lane_index,"id":choices[i]})
@@ -337,9 +337,9 @@ func _cabinet(lane: TDCookingLane,area: Rect2,p: Dictionary) -> void:
 	var center: Vector2=area.position+Vector2(area.size.x*.5,435)
 	_panel(Rect2(center-Vector2(width*.5,22),Vector2(width,91)),Color("142a25"))
 	var headline: String=str(status.title)
-	_text(headline,center+Vector2(-font.get_string_size(headline,HORIZONTAL_ALIGNMENT_LEFT,-1,26).x*.5,-5),26,color)
+	_text(headline,center+Vector2(-font.get_string_size(headline,HORIZONTAL_ALIGNMENT_LEFT,-1,26).x*.5,-5),TDUI.FONT_TITLE,color)
 	var sub: String=str(status.detail)
-	_text(sub,center+Vector2(-font.get_string_size(sub,HORIZONTAL_ALIGNMENT_LEFT,-1,16).x*.5,24),16,INK)
+	_text(sub,center+Vector2(-font.get_string_size(sub,HORIZONTAL_ALIGNMENT_LEFT,-1,16).x*.5,24),TDUI.FONT_CAPTION,INK)
 	var bar:=Rect2(center+Vector2(-width*.5+18,44),Vector2(width-36,22))
 	draw_rect(bar,Color("3c4d45"))
 	if int(p.get("hold_index",-1))>=0 and not p.get("free_seasoning",false):
@@ -352,12 +352,12 @@ func _cabinet(lane: TDCookingLane,area: Rect2,p: Dictionary) -> void:
 	else:
 		draw_rect(Rect2(bar.position,Vector2(bar.size.x*float(status.ratio),22)),color)
 	if p.get("free_seasoning",false):
-		_text("任意调料 · 剩余 %.1f秒"%float(p.remaining_sec),area.position+Vector2(24,61),17,GOLD)
+		_text("任意调料 · 剩余 %.1f秒"%float(p.remaining_sec),area.position+Vector2(24,61),TDUI.FONT_BODY,GOLD)
 	else:
 		var names: Array[String]=[]
 		for command: String in p.get("sequence",[]):
 			names.append(spice_name(command.trim_prefix("spice:")))
-		_text("左键按住 · 绿灯松开   "+" → ".join(names),area.position+Vector2(24,61),17,GOLD)
+		_text("左键按住 · 绿灯松开   "+" → ".join(names),area.position+Vector2(24,61),TDUI.FONT_BODY,GOLD)
 
 static func spice_name(id: String) -> String:
 	var index: int=SPICES.find(id)
@@ -399,8 +399,8 @@ func _thermal(area: Rect2,p: Dictionary) -> void:
 	draw_rect(Rect2(bar.position+Vector2(bar.size.x*float(p.target_min),0),Vector2(bar.size.x*(float(p.target_max)-float(p.target_min)),25)),Color("5f916a"))
 	draw_circle(bar.position+Vector2(bar.size.x*float(p.get("power",.5)),12),8,GOLD)
 	var hint: String="调味中 · 火候托管，不计控温分" if p.get("control_suspended",false) else "鼠标吸引  ·  稳定 %d%%"%roundi(float(p.get("inside_sec",0))/maxf(.001,float(p.get("assessed_sec",p.elapsed_sec)))*100)
-	_text(hint,bar.position+Vector2(0,48),15,INK)
-	_text("%.1fs"%float(p.remaining_sec),bar.position+Vector2(bar.size.x-60,48),15,GOLD)
+	_text(hint,bar.position+Vector2(0,48),TDUI.FONT_CAPTION,INK)
+	_text("%.1fs"%float(p.remaining_sec),bar.position+Vector2(bar.size.x-60,48),TDUI.FONT_CAPTION,GOLD)
 
 func _dual_thermal() -> void:
 	_panel(Rect2(46,589,1208,81),Color("20322a"))
@@ -409,14 +409,14 @@ func _dual_thermal() -> void:
 		if lane.thermal_qte==null: continue
 		var p: Dictionary=lane.thermal_progress
 		var bar:=Rect2(165,605+i*32,900,20)
-		_text(("左锅" if lane.lane_index==0 else "右锅")+(" · 托管" if p.get("control_suspended",false) else " · 鼠标"),Vector2(63,bar.position.y+15),14,INK)
+		_text(("左锅" if lane.lane_index==0 else "右锅")+(" · 托管" if p.get("control_suspended",false) else " · 鼠标"),Vector2(63,bar.position.y+15),TDUI.FONT_CAPTION,INK)
 		draw_rect(bar,Color("405346"))
 		draw_rect(Rect2(bar.position+Vector2(bar.size.x*float(p.target_min),0),Vector2(bar.size.x*(float(p.target_max)-float(p.target_min)),20)),Color("5f916a"))
 		draw_circle(bar.position+Vector2(bar.size.x*float(p.get("power",.5)),10),7,GOLD)
 		if float(p.get("attraction",0))>0:
 			var x: float=bar.position.x+bar.size.x*float(p.control)
 			draw_line(Vector2(x,bar.position.y-3),Vector2(x,bar.end.y+3),INK,1)
-		_text("暂停判分" if p.get("control_suspended",false) else "稳定 %d%% · %.1fs"%[roundi(float(p.inside_sec)/maxf(.001,float(p.get("assessed_sec",p.elapsed_sec)))*100),float(p.remaining_sec)],Vector2(1082,bar.position.y+15),13,INK)
+		_text("暂停判分" if p.get("control_suspended",false) else "稳定 %d%% · %.1fs"%[roundi(float(p.inside_sec)/maxf(.001,float(p.get("assessed_sec",p.elapsed_sec)))*100),float(p.remaining_sec)],Vector2(1082,bar.position.y+15),TDUI.FONT_CAPTION,INK)
 
 func _draw_notes(area: Rect2,p: Dictionary,actions: Array,lane_index: int,san: float=-1.0) -> void:
 	var times: Array=p.get("beat_times_sec",[])
@@ -437,14 +437,14 @@ func _draw_notes(area: Rect2,p: Dictionary,actions: Array,lane_index: int,san: f
 		if TDSanRules.shows_fake(san,i,until_note,.5):
 			var fakes: Array[String]=["空格","A","D","W","S"]
 			label=fakes[posmod(i+1,fakes.size())]
-		_text(label,point-Vector2(font.get_string_size(label,HORIZONTAL_ALIGNMENT_LEFT,-1,20).x*.5,-7),20,BG if grade!="pending" else INK)
+		_text(label,point-Vector2(font.get_string_size(label,HORIZONTAL_ALIGNMENT_LEFT,-1,20).x*.5,-7),TDUI.FONT_BODY,BG if grade!="pending" else INK)
 		var caption: String={"primary":"落刀","rotate_left":"左转","rotate_right":"右转"}.get(actions[i],"") if p.get("pc_module")=="M1" else ""
 		if grade!="pending": caption={"perfect":"完美","good":"良好","miss":"失误"}[grade]
-		_text(caption,point+Vector2(-16,47),15,color if grade!="pending" else INK)
+		_text(caption,point+Vector2(-16,47),TDUI.FONT_CAPTION,color if grade!="pending" else INK)
 		if i==next and i<times.size():
 			var until: float=float(times[i])-elapsed
 			draw_arc(point,26+clampf(until,0,1)*28,0,TAU,48,GOLD,3)
-			if until>.1: _text("%.1f 秒"%until,point+Vector2(-25,-65),17,GOLD)
+			if until>.1: _text("%.1f 秒"%until,point+Vector2(-25,-65),TDUI.FONT_BODY,GOLD)
 
 func _draw_judgement(lane: TDCookingLane,area: Rect2) -> void:
 	if lane.feedback_remaining()<=0: return
@@ -455,8 +455,8 @@ func _draw_judgement(lane: TDCookingLane,area: Rect2) -> void:
 	var anchor: Vector2=area.position+Vector2(25,100)
 	if lane.progress.get("pc_module")=="M6": anchor=area.position+Vector2(area.size.x*.5-125,310)
 	if reason=="HOLD_STARTED":
-		_text("保持按住",anchor,25,GOLD)
-		_text("到目标用量再松开",anchor+Vector2(2,25),16,GOLD)
+		_text("保持按住",anchor,TDUI.FONT_TITLE,GOLD)
+		_text("到目标用量再松开",anchor+Vector2(2,25),TDUI.FONT_CAPTION,GOLD)
 		return
 	var detail: String={"WRONG_KEY":"按键不对","WRONG_DIRECTION":"漏了转向，切面不对","MISSED_NOTE":"漏拍","OUTSIDE_WINDOW":"没有到落点","TIMEOUT":"未完成操作","EARLY_RELEASE":"松手早了","OVERCHARGED":"松手晚了"}.get(reason,"")
 	if reason=="THERMAL_RESULT": detail="控温阶段完成"
@@ -467,8 +467,8 @@ func _draw_judgement(lane: TDCookingLane,area: Rect2) -> void:
 	if detail.is_empty():
 		var error: float=float(event.get("error_sec",0))*1000
 		detail="正中拍点" if absf(error)<1 else ("早了 %.0f 毫秒"%absf(error) if error<0 else "晚了 %.0f 毫秒"%error)
-	_text({"perfect":"PERFECT  完美","good":"GOOD  良好","miss":"MISS  失误"}.get(grade,grade),anchor,27,color)
-	_text(detail,anchor+Vector2(2,25),16,color)
+	_text({"perfect":"PERFECT  完美","good":"GOOD  良好","miss":"MISS  失误"}.get(grade,grade),anchor,TDUI.FONT_TITLE,color)
+	_text(detail,anchor+Vector2(2,25),TDUI.FONT_CAPTION,color)
 
 func _draw_beat() -> void:
 	draw_rect(Rect2(0,702,1280,98),Color("17231f"))
@@ -479,17 +479,17 @@ func _draw_beat() -> void:
 		draw_line(Vector2(x,733),Vector2(x,761),GOLD if index%4==0 else (INK if pulse else Color("6b7e68")),4 if index%4==0 else 2)
 	draw_line(Vector2(64,747),Vector2(1216,747),Color("63705c"),1)
 	draw_circle(Vector2(64+phase/4*1152,747),7,INK)
-	_text("共用节拍  %d BPM"%bpm,Vector2(64,785),14,Color("abb79c"))
+	_text("共用节拍  %d BPM"%bpm,Vector2(64,785),TDUI.FONT_CAPTION,Color("abb79c"))
 	for index: int in mini(2,simmer_meters.size()):
 		var meter: Dictionary=simmer_meters[index]; var x: float=445+index*395
-		_text(str(meter.name),Vector2(x,785),14,INK)
+		_text(str(meter.name),Vector2(x,785),TDUI.FONT_CAPTION,INK)
 		draw_rect(Rect2(x+102,774,132,10),Color("42533f")); draw_rect(Rect2(x+102,774,132*float(meter.ratio),10),GREEN)
-		_text("%d%% · %.1fs"%[roundi(float(meter.ratio)*100),float(meter.remaining_sec)],Vector2(x+246,785),13,GOLD)
+		_text("%d%% · %.1fs"%[roundi(float(meter.ratio)*100),float(meter.remaining_sec)],Vector2(x+246,785),TDUI.FONT_CAPTION,GOLD)
 
 func _panel(rect: Rect2,color: Color) -> void:
 	var box:=StyleBoxFlat.new(); box.bg_color=color; box.border_color=Color("74674a"); box.set_border_width_all(1); box.set_corner_radius_all(8); box.shadow_color=Color(0,0,0,.15); box.shadow_size=6
 	draw_style_box(box,rect)
-func _text(value: String,at: Vector2,font_size: int=18,color: Color=INK) -> void: draw_string(font,at,value,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size,color)
+func _text(value: String,at: Vector2,font_size: int=TDUI.FONT_BODY,color: Color=INK) -> void: draw_string(font,at,value,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size,color)
 func _rect(at: Vector2,dimensions: Vector2,color: Color) -> void: draw_rect(Rect2(at.round(),dimensions.round()),color)
 func _ellipse(at: Vector2,radius: Vector2,color: Color) -> void:
 	var points:=PackedVector2Array()

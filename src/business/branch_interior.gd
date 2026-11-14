@@ -58,8 +58,8 @@ func _ready() -> void:
 	var panel:=PanelContainer.new();panel.position=Vector2(20,670);panel.size=Vector2(1240,110);panel.theme=TDManagementPanels.theme();_layer.add_child(panel)
 	var margin:=MarginContainer.new();margin.add_theme_constant_override("margin_left",16);margin.add_theme_constant_override("margin_top",10);panel.add_child(margin)
 	var lines:=VBoxContainer.new();margin.add_child(lines)
-	_caption=TDUI.label("",21,TDUI.ORANGE);lines.add_child(_caption)
-	_hint=TDUI.label("",17);lines.add_child(_hint)
+	_caption=TDUI.label("",TDUI.FONT_SECTION,TDUI.ORANGE);lines.add_child(_caption)
+	_hint=TDUI.label("",TDUI.FONT_BODY);lines.add_child(_hint)
 	show_room("restaurant");refresh_staff()
 
 func _isolate_physics(node: Node) -> void:

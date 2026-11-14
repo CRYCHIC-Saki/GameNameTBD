@@ -26,15 +26,5 @@ static func direction_index(facing: Vector2i) -> int:
 	return 0
 
 static func texture(facing: Vector2i, walk_frame: int = -1) -> Texture2D:
-	var direction := direction_index(facing)
-	var frame := clampi(walk_frame, -1, 3)
-	if frame == 1 or frame == 3: return texture(facing)
-	var key := Vector2i(direction, frame)
-	if _textures.has(key): return _textures[key]
-	var atlas := AtlasTexture.new()
-	if frame >= 0 and _walk_atlas == null: _walk_atlas = load(WALK_PATH)
-	atlas.atlas = IDLE_ATLAS if frame < 0 else _walk_atlas
-	atlas.region = IDLE_REGIONS[direction] if frame < 0 else WALK_REGIONS[direction * 2 + (frame >> 1)]
-	atlas.filter_clip = true
-	_textures[key] = atlas
-	return atlas
+	var row: int=1 if walk_frame==0 else (2 if walk_frame==2 else 0)
+	return TDRedrawArt.cell("res://assets/redraw-v1/walker-hero.png",row*4+direction_index(facing),4,3)

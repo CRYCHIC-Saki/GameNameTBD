@@ -1,0 +1,32 @@
+[
+  {
+    "file": "parchment.png",
+    "sha256": "0ad41f06012366b97354f3069ef4f36b8e3ce1d4f3dab532b15a60d06762928f",
+    "bytes": 2293234
+  },
+  {
+    "file": "portrait-aling-v2.png",
+    "sha256": "59d69cab3d8ee62103b92d82629f8409a05d7f65b46584443f1bf2ea630c282a",
+    "bytes": 1698584
+  },
+  {
+    "file": "portrait-chen-v2.png",
+    "sha256": "059ec6bdec0386cef8e47f71f94b3a28983ee5da2c4e09f1d7cf19fdb43fd66c",
+    "bytes": 2097978
+  },
+  {
+    "file": "portrait-hero-v2.png",
+    "sha256": "e7b66600d542a99a355f06570ac1bf29ff84a3ce8e9b5acc41295838cda7be36",
+    "bytes": 1740545
+  },
+  {
+    "file": "portrait-luo-v2.png",
+    "sha256": "de26ac8a1b6ed4d34d0e76701b51ba0c41604ac032bfcd533e78f30f38b1300b",
+    "bytes": 2170007
+  },
+  {
+    "file": "wood-light.png",
+    "sha256": "7059d448ee531e0a1bb19f21a9825f6a4e0534bce5ed7efd802cc86a312fd97c",
+    "bytes": 1971157
+  }
+]

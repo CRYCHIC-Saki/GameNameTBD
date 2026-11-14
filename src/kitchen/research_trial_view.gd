@@ -30,7 +30,7 @@ func _ready() -> void:
 	_cancel_button=_button("放下研习 · 资格保留",Rect2(1000,48,250,30),_cancel)
 	_button("暂停 / 恢复",Rect2(1000,84,250,30),func()->void:pause_requested.emit())
 	_message=Label.new(); _message.position=Vector2(260,674); _message.size=Vector2(760,27)
-	_message.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;_message.add_theme_font_size_override("font_size",15);add_child(_message)
+	_message.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;_message.add_theme_font_size_override("font_size",TDUI.FONT_CAPTION);add_child(_message)
 	_message.text="%s · 烹饪研习 · 80分解锁 · 失败可立即免费重试"%session.catalog.node(recipe_id).name
 	_result_panel=Control.new();_result_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);add_child(_result_panel);_result_panel.hide()
 	_continue=_button("返回图谱",Rect2(518,586,244,52),_return_result);_continue.hide()
@@ -59,15 +59,15 @@ func _process(_delta:float) -> void:
 
 func _show_result() -> void:
 	_result_panel.show()
-	var bg:=ColorRect.new();bg.color=Color("182420");bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);_result_panel.add_child(bg)
+	var bg:=Panel.new();bg.add_theme_stylebox_override("panel",TDUI.wood(TDUI.Surface.FRAME,0));bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);_result_panel.add_child(bg)
 	_label("研习成功" if _result.data.passed else "再试一次",Vector2(300,180),42)
-	_label("%s   ·   %.1f / 100"%[session.catalog.node(recipe_id).name,float(_result.data.score)],Vector2(200,260),32)
+	_label("%s   ·   %.1f / 100"%[session.catalog.node(recipe_id).name,float(_result.data.score)],Vector2(200,260),TDUI.FONT_DISPLAY)
 	var names:Dictionary={"M1":"切配","M2":"点火","M3":"翻炒 / 上笼","M4":"控温","M5":"煮制","M6":"调味","M7":"出锅"}
 	var lines:Array[String]=[]
 	for id:String in _result.data.modules:
 		lines.append("%s  %.0f%%"%[names.get(id,id),float(_result.data.modules[id].quality)*100])
-	_label("  ·  ".join(lines),Vector2(80,370),19)
-	_label("已收录菜谱，可在厨房制作" if _result.data.passed else "按厨房提示操作，80分即可学会",Vector2(200,460),22)
+	_label("  ·  ".join(lines),Vector2(80,370),TDUI.FONT_BODY)
+	_label("已收录菜谱，可在厨房制作" if _result.data.passed else "按厨房提示操作，80分即可学会",Vector2(200,460),TDUI.FONT_SECTION)
 	move_child(_message,get_child_count()-1)
 
 func _label(text:String,at:Vector2,font_size:int) -> void:

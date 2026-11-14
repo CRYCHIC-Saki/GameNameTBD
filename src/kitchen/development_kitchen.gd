@@ -170,15 +170,15 @@ func _build_ui() -> void:
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	nav.add_child(spacer)
 	nav.add_child(TDUI.button("暂停 / 恢复  Esc", func() -> void: pause_requested.emit()))
-	column.add_child(TDUI.label("开发厨房", 34))
-	column.add_child(TDUI.label("连续输入样例 · 开发专用", 18, TDUI.ORANGE))
-	column.add_child(TDUI.label("点击开始，然后长按空格或下方按钮。松开会停止处理；6 秒内达到目标即可完成。", 18, TDUI.MUTED))
-	_status = TDUI.label("正在准备", 24)
+	column.add_child(TDUI.label("开发厨房", TDUI.FONT_DISPLAY))
+	column.add_child(TDUI.label("连续输入样例 · 开发专用", TDUI.FONT_BODY, TDUI.ORANGE))
+	column.add_child(TDUI.label("点击开始，然后长按空格或下方按钮。松开会停止处理；6 秒内达到目标即可完成。", TDUI.FONT_BODY, TDUI.MUTED))
+	_status = TDUI.label("正在准备", TDUI.FONT_SECTION)
 	column.add_child(_status)
 	_progress = ProgressBar.new()
 	_progress.custom_minimum_size.y = 28
 	column.add_child(_progress)
-	_metrics = TDUI.label("", 19)
+	_metrics = TDUI.label("", TDUI.FONT_BODY)
 	column.add_child(_metrics)
 	var actions := HBoxContainer.new()
 	actions.add_theme_constant_override("separation", 14)
@@ -191,11 +191,11 @@ func _build_ui() -> void:
 	_hold_button.button_up.connect(func() -> void: route_strength(0.0))
 	actions.add_child(_hold_button)
 	actions.add_child(TDUI.button("重新开始  R", func() -> void: restart_requested.emit()))
-	_result_label = TDUI.label("此样例验证输入与模块协作，不代表完整做菜玩法。", 18, TDUI.MUTED)
+	_result_label = TDUI.label("此样例验证输入与模块协作，不代表完整做菜玩法。", TDUI.FONT_BODY, TDUI.MUTED)
 	column.add_child(_result_label)
 	_debug = RichTextLabel.new()
 	_debug.custom_minimum_size.y = 160
 	_debug.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_debug.selection_enabled = true
-	_debug.add_theme_font_size_override("normal_font_size", 14)
+	_debug.add_theme_font_size_override("normal_font_size", TDUI.FONT_CAPTION)
 	column.add_child(_debug)

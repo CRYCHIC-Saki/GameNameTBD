@@ -1,12 +1,12 @@
 class_name TDEnvironmentArt
 extends RefCounted
 ## Read-only generated atlases. No mutable image state is shared with a game session.
-const TOWN := preload("res://assets/town/town-sprites-v3.png")
-const PROPS := preload("res://assets/town/diner-props-v2.png")
-const RESIDENTIAL := preload("res://assets/town/residential-houses-v2.png")
-const FACTORIES := preload("res://assets/town/supply-factories-v1.png")
-const DINER := preload("res://assets/town/diner-front-v1.png")
-const RESIDENTIAL_REGIONS: Array[Rect2i]=[Rect2i(0,0,660,540),Rect2i(660,0,594,540),Rect2i(0,540,662,714),Rect2i(662,540,592,714)]
+const TOWN := preload("res://assets/town/town-sprites-v4.png")
+const PROPS := preload("res://assets/redraw-v1/diner-props.png")
+const RESIDENTIAL := preload("res://assets/town/residential-houses-v3.png")
+const FACTORIES := preload("res://assets/town/supply-factories-v2.png")
+const DINER := preload("res://assets/town/restaurant-chinese-v1.png")
+const RESIDENTIAL_REGIONS: Array[Rect2i]=[Rect2i(0,0,632,536),Rect2i(632,0,658,536),Rect2i(0,536,652,683),Rect2i(652,536,638,683)]
 static var _cache: Dictionary={}
 
 static func sprite(index: int, town: bool = false) -> AtlasTexture:
@@ -19,10 +19,10 @@ static func sprite(index: int, town: bool = false) -> AtlasTexture:
 	if town:
 		# Generated objects are not uniformly spaced; explicit regions avoid neighbours.
 		var regions: Array[Rect2]=[
-			Rect2(0,0,384,326),Rect2(384,0,312,326),Rect2(696,0,304,326),Rect2(1000,0,254,326),
-			Rect2(0,326,384,304),Rect2(384,326,370,304),Rect2(754,326,246,304),Rect2(1000,326,254,304),
-			Rect2(0,630,384,306),Rect2(384,630,312,306),Rect2(696,630,344,306),Rect2(1040,630,214,306),
-			Rect2(0,936,384,318),Rect2(384,936,358,318),Rect2(742,936,258,318),Rect2(1000,936,254,318)]
+			Rect2(0,0,361,329),Rect2(361,0,309,329),Rect2(670,0,309,329),Rect2(979,0,298,329),
+			Rect2(0,329,357,293),Rect2(357,329,382,293),Rect2(739,329,229,293),Rect2(968,329,309,293),
+			Rect2(0,622,361,309),Rect2(361,622,310,309),Rect2(671,622,345,309),Rect2(1016,622,261,309),
+			Rect2(0,931,348,300),Rect2(348,931,364,300),Rect2(712,931,251,300),Rect2(963,931,314,300)]
 		tile.region=regions[index]
 		var source:=TOWN.get_image()
 		if source.is_compressed(): source.decompress()
@@ -45,7 +45,14 @@ static func residential(index: int) -> AtlasTexture:
 	var size: Vector2i=RESIDENTIAL_REGIONS[index].size
 	var origin: Vector2i=RESIDENTIAL_REGIONS[index].position
 	# Keep each quadrant separate; trim transparent margins only in the read-only atlas region.
-	var used:=source.get_region(Rect2i(origin,size)).get_used_rect()
+	var crop:=source.get_region(Rect2i(origin,size))
+	# Almost transparent generation residue must not count as courtyard margins.
+	var minimum:=crop.get_size();var maximum:=Vector2i(-1,-1)
+	for y: int in crop.get_height():
+		for x: int in crop.get_width():
+			if crop.get_pixel(x,y).a<.15: continue
+			minimum=minimum.min(Vector2i(x,y));maximum=maximum.max(Vector2i(x,y))
+	var used:=Rect2i(minimum,maximum-minimum+Vector2i.ONE)
 	var tile:=AtlasTexture.new();tile.atlas=RESIDENTIAL;tile.filter_clip=true
 	tile.region=Rect2(used.position+origin,used.size)
 	_cache[key]=tile
@@ -89,9 +96,13 @@ static func draw_factory(canvas: CanvasItem,supply: String,feet: Vector2,width: 
 	var tint:=Color(0.82,0.84,0.86) if unfinished else Color.WHITE
 	canvas.draw_texture_rect(texture,Rect2(feet-Vector2(width*.5,height*.97),Vector2(width,height)),false,tint)
 
-static func draw_residential(canvas: CanvasItem,index: int,rect: Rect2) -> void:
+static func fit_in_plot(texture: Texture2D,rect: Rect2,_label_space: float=0.0) -> Rect2:
+	# Use the complete vacant area. Keep the facade bottom against the street,
+	# rather than shrinking it to reserve a caption strip or centring it vertically.
+	var area:=rect.grow(-4.0)
+	var size:=texture.get_size()*minf(area.size.x/texture.get_width(),area.size.y/texture.get_height())
+	return Rect2(Vector2(area.get_center().x-size.x*.5,area.end.y-size.y),size)
+
+static func draw_residential(canvas: CanvasItem,index: int,rect: Rect2,_display_scale: float=1.0) -> void:
 	var texture:=residential(index)
-	var width: float=minf(rect.size.x,rect.size.y*texture.get_width()/texture.get_height())
-	var height: float=width*texture.get_height()/texture.get_width()
-	var feet:=Vector2(rect.get_center().x,rect.end.y)
-	canvas.draw_texture_rect(texture,Rect2(feet-Vector2(width*.5,height),Vector2(width,height)),false)
+	canvas.draw_texture_rect(texture,fit_in_plot(texture,rect),false)

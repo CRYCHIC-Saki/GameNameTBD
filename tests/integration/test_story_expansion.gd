@@ -51,7 +51,8 @@ func test_movie_uses_full_screen_without_gal_box_and_restores_dialogue() -> void
 	assert_true(view.get_node("FilmControls").visible);assert_eq(view._cg.size,view.size)
 	var minute:=shell.profile.characters.clock.minute
 	talk.tick(talk.cg_duration);view._refresh()
-	assert_true(view.get_node("Box").visible);assert_false(view.get_node("Portrait").visible)
+	assert_true(view.get_node("Box").visible);assert_true(view.get_node("Portrait").visible)
+	assert_gt(view._panel.z_index,view._portrait.z_index)
 	assert_true(view.get_node("FilmControls").visible);assert_eq(talk.full_text(),"终于到了。吾之舌啊，准备迎接万国料理的洗礼！")
 	assert_eq(shell.profile.characters.clock.minute,minute);assert_false(shell.town._player.controls_enabled)
 	view.finish_now();assert_true(shell.town._player.controls_enabled)

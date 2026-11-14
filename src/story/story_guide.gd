@@ -28,16 +28,16 @@ func _ready() -> void:
 	process_mode=Node.PROCESS_MODE_ALWAYS;mouse_filter=Control.MOUSE_FILTER_IGNORE
 	_layer=CanvasLayer.new();_layer.layer=50;add_child(_layer)
 	_trail=TDQuestTrail.new();_layer.add_child(_trail)
-	_card=PanelContainer.new();_card.position=Vector2(26,78);_card.size=Vector2(342,116)
+	_card=PanelContainer.new();_card.position=Vector2(26,118);_card.size=Vector2(372,142)
 	_card.mouse_filter=Control.MOUSE_FILTER_IGNORE;_card.theme=TDUI.theme();_layer.add_child(_card)
 	var box:=VBoxContainer.new();box.mouse_filter=Control.MOUSE_FILTER_IGNORE;_card.add_child(box)
-	_title=TDUI.label("第一口异端",20,Color("efd69b"));box.add_child(_title)
-	_hint=TDUI.label("",17);_hint.custom_minimum_size.x=330;_hint.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;box.add_child(_hint)
-	box.add_child(TDUI.label("J 任务    T 追踪开关    B 菜谱",14,TDUI.MUTED))
+	_title=TDUI.label("第一口异端",TDUI.FONT_BODY,TDUI.ORANGE);box.add_child(_title)
+	_hint=TDUI.label("",TDUI.FONT_BODY);_hint.custom_minimum_size.x=348;_hint.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;box.add_child(_hint)
+	box.add_child(TDUI.label("J 任务    T 追踪开关    B 菜谱",TDUI.FONT_CAPTION,TDUI.MUTED))
 	_bark_portrait=TextureRect.new();_bark_portrait.position=Vector2(1025,350);_bark_portrait.size=Vector2(150,170)
 	_bark_portrait.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;_bark_portrait.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_bark_portrait.texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST;_bark_portrait.mouse_filter=Control.MOUSE_FILTER_IGNORE;_layer.add_child(_bark_portrait)
-	_bark=TDUI.label("",20,Color("ffe4a0"));_bark.position=Vector2(955,530);_bark.size=Vector2(300,120);_bark.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;_bark.mouse_filter=Control.MOUSE_FILTER_IGNORE;_layer.add_child(_bark)
+	_bark=TDUI.label("",TDUI.FONT_BODY,Color("ffe4a0"));_bark.position=Vector2(955,530);_bark.size=Vector2(300,120);_bark.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;_bark.mouse_filter=Control.MOUSE_FILTER_IGNORE;_layer.add_child(_bark)
 	dialogue=TDDialogueView.new();_layer.add_child(dialogue);dialogue.closed.connect(_on_dialogue_closed)
 	dialogue.hero_named.connect(func(value:String)->void:
 		if shell.profile!=null and dialogue.talk!=null and dialogue.talk.context.get("kind")=="story": shell.profile.story.hero_name=value)
@@ -91,7 +91,7 @@ func request_person(who: String) -> void:
 	var story:=shell.profile.story
 	if who=="bowl" and story.beat=="bowl":
 		var box:=shell._dialog("老陈屋内 · 黎明圣羹",true)
-		box.add_child(TDUI.label("浓黑汤面上浮着焦蛋，碗边结着盐。",23))
+		box.add_child(TDUI.label("浓黑汤面上浮着焦蛋，碗边结着盐。",TDUI.FONT_SECTION))
 		box.add_child(TDUI.button("尝一口",func()->void:shell._close_dialog();present("after_taste")))
 		return
 	if story.beat=="founded" and story.served and who=="aling":
@@ -148,19 +148,19 @@ func show_journal() -> void:
 	if presenting() or shell.atlas!=null or shell._modal!=null: return
 	var story:=shell.profile.story
 	var box:=shell._dialog("任务 · 第一口异端",true)
-	box.add_child(TDUI.label("主线  ·  "+("已完成" if story.finished() else "进行中"),24,TDUI.ORANGE))
-	var now:=objective();box.add_child(TDUI.label(str(now.get("text","")),23))
-	box.add_child(TDUI.label("当前地点："+{"town":"小镇","restaurant":"餐厅","kitchen":"厨房","cottage":"小屋"}.get(shell.location,""),17))
+	box.add_child(TDUI.label("主线  ·  "+("已完成" if story.finished() else "进行中"),TDUI.FONT_SECTION,TDUI.ORANGE))
+	var now:=objective();box.add_child(TDUI.label(str(now.get("text","")),TDUI.FONT_SECTION))
+	box.add_child(TDUI.label("当前地点："+{"town":"小镇","restaurant":"餐厅","kitchen":"厨房","cottage":"小屋"}.get(shell.location,""),TDUI.FONT_BODY))
 	var stages: Array=[{"ids":["arrive","follow"],"text":"寻找传说中的美味 · 跟随阿铃"},{"ids":["soup","bowl"],"text":"众口称颂的圣餐 · 尝一口汤"},{"ids":["return","awaken","cook"],"text":"唤醒灶火 · 为阿铃做番茄炒蛋"},{"ids":["verdict"],"text":"第一位异端 · 听取真实评价"},{"ids":["founded"],"text":"点燃第一日 · 菜单、备货、开门与打烊"}]
 	var reached: bool=false
 	for entry: Dictionary in stages:
 		var active: bool=story.beat in entry.ids
 		if active: reached=true
-		box.add_child(TDUI.label(("◆ " if active else ("○ " if reached else "✓ "))+str(entry.text),20,TDUI.ORANGE if active else TDUI.MUTED))
+		box.add_child(TDUI.label(("◆ " if active else ("○ " if reached else "✓ "))+str(entry.text),TDUI.FONT_BODY,TDUI.ORANGE if active else TDUI.MUTED))
 	box.add_child(TDUI.button("停止追踪" if story.tracked else "追踪任务",func()->void:story.tracked=not story.tracked;shell._close_dialog()))
 	box.add_child(TDUI.button("操作教学手册",show_manual))
 	if story.finished(): box.add_child(TDUI.button("第一章回顾（不改变进度或奖励）",show_replay))
-	box.add_child(TDUI.label("地上的微光会指向当前场景出口或任务目标。WASD 自己走，靠近后按 E。",17))
+	box.add_child(TDUI.label("地上的微光会指向当前场景出口或任务目标。WASD 自己走，靠近后按 E。",TDUI.FONT_BODY))
 
 func objective() -> Dictionary:
 	var story:=shell.profile.story
@@ -260,10 +260,10 @@ func show_trial_feedback() -> void:
 	var rating: Dictionary=shell.profile.story.assessment
 	var box:=shell._dialog("阿铃 · 本次试做",true)
 	box.add_child(TDUI.label("%.1f 分"%float(rating.satisfaction),42,TDUI.ORANGE))
-	box.add_child(TDUI.label("大块番茄 · 嫩鸡蛋 · 略带甜味",22))
-	box.add_child(TDUI.label("完成度 %.1f / 搭配度 %.1f"%[rating.quality,rating.harmony],18))
-	for reason: Dictionary in rating.reasons: box.add_child(TDUI.label("• "+str(reason.message),18))
-	if rating.reasons.is_empty(): box.add_child(TDUI.label("这次做法符合阿铃的期待。",20))
+	box.add_child(TDUI.label("大块番茄 · 嫩鸡蛋 · 略带甜味",TDUI.FONT_SECTION))
+	box.add_child(TDUI.label("完成度 %.1f / 搭配度 %.1f"%[rating.quality,rating.harmony],TDUI.FONT_BODY))
+	for reason: Dictionary in rating.reasons: box.add_child(TDUI.label("• "+str(reason.message),TDUI.FONT_BODY))
+	if rating.reasons.is_empty(): box.add_child(TDUI.label("这次做法符合阿铃的期待。",TDUI.FONT_BODY))
 	box.add_child(TDUI.button("回餐厅听听她怎么说",func()->void:shell._close_dialog();shell.travel("restaurant")))
 
 const LESSONS: Dictionary={
@@ -290,9 +290,9 @@ func tutorial_gate() -> bool:
 func show_lesson(module: String) -> void:
 	if _closed or shell.profile==null or module!=_pending_tutorial: return
 	var row: Array=LESSONS[module];var box:=shell._dialog(str(row[0]),true)
-	box.add_child(TDUI.label("首次操作教学 · 时间已暂停",18,TDUI.MUTED))
-	box.add_child(TDUI.label(str(row[1]),30,TDUI.ORANGE));box.add_child(TDUI.label(str(row[2]),22))
-	box.add_child(TDUI.label("阿铃：命运尚未宣判。失误不用重来，盯住下一拍！",20))
+	box.add_child(TDUI.label("首次操作教学 · 时间已暂停",TDUI.FONT_BODY,TDUI.MUTED))
+	box.add_child(TDUI.label(str(row[1]),TDUI.FONT_DISPLAY,TDUI.ORANGE));box.add_child(TDUI.label(str(row[2]),TDUI.FONT_SECTION))
+	box.add_child(TDUI.label("阿铃：命运尚未宣判。失误不用重来，盯住下一拍！",TDUI.FONT_BODY))
 	box.add_child(TDUI.button("明白了，开始操作",func()->void:
 		if module not in shell.profile.story.tutorials: shell.profile.story.tutorials.append(module)
 		_pending_tutorial="";shell._close_dialog()))
@@ -386,8 +386,8 @@ func show_manual() -> void:
 	var box:=shell._dialog("操作教学手册",true)
 	for module: String in LESSONS:
 		var row: Array=LESSONS[module]
-		box.add_child(TDUI.label(str(row[0])+" · "+str(row[1]),22,TDUI.ORANGE))
-		box.add_child(TDUI.label(str(row[2]),18))
+		box.add_child(TDUI.label(str(row[0])+" · "+str(row[1]),TDUI.FONT_SECTION,TDUI.ORANGE))
+		box.add_child(TDUI.label(str(row[2]),TDUI.FONT_BODY))
 
 func show_replay() -> void:
 	var box:=shell._dialog("第一章回顾",true)

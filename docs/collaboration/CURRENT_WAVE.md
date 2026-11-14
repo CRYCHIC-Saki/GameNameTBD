@@ -1,5 +1,37 @@
 # 当前协作波次
 
+## 2026-11-12 字号统一与木牌立体边框（DELIVERED_LOCAL_PLAYTEST_PENDING，锁释放）
+root独占TDUI字体层级/木牌绘制、各界面文字字号与必要布局，以及截图、验证/导出和文档。只调整显示，保留UI25纯黑背景与已有业务/存档。沿用godot-gdscript-patterns；需求明确无阻塞，不提交推送。基线artifacts/ui-type-bevel/baseline。35图/1088字体、20核心、724资源/三次启动/EXE94项通过；最新运行包与图册更新，人工PENDING，全量/远程CI未跑，锁释放。
+
+## 2026-11-12 UI25纯黑背景（DELIVERED_LOCAL_PLAYTEST_PENDING，锁释放）
+root独占restaurant_world.gd装修背景/订单空牌显示及本轮截图、导出、文档；仅显示调整，玩法和真实存档不变。GPU纯黑像素/空牌隐藏/退出恢复及19核心检查通过，运行包重建；人工PENDING，不提交推送。沿用godot-gdscript-patterns，无阻塞需求。
+
+## 2026-11-12 浅木牌UI、羊皮纸对话与原图表情（DELIVERED_LOCAL_PLAYTEST_PENDING，锁释放）
+root独占UI样式/字体、HUD与同级子面板配色、对话框纹理/立绘资源适配及必要引用、测试/导出/文档。用户指定浅木牌分级统一、羊皮纸、黑体、原图完整构图表情差分。原PNG只读，保留地图/业务/存档与用户原修改；84相关/最终19核心、35图/1088字体检查、724运行资源与EXE94项通过，outputs/浅木牌羊皮纸UI版.zip更新；人工PENDING、全仓/远程CI未跑，锁释放。基线artifacts/ui-wood/baseline。沿用godot-gdscript-patterns，imagegen；等价需求审核无阻塞，不提交推送。
+
+## 2026-11-12 其他美术重绘与视觉小说对话（DELIVERED_LOCAL_PLAYTEST_PENDING，锁释放）
+root独占assets/redraw-v1与美术引用/适配、DialogueView/StoryArt/CutsceneView/ArrivalCutscene/IngredientIcon/RecipeAtlas/RecipeTreeCanvas与必要美术接入文件、导出与验收文档。新附件定妆只读、保持人物服装造型，六表情差分；背景/食材/菜品/CG等重绘，立绘放在对话框后。保留现有地图成果及用户project.godot/content/dev_samples.json更改，不覆盖。最终35张PNG，46剧情/81相关/最终3资源用例、GPU381项43图+74项22图与712文件导出/EXE94项通过；当前资源表47使用+1备用。人工PENDING，全量/远程CI未跑，锁释放。详见docs/phases/style-redraw.md。基线artifacts/style-redraw/baseline。GRILL_SKILL=NOT_AVAILABLE，等价需求审核无阻塞，不提交推送。
+
+## 2026-11-12 建筑面积与临路落点（DELIVERED_LOCAL_PLAYTEST_PENDING，锁释放）
+root唯一写入TownArt/EnvironmentArt、frontage探针和文档；去除标签对建筑尺寸的挤占，底部对齐道路侧，小屋合并住宅区空余显示区域。保留地籍与真实存档，基线artifacts/building-frontage/baseline，19回归、158图形项/15图、638资源及EXE94项通过；最后小店微调后重建包复验，outputs/建筑临路调整版.zip；人工PENDING，全量/远程CI未跑，锁释放，不提交推送。沿用godot-gdscript-patterns；等价需求审核无阻塞。
+
+## 2026-11-12 建筑落点与残留占位修复（DELIVERED_LOCAL_PLAYTEST_PENDING，锁释放）
+root唯一写入TownArt/EnvironmentArt/TravelWorld表现、位置验收探针和本轮文档。移除灰瓦残留，按独立可用区域居中限幅、保持比例、分隔相邻建筑。地籍/道路/真实存档不变。沿用Godot规范，等价需求审核无阻塞；基线artifacts/building-placement/baseline；居民区19/主镇48、158图形位置项/15图、638资源与EXE94项通过，验收工具单位错误初轮日志保留；人工PENDING，全量/远程CI未跑；锁释放，不提交推送。
+
+## 2026-11-11 地表循环与道路平滑（DELIVERED_LOCAL_PLAYTEST_PENDING，锁释放）
+root唯一写入map-surfaces-v2与来源清单、TownScenery/TravelWorld地表表现、export_presets、针对性检查/图形工具及本轮文档。保留建筑放大成果，不改原资料、真实档、地籍与通行权威。GRILL_SKILL=NOT_AVAILABLE，等价需求审核无阻塞。基线artifacts/terrain-seamless/baseline；主镇48/旅行11、125GPU项/14图、638资源导出/启动3次/EXE94项通过。初版对边量化失败保留，复验通过。人工PENDING，全量/远程CI未跑；本轮锁释放，不提交推送。
+
+## 2026-11-11 建筑显示比例调整（DELIVERED_LOCAL_PLAYTEST_PENDING，锁释放）
+root唯一写入town_art/environment_art/travel_world表现层、实景探针与本轮文档。按建筑类别等比放大、门口落点不动，保留地籍/道路/碰撞/存档。基线artifacts/building-scale/baseline；48+11回归、82图形项与636资源导出/启动/EXE94项通过，人工待确认，未跑全量/远程CI；本轮锁释放，不提交推送。GRILL_SKILL=NOT_AVAILABLE，等价需求审核无阻塞问题。
+
+## 2026-11-11 五镇地图画风统一（DELIVERED_LOCAL_PLAYTEST_PENDING，锁释放）
+
+本轮root唯一写入7套新地图图集/导入/生成清单、EnvironmentArt/TownScenery/TravelCatalog/TravelWorld/Harbor表现层、导出清单、必要木门图片回归和map_style_probe及本轮文档。沿用integration/phase-4-wave-restaurant-art，前轮未提交改动完整保留，起点备份artifacts/map-style/baseline。48/43/11专项覆盖78独立用例、82图形检查/14图、636资源导出及EXE输入94项通过。初版失败保留，不混记为通过；人工美术确认PENDING，全仓all/远程CI未跑，原始资料/旧PNG/真实存档不动，未提交推送；本轮锁释放。
+
+## 2026-11-11 店铺设定贴图（DELIVERED_LOCAL_PLAYTEST_PENDING，锁释放）
+
+本轮root唯一写入五张`assets/town/restaurant-*-v1.png`及导入/提示清单、`src/world/environment_art.gd`、`src/town/travel_catalog.gd`、`export_presets.cfg`、受影响旅行回归、`tools/restaurant_art_probe.gd`及本次状态/报告。仅外观绑定与验证，未改其他工作线的规则或原始资料。integration/phase-4-wave-restaurant-art本地分支；11+43回归、33图形检查、622资源导出及实际EXE输入94项通过；人工美术确认PENDING，全仓all/远程CI未跑，未提交推送。详细断点见restaurant-designs报告。
+
 ## 2026-11-10 上传集成（CANDIDATE_FROZEN，源代码锁释放）
 CI 修复由 root 独占 src/business/service_catalog.gd、src/business/shop_session.gd、tests/unit/test_regional_materials.gd、tests/integration/test_town_economy_integration.gd 、tools/check.ps1、.github/workflows/check.yml 和本段/PROJECT_STATE；备份 ci-fix-baseline。AC-UPLOAD-001：扩展材料配置可重复加载且非法成本拒绝；002：存档读回类型与数量一致，故意中断仍恢复旧档；003：十三镇旧档库存原量不变，仅注册新材料补零。必须复验失败用例及远端全量，不能绕过失败合并。AC-UPLOAD-004：远端同入口按文件四组并行，覆盖原全量集合且无重复；每组保留导入、加载、数量/跳过/失败门槛，默认本地 all 不变。
 用户授权推送并合并main。root唯一集成者，冻结103个发布候选工程文件；远端main经官方API确认3719c13，无新增提交。源文件/罗厄34项排除，43个保护文件哈希与全部候选备份在artifacts/upload-20261110。Git直连不稳定，优先使用官方GitHub API传输并验证相同Git对象；禁止强推、覆盖他人更新或上传凭据/原始资料。保持当前已验证功能及验收限制，干净副本检查后执行合并。

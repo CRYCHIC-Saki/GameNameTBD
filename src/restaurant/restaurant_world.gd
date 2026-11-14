@@ -11,7 +11,7 @@ var business: TDShopSession
 var _business_guests: Dictionary = {}
 var unified_dining_clock: bool=false
 
-const CHEF := preload("res://assets/kitchen/chef-v1.png")
+const CHEF := preload("res://assets/redraw-v1/chef.png")
 const INTERACTION_RADIUS := 78.0
 const BRUSHES: Array[String] = ["wood", "tile", "stone", "carpet", "paper", "stripe", "floral", "brick", "#", ".", "+"]
 
@@ -48,6 +48,7 @@ var _tier_button: Button
 var _greeter_button: Button
 var _cashier_button: Button
 var _bar: Panel
+var _decoration_backdrop: ColorRect
 var _bar_box: VBoxContainer
 var _play_row: HFlowContainer
 var _service_buttons: Array[Button] = []
@@ -94,8 +95,18 @@ var _drag_cell := Vector2i(-1,-1)
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	_theme = TDUI.theme()
+	var backdrop_layer := CanvasLayer.new()
+	backdrop_layer.name = "DecorationBackdrop"
+	backdrop_layer.layer = -1
+	add_child(backdrop_layer)
+	_decoration_backdrop = ColorRect.new()
+	_decoration_backdrop.color = Color.BLACK
+	_decoration_backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_decoration_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_decoration_backdrop.hide()
+	backdrop_layer.add_child(_decoration_backdrop)
 	catalog = TDRestaurantCatalog.new()
 	var loaded := catalog.load_file()
 	if not loaded.ok:
@@ -135,7 +146,7 @@ func _ready() -> void:
 	_hover_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_hover_label.theme = _theme
 	_hover_label.z_index = 30
-	_hover_label.add_theme_font_size_override("font_size", 16)
+	_hover_label.add_theme_font_size_override("font_size", TDUI.FONT_CAPTION)
 	_hover_label.add_theme_color_override("font_color", Color("#fff6df"))
 	_hover_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.88))
 	_hover_label.add_theme_constant_override("shadow_offset_x", 1)
@@ -618,7 +629,7 @@ func _build_status_bar() -> void:
 	_observe_banner.size = Vector2(900, 32)
 	_observe_banner.visible = false
 	_observe_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_observe_banner.add_theme_font_size_override("font_size", 18)
+	_observe_banner.add_theme_font_size_override("font_size", TDUI.FONT_BODY)
 	_observe_banner.add_theme_color_override("font_color", Color("f0cc70"))
 	layer.add_child(_observe_banner)
 	_order_plate = Panel.new()
@@ -626,9 +637,7 @@ func _build_status_bar() -> void:
 	_order_plate.size = Vector2(540, 188)
 	_order_plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_order_plate.visible = false
-	var plate_style := StyleBoxFlat.new()
-	plate_style.bg_color = Color(0.09, 0.07, 0.05, 0.78)
-	plate_style.set_corner_radius_all(6)
+	var plate_style:=TDUI.wood(TDUI.Surface.CARD,0)
 	_order_plate.add_theme_stylebox_override("panel", plate_style)
 	layer.add_child(_order_plate)
 	_order_board = Label.new()
@@ -637,9 +646,9 @@ func _build_status_bar() -> void:
 	_order_board.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_order_board.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_order_board.visible = false
-	_order_board.add_theme_font_size_override("font_size", 15)
-	_order_board.add_theme_color_override("font_color", Color("fff6df"))
-	_order_board.add_theme_color_override("font_shadow_color", Color(0.08, 0.06, 0.04, 0.9))
+	_order_board.add_theme_font_size_override("font_size", TDUI.FONT_CAPTION)
+	_order_board.add_theme_color_override("font_color", TDUI.INK)
+	_order_board.add_theme_color_override("font_shadow_color", Color.TRANSPARENT)
 	_order_plate.add_child(_order_board)
 	var box := VBoxContainer.new()
 	_bar_box = box
@@ -650,7 +659,7 @@ func _build_status_bar() -> void:
 	_status = Label.new()
 	_status.custom_minimum_size = Vector2(1240, 32)
 	_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_status.add_theme_font_size_override("font_size", 15)
+	_status.add_theme_font_size_override("font_size", TDUI.FONT_CAPTION)
 	box.add_child(_status)
 	var play := HFlowContainer.new()
 	_play_row = play
@@ -720,7 +729,7 @@ func _furniture_icon(symbol: String, hint: String, action: Callable, color: Colo
 	var button:=Button.new();button.text=symbol;button.tooltip_text=hint
 	button.theme=_theme;button.focus_mode=Control.FOCUS_NONE
 	button.custom_minimum_size=Vector2(32,32);button.size=Vector2(32,32)
-	button.add_theme_font_size_override("font_size",24)
+	button.add_theme_font_size_override("font_size",TDUI.FONT_SECTION)
 	for state: String in ["normal","hover","pressed","focus"]:
 		var style:=StyleBoxFlat.new();style.bg_color=color.lightened(.14) if state=="hover" else color
 		style.border_color=Color("ecd5a2");style.set_border_width_all(1);style.set_corner_radius_all(5)
@@ -818,7 +827,7 @@ func _add_fixture(item: Dictionary) -> void:
 	var tier := parts[1] if parts.size() == 2 else "low"
 	var sprite := Sprite2D.new()
 	sprite.centered = false
-	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	sprite.texture = TDRestaurantArt.piece_texture(String(item["kind"]), String(item["surface"]), culture, tier, int(item["w"]) * layout.cell_px, int(item["h"]) * layout.cell_px)
 	sprite.visible = false
 	node.add_child(sprite)
@@ -827,7 +836,7 @@ func _add_fixture(item: Dictionary) -> void:
 	label.position = Vector2(4, 2)
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	label.theme = _theme
-	label.add_theme_font_size_override("font_size", 13)
+	label.add_theme_font_size_override("font_size", TDUI.FONT_CAPTION)
 	label.add_theme_color_override("font_color", Color.WHITE)
 	label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))
 	label.add_theme_constant_override("shadow_offset_x", 1)
@@ -922,6 +931,8 @@ func _toggle_edit() -> void:
 	_reset_drag()
 	_editing = not _editing
 	_iso.editing=_editing
+	_decoration_backdrop.visible = _editing
+	_order_plate.visible = not _editing and player_mode and not _covered and business != null and str(business.snapshot().phase) in ["OPEN", "DRAINING"]
 	_edit_box.hide()
 	_bar.visible=not _editing
 	_decor_panel.visible=_editing
@@ -1195,22 +1206,9 @@ func _button(text: String, callback: Callable) -> Button:
 	button.focus_mode = Control.FOCUS_NONE
 	button.theme = _theme
 	button.custom_minimum_size = Vector2(104, 32)
-	button.add_theme_font_size_override("font_size", 14)
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color("#213f3d")
-	style.border_color = Color("#507064")
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(8)
-	style.content_margin_left = 8
-	style.content_margin_right = 8
-	style.content_margin_top = 4
-	style.content_margin_bottom = 4
-	button.add_theme_stylebox_override("normal", style)
-	var hover := style.duplicate() as StyleBoxFlat
-	hover.bg_color = Color("#355d56")
-	button.add_theme_stylebox_override("hover", hover)
-	button.add_theme_stylebox_override("pressed", hover)
-	button.add_theme_stylebox_override("focus", style)
+	button.add_theme_font_size_override("font_size", TDUI.FONT_CAPTION)
+	for state: String in ["normal","hover","pressed"]:
+		button.add_theme_stylebox_override(state,TDUI.wood(TDUI.Surface.SELECTED if state!="normal" else TDUI.Surface.CARD,8))
 	button.pressed.connect(callback)
 	return button
 
@@ -1431,7 +1429,7 @@ func set_floor_cover(covered: bool) -> void:
 		for child: Node in get_children():
 			if child is CanvasLayer: child.visible=not covered
 	if _order_plate != null:
-		_order_plate.visible = player_mode and not covered
+		_order_plate.visible = player_mode and not covered and not _editing and business != null and str(business.snapshot().phase) in ["OPEN", "DRAINING"]
 
 func set_observe(observing: bool) -> void:
 	_observing = observing
@@ -2276,7 +2274,7 @@ func _refresh_order_board(orders: Array, now: float) -> void:
 	if _order_board == null:
 		return
 	if _order_plate != null:
-		_order_plate.visible = player_mode and not _covered and business!=null and str(business.snapshot().phase) in ["OPEN","DRAINING"]
+		_order_plate.visible = player_mode and not _covered and not _editing and business!=null and str(business.snapshot().phase) in ["OPEN","DRAINING"]
 	_order_board.visible = true
 	if not player_mode or _covered:
 		return

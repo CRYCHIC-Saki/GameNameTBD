@@ -1,0 +1,1387 @@
+{
+  "engine": "image_gen",
+  "date": "2026-11-12",
+  "style": "User supplied character drawings; preserve identity and fixed-pose expression variants",
+  "assets": [
+    {
+      "key": "ingredients-0",
+      "file": "ingredients-0.png",
+      "items": [
+        {
+          "id": "aji_amarillo",
+          "name": "秘鲁黄辣椒酱"
+        },
+        {
+          "id": "aspic",
+          "name": "汤冻"
+        },
+        {
+          "id": "basil",
+          "name": "罗勒"
+        },
+        {
+          "id": "bean_paste",
+          "name": "豆瓣酱"
+        },
+        {
+          "id": "beansprout",
+          "name": "豆芽"
+        },
+        {
+          "id": "beef",
+          "name": "牛肉"
+        },
+        {
+          "id": "beefsteak",
+          "name": "牛排（里脊）"
+        },
+        {
+          "id": "bellpepper",
+          "name": "甜椒"
+        },
+        {
+          "id": "black_bean",
+          "name": "黑豆"
+        },
+        {
+          "id": "blackpepper",
+          "name": "黑胡椒"
+        },
+        {
+          "id": "bolognese",
+          "name": "意式肉酱"
+        },
+        {
+          "id": "bone_stock",
+          "name": "骨汤"
+        },
+        {
+          "id": "bread",
+          "name": "面包"
+        },
+        {
+          "id": "breadcrumbs",
+          "name": "面包糠"
+        },
+        {
+          "id": "butter",
+          "name": "黄油"
+        },
+        {
+          "id": "carrot",
+          "name": "胡萝卜"
+        },
+        {
+          "id": "char_siu",
+          "name": "叉烧"
+        },
+        {
+          "id": "cheese",
+          "name": "奶酪"
+        },
+        {
+          "id": "cheese_sauce",
+          "name": "奶酪酱"
+        },
+        {
+          "id": "chicken",
+          "name": "鸡肉"
+        },
+        {
+          "id": "chicken_fat",
+          "name": "鸡油"
+        },
+        {
+          "id": "chili",
+          "name": "辣椒"
+        },
+        {
+          "id": "chimichurri",
+          "name": "阿根廷香草酱"
+        },
+        {
+          "id": "chinese_sausage",
+          "name": "中式腊肠"
+        },
+        {
+          "id": "cilantro",
+          "name": "香菜"
+        },
+        {
+          "id": "cinnamon",
+          "name": "桂皮"
+        },
+        {
+          "id": "clam",
+          "name": "蛤蜊"
+        },
+        {
+          "id": "coarse_salt",
+          "name": "粗盐"
+        },
+        {
+          "id": "cocoa",
+          "name": "可可粉"
+        },
+        {
+          "id": "coconut_milk",
+          "name": "椰浆"
+        }
+      ],
+      "columns": 6,
+      "rows": 5,
+      "prompt": "Use case: stylized-concept. Production 2D cooking game ingredient icon atlas matching the supplied character's hand-drawn clean black outlines, flat saturated cel colors, simple two-tone shadows, cute readable shape language, NOT pixel art, NOT photorealistic. Exactly SIX columns and FIVE rows, thirty equal square cells in strict row-major order. Each cell contains ONE ingredient icon, centered, 15% transparent padding, no surrounding plate unless a liquid/sauce needs a plain unlabelled jar or bowl. All empty space fully RGBA transparent. No words, names, numbers, labels, borders, grid, gradients or background. Every ingredient must be recognizably distinct and accurately depicts its food/material. Nothing crosses cell boundaries. Row-major contents: 1: 秘鲁黄辣椒酱 (aji_amarillo); 2: 汤冻 (aspic); 3: 罗勒 (basil); 4: 豆瓣酱 (bean_paste); 5: 豆芽 (beansprout); 6: 牛肉 (beef); 7: 牛排（里脊） (beefsteak); 8: 甜椒 (bellpepper); 9: 黑豆 (black_bean); 10: 黑胡椒 (blackpepper); 11: 意式肉酱 (bolognese); 12: 骨汤 (bone_stock); 13: 面包 (bread); 14: 面包糠 (breadcrumbs); 15: 黄油 (butter); 16: 胡萝卜 (carrot); 17: 叉烧 (char_siu); 18: 奶酪 (cheese); 19: 奶酪酱 (cheese_sauce); 20: 鸡肉 (chicken); 21: 鸡油 (chicken_fat); 22: 辣椒 (chili); 23: 阿根廷香草酱 (chimichurri); 24: 中式腊肠 (chinese_sausage); 25: 香菜 (cilantro); 26: 桂皮 (cinnamon); 27: 蛤蜊 (clam); 28: 粗盐 (coarse_salt); 29: 可可粉 (cocoa); 30: 椰浆 (coconut_milk).",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-a92fef3e-5114-433e-a5b6-cdbcabc674cf.png"
+    },
+    {
+      "key": "ingredients-1",
+      "file": "ingredients-1.png",
+      "items": [
+        {
+          "id": "corn",
+          "name": "玉米"
+        },
+        {
+          "id": "corn_flour",
+          "name": "玉米面"
+        },
+        {
+          "id": "corn_husk",
+          "name": "玉米叶"
+        },
+        {
+          "id": "cream",
+          "name": "奶油"
+        },
+        {
+          "id": "cucumber",
+          "name": "黄瓜"
+        },
+        {
+          "id": "cumin",
+          "name": "孜然"
+        },
+        {
+          "id": "dashi",
+          "name": "日式出汁"
+        },
+        {
+          "id": "dough",
+          "name": "基础面团"
+        },
+        {
+          "id": "driedabalone",
+          "name": "干鲍"
+        },
+        {
+          "id": "driedchili",
+          "name": "干辣椒"
+        },
+        {
+          "id": "driedscallop",
+          "name": "干贝"
+        },
+        {
+          "id": "duck",
+          "name": "鸭肉"
+        },
+        {
+          "id": "duckfat",
+          "name": "鸭油"
+        },
+        {
+          "id": "eel",
+          "name": "鳗鱼"
+        },
+        {
+          "id": "egg",
+          "name": "鸡蛋"
+        },
+        {
+          "id": "eggplant",
+          "name": "茄子"
+        },
+        {
+          "id": "fish",
+          "name": "鲜鱼"
+        },
+        {
+          "id": "fishmaw",
+          "name": "花胶（鱼肚）"
+        },
+        {
+          "id": "fishsauce",
+          "name": "鱼露"
+        },
+        {
+          "id": "flatbread",
+          "name": "馍/饼"
+        },
+        {
+          "id": "flour",
+          "name": "面粉"
+        },
+        {
+          "id": "garlic",
+          "name": "蒜"
+        },
+        {
+          "id": "ginger",
+          "name": "姜"
+        },
+        {
+          "id": "ginger_scallion_sauce",
+          "name": "姜葱酱"
+        },
+        {
+          "id": "green_curry",
+          "name": "绿咖喱酱"
+        },
+        {
+          "id": "ham",
+          "name": "火腿（金华/西班牙）"
+        },
+        {
+          "id": "honey",
+          "name": "蜂蜜"
+        },
+        {
+          "id": "japanese_soy",
+          "name": "日式酱油"
+        },
+        {
+          "id": "ketchup",
+          "name": "番茄酱"
+        },
+        {
+          "id": "laksa_paste",
+          "name": "叻沙汤酱"
+        }
+      ],
+      "columns": 6,
+      "rows": 5,
+      "prompt": "Use case: stylized-concept. Production 2D cooking game ingredient icon atlas matching the supplied character's hand-drawn clean black outlines, flat saturated cel colors, simple two-tone shadows, cute readable shape language, NOT pixel art, NOT photorealistic. Exactly SIX columns and FIVE rows, thirty equal square cells in strict row-major order. Each cell contains ONE ingredient icon, centered, 15% transparent padding, no surrounding plate unless a liquid/sauce needs a plain unlabelled jar or bowl. All empty space fully RGBA transparent. No words, names, numbers, labels, borders, grid, gradients or background. Every ingredient must be recognizably distinct and accurately depicts its food/material. Nothing crosses cell boundaries. Row-major contents: 1: 玉米 (corn); 2: 玉米面 (corn_flour); 3: 玉米叶 (corn_husk); 4: 奶油 (cream); 5: 黄瓜 (cucumber); 6: 孜然 (cumin); 7: 日式出汁 (dashi); 8: 基础面团 (dough); 9: 干鲍 (driedabalone); 10: 干辣椒 (driedchili); 11: 干贝 (driedscallop); 12: 鸭肉 (duck); 13: 鸭油 (duckfat); 14: 鳗鱼 (eel); 15: 鸡蛋 (egg); 16: 茄子 (eggplant); 17: 鲜鱼 (fish); 18: 花胶（鱼肚） (fishmaw); 19: 鱼露 (fishsauce); 20: 馍/饼 (flatbread); 21: 面粉 (flour); 22: 蒜 (garlic); 23: 姜 (ginger); 24: 姜葱酱 (ginger_scallion_sauce); 25: 绿咖喱酱 (green_curry); 26: 火腿（金华/西班牙） (ham); 27: 蜂蜜 (honey); 28: 日式酱油 (japanese_soy); 29: 番茄酱 (ketchup); 30: 叻沙汤酱 (laksa_paste).",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-e15c83f6-f2fe-4e38-9901-5141e59c58e7.png"
+    },
+    {
+      "key": "ingredients-2",
+      "file": "ingredients-2.png",
+      "items": [
+        {
+          "id": "lasagna_sheet",
+          "name": "千层面皮"
+        },
+        {
+          "id": "lemon",
+          "name": "柠檬"
+        },
+        {
+          "id": "lemongrass",
+          "name": "香茅"
+        },
+        {
+          "id": "lettuce",
+          "name": "生菜"
+        },
+        {
+          "id": "lime",
+          "name": "青柠"
+        },
+        {
+          "id": "malt",
+          "name": "麦芽"
+        },
+        {
+          "id": "massaman",
+          "name": "马萨曼咖喱酱"
+        },
+        {
+          "id": "mexican_chili_sauce",
+          "name": "墨式辣椒酱"
+        },
+        {
+          "id": "milk",
+          "name": "牛奶"
+        },
+        {
+          "id": "mint",
+          "name": "薄荷"
+        },
+        {
+          "id": "mirin",
+          "name": "味淋"
+        },
+        {
+          "id": "miso",
+          "name": "味噌"
+        },
+        {
+          "id": "mole",
+          "name": "摩尔酱"
+        },
+        {
+          "id": "mozzarella",
+          "name": "马苏里拉"
+        },
+        {
+          "id": "mushroom",
+          "name": "菌菇"
+        },
+        {
+          "id": "mushroom_sauce",
+          "name": "蘑菇酱"
+        },
+        {
+          "id": "noodles",
+          "name": "河粉"
+        },
+        {
+          "id": "nori",
+          "name": "紫菜"
+        },
+        {
+          "id": "oil",
+          "name": "食用油"
+        },
+        {
+          "id": "oliveoil",
+          "name": "橄榄油"
+        },
+        {
+          "id": "onion",
+          "name": "洋葱"
+        },
+        {
+          "id": "parmesan",
+          "name": "帕玛森"
+        },
+        {
+          "id": "pasta",
+          "name": "意大利面"
+        },
+        {
+          "id": "pastry",
+          "name": "酥皮"
+        },
+        {
+          "id": "pea",
+          "name": "豌豆"
+        },
+        {
+          "id": "peanut",
+          "name": "花生"
+        },
+        {
+          "id": "peanut_sauce",
+          "name": "沙嗲花生酱"
+        },
+        {
+          "id": "pepper",
+          "name": "花椒"
+        },
+        {
+          "id": "pickled_chili",
+          "name": "泡椒"
+        },
+        {
+          "id": "pork",
+          "name": "猪肉"
+        }
+      ],
+      "columns": 6,
+      "rows": 5,
+      "prompt": "Use case: stylized-concept. Production 2D cooking game ingredient icon atlas matching the supplied character's hand-drawn clean black outlines, flat saturated cel colors, simple two-tone shadows, cute readable shape language, NOT pixel art, NOT photorealistic. Exactly SIX columns and FIVE rows, thirty equal square cells in strict row-major order. Each cell contains ONE ingredient icon, centered, 15% transparent padding, no surrounding plate unless a liquid/sauce needs a plain unlabelled jar or bowl. All empty space fully RGBA transparent. No words, names, numbers, labels, borders, grid, gradients or background. Every ingredient must be recognizably distinct and accurately depicts its food/material. Nothing crosses cell boundaries. Row-major contents: 1: 千层面皮 (lasagna_sheet); 2: 柠檬 (lemon); 3: 香茅 (lemongrass); 4: 生菜 (lettuce); 5: 青柠 (lime); 6: 麦芽 (malt); 7: 马萨曼咖喱酱 (massaman); 8: 墨式辣椒酱 (mexican_chili_sauce); 9: 牛奶 (milk); 10: 薄荷 (mint); 11: 味淋 (mirin); 12: 味噌 (miso); 13: 摩尔酱 (mole); 14: 马苏里拉 (mozzarella); 15: 菌菇 (mushroom); 16: 蘑菇酱 (mushroom_sauce); 17: 河粉 (noodles); 18: 紫菜 (nori); 19: 食用油 (oil); 20: 橄榄油 (oliveoil); 21: 洋葱 (onion); 22: 帕玛森 (parmesan); 23: 意大利面 (pasta); 24: 酥皮 (pastry); 25: 豌豆 (pea); 26: 花生 (peanut); 27: 沙嗲花生酱 (peanut_sauce); 28: 花椒 (pepper); 29: 泡椒 (pickled_chili); 30: 猪肉 (pork).",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-0ec1f5d2-e8a3-47a6-831c-cc2b641b8dc9.png"
+    },
+    {
+      "key": "ingredients-3",
+      "file": "ingredients-3.png",
+      "items": [
+        {
+          "id": "pork_knuckle",
+          "name": "猪肘"
+        },
+        {
+          "id": "porkbelly",
+          "name": "五花肉"
+        },
+        {
+          "id": "potato",
+          "name": "土豆"
+        },
+        {
+          "id": "prawn_cracker",
+          "name": "虾片"
+        },
+        {
+          "id": "radish",
+          "name": "白萝卜"
+        },
+        {
+          "id": "ramen",
+          "name": "拉面"
+        },
+        {
+          "id": "raw_rice",
+          "name": "生大米"
+        },
+        {
+          "id": "red_curry",
+          "name": "红咖喱酱"
+        },
+        {
+          "id": "red_onion",
+          "name": "红洋葱"
+        },
+        {
+          "id": "red_wine",
+          "name": "红葡萄酒"
+        },
+        {
+          "id": "rice",
+          "name": "熟米饭"
+        },
+        {
+          "id": "rice_paper",
+          "name": "米纸"
+        },
+        {
+          "id": "rice_vermicelli",
+          "name": "细米粉"
+        },
+        {
+          "id": "rice_vinegar",
+          "name": "寿司米醋"
+        },
+        {
+          "id": "rosemary",
+          "name": "迷迭香"
+        },
+        {
+          "id": "saffron",
+          "name": "藏红花"
+        },
+        {
+          "id": "salmon",
+          "name": "三文鱼"
+        },
+        {
+          "id": "salsa",
+          "name": "莎莎酱"
+        },
+        {
+          "id": "salt",
+          "name": "食盐"
+        },
+        {
+          "id": "sambal",
+          "name": "参巴辣椒酱"
+        },
+        {
+          "id": "sauerkraut",
+          "name": "酸菜"
+        },
+        {
+          "id": "sausage",
+          "name": "香肠"
+        },
+        {
+          "id": "scallion",
+          "name": "葱"
+        },
+        {
+          "id": "scallion_oil",
+          "name": "葱油"
+        },
+        {
+          "id": "scallop",
+          "name": "扇贝"
+        },
+        {
+          "id": "seacucumber",
+          "name": "海参"
+        },
+        {
+          "id": "seafood_stock",
+          "name": "海鲜高汤"
+        },
+        {
+          "id": "shrimp",
+          "name": "虾"
+        },
+        {
+          "id": "soy_sauce",
+          "name": "酱油"
+        },
+        {
+          "id": "squid",
+          "name": "鱿鱼"
+        }
+      ],
+      "columns": 6,
+      "rows": 5,
+      "prompt": "Use case: stylized-concept. Production 2D cooking game ingredient icon atlas matching the supplied character's hand-drawn clean black outlines, flat saturated cel colors, simple two-tone shadows, cute readable shape language, NOT pixel art, NOT photorealistic. Exactly SIX columns and FIVE rows, thirty equal square cells in strict row-major order. Each cell contains ONE ingredient icon, centered, 15% transparent padding, no surrounding plate unless a liquid/sauce needs a plain unlabelled jar or bowl. All empty space fully RGBA transparent. No words, names, numbers, labels, borders, grid, gradients or background. Every ingredient must be recognizably distinct and accurately depicts its food/material. Nothing crosses cell boundaries. Row-major contents: 1: 猪肘 (pork_knuckle); 2: 五花肉 (porkbelly); 3: 土豆 (potato); 4: 虾片 (prawn_cracker); 5: 白萝卜 (radish); 6: 拉面 (ramen); 7: 生大米 (raw_rice); 8: 红咖喱酱 (red_curry); 9: 红洋葱 (red_onion); 10: 红葡萄酒 (red_wine); 11: 熟米饭 (rice); 12: 米纸 (rice_paper); 13: 细米粉 (rice_vermicelli); 14: 寿司米醋 (rice_vinegar); 15: 迷迭香 (rosemary); 16: 藏红花 (saffron); 17: 三文鱼 (salmon); 18: 莎莎酱 (salsa); 19: 食盐 (salt); 20: 参巴辣椒酱 (sambal); 21: 酸菜 (sauerkraut); 22: 香肠 (sausage); 23: 葱 (scallion); 24: 葱油 (scallion_oil); 25: 扇贝 (scallop); 26: 海参 (seacucumber); 27: 海鲜高汤 (seafood_stock); 28: 虾 (shrimp); 29: 酱油 (soy_sauce); 30: 鱿鱼 (squid).",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-8b90b1e1-ced5-4e87-8b6d-431f691d9335.png"
+    },
+    {
+      "key": "ingredients-4",
+      "file": "ingredients-4.png",
+      "items": [
+        {
+          "id": "staranise",
+          "name": "八角"
+        },
+        {
+          "id": "starch",
+          "name": "淀粉"
+        },
+        {
+          "id": "stock",
+          "name": "清高汤"
+        },
+        {
+          "id": "strawberry",
+          "name": "草莓"
+        },
+        {
+          "id": "sugar",
+          "name": "白糖"
+        },
+        {
+          "id": "sushi_rice",
+          "name": "寿司米"
+        },
+        {
+          "id": "sweet_soy",
+          "name": "印尼甜酱油"
+        },
+        {
+          "id": "sweetbeansauce",
+          "name": "甜面酱"
+        },
+        {
+          "id": "tapioca_starch",
+          "name": "木薯淀粉"
+        },
+        {
+          "id": "teriyaki",
+          "name": "照烧汁"
+        },
+        {
+          "id": "tofu",
+          "name": "豆腐"
+        },
+        {
+          "id": "tofu_puff",
+          "name": "豆腐泡"
+        },
+        {
+          "id": "tomato",
+          "name": "番茄"
+        },
+        {
+          "id": "tortilla",
+          "name": "玉米饼"
+        },
+        {
+          "id": "tortilla_chip",
+          "name": "玉米片"
+        },
+        {
+          "id": "tripe",
+          "name": "牛肚（毛肚）"
+        },
+        {
+          "id": "tuna",
+          "name": "金枪鱼"
+        },
+        {
+          "id": "turmeric",
+          "name": "姜黄"
+        },
+        {
+          "id": "udon",
+          "name": "乌冬面"
+        },
+        {
+          "id": "vanilla",
+          "name": "香草豆"
+        },
+        {
+          "id": "vinegar",
+          "name": "醋"
+        },
+        {
+          "id": "wasabi",
+          "name": "芥末"
+        },
+        {
+          "id": "water",
+          "name": "清水"
+        },
+        {
+          "id": "wheat_noodles",
+          "name": "细面条"
+        },
+        {
+          "id": "wheat_tortilla",
+          "name": "大号面饼"
+        },
+        {
+          "id": "wine",
+          "name": "料酒"
+        },
+        {
+          "id": "woodear",
+          "name": "木耳"
+        },
+        {
+          "id": "zhajiang",
+          "name": "中式炸酱"
+        }
+      ],
+      "columns": 6,
+      "rows": 5,
+      "prompt": "Use case: stylized-concept. Production 2D cooking game ingredient icon atlas matching the supplied character's hand-drawn clean black outlines, flat saturated cel colors, simple two-tone shadows, cute readable shape language, NOT pixel art, NOT photorealistic. Exactly SIX columns and FIVE rows, thirty equal square cells in strict row-major order. Each cell contains ONE ingredient icon, centered, 15% transparent padding, no surrounding plate unless a liquid/sauce needs a plain unlabelled jar or bowl. All empty space fully RGBA transparent. No words, names, numbers, labels, borders, grid, gradients or background. Every ingredient must be recognizably distinct and accurately depicts its food/material. Nothing crosses cell boundaries. Row-major contents: 1: 八角 (staranise); 2: 淀粉 (starch); 3: 清高汤 (stock); 4: 草莓 (strawberry); 5: 白糖 (sugar); 6: 寿司米 (sushi_rice); 7: 印尼甜酱油 (sweet_soy); 8: 甜面酱 (sweetbeansauce); 9: 木薯淀粉 (tapioca_starch); 10: 照烧汁 (teriyaki); 11: 豆腐 (tofu); 12: 豆腐泡 (tofu_puff); 13: 番茄 (tomato); 14: 玉米饼 (tortilla); 15: 玉米片 (tortilla_chip); 16: 牛肚（毛肚） (tripe); 17: 金枪鱼 (tuna); 18: 姜黄 (turmeric); 19: 乌冬面 (udon); 20: 香草豆 (vanilla); 21: 醋 (vinegar); 22: 芥末 (wasabi); 23: 清水 (water); 24: 细面条 (wheat_noodles); 25: 大号面饼 (wheat_tortilla); 26: 料酒 (wine); 27: 木耳 (woodear); 28: 中式炸酱 (zhajiang); remaining cells completely empty transparent.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-f0d864e6-fe83-43a7-a316-c7f4f1b6c265.png"
+    },
+    {
+      "key": "dishes-0",
+      "file": "dishes-0.png",
+      "items": [
+        {
+          "id": "C01",
+          "name": "蛋炒饭",
+          "ingredients": "米饭、鸡蛋、葱花"
+        },
+        {
+          "id": "C02",
+          "name": "番茄炒蛋",
+          "ingredients": "番茄、鸡蛋、酸甜"
+        },
+        {
+          "id": "C03",
+          "name": "阳春面",
+          "ingredients": "面条、清汤、葱油"
+        },
+        {
+          "id": "C04",
+          "name": "蒸水蛋",
+          "ingredients": "鸡蛋、蒸汽、细嫩"
+        },
+        {
+          "id": "C05",
+          "name": "扬州炒饭",
+          "ingredients": "米饭、虾仁、火腿、豌豆"
+        },
+        {
+          "id": "C06",
+          "name": "青椒肉丝",
+          "ingredients": "猪肉、青椒、酱油"
+        },
+        {
+          "id": "C07",
+          "name": "葱油拌面",
+          "ingredients": "面条、葱油、酱油"
+        },
+        {
+          "id": "C08",
+          "name": "清蒸鱼",
+          "ingredients": "鲜鱼、姜葱、蒸汽"
+        },
+        {
+          "id": "C09",
+          "name": "宫保鸡丁",
+          "ingredients": "鸡肉、花生、干辣椒"
+        },
+        {
+          "id": "C10",
+          "name": "炸酱面",
+          "ingredients": "面条、肉酱、黄瓜"
+        },
+        {
+          "id": "C11",
+          "name": "红烧肉",
+          "ingredients": "五花肉、糖、酱油"
+        },
+        {
+          "id": "C12",
+          "name": "小笼包",
+          "ingredients": "面皮、猪肉馅、汤冻"
+        },
+        {
+          "id": "C13",
+          "name": "鱼香肉丝",
+          "ingredients": "猪肉、木耳、泡椒"
+        },
+        {
+          "id": "C14",
+          "name": "麻婆豆腐",
+          "ingredients": "豆腐、豆瓣酱、花椒"
+        },
+        {
+          "id": "C15",
+          "name": "红烧牛肉面",
+          "ingredients": "牛肉、面条、香料汤"
+        },
+        {
+          "id": "C16",
+          "name": "腊味煲仔饭",
+          "ingredients": "米饭、腊肠、砂锅"
+        },
+        {
+          "id": "C17",
+          "name": "北京烤鸭",
+          "ingredients": "鸭、麦饼、甜面酱"
+        },
+        {
+          "id": "C18",
+          "name": "叉烧酥",
+          "ingredients": "酥皮、叉烧馅"
+        },
+        {
+          "id": "C19",
+          "name": "佛跳墙",
+          "ingredients": "多种干货、肉类、高汤"
+        },
+        {
+          "id": "C20",
+          "name": "满汉风味宴席",
+          "ingredients": "多道热菜、面点、汤品"
+        }
+      ],
+      "columns": 5,
+      "rows": 4,
+      "prompt": "Use case: stylized-concept. Production cooking game plated dish icon atlas, matching the supplied character drawing: clear black hand drawn outlines, clean flat cel colors, only gentle simple shadows, colorful appealing food, NOT pixel art or realistic photo. Exactly FIVE columns and FOUR rows, 20 equal square cells, strict row-major order. One plated finished dish in each cell, three-quarter overhead view, simple cream plate or appropriate bowl, centered, at least 12% RGBA transparent padding. No text, captions, numbers, labels, grid, background or cast-shadow panels. Each dish must look like its specified recipe, no duplicate generic bowls. Ingredients and presentation should distinguish dishes. Row-major contents: 1: 蛋炒饭 (C01), ingredients 米饭、鸡蛋、葱花; 2: 番茄炒蛋 (C02), ingredients 番茄、鸡蛋、酸甜; 3: 阳春面 (C03), ingredients 面条、清汤、葱油; 4: 蒸水蛋 (C04), ingredients 鸡蛋、蒸汽、细嫩; 5: 扬州炒饭 (C05), ingredients 米饭、虾仁、火腿、豌豆; 6: 青椒肉丝 (C06), ingredients 猪肉、青椒、酱油; 7: 葱油拌面 (C07), ingredients 面条、葱油、酱油; 8: 清蒸鱼 (C08), ingredients 鲜鱼、姜葱、蒸汽; 9: 宫保鸡丁 (C09), ingredients 鸡肉、花生、干辣椒; 10: 炸酱面 (C10), ingredients 面条、肉酱、黄瓜; 11: 红烧肉 (C11), ingredients 五花肉、糖、酱油; 12: 小笼包 (C12), ingredients 面皮、猪肉馅、汤冻; 13: 鱼香肉丝 (C13), ingredients 猪肉、木耳、泡椒; 14: 麻婆豆腐 (C14), ingredients 豆腐、豆瓣酱、花椒; 15: 红烧牛肉面 (C15), ingredients 牛肉、面条、香料汤; 16: 腊味煲仔饭 (C16), ingredients 米饭、腊肠、砂锅; 17: 北京烤鸭 (C17), ingredients 鸭、麦饼、甜面酱; 18: 叉烧酥 (C18), ingredients 酥皮、叉烧馅; 19: 佛跳墙 (C19), ingredients 多种干货、肉类、高汤; 20: 满汉风味宴席 (C20), ingredients 多道热菜、面点、汤品.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-aefff09a-2617-41ac-8b07-eb5992158e23.png"
+    },
+    {
+      "key": "dishes-1",
+      "file": "dishes-1.png",
+      "items": [
+        {
+          "id": "E01",
+          "name": "德式椒盐卷饼",
+          "ingredients": "面团、粗盐、麦芽"
+        },
+        {
+          "id": "E02",
+          "name": "意式番茄意面",
+          "ingredients": "意面、番茄、橄榄油"
+        },
+        {
+          "id": "E03",
+          "name": "法式洋葱汤",
+          "ingredients": "洋葱、清汤、面包"
+        },
+        {
+          "id": "E04",
+          "name": "香煎肉排",
+          "ingredients": "牛肉、黄油、香草"
+        },
+        {
+          "id": "E05",
+          "name": "意式披萨",
+          "ingredients": "面团、番茄酱、奶酪"
+        },
+        {
+          "id": "E06",
+          "name": "奶油蘑菇意面",
+          "ingredients": "意面、蘑菇、奶油"
+        },
+        {
+          "id": "E07",
+          "name": "法式焗土豆",
+          "ingredients": "土豆、奶油、奶酪"
+        },
+        {
+          "id": "E08",
+          "name": "香草烤鸡",
+          "ingredients": "鸡肉、香草、黄油"
+        },
+        {
+          "id": "E09",
+          "name": "西班牙海鲜饭",
+          "ingredients": "米、海鲜、藏红花"
+        },
+        {
+          "id": "E10",
+          "name": "意式烩饭",
+          "ingredients": "米、清汤、黄油、奶酪"
+        },
+        {
+          "id": "E11",
+          "name": "法式红酒炖牛肉",
+          "ingredients": "牛肉、红酒、根茎蔬菜"
+        },
+        {
+          "id": "E12",
+          "name": "德式猪肘配酸菜",
+          "ingredients": "猪肘、酸菜、土豆"
+        },
+        {
+          "id": "E13",
+          "name": "意式千层面",
+          "ingredients": "面皮、肉酱、奶酪酱"
+        },
+        {
+          "id": "E14",
+          "name": "法式油封鸭",
+          "ingredients": "鸭腿、鸭油、香草"
+        },
+        {
+          "id": "E15",
+          "name": "西班牙海鲜烩饭",
+          "ingredients": "米、海鲜高汤、贝类"
+        },
+        {
+          "id": "E16",
+          "name": "法式可丽饼",
+          "ingredients": "薄面糊、黄油、馅料"
+        },
+        {
+          "id": "E17",
+          "name": "牛肉惠灵顿",
+          "ingredients": "牛里脊、酥皮、蘑菇酱"
+        },
+        {
+          "id": "E18",
+          "name": "法式舒芙蕾",
+          "ingredients": "蛋、奶、糖"
+        },
+        {
+          "id": "E19",
+          "name": "勃艮第风味宴席",
+          "ingredients": "鸭、牛肉、红酒酱汁"
+        },
+        {
+          "id": "E20",
+          "name": "欧洲主厨品鉴套餐",
+          "ingredients": "海鲜、主菜、甜点"
+        }
+      ],
+      "columns": 5,
+      "rows": 4,
+      "prompt": "Use case: stylized-concept. Production cooking game plated dish icon atlas, matching the supplied character drawing: clear black hand drawn outlines, clean flat cel colors, only gentle simple shadows, colorful appealing food, NOT pixel art or realistic photo. Exactly FIVE columns and FOUR rows, 20 equal square cells, strict row-major order. One plated finished dish in each cell, three-quarter overhead view, simple cream plate or appropriate bowl, centered, at least 12% RGBA transparent padding. No text, captions, numbers, labels, grid, background or cast-shadow panels. Each dish must look like its specified recipe, no duplicate generic bowls. Ingredients and presentation should distinguish dishes. Row-major contents: 1: 德式椒盐卷饼 (E01), ingredients 面团、粗盐、麦芽; 2: 意式番茄意面 (E02), ingredients 意面、番茄、橄榄油; 3: 法式洋葱汤 (E03), ingredients 洋葱、清汤、面包; 4: 香煎肉排 (E04), ingredients 牛肉、黄油、香草; 5: 意式披萨 (E05), ingredients 面团、番茄酱、奶酪; 6: 奶油蘑菇意面 (E06), ingredients 意面、蘑菇、奶油; 7: 法式焗土豆 (E07), ingredients 土豆、奶油、奶酪; 8: 香草烤鸡 (E08), ingredients 鸡肉、香草、黄油; 9: 西班牙海鲜饭 (E09), ingredients 米、海鲜、藏红花; 10: 意式烩饭 (E10), ingredients 米、清汤、黄油、奶酪; 11: 法式红酒炖牛肉 (E11), ingredients 牛肉、红酒、根茎蔬菜; 12: 德式猪肘配酸菜 (E12), ingredients 猪肘、酸菜、土豆; 13: 意式千层面 (E13), ingredients 面皮、肉酱、奶酪酱; 14: 法式油封鸭 (E14), ingredients 鸭腿、鸭油、香草; 15: 西班牙海鲜烩饭 (E15), ingredients 米、海鲜高汤、贝类; 16: 法式可丽饼 (E16), ingredients 薄面糊、黄油、馅料; 17: 牛肉惠灵顿 (E17), ingredients 牛里脊、酥皮、蘑菇酱; 18: 法式舒芙蕾 (E18), ingredients 蛋、奶、糖; 19: 勃艮第风味宴席 (E19), ingredients 鸭、牛肉、红酒酱汁; 20: 欧洲主厨品鉴套餐 (E20), ingredients 海鲜、主菜、甜点.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-57fe052e-72d1-401a-b334-36844452ddd8.png"
+    },
+    {
+      "key": "dishes-2",
+      "file": "dishes-2.png",
+      "items": [
+        {
+          "id": "J01",
+          "name": "盐饭团",
+          "ingredients": "米饭、盐、海苔"
+        },
+        {
+          "id": "J02",
+          "name": "日式玉子烧",
+          "ingredients": "鸡蛋、出汁、糖"
+        },
+        {
+          "id": "J03",
+          "name": "日式乌冬",
+          "ingredients": "乌冬面、出汁、葱"
+        },
+        {
+          "id": "J04",
+          "name": "盐烤鱼",
+          "ingredients": "鲜鱼、盐、柠檬"
+        },
+        {
+          "id": "J05",
+          "name": "照烧鸡肉饭",
+          "ingredients": "鸡肉、酱油、味醂、米饭"
+        },
+        {
+          "id": "J06",
+          "name": "亲子丼",
+          "ingredients": "鸡肉、鸡蛋、出汁、米饭"
+        },
+        {
+          "id": "J07",
+          "name": "炸猪排",
+          "ingredients": "猪肉、面粉、面包糠"
+        },
+        {
+          "id": "J08",
+          "name": "黄瓜卷寿司",
+          "ingredients": "寿司米、海苔、黄瓜"
+        },
+        {
+          "id": "J09",
+          "name": "天妇罗",
+          "ingredients": "虾、蔬菜、薄面衣"
+        },
+        {
+          "id": "J10",
+          "name": "酱油拉面",
+          "ingredients": "拉面、酱油汤底、叉烧"
+        },
+        {
+          "id": "J11",
+          "name": "炸猪排盖饭",
+          "ingredients": "炸猪排、鸡蛋、米饭"
+        },
+        {
+          "id": "J12",
+          "name": "三文鱼握寿司",
+          "ingredients": "寿司米、三文鱼、芥末"
+        },
+        {
+          "id": "J13",
+          "name": "味噌拉面",
+          "ingredients": "味噌、骨汤、玉米"
+        },
+        {
+          "id": "J14",
+          "name": "鳗鱼饭",
+          "ingredients": "鳗鱼、照烧汁、米饭"
+        },
+        {
+          "id": "J15",
+          "name": "综合寿司拼盘",
+          "ingredients": "多种鱼料、寿司米"
+        },
+        {
+          "id": "J16",
+          "name": "豚骨拉面",
+          "ingredients": "猪骨浓汤、拉面、叉烧"
+        },
+        {
+          "id": "J17",
+          "name": "天丼",
+          "ingredients": "天妇罗、出汁酱汁、米饭"
+        },
+        {
+          "id": "J18",
+          "name": "炭火烤鳗鱼",
+          "ingredients": "鳗鱼、炭火、秘制酱汁"
+        },
+        {
+          "id": "J19",
+          "name": "主厨特选寿司",
+          "ingredients": "时令鱼料、寿司米"
+        },
+        {
+          "id": "J20",
+          "name": "怀石料理套餐",
+          "ingredients": "汤品、烤物、寿司、时令食材"
+        }
+      ],
+      "columns": 5,
+      "rows": 4,
+      "prompt": "Use case: stylized-concept. Production cooking game plated dish icon atlas, matching the supplied character drawing: clear black hand drawn outlines, clean flat cel colors, only gentle simple shadows, colorful appealing food, NOT pixel art or realistic photo. Exactly FIVE columns and FOUR rows, 20 equal square cells, strict row-major order. One plated finished dish in each cell, three-quarter overhead view, simple cream plate or appropriate bowl, centered, at least 12% RGBA transparent padding. No text, captions, numbers, labels, grid, background or cast-shadow panels. Each dish must look like its specified recipe, no duplicate generic bowls. Ingredients and presentation should distinguish dishes. Row-major contents: 1: 盐饭团 (J01), ingredients 米饭、盐、海苔; 2: 日式玉子烧 (J02), ingredients 鸡蛋、出汁、糖; 3: 日式乌冬 (J03), ingredients 乌冬面、出汁、葱; 4: 盐烤鱼 (J04), ingredients 鲜鱼、盐、柠檬; 5: 照烧鸡肉饭 (J05), ingredients 鸡肉、酱油、味醂、米饭; 6: 亲子丼 (J06), ingredients 鸡肉、鸡蛋、出汁、米饭; 7: 炸猪排 (J07), ingredients 猪肉、面粉、面包糠; 8: 黄瓜卷寿司 (J08), ingredients 寿司米、海苔、黄瓜; 9: 天妇罗 (J09), ingredients 虾、蔬菜、薄面衣; 10: 酱油拉面 (J10), ingredients 拉面、酱油汤底、叉烧; 11: 炸猪排盖饭 (J11), ingredients 炸猪排、鸡蛋、米饭; 12: 三文鱼握寿司 (J12), ingredients 寿司米、三文鱼、芥末; 13: 味噌拉面 (J13), ingredients 味噌、骨汤、玉米; 14: 鳗鱼饭 (J14), ingredients 鳗鱼、照烧汁、米饭; 15: 综合寿司拼盘 (J15), ingredients 多种鱼料、寿司米; 16: 豚骨拉面 (J16), ingredients 猪骨浓汤、拉面、叉烧; 17: 天丼 (J17), ingredients 天妇罗、出汁酱汁、米饭; 18: 炭火烤鳗鱼 (J18), ingredients 鳗鱼、炭火、秘制酱汁; 19: 主厨特选寿司 (J19), ingredients 时令鱼料、寿司米; 20: 怀石料理套餐 (J20), ingredients 汤品、烤物、寿司、时令食材.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-cbd5846f-5db4-42fd-8096-bd23b22574af.png"
+    },
+    {
+      "key": "dishes-3",
+      "file": "dishes-3.png",
+      "items": [
+        {
+          "id": "S01",
+          "name": "越式鲜春卷",
+          "ingredients": "米纸、鲜虾、香草、生菜"
+        },
+        {
+          "id": "S02",
+          "name": "椰香米饭",
+          "ingredients": "米、椰浆、盐"
+        },
+        {
+          "id": "S03",
+          "name": "越式清汤粉",
+          "ingredients": "米粉、清汤、香草"
+        },
+        {
+          "id": "S04",
+          "name": "泰式炒河粉",
+          "ingredients": "河粉、鸡蛋、豆芽、鱼露"
+        },
+        {
+          "id": "S05",
+          "name": "越南牛肉河粉",
+          "ingredients": "牛肉、米粉、香料高汤"
+        },
+        {
+          "id": "S06",
+          "name": "印尼炒饭",
+          "ingredients": "米饭、甜酱油、虾片"
+        },
+        {
+          "id": "S07",
+          "name": "沙嗲串烧",
+          "ingredients": "鸡肉、花生酱、香料"
+        },
+        {
+          "id": "S08",
+          "name": "泰式红咖喱",
+          "ingredients": "红咖喱酱、椰浆、肉类"
+        },
+        {
+          "id": "S09",
+          "name": "泰式绿咖喱",
+          "ingredients": "绿咖喱酱、椰浆、茄子"
+        },
+        {
+          "id": "S10",
+          "name": "冬阴功汤",
+          "ingredients": "虾、香茅、青柠、辣椒"
+        },
+        {
+          "id": "S11",
+          "name": "马来西亚叻沙",
+          "ingredients": "米粉、咖喱汤底、虾"
+        },
+        {
+          "id": "S12",
+          "name": "越式炸春卷",
+          "ingredients": "米纸、肉馅、木耳"
+        },
+        {
+          "id": "S13",
+          "name": "海南鸡饭",
+          "ingredients": "鸡肉、鸡油饭、姜葱酱"
+        },
+        {
+          "id": "S14",
+          "name": "椰浆咖喱面",
+          "ingredients": "面条、椰浆咖喱汤、豆腐泡"
+        },
+        {
+          "id": "S15",
+          "name": "泰式打抛猪肉饭",
+          "ingredients": "猪肉、罗勒、辣椒、米饭"
+        },
+        {
+          "id": "S16",
+          "name": "马萨曼咖喱",
+          "ingredients": "马萨曼咖喱酱、土豆、花生"
+        },
+        {
+          "id": "S17",
+          "name": "印尼沙爹饭",
+          "ingredients": "沙嗲串烧、米饭、花生酱"
+        },
+        {
+          "id": "S18",
+          "name": "海鲜叻沙",
+          "ingredients": "虾、鱼片、叻沙汤底"
+        },
+        {
+          "id": "S19",
+          "name": "特色香料海鲜拼盘",
+          "ingredients": "海鲜、香料酱、香草"
+        },
+        {
+          "id": "S20",
+          "name": "东南亚风味宴席",
+          "ingredients": "鸡饭、沙嗲、海鲜、咖喱"
+        }
+      ],
+      "columns": 5,
+      "rows": 4,
+      "prompt": "Use case: stylized-concept. Production cooking game plated dish icon atlas, matching the supplied character drawing: clear black hand drawn outlines, clean flat cel colors, only gentle simple shadows, colorful appealing food, NOT pixel art or realistic photo. Exactly FIVE columns and FOUR rows, 20 equal square cells, strict row-major order. One plated finished dish in each cell, three-quarter overhead view, simple cream plate or appropriate bowl, centered, at least 12% RGBA transparent padding. No text, captions, numbers, labels, grid, background or cast-shadow panels. Each dish must look like its specified recipe, no duplicate generic bowls. Ingredients and presentation should distinguish dishes. Row-major contents: 1: 越式鲜春卷 (S01), ingredients 米纸、鲜虾、香草、生菜; 2: 椰香米饭 (S02), ingredients 米、椰浆、盐; 3: 越式清汤粉 (S03), ingredients 米粉、清汤、香草; 4: 泰式炒河粉 (S04), ingredients 河粉、鸡蛋、豆芽、鱼露; 5: 越南牛肉河粉 (S05), ingredients 牛肉、米粉、香料高汤; 6: 印尼炒饭 (S06), ingredients 米饭、甜酱油、虾片; 7: 沙嗲串烧 (S07), ingredients 鸡肉、花生酱、香料; 8: 泰式红咖喱 (S08), ingredients 红咖喱酱、椰浆、肉类; 9: 泰式绿咖喱 (S09), ingredients 绿咖喱酱、椰浆、茄子; 10: 冬阴功汤 (S10), ingredients 虾、香茅、青柠、辣椒; 11: 马来西亚叻沙 (S11), ingredients 米粉、咖喱汤底、虾; 12: 越式炸春卷 (S12), ingredients 米纸、肉馅、木耳; 13: 海南鸡饭 (S13), ingredients 鸡肉、鸡油饭、姜葱酱; 14: 椰浆咖喱面 (S14), ingredients 面条、椰浆咖喱汤、豆腐泡; 15: 泰式打抛猪肉饭 (S15), ingredients 猪肉、罗勒、辣椒、米饭; 16: 马萨曼咖喱 (S16), ingredients 马萨曼咖喱酱、土豆、花生; 17: 印尼沙爹饭 (S17), ingredients 沙嗲串烧、米饭、花生酱; 18: 海鲜叻沙 (S18), ingredients 虾、鱼片、叻沙汤底; 19: 特色香料海鲜拼盘 (S19), ingredients 海鲜、香料酱、香草; 20: 东南亚风味宴席 (S20), ingredients 鸡饭、沙嗲、海鲜、咖喱.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-9c925e40-1a55-40bd-97b0-5901be29ff82.png"
+    },
+    {
+      "key": "dishes-4",
+      "file": "dishes-4.png",
+      "items": [
+        {
+          "id": "L01",
+          "name": "墨西哥玉米饼",
+          "ingredients": "玉米面、盐、水"
+        },
+        {
+          "id": "L02",
+          "name": "黑豆饭",
+          "ingredients": "黑豆、米饭、香料"
+        },
+        {
+          "id": "L03",
+          "name": "阿根廷肉馅饼",
+          "ingredients": "酥皮、牛肉、洋葱"
+        },
+        {
+          "id": "L04",
+          "name": "秘鲁青柠腌鱼",
+          "ingredients": "鲜鱼、青柠、红洋葱"
+        },
+        {
+          "id": "L05",
+          "name": "墨西哥玉米片配莎莎酱",
+          "ingredients": "玉米片、番茄、洋葱、辣椒"
+        },
+        {
+          "id": "L06",
+          "name": "墨西哥塔可",
+          "ingredients": "玉米饼、肉类、豆类、莎莎酱"
+        },
+        {
+          "id": "L07",
+          "name": "巴西芝士面包",
+          "ingredients": "木薯淀粉、奶酪、鸡蛋"
+        },
+        {
+          "id": "L08",
+          "name": "墨西哥玉米粽",
+          "ingredients": "玉米面、玉米叶、馅料"
+        },
+        {
+          "id": "L09",
+          "name": "阿根廷炭烤牛肉",
+          "ingredients": "牛肉、盐、炭火"
+        },
+        {
+          "id": "L10",
+          "name": "秘鲁海鲜酸橘汁",
+          "ingredients": "鲜虾、贝类、青柠、香菜"
+        },
+        {
+          "id": "L11",
+          "name": "墨西哥辣椒炖肉",
+          "ingredients": "牛肉、豆类、辣椒、番茄"
+        },
+        {
+          "id": "L12",
+          "name": "墨西哥辣酱焖鸡",
+          "ingredients": "鸡肉、辣椒酱、番茄"
+        },
+        {
+          "id": "L13",
+          "name": "巴西黑豆炖肉",
+          "ingredients": "黑豆、猪肉、香肠"
+        },
+        {
+          "id": "L14",
+          "name": "秘鲁鸡肉辣酱饭",
+          "ingredients": "鸡肉、黄辣椒酱、米饭"
+        },
+        {
+          "id": "L15",
+          "name": "墨西哥卷饼",
+          "ingredients": "大面饼、肉馅、豆类、米饭"
+        },
+        {
+          "id": "L16",
+          "name": "墨西哥摩尔酱鸡",
+          "ingredients": "鸡肉、辣椒、可可、香料"
+        },
+        {
+          "id": "L17",
+          "name": "巴西海鲜炖锅",
+          "ingredients": "鱼、虾、椰奶、番茄、香菜"
+        },
+        {
+          "id": "L18",
+          "name": "阿根廷炭烤拼盘",
+          "ingredients": "牛肉、香肠、内脏、炭火"
+        },
+        {
+          "id": "L19",
+          "name": "墨西哥辣酱千层玉米饼",
+          "ingredients": "玉米饼、鸡肉、摩尔酱、奶酪"
+        },
+        {
+          "id": "L20",
+          "name": "拉丁美洲炭火盛宴",
+          "ingredients": "炖海鲜、炭烤肉、玉米料理"
+        }
+      ],
+      "columns": 5,
+      "rows": 4,
+      "prompt": "Use case: stylized-concept. Production cooking game plated dish icon atlas, matching the supplied character drawing: clear black hand drawn outlines, clean flat cel colors, only gentle simple shadows, colorful appealing food, NOT pixel art or realistic photo. Exactly FIVE columns and FOUR rows, 20 equal square cells, strict row-major order. One plated finished dish in each cell, three-quarter overhead view, simple cream plate or appropriate bowl, centered, at least 12% RGBA transparent padding. No text, captions, numbers, labels, grid, background or cast-shadow panels. Each dish must look like its specified recipe, no duplicate generic bowls. Ingredients and presentation should distinguish dishes. Row-major contents: 1: 墨西哥玉米饼 (L01), ingredients 玉米面、盐、水; 2: 黑豆饭 (L02), ingredients 黑豆、米饭、香料; 3: 阿根廷肉馅饼 (L03), ingredients 酥皮、牛肉、洋葱; 4: 秘鲁青柠腌鱼 (L04), ingredients 鲜鱼、青柠、红洋葱; 5: 墨西哥玉米片配莎莎酱 (L05), ingredients 玉米片、番茄、洋葱、辣椒; 6: 墨西哥塔可 (L06), ingredients 玉米饼、肉类、豆类、莎莎酱; 7: 巴西芝士面包 (L07), ingredients 木薯淀粉、奶酪、鸡蛋; 8: 墨西哥玉米粽 (L08), ingredients 玉米面、玉米叶、馅料; 9: 阿根廷炭烤牛肉 (L09), ingredients 牛肉、盐、炭火; 10: 秘鲁海鲜酸橘汁 (L10), ingredients 鲜虾、贝类、青柠、香菜; 11: 墨西哥辣椒炖肉 (L11), ingredients 牛肉、豆类、辣椒、番茄; 12: 墨西哥辣酱焖鸡 (L12), ingredients 鸡肉、辣椒酱、番茄; 13: 巴西黑豆炖肉 (L13), ingredients 黑豆、猪肉、香肠; 14: 秘鲁鸡肉辣酱饭 (L14), ingredients 鸡肉、黄辣椒酱、米饭; 15: 墨西哥卷饼 (L15), ingredients 大面饼、肉馅、豆类、米饭; 16: 墨西哥摩尔酱鸡 (L16), ingredients 鸡肉、辣椒、可可、香料; 17: 巴西海鲜炖锅 (L17), ingredients 鱼、虾、椰奶、番茄、香菜; 18: 阿根廷炭烤拼盘 (L18), ingredients 牛肉、香肠、内脏、炭火; 19: 墨西哥辣酱千层玉米饼 (L19), ingredients 玉米饼、鸡肉、摩尔酱、奶酪; 20: 拉丁美洲炭火盛宴 (L20), ingredients 炖海鲜、炭烤肉、玉米料理.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-19c285b7-862b-4419-9892-7b2ed7372972.png"
+    },
+    {
+      "key": "backgrounds",
+      "file": "backgrounds.png",
+      "old": "assets/story/opening-backgrounds-v1.png",
+      "transparent": false,
+      "prompt": "Use case: style-transfer. Image 1 is the existing game asset to redraw; image 2 is the approved drawing style reference. Redraw with clean confident dark hand-drawn outlines, flat saturated cel colors and simple two-tone shadows matching the supplied character. No pixel art, photorealism, painterly noise or 3D rendering. Preserve composition, objects, camera, and functional empty space. No added text, watermark, borders or people. Exactly 2 columns x2 rows of four equal 16:9 panels: row1 harbor bus stop promenade and distant sailboats; warm Chinese soup-shop counter; row2 modest empty Chinese eatery interior with back kitchen; close-up dining table with plain empty plate. Keep this precise original order. No separator gutters. Simplify into an inviting coherent anime visual novel background.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-9596634d-346a-49f0-b370-7aeea5c5e3c5.png"
+    },
+    {
+      "key": "coast",
+      "file": "coast.png",
+      "old": "assets/story/arrival-coast-v1.png",
+      "transparent": false,
+      "prompt": "Use case: style-transfer. Image 1 is the existing game asset to redraw; image 2 is the approved drawing style reference. Redraw with clean confident dark hand-drawn outlines, flat saturated cel colors and simple two-tone shadows matching the supplied character. No pixel art, photorealism, painterly noise or 3D rendering. Preserve composition, objects, camera, and functional empty space. No added text, watermark, borders or people. One wide landscape harbor backdrop, empty stone promenade foreground, wooden bus shelter left, calm blue sea middle, Chinese port architecture right. Same placement. Flat cel illustration, softly warm morning palette.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-1125e84b-d683-4c0c-88db-fbf7cb1a3acb.png"
+    },
+    {
+      "key": "kitchen",
+      "file": "kitchen.png",
+      "old": "assets/kitchen/kitchen-background-v2.png",
+      "transparent": false,
+      "prompt": "Use case: style-transfer. Image 1 is the existing game asset to redraw; image 2 is the approved drawing style reference. Redraw with clean confident dark hand-drawn outlines, flat saturated cel colors and simple two-tone shadows matching the supplied character. No pixel art, photorealism, painterly noise or 3D rendering. Preserve composition, objects, camera, and functional empty space. No added text, watermark, borders or people. One slightly overhead orthographic kitchen room background, back wall shelves and hanging cookware, warm terracotta floor covering bottom 70%, no furniture or characters on the floor. Preserve exact floor/wall ratio and center doorway at bottom. Line-art cel illustration, clean forms.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-b69fa279-5310-4d24-bd4f-b099a8189317.png"
+    },
+    {
+      "key": "title",
+      "file": "title.png",
+      "old": "assets/town/title-town-v1.png",
+      "transparent": false,
+      "prompt": "Use case: style-transfer. Image 1 is the existing game asset to redraw; image 2 is the approved drawing style reference. Redraw with clean confident dark hand-drawn outlines, flat saturated cel colors and simple two-tone shadows matching the supplied character. No pixel art, photorealism, painterly noise or 3D rendering. Preserve composition, objects, camera, and functional empty space. No added text, watermark, borders or people. One wide 16:9 cozy Chinese eatery street at golden hour. Leave left 40% as simple cream wall with subtle ivy for game menu readability, detailed warm restaurant on right, no people. Match supplied flat illustration style.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-67b18d70-58f2-455e-ae03-79fb46714c7c.png"
+    },
+    {
+      "key": "story-props",
+      "file": "story-props.png",
+      "old": "assets/story/opening-props-v1.png",
+      "transparent": true,
+      "prompt": "Use case: style-transfer. Image 1 is the existing game asset to redraw; image 2 is the approved drawing style reference. Redraw with clean confident dark hand-drawn outlines, flat saturated cel colors and simple two-tone shadows matching the supplied character. No pixel art, photorealism, painterly noise or 3D rendering. Preserve composition, objects, camera, and functional empty space. No added text, watermark, borders or people. Exactly four columns by two rows of equal transparent cells: side-view cream/green vintage bus, open parchment map with exactly three small red circles, dark bowl with black soup and golden cubes, furniture hidden under cream cloth; row2 basket of tomatoes eggs oil salt sugar, ornate portrait frame with shadowy chef silhouette, chopsticks holding golden tofu bite, chef certificate with simple decorative stamp but no lettering. Each fully within cell, transparent gutters, exact order.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-41abeab8-8fe8-4d5a-98d9-371e3d1de272.png"
+    },
+    {
+      "key": "cottage",
+      "file": "cottage.png",
+      "old": "assets/cottage/furniture-v1.png",
+      "transparent": true,
+      "prompt": "Use case: style-transfer. Image 1 is the existing game asset to redraw; image 2 is the approved drawing style reference. Redraw with clean confident dark hand-drawn outlines, flat saturated cel colors and simple two-tone shadows matching the supplied character. No pixel art, photorealism, painterly noise or 3D rendering. Preserve composition, objects, camera, and functional empty space. No added text, watermark, borders or people. Exactly THREE columns TWO rows of equal transparent cells, same items and order: wooden bed with red quilt; wooden bedside cabinet with warm lamp; wooden lattice window; row2 wall shelf with books plant tea set; oval straw rug; wooden rack with two red lanterns. Keep fully contained in each cell, 8% clear gutters, orthographic slightly overhead, no background.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-92f5ac2a-c54d-47ba-b586-aedb5922693f.png"
+    },
+    {
+      "key": "arrival-hero",
+      "file": "arrival-hero.png",
+      "old": "assets/story/arrival-hero-v1.png",
+      "prompt": "Use case: style-transfer. Production game transparent sprite atlas. Redraw the old asset in image1, preserving every object's identity, costume, exact action, viewing angle, order and cell placement. Images2-4 are approved character/style references. Use their clean black outlines, flat cel colors and simple shadows, not pixel art. Keep feet anchors and proportions consistent across cells. Every cell must have clear RGBA transparent gutters, no background, glow, frame, lettering or watermark. Exactly FOUR columns TWO rows. The flame-haired chef from image2: row1 folded map at waist, holding map while surprised, opening map, holding fully open map; row2 walking stride1 holding map, walking stride2 holding map, hungry hand on stomach, hopeful holding map. Full body in every equal cell.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-fac1aa9b-735f-46ee-9ee7-86c048821335.png"
+    },
+    {
+      "key": "arrival-aling",
+      "file": "arrival-aling.png",
+      "old": "assets/story/arrival-aling-v2.png",
+      "prompt": "Use case: style-transfer. Production game transparent sprite atlas. Redraw the old asset in image1, preserving every object's identity, costume, exact action, viewing angle, order and cell placement. Images2-4 are approved character/style references. Use their clean black outlines, flat cel colors and simple shadows, not pixel art. Keep feet anchors and proportions consistent across cells. Every cell must have clear RGBA transparent gutters, no background, glow, frame, lettering or watermark. Exactly THREE columns TWO rows. The blue-haired messenger from image3. Full body: calm hands at sides, holding closed book, opening book; row2 reading eyes lowered, speaking with open book, gentle smile reading. Keep her original reference bird, purple cape and dress, crescent ornaments, boots and braid.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-03065bb2-2e27-42d9-95da-ffa64a46d55e.png"
+    },
+    {
+      "key": "arrival-props",
+      "file": "arrival-props.png",
+      "old": "assets/story/arrival-props-v1.png",
+      "prompt": "Use case: style-transfer. Production game transparent sprite atlas. Redraw the old asset in image1, preserving every object's identity, costume, exact action, viewing angle, order and cell placement. Images2-4 are approved character/style references. Use their clean black outlines, flat cel colors and simple shadows, not pixel art. Keep feet anchors and proportions consistent across cells. Every cell must have clear RGBA transparent gutters, no background, glow, frame, lettering or watermark. Exactly TWO columns TWO rows equal cells: open illustrated landscape map; closed brown book with crescent emblem; row2 partially opened brown book with crescent cover; fully opened ledger book with blank faint ruled pages. No text and no red marks (game adds them). Entire objects within own cells. Real transparent background.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-42bce2c1-eb27-4873-bac3-5c92e7c94d62.png"
+    },
+    {
+      "key": "cinematic",
+      "file": "cinematic.png",
+      "old": "assets/story/cinematic-actors-v1.png",
+      "prompt": "Use case: style-transfer. Production game transparent sprite atlas. Redraw the old asset in image1, preserving every object's identity, costume, exact action, viewing angle, order and cell placement. Images2-4 are approved character/style references. Use their clean black outlines, flat cel colors and simple shadows, not pixel art. Keep feet anchors and proportions consistent across cells. Every cell must have clear RGBA transparent gutters, no background, glow, frame, lettering or watermark. Exactly SIX columns THREE rows equal cells. Row1 flame-haired chef: neutral, hand on hungry stomach, excited fists, eating bite, reaching down, smiling serving gesture. Row2 blue-haired messenger: neutral, firm fists, cheering hands, pointing forward, crouched concerned, crouched happy. Row3 white-haired red/cream priest: neutral, hands clasped, joyful hands raised, confident fists, reaching forward, arms folded. Match approved reference identity, bird/book for messenger, crown/ladle visual identity for priest. No added detached particles, all full bodies inside cells.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-e60586d7-1bb4-4108-bb85-83f99dd7e2ca.png"
+    },
+    {
+      "key": "walker-hero",
+      "file": "walker-hero.png",
+      "prompt": "Use case: stylized-concept. Production 2D RPG walking sprite atlas derived from the ORIGINAL character reference. Preserve exact hair, costume colors, headwear, accessories and footwear: flame red/yellow hair, cream chef hat, cream apron with flame emblem, red tie, black skirt and brown boots. Clean hand-drawn black lines and flat cel colors, no pixel art. Cute readable small RPG sprite, consistent 3-head-tall proportions. Exactly FOUR columns THREE rows of equal cells. Columns always FRONT, BACK, LEFT profile, RIGHT profile. Row1 idle feet together; row2 walking left foot forward; row3 walking opposite foot forward. Hands relaxed for walking, keep accessories close to body. Keep same head height, foot baseline and scale in all cells, full body within cell with at least 10% RGBA transparent gutters. No captions, grid, shadows, glow or background.",
+      "refs": "焰子",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-322cc920-ea9b-49cf-822c-25d358843404.png"
+    },
+    {
+      "key": "walker-aling",
+      "file": "walker-aling.png",
+      "prompt": "Use case: stylized-concept. Production 2D RPG walking sprite atlas derived from the ORIGINAL character reference. Preserve exact hair, costume colors, headwear, accessories and footwear: blue/gold boots and purple gold-trim dress, single long braid, bird on shoulder and crescent hair ornament. Clean hand-drawn black lines and flat cel colors, no pixel art. Cute readable small RPG sprite, consistent 3-head-tall proportions. Exactly FOUR columns THREE rows of equal cells. Columns always FRONT, BACK, LEFT profile, RIGHT profile. Row1 idle feet together; row2 walking left foot forward; row3 walking opposite foot forward. Hands relaxed for walking, keep accessories close to body. Keep same head height, foot baseline and scale in all cells, full body within cell with at least 10% RGBA transparent gutters. No captions, grid, shadows, glow or background.",
+      "refs": "阿铃",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-b45336d8-f59e-4cfa-9e03-9156ae8135c0.png"
+    },
+    {
+      "key": "walker-chen",
+      "file": "walker-chen.png",
+      "prompt": "Use case: stylized-concept. Production 2D RPG walking sprite atlas derived from the ORIGINAL character reference. Preserve exact hair, costume colors, headwear, accessories and footwear: white/pink short hair, red tall circular priest crown, cream apron and red dress, red shoes and abacus accessory. Clean hand-drawn black lines and flat cel colors, no pixel art. Cute readable small RPG sprite, consistent 3-head-tall proportions. Exactly FOUR columns THREE rows of equal cells. Columns always FRONT, BACK, LEFT profile, RIGHT profile. Row1 idle feet together; row2 walking left foot forward; row3 walking opposite foot forward. Hands relaxed for walking, keep accessories close to body. Keep same head height, foot baseline and scale in all cells, full body within cell with at least 10% RGBA transparent gutters. No captions, grid, shadows, glow or background.",
+      "refs": "灰烬司祭",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-db60a8b3-e43e-4551-8e71-82edbe4c7c70.png"
+    },
+    {
+      "key": "occupied",
+      "file": "occupied.png",
+      "prompt": "Use case: style-transfer. Edit old game sprite atlas image1 into clean black linework, flat cel color and simple shading matching character references. Exactly TWO columns TWO rows, transparent RGBA background and generous clear gutter. Keep exact old seating direction, compact seated proportions and stool dimensions. Each cell is a complete integrated person seated on red/gold square wooden stool, viewed diagonally from behind-left, facing right, hands extending toward invisible table on right, feet naturally on ground. Row1 brown-haired male diner teal shirt dark pants, brown-haired ponytail female diner teal blouse dark skirt; row2 blue-haired purple dress messenger from image2 with BLUE GOLD boots/bird/crescent, white-haired red cream priest from image3. Do not change camera angle or add table, food, background, labels or decorative light. All four occupied assemblies fully contained.",
+      "refs": "occupied",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-d2b63e0e-e439-448f-8c13-0a5305c3e735.png"
+    },
+    {
+      "key": "diner-props",
+      "file": "diner-props.png",
+      "old": "assets/town/diner-props-v2.png",
+      "prompt": "Use case: style-transfer. Production Godot 2D game sprite sheet. Image1 is old layout reference; image2 is the required hand-drawn clean black-outline flat cel-color style. Preserve each object's exact function, identity, viewing angle and order. No pixelation, background, glow or lettering. Real RGBA transparent empty space. Exactly FOUR columns FOUR rows, equal square cells, 16 objects: dining table with red cloth and 2 stools; cashier counter with abacus; drafting desk and stool; bookshelf; row2 green fridge; chopping board counter with cleaver/tomato; lit wok stove; bamboo steamer stove; row3 dishware cabinet; wooden stockpot with metal lid; menu chalkboard; flower pot; row4 lattice screen; hanging red lantern; vegetable jars; bamboo dish rack. Preserve slot meanings. Full objects fully inside every cell with 10% gutters.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-336f37dd-e715-4929-bd67-80963b219a75.png"
+    },
+    {
+      "key": "dining-parts",
+      "file": "dining-parts.png",
+      "old": "assets/town/dining-table-stool-separated-v1.png",
+      "prompt": "Use case: style-transfer. Production Godot 2D game sprite sheet. Image1 is old layout reference; image2 is the required hand-drawn clean black-outline flat cel-color style. Preserve each object's exact function, identity, viewing angle and order. No pixelation, background, glow or lettering. Real RGBA transparent empty space. Exactly TWO equal cells side by side. Left: standalone dark wooden square dining table with red/gold patterned top cloth and two soup bowls, all four legs visible. Right: standalone matching red/gold upholstered wooden square stool. Same orthographic isometric angle as original, do not change proportions, do not add stools to table cell. 10% transparent gutters.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-95cc8175-76db-47c8-9a71-74ad9296691c.png"
+    },
+    {
+      "key": "diner-walk",
+      "file": "diner-walk.png",
+      "old": "assets/characters/diners/diners-four-directions-v1.png",
+      "prompt": "Use case: style-transfer. Production Godot 2D game sprite sheet. Image1 is old layout reference; image2 is the required hand-drawn clean black-outline flat cel-color style. Preserve each object's exact function, identity, viewing angle and order. No pixelation, background, glow or lettering. Real RGBA transparent empty space. Exactly FOUR columns SIX rows of equal cells. Cols FRONT BACK LEFT RIGHT. Row1 male diner idle; row2 male step1; row3 male opposite step; row4 female ponytail diner idle; row5 female step1; row6 female opposite step. Brown hair, teal Chinese shirt/blouse, charcoal trousers or skirt, brown shoes. Cute small RPG sprite, same foot baseline, no background/panels/grid, 10% clear gutter.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-62d95860-44d6-4d8f-9d89-1d8e7297ed0f.png"
+    },
+    {
+      "key": "story-props-fixed",
+      "file": "story-props.png",
+      "old": "assets/redraw-v1/story-props.png",
+      "prompt": "Use case: background-extraction. Edit target image1. Remove ALL white/gray background, gradients, cast-shadow halos and translucent background haze to absolute RGBA transparency. Keep all eight illustrated objects exactly as drawn, same positions, proportions, colors and outlines. Do not move or redraw the bus, map, bowl, cloth, basket, portrait frame, chopsticks or certificate. Fully transparent space between objects and around image border. White highlights INSIDE objects stay white. No added panels, grid, text or checkerboard.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-e2bdb7d3-7404-4eba-9cc7-48f2b20249aa.png"
+    },
+    {
+      "key": "diner-seated",
+      "file": "diner-seated.png",
+      "old": "assets/characters/diners/diners-seated-v1.png",
+      "prompt": "Redraw this exact sprite atlas in clean hand-drawn anime cartoon style: solid crisp black outlines, flat cel colours, one soft warm shadow, no pixels, no photorealism. Preserve precise 4 columns by 2 rows and empty transparent gutters. Top row brown-haired male diner, bottom row brown-haired female diner. Columns front, back, left, right. ALL poses seated without chairs or stools or ground. Teal shirts and dark bottoms to support colour palettes, identical identities and directions to reference. Each sprite fully visible isolated in its own cell. True alpha background.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-4f7d3052-e0df-4279-ab9c-195994b20b93.png"
+    },
+    {
+      "key": "diner-iso",
+      "file": "diner-iso.png",
+      "old": "assets/characters/diners/diners-isometric-seated-v2.png",
+      "prompt": "Redraw this 2x2 seated character atlas with clean black hand-drawn outlines and saturated flat anime cel colours matching approved character drawings. Preserve all four original subjects exactly: top left male diner in teal, top right female diner in teal, bottom left blue-haired Aling purple/gold cloak and blue gold boots, bottom right white-haired ash priest in red white and crown. Preserve seated facing direction and hips position, poses and approximate subject size. NO chairs, stools, backgrounds or shadows on floor. Full bodies with clear alpha gutters. True transparent RGBA background.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-19929fb3-ce29-49cb-b169-3fe238fe1894.png"
+    },
+    {
+      "key": "restaurant-furniture",
+      "file": "restaurant-furniture.png",
+      "old": "assets/town/diner-furniture-v1.png",
+      "prompt": "Redraw the exact four restaurant furniture sets in this reference into clean cozy hand-drawn game illustration: black brown outlines, flat warm cel colours, restrained highlights, not pixel art. Exactly 2x2 atlas preserving the same isometric camera, object footprints and arrangement: upper left square wood dining table with two stools, upper right wood cash counter with register and menu, lower left recipe drafting desk with stool, lower right wood bench sofa. Preserve geometry and proportions for game anchors. Each whole set wholly in its own equal grid cell with wide empty gutters. No text or background, true transparent RGBA.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-be143b17-8359-4f8b-a2df-6e576319e1a9.png"
+    },
+    {
+      "key": "chef",
+      "file": "chef.png",
+      "old": "C:/Users/myzpw/Desktop/画画/project nju gaming/焰子.png",
+      "prompt": "Create one transparent cutout game character from this original illustration. Preserve this EXACT original hand-drawn style, face, flame red/yellow hair and tuft, cream tilted chef hat, cream flame apron, white shirt, red tie, black skirt, brown boots, pan and spatula. A single full body neutral smiling front view with relaxed stance, all limbs visible, no ground, no background, no extra characters. Keep original clothing design and cel colours precisely. Crisp black outlines and simple flat shadow, NOT pixel art. Fit full figure in central area with generous alpha margins.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-dc2e2526-e1b5-4234-ae58-e82df2b01d41.png"
+    },
+    {
+      "key": "portrait-hero",
+      "file": "portrait-hero-v1.png",
+      "prompt": "Use case: identity-preserve. Edit target: attached original drawing of 焰子. Create a production visual novel full-body expression sprite sheet derived VERY FAITHFULLY from this exact original. Preserve its hand-drawn black linework, simple flat cel colors, head/body proportions, hair silhouette, clothing, palette, every accessory, same stance, hand gestures and held objects. Do not redesign, beautify into another style, pixelate, change costume or pose. Only facial expression changes. Layout exactly THREE columns and TWO rows of equal cells, SIX complete identical body poses aligned to same feet and head height. Row-major expressions: calm/neutral mouth closed, happy warm smile, surprised open eyes and small open mouth, puzzled/slightly worried, angry/serious brows, sad/downcast. Real RGBA transparent background in all empty space. Remove the white page and any detached decorative effects around the body (floating swords, floating paper or smoke), but keep all worn/held accessories such as hats, bird, book, ladle, spatula and cape. Character fully contained within every cell, at least 7% transparent gutter on all sides. No captions, words added, grid lines, frames, shadow panel or watermark. This is an expression edit set, same original character repeated six times, not six reinterpretations.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-3cc8a99a-89de-4693-85aa-f74cd70a435a.png",
+      "reference": "C:/Users/myzpw/Desktop/画画/project nju gaming/焰子.png"
+    },
+    {
+      "key": "portrait-aling",
+      "file": "portrait-aling-v1.png",
+      "prompt": "Use case: identity-preserve. Edit target: attached original drawing of 阿铃. Create a production visual novel full-body expression sprite sheet derived VERY FAITHFULLY from this exact original. Preserve its hand-drawn black linework, simple flat cel colors, head/body proportions, hair silhouette, clothing, palette, every accessory, same stance, hand gestures and held objects. Do not redesign, beautify into another style, pixelate, change costume or pose. Only facial expression changes. Layout exactly THREE columns and TWO rows of equal cells, SIX complete identical body poses aligned to same feet and head height. Row-major expressions: calm/neutral mouth closed, happy warm smile, surprised open eyes and small open mouth, puzzled/slightly worried, angry/serious brows, sad/downcast. Real RGBA transparent background in all empty space. Remove the white page and any detached decorative effects around the body (floating swords, floating paper or smoke), but keep all worn/held accessories such as hats, bird, book, ladle, spatula and cape. Character fully contained within every cell, at least 7% transparent gutter on all sides. No captions, words added, grid lines, frames, shadow panel or watermark. This is an expression edit set, same original character repeated six times, not six reinterpretations.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-3b336098-04c9-40fa-a69b-a87bfa7ae069.png",
+      "reference": "C:/Users/myzpw/Desktop/画画/project nju gaming/阿铃.png"
+    },
+    {
+      "key": "portrait-chen",
+      "file": "portrait-chen-v1.png",
+      "prompt": "Use case: identity-preserve. Edit target: attached original drawing of 灰烬司祭. Create a production visual novel full-body expression sprite sheet derived VERY FAITHFULLY from this exact original. Preserve its hand-drawn black linework, simple flat cel colors, head/body proportions, hair silhouette, clothing, palette, every accessory, same stance, hand gestures and held objects. Do not redesign, beautify into another style, pixelate, change costume or pose. Only facial expression changes. Layout exactly THREE columns and TWO rows of equal cells, SIX complete identical body poses aligned to same feet and head height. Row-major expressions: calm/neutral mouth closed, happy warm smile, surprised open eyes and small open mouth, puzzled/slightly worried, angry/serious brows, sad/downcast. Real RGBA transparent background in all empty space. Remove the white page and any detached decorative effects around the body (floating swords, floating paper or smoke), but keep all worn/held accessories such as hats, bird, book, ladle, spatula and cape. Character fully contained within every cell, at least 7% transparent gutter on all sides. No captions, words added, grid lines, frames, shadow panel or watermark. This is an expression edit set, same original character repeated six times, not six reinterpretations.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-3379a240-a2c1-4313-ae47-6386e01f5ead.png",
+      "reference": "C:/Users/myzpw/Desktop/画画/project nju gaming/灰烬司祭.png"
+    },
+    {
+      "key": "portrait-luo",
+      "file": "portrait-luo-v1.png",
+      "prompt": "Use case: identity-preserve. Edit target: attached original drawing of 罗厄. Create a production visual novel full-body expression sprite sheet derived VERY FAITHFULLY from this exact original. Preserve its hand-drawn black linework, simple flat cel colors, head/body proportions, hair silhouette, clothing, palette, every accessory, same stance, hand gestures and held objects. Do not redesign, beautify into another style, pixelate, change costume or pose. Only facial expression changes. Layout exactly THREE columns and TWO rows of equal cells, SIX complete identical body poses aligned to same feet and head height. Row-major expressions: calm/neutral mouth closed, happy warm smile, surprised open eyes and small open mouth, puzzled/slightly worried, angry/serious brows, sad/downcast. Real RGBA transparent background in all empty space. Remove the white page and any detached decorative effects around the body (floating swords, floating paper or smoke), but keep all worn/held accessories such as hats, bird, book, ladle, spatula and cape. Character fully contained within every cell, at least 7% transparent gutter on all sides. No captions, words added, grid lines, frames, shadow panel or watermark. This is an expression edit set, same original character repeated six times, not six reinterpretations.",
+      "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-111aed38-deb7-4f2c-9a23-d1b6fe29c540.png",
+      "reference": "C:/Users/myzpw/Desktop/画画/project nju gaming/罗厄.png"
+    }
+  ]
+}

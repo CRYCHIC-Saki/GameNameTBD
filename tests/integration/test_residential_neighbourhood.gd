@@ -9,15 +9,15 @@ func test_housing_groups_survive_reversed_plot_order_and_cover_each_free_cell_on
 	map.plots.reverse();assert_eq(TDTownArt.housing_groups(map),groups,"Same geometry, different dictionary order")
 	map.plots=original
 	var seen: Dictionary={}
-	var cottage:=Rect2i(map.cottage.x,map.cottage.y,2,2)
+	var cottage:=Rect2i(TDTownArt.facade_plot(map,map.cottage,1.0))
 	for g: Dictionary in groups:
 		for y: int in int(g["size"]):
 			for x: int in int(g["size"]):
 				var at: Vector2i=g.at+Vector2i(x,y)
 				assert_false(seen.has(at));assert_false(cottage.has_point(at));seen[at]=true
 	var expected:=map._home_cells()
-	for y: int in 2:
-		for x: int in 2: expected.erase(cottage.position+Vector2i(x,y))
+	for y: int in cottage.size.y:
+		for x: int in cottage.size.x: expected.erase(cottage.position+Vector2i(x,y))
 	assert_eq(seen.size(),expected.size());assert_eq(profile.snapshot(),before)
 	groups[0]["size"]=99;assert_ne(TDTownArt.housing_groups(map)[0]["size"],99,"Read-only query result")
 	profile.close()

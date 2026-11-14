@@ -6,8 +6,8 @@ const HALF_W := 48.0
 const HALF_H := 24.0
 const ORIGIN := Vector2(620, 48)
 const WALL_HEIGHT := 54.0
-const FURNITURE := preload("res://assets/town/diner-furniture-v1.png")
-const CHEF_SPRITE := preload("res://assets/kitchen/chef-v1.png")
+const FURNITURE := preload("res://assets/redraw-v1/restaurant-furniture.png")
+const CHEF_SPRITE := preload("res://assets/redraw-v1/chef.png")
 
 var day_minute: float=720.0
 var nearby_action: String=""
@@ -45,13 +45,13 @@ var follow_player: bool=false
 func _staff_font() -> Font:
 	if _name_font == null:
 		var font := SystemFont.new()
-		font.font_names = PackedStringArray(["Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans CJK SC"])
+		font.font_names = PackedStringArray(["SimHei"])
 		_name_font = font
 	return _name_font
 
 func _ready() -> void:
 	z_index = 4
-	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	# Transparent texture padding must not shift the visible feet from the body origin.
 	_chef_foot_ratio=1.0
 	_camera = Camera2D.new()
@@ -89,9 +89,9 @@ func sync(player: Node2D, guests: Array, frozen: bool=false) -> void:
 			var grid:=player_point/float(layout.cell_px)
 			_camera.position=project(grid.x,grid.y)+Vector2(0,-70) if not editing else project(layout.columns*.5,layout.rows*.5)
 			var view:=get_viewport_rect().size
-			var zoom: float=minf(1.0,minf((view.x-80)/((layout.columns+layout.rows)*HALF_W),maxf(200,view.y-370)/((layout.columns+layout.rows)*HALF_H+WALL_HEIGHT))) if editing else 1.0
+			var zoom: float=minf(1.0,minf((view.x-80)/((layout.columns+layout.rows)*HALF_W),maxf(200,view.y-TDDecorationPanel.PANEL_HEIGHT-82)/((layout.columns+layout.rows)*HALF_H+WALL_HEIGHT))) if editing else 1.0
 			_camera.zoom=Vector2.ONE*zoom
-			if editing: _camera.position+=Vector2(0,135/zoom)
+			if editing: _camera.position+=Vector2(0,(TDDecorationPanel.PANEL_HEIGHT*.5-9)/zoom)
 			# Context menus and pointer picking need the final camera transform this frame.
 			_camera.force_update_scroll()
 	actors = []
@@ -165,9 +165,9 @@ func _draw() -> void:
 		var pass_grid := Vector2(pass_point.x / float(layout.cell_px), pass_point.y / float(layout.cell_px))
 		var pass_at := project(pass_grid.x, pass_grid.y)
 		draw_circle(pass_at + Vector2(0, -8), 7.0, Color("#f0cc70"))
-		var font := ThemeDB.fallback_font
+		var font := TDUI.font()
 		if font != null:
-			draw_string(font, pass_at + Vector2(-18, -22), "传菜口", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("#fff4d2"))
+			draw_string(font, pass_at + Vector2(-18, -22), "传菜口", HORIZONTAL_ALIGNMENT_LEFT, -1, TDUI.FONT_MICRO, Color("#fff4d2"))
 	# Sort by ground position so walking behind a table does not draw the chef on it.
 	var entries:Array[Dictionary]=[]
 	for item: Dictionary in layout.pieces():
@@ -241,7 +241,7 @@ func _dining_person(entry: Dictionary) -> void:
 	var lower:=Rect2(box.position-TDFurnitureModel.center(seat)+box.size*Vector2(leg_side,.70),box.size*Vector2(.48,.30))
 	TDFurnitureModel.draw_dining_foreground(self,seat,lower)
 	draw_set_transform_matrix(Transform2D.IDENTITY)
-	if entry.caption!="": draw_string(_staff_font(),box.position+Vector2(-10,-8),entry.caption,HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color("fff4d2"))
+	if entry.caption!="": draw_string(_staff_font(),box.position+Vector2(-10,-8),entry.caption,HORIZONTAL_ALIGNMENT_LEFT,-1,TDUI.FONT_MICRO,Color("fff4d2"))
 
 func _marker(marker: Dictionary) -> void:
 	var point:=project(marker.cell.x+.5,marker.cell.y+.5)
@@ -252,7 +252,7 @@ func _marker(marker: Dictionary) -> void:
 		label_y = -WALL_HEIGHT - 18
 	if marker.action==nearby_action:
 		draw_circle(point+Vector2(0,3),11,Color("f2cf7c"))
-		draw_string(ThemeDB.fallback_font,point+Vector2(-5,8),"E",HORIZONTAL_ALIGNMENT_LEFT,-1,16,Color("5b4735"))
+		draw_string(TDUI.font(),point+Vector2(-5,8),"E",HORIZONTAL_ALIGNMENT_LEFT,-1,TDUI.FONT_CAPTION,Color("5b4735"))
 	if marker.action=="ledger":
 		var book_at:=point+Vector2(-12,-48 if marker.get("on_counter",false) else -34)
 		draw_rect(Rect2(book_at,Vector2(24,16)),Color("634f37"))
@@ -281,7 +281,7 @@ func _marker(marker: Dictionary) -> void:
 	if marker.action=="town":
 		var edge := _door_segment(Vector2i(int(marker.cell.x),int(marker.cell.y)))
 		label_at=(edge[0]+edge[1])*.5+Vector2(-60,-WALL_HEIGHT-8)
-	draw_string(ThemeDB.fallback_font,label_at,str(marker.name),HORIZONTAL_ALIGNMENT_CENTER,120,14,Color("f8e5b8"))
+	draw_string(TDUI.font(),label_at,str(marker.name),HORIZONTAL_ALIGNMENT_CENTER,120,TDUI.FONT_CAPTION,Color("f8e5b8"))
 
 func _floor_cell(cell: Vector2i) -> void:
 	var points := _quad(cell.x, cell.y, 1, 1)
@@ -415,10 +415,10 @@ func _service_window(start: Vector2, finish: Vector2, up: Vector2, wall: Color) 
 	_slab(left + up * lintel, right + up * lintel, up * (1.0 - lintel), wall)
 	_slab(left + up * sill, right + up * sill, up * (lintel - sill), Color(0.16, 0.14, 0.12))
 	_slab(left + up * (sill - 0.05), right + up * (sill - 0.05), up * 0.07, Color("8b5a34"))
-	var font := ThemeDB.fallback_font
+	var font := TDUI.font()
 	var title := (left + right) * 0.5 + up * (lintel + 0.08)
 	if font != null:
-		draw_string(font, title + Vector2(-28, 0), "出餐口", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color("fff4d2"))
+		draw_string(font, title + Vector2(-28, 0), "出餐口", HORIZONTAL_ALIGNMENT_LEFT, -1, TDUI.FONT_CAPTION, Color("fff4d2"))
 	var shown := mini(hatch_plates, 3)
 	for slot: int in shown:
 		var at := left.lerp(right, 0.35 + float(slot) * 0.15) + up * (sill + 0.04)
@@ -524,7 +524,7 @@ func _person(point: Vector2, _moving: bool, shirt: Color, caption: String, seate
 		if art!=null:
 			var ground:=project(grid.x,grid.y)
 			draw_texture_rect(art,TDStoryArt.fit(art,Rect2(ground+Vector2(-PERSON_HEIGHT*.5,-PERSON_HEIGHT),Vector2.ONE*PERSON_HEIGHT)),false)
-			if caption!="": draw_string(_staff_font(),ground+Vector2(-25,-PERSON_HEIGHT-8),caption,HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color("fff4d2"))
+			if caption!="": draw_string(_staff_font(),ground+Vector2(-25,-PERSON_HEIGHT-8),caption,HORIZONTAL_ALIGNMENT_LEFT,-1,TDUI.FONT_MICRO,Color("fff4d2"))
 			return
 	if not interaction_markers.is_empty() and not staff and shirt==Color("#d86b4a"):
 		var ground:=project(grid.x,grid.y)
@@ -536,7 +536,7 @@ func _person(point: Vector2, _moving: bool, shirt: Color, caption: String, seate
 			var plate := Rect2(body.position + Vector2(-18, -24), Vector2(92, 22))
 			draw_rect(plate, Color(0.08, 0.12, 0.1, 0.88))
 			draw_rect(plate, shirt, false, 2.0)
-			draw_string(_staff_font(), plate.position + Vector2(4, 16), caption, HORIZONTAL_ALIGNMENT_CENTER, 84, 14, Color("#fff4d2"))
+			draw_string(_staff_font(), plate.position + Vector2(4, 16), caption, HORIZONTAL_ALIGNMENT_CENTER, 84, TDUI.FONT_CAPTION, Color("#fff4d2"))
 		return
 	var ground:=project(grid.x,grid.y)
 	if not staff:
@@ -544,7 +544,7 @@ func _person(point: Vector2, _moving: bool, shirt: Color, caption: String, seate
 		var height: float=PERSON_HEIGHT*(.87 if seated else 1.0)
 		var box:=Rect2(ground+Vector2(-PERSON_HEIGHT*.5,-height),Vector2(PERSON_HEIGHT,height))
 		draw_texture_rect(art,TDStoryArt.fit(art,box),false)
-		if caption!="": draw_string(_staff_font(),ground+Vector2(-30,-PERSON_HEIGHT-8),caption,HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color("fff4d2"))
+		if caption!="": draw_string(_staff_font(),ground+Vector2(-30,-PERSON_HEIGHT-8),caption,HORIZONTAL_ALIGNMENT_LEFT,-1,TDUI.FONT_MICRO,Color("fff4d2"))
 		return
 	draw_set_transform(ground,0,Vector2.ONE*(PERSON_HEIGHT/40.0))
 	at=Vector2(0,drop)
@@ -570,9 +570,9 @@ func _person(point: Vector2, _moving: bool, shirt: Color, caption: String, seate
 			draw_rect(Rect2(at+Vector2(side*9-2,-1-swing),Vector2(4,8)),shirt.lightened(.12))
 	draw_set_transform_matrix(Transform2D.IDENTITY)
 	if caption != "":
-		var font := ThemeDB.fallback_font
+		var font := TDUI.font()
 		if font != null:
-			draw_string(font, ground + Vector2(-30, -PERSON_HEIGHT-8), caption, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("#fff4d2"))
+			draw_string(font, ground + Vector2(-30, -PERSON_HEIGHT-8), caption, HORIZONTAL_ALIGNMENT_LEFT, -1, TDUI.FONT_MICRO, Color("#fff4d2"))
 
 func chef_rect(point: Vector2) -> Rect2:
 	var grid:=point/float(layout.cell_px)

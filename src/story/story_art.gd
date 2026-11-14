@@ -20,25 +20,14 @@ const MOODS: Dictionary = {
 const ALING_CORRECTIONS: Texture2D=preload("res://assets/story/aling-emotions-corrections-v1.png")
 const ACTIONS: Texture2D=preload("res://assets/story/opening-actions-v1.png")
 const EXTRA_ACTIONS: Texture2D=preload("res://assets/story/opening-actions-extra-v1.png")
-const PROPS: Texture2D=preload("res://assets/story/opening-props-v1.png")
-const BACKGROUNDS: Texture2D=preload("res://assets/story/opening-backgrounds-v1.png")
+const PROPS: Texture2D=preload("res://assets/redraw-v1/story-props.png")
+const BACKGROUNDS: Texture2D=preload("res://assets/redraw-v1/backgrounds.png")
 static var _views: Dictionary = {}
 
 static func sprite(who: String, facing: Vector2i = Vector2i.DOWN, walk_frame: int=-1) -> Texture2D:
-	if not REGIONS.has(who): return null
-	var index:=TDChefArt.direction_index(facing)
-	if walk_frame==0 or walk_frame==2:
-		var key: String=who+":walk:"+str(index)+":"+str(walk_frame)
-		if not _views.has(key):
-			var source: Texture2D=ALING_WALK if who=="aling" else CHEN_WALK
-			var size:=Vector2i(source.get_width()/4,source.get_height()/2)
-			var origin:=Vector2i(index,walk_frame/2)*size
-			var image:=source.get_image()
-			if image.is_compressed(): image.decompress()
-			var used:=_walk_bounds(image.get_region(Rect2i(origin,size)))
-			return _view(key,source,Rect2(origin+used.position,used.size))
-		return _views[key]
-	return _view(who+str(index),ALING if who=="aling" else CHEN,REGIONS[who][index])
+	if who not in ["aling","chen"]: return null
+	var row: int=1 if walk_frame==0 else (2 if walk_frame==2 else 0)
+	return TDRedrawArt.cell("res://assets/redraw-v1/walker-%s.png"%who,row*4+TDChefArt.direction_index(facing),4,3)
 
 static func _walk_bounds(image: Image) -> Rect2i:
 	# Generated transparent gutters contain a few alpha=1 pixels. They must not shift
@@ -51,6 +40,8 @@ static func _walk_bounds(image: Image) -> Rect2i:
 	return Rect2i(low,high-low+Vector2i.ONE) if high.x>=0 else Rect2i(Vector2i.ZERO,image.get_size())
 
 static func portrait(who: String, emotion: String="", action: String="") -> Texture2D:
+	var reference: Texture2D=TDRedrawArt.portrait(who,emotion)
+	if reference!=null: return reference
 	if who=="hero" and action.contains("碗"): return _view("action:put-bowl",EXTRA_ACTIONS,Rect2(0,0,840,887))
 	if who=="aling" and action.contains("钱"): return _view("action:pay",EXTRA_ACTIONS,Rect2(840,0,934,887))
 	if action.contains("锅柄"): return action_pose(3)
@@ -91,7 +82,7 @@ static func paint_ledger_title(canvas: CanvasItem, art: Texture2D, box: Rect2) -
 	var target:=fit(art,box);var scale_factor:=target.size.x/atlas.region.size.x
 	var at:=target.position+(point-atlas.region.position)*scale_factor
 	canvas.draw_set_transform_matrix(Transform2D(angle,Vector2.ONE*scale_factor,0,at))
-	canvas.draw_string(ThemeDB.fallback_font,Vector2.ZERO,"密令",HORIZONTAL_ALIGNMENT_LEFT,-1,font_size,Color("f4d382"))
+	canvas.draw_string(TDUI.font(),Vector2.ZERO,"密令",HORIZONTAL_ALIGNMENT_LEFT,-1,font_size,Color("f4d382"))
 	canvas.draw_set_transform_matrix(Transform2D.IDENTITY)
 
 static func fit(texture: Texture2D, box: Rect2) -> Rect2:
@@ -114,8 +105,7 @@ static func action_pose(index: int) -> Texture2D:
 	return _view("action:"+str(index),ACTIONS,cuts[clampi(index,0,7)])
 
 static func prop(index: int) -> Texture2D:
-	var regions: Array=[Rect2(0,0,548,420),Rect2(548,0,398,420),Rect2(955,85,385,330),Rect2(1338,0,436,446),Rect2(0,420,537,449),Rect2(537,420,369,449),Rect2(906,440,432,429),Rect2(1338,446,436,423)]
-	return _view("prop:"+str(index),PROPS,regions[clampi(index,0,7)])
+	return TDRedrawArt.cell("res://assets/redraw-v1/story-props.png",clampi(index,0,7),4,2)
 
 static func background(index: int) -> Texture2D:
 	var size:=BACKGROUNDS.get_size()/2

@@ -32,34 +32,25 @@ func _ready() -> void:
 	camera.limit_left=0;camera.limit_top=0;camera.limit_right=int((map.extent+6)*CELL);camera.limit_bottom=int(map.extent*CELL)
 	_layer=CanvasLayer.new();_layer.layer=22;add_child(_layer)
 	var panel:=PanelContainer.new();panel.position=Vector2(18,690);panel.size=Vector2(1244,92);_layer.add_child(panel)
-	_hint=TDUI.label("",19);_hint.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;panel.add_child(_hint)
-	var margin:=StyleBoxFlat.new();margin.bg_color=Color(.08,.14,.13,.90);margin.content_margin_left=16;margin.content_margin_top=10;panel.add_theme_stylebox_override("panel",margin)
+	_hint=TDUI.label("",TDUI.FONT_BODY);_hint.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;panel.add_child(_hint)
+	var margin:=TDUI.wood();margin.content_margin_left=16;margin.content_margin_top=10;panel.add_theme_stylebox_override("panel",margin)
 	queue_redraw()
 
 func _make_ground() -> void:
 	var style:=TDTravelCatalog.info(town_id);var s:=24
 	var image:=Image.create((map.extent+6)*s,map.extent*s,false,Image.FORMAT_RGBA8)
 	image.fill(Color(style.water))
+	var surfaces: Dictionary=TDTownScenery.smooth_surfaces(map,6)
 	for y: int in map.extent:
 		for x: int in range(map.extent+6):
-			var at:=Vector2i(x,y);var terrain: Dictionary=map.terrain_at(at);var surface: String=terrain.surface_type
-			var color:=Color(style.grass)
-			if surface=="water": color=Color(style.water)
-			elif surface=="woodland": color=Color(style.leaf).darkened(.18)
-			elif surface=="stone": color=Color(style.road)
-			elif surface=="sand": color=Color("d6c493")
-			elif surface=="bridge": color=Color("987650")
-			var noise:=TDTownScenery.noise(x,y,int(style.row))
-			TDTownScenery.paint(image,Rect2i(x*s,y*s,s,s),3 if surface=="water" else (1 if surface in ["stone","bridge"] else 0))
-			for py: int in s:
-				for px: int in s:
-					var pixel:=Vector2i(x*s+px,y*s+py)
-					image.set_pixelv(pixel,image.get_pixelv(pixel).lerp(color,.5 if surface=="sand" else .32))
+			var at:=Vector2i(x,y);var terrain: Dictionary=map.terrain_at(at);var surface: String=surfaces[at]
+			# Regional swatches already carry the intended palette. An old per-pixel
+			# gray tint would erase the new sandstone/terracotta road distinctions.
+			TDTownScenery.paint_cell(image,at,surfaces,town_id)
 			if surface=="bridge":
+				var color:=Color("a7784d")
 				image.fill_rect(Rect2i(x*s,y*s,s,s),color)
 				for line: int in range(0,s,3): image.fill_rect(Rect2i(x*s,y*s+line,s,1),color.darkened(.2))
-			if surface=="sand":
-				image.fill_rect(Rect2i(x*s,y*s,s,2),color.lightened(.12))
 			if surface=="woodland" and map.terrain_at(at+Vector2i.DOWN).terrain_type=="plain":
 				var rock:=Color("9b7759") if town_id=="mexico_city" else Color("7a8074")
 				image.fill_rect(Rect2i(x*s,y*s+s-7,s,7),rock.darkened(.2))
@@ -100,8 +91,11 @@ func _add_building(plot: Dictionary,column: int,span: Vector2,feet: Vector2) -> 
 	if plot.get("kind")=="harbor" and town_id in ["paris","bangkok"]: sprite.flip_h=true
 	if plot.get("construction",false): sprite.texture=TDTownArt.sprite(12)
 	var scale_value:=minf(span.x*CELL/sprite.texture.get_width(),span.y*CELL/sprite.texture.get_height())
-	sprite.scale=Vector2.ONE*scale_value;sprite.position=feet*CELL
+	# Restaurant canvases include generous clear margins; give those facades more room.
+	var display_scale: float=1.8 if column==0 else (1.25 if column==1 else (1.3 if column==3 else 1.4))
+	sprite.scale=Vector2.ONE*scale_value*display_scale;sprite.position=feet*CELL
 	sprite.offset=Vector2(0,-sprite.texture.get_height()*.5);add_child(sprite)
+	# Keep the existing walking/interaction base; larger roofs must not close streets.
 	var size_px:=sprite.texture.get_size()*scale_value
 	var base:=Rect2(feet*CELL-Vector2(size_px.x*.43,size_px.y*.38),Vector2(size_px.x*.86,size_px.y*.32))
 	if plot.get("kind")!="harbor": _solids.append(base)

@@ -47,7 +47,7 @@ func _build() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var loaded := _service.load_file()
 	if not loaded.ok:
-		_note = TDUI.label(loaded.message, 18)
+		_note = TDUI.label(loaded.message, TDUI.FONT_BODY)
 		_note.position = Vector2(24, 24)
 		add_child(_note)
 		return
@@ -58,7 +58,7 @@ func _build() -> void:
 	var config := _service.with_plans([])
 	var catalog := TDCookingCatalog.new()
 	if not config.ok or not catalog.load_data(config.data, "floor kitchen").ok:
-		_note = TDUI.label("后厨菜谱没装上。", 18)
+		_note = TDUI.label("后厨菜谱没装上。", TDUI.FONT_BODY)
 		_note.position = Vector2(24, 24)
 		add_child(_note)
 		return
@@ -95,17 +95,17 @@ func _build() -> void:
 	box.size = Vector2(268, 680)
 	box.add_theme_constant_override("separation", 8)
 	panel.add_child(box)
-	box.add_child(TDUI.label("餐厅里的客人", 20, TDUI.ORANGE))
+	box.add_child(TDUI.label("餐厅里的客人", TDUI.FONT_BODY, TDUI.ORANGE))
 	var actions := HBoxContainer.new()
 	actions.add_theme_constant_override("separation", 8)
 	box.add_child(actions)
 	actions.add_child(TDUI.button("回餐厅", func() -> void: restaurant_requested.emit()))
 	actions.add_child(TDUI.button("看一眼", func() -> void: look_requested.emit()))
-	_orders = TDUI.label("", 15)
+	_orders = TDUI.label("", TDUI.FONT_CAPTION)
 	_orders.custom_minimum_size = Vector2(268, 420)
 	_orders.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	box.add_child(_orders)
-	_note = TDUI.label("走到下方门口按 E，或点回餐厅。V 只看店里，时间继续走。菜做好后放在餐厅南墙的出餐口，服务员去那里取，再端到客人桌上。", 14, TDUI.MUTED)
+	_note = TDUI.label("走到下方门口按 E，或点回餐厅。V 只看店里，时间继续走。菜做好后放在餐厅南墙的出餐口，服务员去那里取，再端到客人桌上。", TDUI.FONT_CAPTION, TDUI.MUTED)
 	_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_note.custom_minimum_size = Vector2(268, 96)
 	box.add_child(_note)

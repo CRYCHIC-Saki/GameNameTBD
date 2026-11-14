@@ -50,9 +50,9 @@ func _ready() -> void:
 	_content = catalog.data()
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	theme = TDUI.theme()
-	theme.default_font_size = 16
+	theme.default_font_size = TDUI.FONT_BODY
 	for state: String in ["normal", "hover", "pressed", "focus"]:
-		var style := theme.get_stylebox(state, "Button").duplicate() as StyleBoxFlat
+		var style := theme.get_stylebox(state, "Button").duplicate() as StyleBox
 		style.content_margin_left = 9; style.content_margin_right = 9
 		style.content_margin_top = 5; style.content_margin_bottom = 5
 		theme.set_stylebox(state, "Button", style)
@@ -72,7 +72,7 @@ func _ready() -> void:
 	beat_audio.volume_db=-80.0
 	var audio_delay: float = 0.0
 	panel = PanelContainer.new()
-	var backdrop := StyleBoxFlat.new(); backdrop.bg_color = Color("142c29")
+	var backdrop:=TDUI.wood(TDUI.Surface.FRAME,0)
 	panel.add_theme_stylebox_override("panel", backdrop)
 	panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(panel)
@@ -81,7 +81,7 @@ func _ready() -> void:
 	panel.add_child(margin)
 	var column := VBoxContainer.new(); margin.add_child(column)
 	var header := HBoxContainer.new(); column.add_child(header)
-	_title = TDUI.label("功能位 · 卡拍做菜", 23, TDUI.ORANGE); _title.size_flags_horizontal = Control.SIZE_EXPAND_FILL; header.add_child(_title)
+	_title = TDUI.label("功能位 · 卡拍做菜", TDUI.FONT_SECTION, TDUI.ORANGE); _title.size_flags_horizontal = Control.SIZE_EXPAND_FILL; header.add_child(_title)
 	_dual_toggle = CheckButton.new(); _dual_toggle.text = "双菜同时操作"; _dual_toggle.toggled.connect(set_dual); header.add_child(_dual_toggle)
 	var offset := SpinBox.new(); offset.min_value = -250; offset.max_value = 250; offset.step = 5; offset.suffix = "ms补偿"; offset.custom_minimum_size.x = 155
 	offset.value_changed.connect(func(value: float) -> void:
@@ -117,8 +117,8 @@ func _ready() -> void:
 	prep.document_rules = guided_controls
 	prep.library = TDRecipeLibrary.new(library_path, _content); row.add_child(prep); prep.hide()
 	beat_bar = TDTemperatureView.new(); beat_bar.beat_only = true; beat_bar.bpm = float(_content.pc_operations.bpm); column.add_child(beat_bar)
-	column.add_child(TDUI.label("占位美术 / 节奏音轨 · 左锅WASD、右锅方向键 · 空格收势 / 出锅 · Esc暂停", 13, TDUI.MUTED))
-	_paused_label = TDUI.label("已暂停 · Esc 恢复", 28, TDUI.ORANGE)
+	column.add_child(TDUI.label("占位美术 / 节奏音轨 · 左锅WASD、右锅方向键 · 空格收势 / 出锅 · Esc暂停", TDUI.FONT_CAPTION, TDUI.MUTED))
+	_paused_label = TDUI.label("已暂停 · Esc 恢复", TDUI.FONT_TITLE, TDUI.ORANGE)
 	_paused_label.position = Vector2(470, 370)
 	_paused_label.size=Vector2(450,50); _paused_label.autowrap_mode=TextServer.AUTOWRAP_OFF
 	_paused_label.z_index=20; _paused_label.mouse_filter=Control.MOUSE_FILTER_IGNORE
@@ -424,7 +424,7 @@ func _show_pantry() -> void:
 	if is_instance_valid(_supply_panel): _supply_panel.queue_free()
 	_supply_panel=PanelContainer.new(); _supply_panel.position=Vector2(430,210); _supply_panel.size=Vector2(420,380); add_child(_supply_panel)
 	var column := VBoxContainer.new(); _supply_panel.add_child(column)
-	column.add_child(TDUI.label("取一份食材 · 原型供料不限量",20,TDUI.ORANGE))
+	column.add_child(TDUI.label("取一份食材 · 原型供料不限量",TDUI.FONT_BODY,TDUI.ORANGE))
 	for item: Dictionary in _content.ingredients:
 		if item.category == "seasoning": continue
 		var identity: String=item.id

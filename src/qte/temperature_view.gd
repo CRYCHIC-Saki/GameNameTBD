@@ -26,7 +26,7 @@ func _draw() -> void:
 			draw_line(Vector2(x, 20), Vector2(x, 48), TDUI.ORANGE if index % 4 == 0 else TDUI.MUTED, 3 if index % 4 == 0 else 1)
 		var x: float = 12 + fposmod(beat, 4) / 4 * width
 		draw_circle(Vector2(x, 34), 7, TDUI.ORANGE if fposmod(beat, 4) < .15 else Color.WHITE)
-		draw_string(get_theme_default_font(), Vector2(14, 65), "共用节拍  %d BPM  ·  金色为强拍" % int(bpm), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, TDUI.MUTED)
+		draw_string(get_theme_default_font(), Vector2(14, 65), "共用节拍  %d BPM  ·  金色为强拍" % int(bpm), HORIZONTAL_ALIGNMENT_LEFT, -1, TDUI.FONT_CAPTION, TDUI.MUTED)
 		return
 	var low: float = progress.get("target_min", .4); var high: float = progress.get("target_max", .65)
 	draw_rect(Rect2(12, 24, width, 24), Color("314842"))
@@ -35,5 +35,5 @@ func _draw() -> void:
 	draw_circle(Vector2(12 + power * width, 36), 8, TDUI.ORANGE)
 	var remaining: float = progress.get("remaining_sec", 0)
 	var ratio: float = float(progress.get("inside_sec", 0)) / maxf(.0001, float(progress.get("elapsed_sec", 0)))
-	draw_string(get_theme_default_font(), Vector2(14, 18), "鼠标靠近吸引 · 按住更强 · 留在绿区", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color.WHITE)
-	draw_string(get_theme_default_font(), Vector2(14, 66), "稳定 %.0f%%   剩余 %.1fs" % [ratio * 100, remaining], HORIZONTAL_ALIGNMENT_LEFT, -1, 14, TDUI.MUTED)
+	draw_string(get_theme_default_font(), Vector2(14, 18), "鼠标靠近吸引 · 按住更强 · 留在绿区", HORIZONTAL_ALIGNMENT_LEFT, -1, TDUI.FONT_CAPTION, Color.WHITE)
+	draw_string(get_theme_default_font(), Vector2(14, 66), "稳定 %.0f%%   剩余 %.1fs" % [ratio * 100, remaining], HORIZONTAL_ALIGNMENT_LEFT, -1, TDUI.FONT_CAPTION, TDUI.MUTED)

@@ -60,7 +60,10 @@ func test_saved_branch_footprints_are_same_on_travel_map() -> void:
 	assert_eq(copy.roads,home.roads);assert_eq(copy.plots,home.plots)
 	copy.plots.clear();assert_false(home.plots.is_empty())
 	var tex:=TDTravelCatalog.sprite("paris",0) as AtlasTexture
-	assert_eq(tex.region.position.y,256.0);assert_eq(tex.region.size,Vector2(384,256))
+	assert_eq(tex.atlas.resource_path,"res://assets/town/restaurant-european-v1.png")
+	assert_almost_eq(tex.get_width()/float(tex.get_height()),1.5,.001,"New facade preserves the old collision canvas aspect")
+	var house:=TDTravelCatalog.sprite("paris",1) as AtlasTexture
+	assert_eq(house.region.position,Vector2(384,256));assert_eq(house.region.size,Vector2(384,256))
 
 func test_service_can_leave_but_procurement_policy_stays_separate() -> void:
 	assert_true(shell.kitchen_view.buy_kit("service.tomato_egg").ok)

@@ -1,0 +1,5 @@
+{
+  "prompt": "Correct only an unintended technical difference between the generated six-expression atlas (image1) and the user's original PNG (image2). Image2 already has transparent empty pixels outside its COMPLETE composition, including all floating parchment sheets. Image1 accidentally added a translucent white/grey haze in those empty areas. Restore the original empty-area transparency while retaining EVERY original illustrated element (character, long paper scroll, all floating paper sheets). Do not remove, crop, simplify or extract any original background illustration. Preserve all six poses, expression faces, positions, colour, grid, original line art and floating papers exactly as image1; only remove the newly invented haze that was not in image2. Three columns, two rows, complete square compositions, no labels or extra elements.",
+  "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-d66c8471-100d-437f-a134-5105497194fb.png",
+  "purpose": "Correct newly introduced haze while preserving all original illustrated background elements"
+}
