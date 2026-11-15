@@ -87,14 +87,19 @@ func test_story_choice_shows_player_then_reply_and_narrator_is_not_a_speaker() -
 	assert_eq(talk.portrait_id,"hero");assert_eq(talk.active_side,"left");assert_eq(talk.full_text(),"你好，阿铃。")
 	talk.click();talk.click();assert_eq(talk.active_side,"right");assert_eq(talk.full_text(),"又见面了。")
 
-func test_real_dialogue_view_keeps_both_portraits_above_text_and_restores_daily_layout() -> void:
+func test_real_dialogue_view_layers_story_portraits_behind_text_and_restores_daily_layout() -> void:
 	var view:=TDDialogueView.new();add_child_autofree(view)
 	await get_tree().process_frame
 	var talk:=TDDialogue.new();talk.story_layout("主角","chen");talk.add_line("老陈","chen","尝尝这道菜。")
 	view.present(talk)
 	var left:=view.get_node("Portrait") as Control;var right:=view.get_node("RightPortrait") as Control
 	assert_true(right.visible);assert_lt(left.modulate.r,right.modulate.r)
-	assert_lte(left.get_global_rect().end.y,(view.get_node("Box") as Control).global_position.y)
+	var panel:=view.get_node("Box") as Control
+	# The integrated artwork extends beneath the foreground text panel; heads stay above it.
+	for portrait: Control in [left,right]:
+		assert_lt(portrait.get_global_rect().position.y,panel.global_position.y)
+		assert_gt(panel.z_index,portrait.z_index,"Text panel is drawn in front of both full busts")
+	assert_true(panel.get_global_rect().encloses((panel.get_node("Body") as Control).get_global_rect()))
 	var daily:=TDCharacterRoster.new().conversation("chen")
 	view.present(daily);assert_false(right.visible);assert_eq(left.modulate,Color.WHITE)
 	view.finish_now();assert_false(view.last_completed)

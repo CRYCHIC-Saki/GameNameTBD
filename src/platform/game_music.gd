@@ -1,6 +1,6 @@
 class_name TDGameMusic
 extends Node
-## Application-owned music; cooking owns its uninterrupted, chart-aligned stream.
+## Application-owned music; cooking owns its uninterrupted stream and pause state.
 const TRACKS:Dictionary={
 	"casual":preload("res://assets/audio/casual.wav"),
 	"service":preload("res://assets/audio/service.wav"),

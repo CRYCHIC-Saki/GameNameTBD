@@ -64,6 +64,7 @@ func prepare_loop(bpm: float) -> void:
 func prepare_cooking_music(bpm:float) -> void:
 	stop();scheduled_beats.clear()
 	var track:=TDGameMusic.loop_track("cooking")
-	# The authored loop is 32 beats at 120 BPM; preserve the selected chart tempo.
+	# Chart tempo uses the existing 120 BPM reference; imported BGM length may vary.
+	# Device/music beat alignment still requires listening, not a duration assertion.
 	pitch_scale=bpm/120.0
 	stream=track

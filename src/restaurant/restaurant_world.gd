@@ -1219,6 +1219,8 @@ func set_info_top(value: float) -> void:
 	_fit_order_board()
 
 func _fit_order_board() -> void:
+	# Label minimum-size callbacks may still be queued while the scene is being removed.
+	if _closed or not is_inside_tree(): return
 	if _order_plate==null or _order_scroll==null or _order_board==null: return
 	var view_size := get_viewport().get_visible_rect().size
 	var width := minf(420,view_size.x-28)

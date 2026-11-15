@@ -107,3 +107,15 @@ func test_default_player_mapping_is_unchanged_outside_restaurant() -> void:
 	for heading: Vector2 in [Vector2.UP,Vector2.DOWN,Vector2.LEFT,Vector2.RIGHT]:
 		assert_eq(body.screen_input(heading),heading)
 	body.free()
+
+func test_pending_information_layout_during_scene_removal_is_safe() -> void:
+	room._order_board.text="营业信息更新后立即离开餐厅"
+	room._fit_order_board.call_deferred()
+	var parent:=room.get_parent()
+	parent.remove_child(room)
+	await wait_process_frames(2)
+	assert_false(room.is_inside_tree())
+	parent.add_child(room)
+	room.set_info_top(280)
+	await wait_process_frames(2)
+	assert_eq(room._order_plate.position.y,280.0,"Reentry can still arrange the existing information panel")

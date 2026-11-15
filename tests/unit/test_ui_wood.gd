@@ -29,7 +29,7 @@ func test_blackface_family_is_used_by_native_controls_and_dialogue_paper_is_in_f
 	view.present(talk);view.set_process(false)
 	var plate:=view._panel.get_theme_stylebox("panel") as StyleBoxTexture
 	assert_not_null(plate);assert_same(plate.texture,TDUI.PARCHMENT)
-	assert_eq(view._body.get_theme_font("font").get_font_name(),TDUI.font().get_font_name())
+	assert_same(view._body.get_theme_font("font"),TDUI.font(),"native dialogue uses the shared font resource even on hosts without SimHei")
 	assert_gt(view._panel.z_index,view._portrait.z_index)
 	assert_gt(view._panel.z_index,view._right_portrait.z_index)
 	view.finish_now()

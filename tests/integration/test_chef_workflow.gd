@@ -11,6 +11,7 @@ func before_each() -> void:
 	assert_true(shop.crew.hire("cook-he").ok)
 	view=TDShopView.new();view.shop=shop;view.service=catalog;view.embedded=true
 	view.save_path="res://artifacts/chef-workflow-20261114/test-%d.json"%Time.get_ticks_usec()
+	assert_eq(DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(view.save_path.get_base_dir())),OK,"Fresh checkout creates isolated evidence directory")
 	add_child(view);view.kitchen.auto_advance=false
 	for lane: TDCookingLane in view.kitchen.lanes+[view.kitchen.prep]: lane.beat_offset_sec=0.0
 	view.staff.action_completed.connect(func(event:Dictionary)->void:events.append(event.duplicate(true)))
@@ -197,7 +198,9 @@ func test_coarse_and_fine_clock_steps_produce_same_actions_food_and_stock() -> v
 	var second: Dictionary=shop.table_service.rows()[0].dish
 	assert_almost_eq(second.performance_score,first_dish.performance_score,.00001)
 	var diagnostic:=FileAccess.open("res://artifacts/chef-workflow-20261114/clock-comparison.json",FileAccess.WRITE)
-	diagnostic.store_string(JSON.stringify({"fine":first_dish,"coarse":second},"\t"));diagnostic.close()
+	assert_not_null(diagnostic,"Clock comparison evidence opens successfully")
+	if diagnostic!=null:
+		diagnostic.store_string(JSON.stringify({"fine":first_dish,"coarse":second},"\t"));diagnostic.close()
 	# Integrating continuous temperature in different slices may differ by < 0.00001 C.
 	assert_attributes_close(second.dish_attributes,first_dish.dish_attributes)
 

@@ -375,7 +375,8 @@ func test_unhired_floor_posts_wait_for_the_player_and_do_not_charge_again() -> v
 	var guest := world.guest_nodes()[0]
 	assert_eq(guest.phase, "approach")
 	assert_false(bool(guest.get_meta("welcomed", false)))
-	assert_true(world._order_board.text.contains("你来"))
+	assert_true(world._order_board.text.contains("送餐：你"))
+	assert_true(world._order_board.text.contains("收银：你"))
 	world.teleport_player(world._cell_at(guest.position))
 	assert_true(world.request_interaction())
 	assert_true(bool(guest.get_meta("welcomed", false)))
