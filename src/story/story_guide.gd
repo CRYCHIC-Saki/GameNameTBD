@@ -31,12 +31,11 @@ func _ready() -> void:
 	process_mode=Node.PROCESS_MODE_ALWAYS;mouse_filter=Control.MOUSE_FILTER_IGNORE
 	_layer=CanvasLayer.new();_layer.layer=50;add_child(_layer)
 	_trail=TDQuestTrail.new();_layer.add_child(_trail)
-	_card=PanelContainer.new();_card.position=Vector2(26,118);_card.size=Vector2(372,142)
+	_card=PanelContainer.new();_card.position=Vector2(26,118);_card.size=Vector2(372,0)
 	_card.mouse_filter=Control.MOUSE_FILTER_IGNORE;_card.theme=TDUI.theme();_layer.add_child(_card)
 	var box:=VBoxContainer.new();box.mouse_filter=Control.MOUSE_FILTER_IGNORE;_card.add_child(box)
 	_title=TDUI.label("第一口异端",TDUI.FONT_BODY,TDUI.ORANGE);box.add_child(_title)
 	_hint=TDUI.label("",TDUI.FONT_BODY);_hint.custom_minimum_size.x=348;_hint.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;box.add_child(_hint)
-	box.add_child(TDUI.label("J 任务    T 追踪开关    B 菜谱",TDUI.FONT_CAPTION,TDUI.MUTED))
 	_bark_portrait=TextureRect.new();_bark_portrait.position=Vector2(1025,350);_bark_portrait.size=Vector2(150,170)
 	_bark_portrait.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;_bark_portrait.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_bark_portrait.texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST;_bark_portrait.mouse_filter=Control.MOUSE_FILTER_IGNORE;_layer.add_child(_bark_portrait)
@@ -73,6 +72,7 @@ func _process(delta: float) -> void:
 	if not get_tree().paused and not presenting(): _pulse+=delta
 	var now:=objective()
 	_hint.text=str(now.get("text",""));_title.text="主线 · "+str(now.get("title","第一口异端"))
+	_card.reset_size()
 	if shell.location=="kitchen" and shell.kitchen_view.kitchen.stage.visible: _card.hide();_trail.hide()
 	if _trail.visible: update_route(now)
 	_bark.visible=not hidden and shell.location=="kitchen" and _pulse<_bark_until
@@ -155,63 +155,62 @@ func show_journal() -> void:
 	var box:=shell._dialog("任务 · 第一口异端",true)
 	box.add_child(TDUI.label("主线  ·  "+("已完成" if story.finished() else "进行中"),TDUI.FONT_SECTION,TDUI.ORANGE))
 	var now:=objective();box.add_child(TDUI.label(str(now.get("text","")),TDUI.FONT_SECTION))
-	box.add_child(TDUI.label("当前地点："+{"town":"小镇","restaurant":"餐厅","kitchen":"厨房","cottage":"小屋"}.get(shell.location,""),TDUI.FONT_BODY))
 	var stages: Array=[{"ids":["arrive","follow"],"text":"寻找传说中的美味 · 跟随阿铃"},{"ids":["soup","bowl"],"text":"众口称颂的圣餐 · 尝一口汤"},{"ids":["return","awaken","cook"],"text":"唤醒灶火 · 为阿铃做番茄炒蛋"},{"ids":["verdict"],"text":"第一位异端 · 听取真实评价"},{"ids":["founded"],"text":"点燃第一日 · 菜单、备货、开门与打烊"}]
 	var reached: bool=false
 	for entry: Dictionary in stages:
 		var active: bool=story.beat in entry.ids
 		if active: reached=true
 		box.add_child(TDUI.label(("◆ " if active else ("○ " if reached else "✓ "))+str(entry.text),TDUI.FONT_BODY,TDUI.ORANGE if active else TDUI.MUTED))
-	box.add_child(TDUI.button("停止追踪" if story.tracked else "追踪任务",func()->void:story.tracked=not story.tracked;shell._close_dialog()))
+	box.add_child(TDUI.button("停止追踪 [T]" if story.tracked else "追踪任务 [T]",func()->void:story.tracked=not story.tracked;shell._close_dialog()))
 	box.add_child(TDUI.button("操作教学手册",show_manual))
 	if story.finished(): box.add_child(TDUI.button("第一章回顾（不改变进度或奖励）",show_replay))
-	box.add_child(TDUI.label("地上的微光会指向当前场景出口或任务目标。WASD 自己走，靠近后按 E。",TDUI.FONT_BODY))
 
 func objective() -> Dictionary:
 	var story:=shell.profile.story
 	if not shell.profile.has_residence():
 		var stage: String=shell.profile.residence.stage
 		if stage!="locked":
-			return {"title":"夜鸦的落脚密令","room":"town","target":"cottage" if stage=="door" else ("escort" if stage=="following" else "aling"),"text":{"invited":"收好灶火，到店外交谈。阿铃为你安排了今晚的落脚处。","following":"跟上阿铃，前往小屋。走远时她会停下等你。","door":"走近小屋门口，按 E 接过钥匙。"}[stage]}
+			return {"title":"夜鸦的落脚密令","room":"town","target":"cottage" if stage=="door" else ("escort" if stage=="following" else "aling"),"text":{"invited":"到店外找阿铃","following":"跟随阿铃前往小屋","door":"E 接过钥匙"}[stage]}
 	var result: Dictionary={"title":"第一口异端","text":story.quest(shell.town.chapter_ready,shell.town.story_board),"room":"town","target":"aling"}
 	match story.beat:
-		"follow","return": result.target="escort"
-		"soup": result.target="bowl";result.text="阿铃带你来到老陈家。走近食材铺正门，按 E 招呼老陈。"
-		"bowl": result.target="bowl";result.text="在老陈家门口按 E，进屋尝一口黎明圣羹。"
+		"arrive": result.text="与阿铃交谈"
+		"follow","return": result.target="escort";result.text="跟随阿铃"
+		"soup": result.target="bowl";result.text="到老陈家门前交谈"
+		"bowl": result.target="bowl";result.text="E 进屋尝汤"
 		"awaken","verdict": result.room="restaurant";result.target="table"
 		"cook":
 			result.title="唤醒灶火";result.room="kitchen";result.target="kitchen.fridge"
 			var plate:=shell.profile.shop.table_service.for_order(TDTableService.TRIAL_ORDER)
 			if not plate.is_empty():
 				result.room="restaurant";result.target="trial" if plate.carrier=="player" else "pass"
-				result.text="到阿铃桌边按 E 上菜。" if plate.carrier=="player" else "回餐厅，到后厨门旁的出餐口按 E 取菜，再送到阿铃桌边。"
+				result.text="E 给阿铃上菜" if plate.carrier=="player" else "回餐厅出餐口取菜"
 				return result
 			var kitchen:=shell.kitchen_view.kitchen
 			var handling:=kitchen.handling
 			if handling.hand_kind=="dish":
 				var issue:=trial_plate_problem(handling.hand.snapshot().to_dict())
-				result.text="端着成品前往出餐口，按 E 放下，再回餐厅取菜送给阿铃。" if issue.ok else issue.message
+				result.text="E 放到出餐口" if issue.ok else issue.message
 				result.target="kitchen.serve" if issue.ok else "kitchen.trash";return result
 			for lane: TDCookingLane in kitchen.lanes:
 				if lane.snapshot().state=="plated":
 					var issue:=trial_plate_problem(lane.snapshot())
-					result.text="回到锅边按 E 端起成品，再送到出餐台。" if issue.ok else "这锅没做成番茄炒蛋。先按 E 端起，再去垃圾桶丢弃；教程材料可重新领取。"
+					result.text="E 端起番茄炒蛋" if issue.ok else "菜没做成，端到垃圾桶后重新取料。"
 					result.target="kitchen.stove.left" if lane.lane_index==0 else "kitchen.stove.right";return result
-			if not story.recipe_viewed: return result
+			if not story.recipe_viewed: result.text="B 查看番茄炒蛋的做法";return result
 			var pot:=0
 			for lane: TDCookingLane in kitchen.lanes:
 				if not lane.snapshot().ingredients.is_empty(): pot=lane.lane_index;break
 			var pot_id: String="kitchen.stove.left" if pot==0 else "kitchen.stove.right"
 			if handling.hand_kind=="ingredient":
 				var food: Dictionary=handling.hand.snapshot().to_dict().ingredients.values()[0]
-				if food.ingredient_id=="tomato" and food.shape=="whole": result.text="到砧板按 E 放下番茄，选择「大块」。";result.target="kitchen.board"
-				else: result.text="拿着食材到同一口炒锅前按 E 放入（教程建议左锅）。";result.target=pot_id
+				if food.ingredient_id=="tomato" and food.shape=="whole": result.text="在砧板把番茄切成大块";result.target="kitchen.board"
+				else: result.text="E 放入同一口锅";result.target=pot_id
 			elif handling.board!=null:
-				result.text="切配中按谱落刀/转向；完成后返回砧板按 E 取走。";result.target="kitchen.board"
+				result.text="切好后 E 取走";result.target="kitchen.board"
 			else:
 				var foods: Array=kitchen.lanes[pot].snapshot().ingredients.values().map(func(x:Dictionary)->String:return x.ingredient_id)
-				if "tomato" in foods and "egg" in foods: result.text="到锅前按 F 开火；热锅→翻炒控温→调味→出锅会依次进行。";result.target=pot_id
-				else: result.text="去冰箱按 E 取"+("鸡蛋（肉类页）" if "tomato" in foods else "番茄（蔬菜页）")+"。教程番茄、鸡蛋用完可以继续领取。"
+				if "tomato" in foods and "egg" in foods: result.text="F 开火";result.target=pot_id
+				else: result.text="从冰箱取"+("鸡蛋" if "tomato" in foods else "番茄")
 		"founded":
 			result.title="点燃第一日"
 			if story.served and shell.profile.has_residence(): result.text="今日灶火已收。去店外与阿铃谈谈明日的打算。"

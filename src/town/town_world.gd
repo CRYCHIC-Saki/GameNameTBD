@@ -10,6 +10,7 @@ signal place_requested(kind: String, id: String)
 signal story_effect(effect: Dictionary)
 signal story_requested(who: String)
 var external_story_frozen: bool=false
+var _status_left: float=0.0
 var _escort_leg: String=""
 var _escort_waiting: bool=false
 var player_mode: bool = false
@@ -135,10 +136,11 @@ func _ready() -> void:
 	if player_mode: spawn_at_home()
 	_set_status(_enter_hint())
 	if player_mode:
-		_set_status("WASD 走动 · Shift 疾跑 · 靠近建筑或人物按 E · 小屋的床可保存/休息 · B 菜谱 · Esc 暂停")
+		_set_status("")
 	queue_redraw()
 
 func _process(delta: float) -> void:
+	if player_mode and visible and not get_tree().paused: _status_left=maxf(0.0,_status_left-delta)
 	_follow_camera()
 	if player_mode and visible and not get_tree().paused and not _talk_open() and not external_story_frozen:
 		_tick_escort(delta)
@@ -168,8 +170,13 @@ func _process(delta: float) -> void:
 		_selected=facing_plot()
 		if _target_hint!=null:
 			var person:=_story_faced() if _selected.is_empty() else ""
-			_target_hint.text="[ E ] "+str(_selected.name) if not _selected.is_empty() else ("[ E ] 和"+("阿铃" if person=="aling" else "老陈")+"交谈" if person!="" else "靠近建筑或人物按 E")
-	if _target_hint!=null and at_chen_door(): _target_hint.text="[ E ] 到屋里尝一口黎明圣羹" if story.beat=="bowl" else "[ E ] 在门口招呼老陈"
+			_target_hint.text="E "+str(_selected.name) if not _selected.is_empty() else ("E "+("阿铃" if person=="aling" else "老陈") if person!="" else "")
+	elif _target_hint!=null: _target_hint.text=""
+	if _target_hint!=null and _player.controls_enabled and at_chen_door(): _target_hint.text="E 尝汤" if story.beat=="bowl" else "E 老陈"
+	if player_mode and _status_panel!=null:
+		_status.visible=_status_left>0 and not _status.text.is_empty()
+		_status_panel.visible=visible and (_status.visible or (_target_hint!=null and not _target_hint.text.is_empty()) or _pack_button.visible)
+		if _status_panel.size.y!=(96.0 if _status.visible else 56.0): _place_status_bar()
 	queue_redraw()
 
 func _overview_zoom() -> float:
@@ -462,8 +469,6 @@ func _status_bar() -> void:
 	_status.add_theme_font_size_override("font_size", TDUI.FONT_CAPTION)
 	_status.add_theme_color_override("font_color", GLASS_INK)
 	box.add_child(_status)
-	if player_mode:
-		_status.text = "WASD 走动 · Shift 疾跑 · 靠近建筑按 E · 小屋的床可保存/休息 · B 菜谱 · Esc 暂停"
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
 	box.add_child(row)
@@ -472,7 +477,7 @@ func _status_bar() -> void:
 	_pack_button = _button("背包 0", _open_backpack)
 	row.add_child(_pack_button)
 	if player_mode:
-		_target_hint=TDUI.label("靠近建筑或人物按 E",TDUI.FONT_BODY)
+		_target_hint=TDUI.label("",TDUI.FONT_BODY)
 		_target_hint.custom_minimum_size=Vector2(500,30)
 		_target_hint.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 		_target_hint.autowrap_mode=TextServer.AUTOWRAP_OFF
@@ -488,7 +493,7 @@ func _place_status_bar() -> void:
 	var view := get_viewport().get_visible_rect().size
 	if view.x < 8.0 or view.y < 8.0:
 		return
-	var bar_h := 96.0 if player_mode else BAR_HEIGHT
+	var bar_h: float=(96.0 if _status_left>0 and not _status.text.is_empty() else 56.0) if player_mode else BAR_HEIGHT
 	_status_panel.position = Vector2(0, maxf(0.0, view.y - bar_h))
 	_status_panel.size = Vector2(view.x, minf(bar_h, view.y))
 	var box := _status_panel.get_child(0) as Control
@@ -1024,6 +1029,7 @@ func _paint_backpack_count() -> void:
 	for item: Variant in session.factory_goods():
 		total += int((item as Dictionary).get("qty", 0))
 	_pack_button.text = "背包 %d" % total
+	if player_mode: _pack_button.visible=total>0
 
 func _ask_factory_qty(line_no: int, item_id: String) -> void:
 	if session == null or item_id == "":
@@ -1295,6 +1301,7 @@ func _try_enter_diner() -> void:
 func _set_status(text: String) -> void:
 	if _status != null:
 		_status.text = text
+		_status_left=4.0 if not text.is_empty() else 0.0
 
 func _product_icon(item_id: String, side: int) -> FactoryIcon:
 	var icon := FactoryIcon.new()
@@ -1371,6 +1378,7 @@ func _on_talk_closed(last_text: String, picks: Array) -> void:
 	_player.set_controls_enabled(true)
 
 func show_quest() -> void:
+	if management_menus: return # The formal shell already owns the task card.
 	if story == null or not story.started() or story.finished() or _talk_open():
 		return
 	_set_status(story.quest(chapter_ready, story_board))
@@ -1420,7 +1428,7 @@ func _draw_story() -> void:
 	_draw_stall_sign()
 	if story!=null and story.beat in ["soup","bowl"]:
 		var point:=chen_door_point()
-		draw_string(TDUI.font(),point+Vector2(-58,-103),"老陈家 · 门口 E",HORIZONTAL_ALIGNMENT_LEFT,-1,TDUI.FONT_CAPTION,Color("ffdfa2"))
+		draw_string(TDUI.font(),point+Vector2(-36,-103),"老陈家",HORIZONTAL_ALIGNMENT_LEFT,-1,TDUI.FONT_CAPTION,Color("ffdfa2"))
 	for person: Variant in _story_people():
 		var item: Dictionary = person
 		var cell: Vector2i = item.cell
@@ -1435,8 +1443,6 @@ func _draw_story() -> void:
 		if item.id=="aling" and _escort_waiting and story!=null and escort_leg() in ["follow","return","home"]:
 			draw_rect(Rect2(at+Vector2(-69,-130),Vector2(138,32)),Color("f6edce"))
 			draw_string(TDUI.font(),at+Vector2(-58,-108),"快跟上来",HORIZONTAL_ALIGNMENT_LEFT,-1,TDUI.FONT_BODY,Color("564332"))
-		if player_mode and facing_plot().is_empty() and _story_faced()==str(item.id):
-			draw_string(TDUI.font(),at+Vector2(-16,-98),"[ E ]",HORIZONTAL_ALIGNMENT_LEFT,-1,TDUI.FONT_BODY,Color("fff0c4"))
 
 func _draw_stall_sign() -> void:
 	if story == null or story.beat not in ["founded", "done"] or session == null:

@@ -84,7 +84,6 @@ func _build_title() -> void:
 	column.add_child(TDUI.button("载入存档",func()->void:show_slots(false)))
 	column.add_child(TDUI.button("设置",show_settings))
 	column.add_child(TDUI.button("退出游戏",request_quit))
-	column.add_child(TDUI.label("WASD 移动 · Shift 疾跑  ·  E 交互",TDUI.FONT_CAPTION,Color("b7c6b8")))
 	_title_notice=TDUI.label("",TDUI.FONT_BODY,TDUI.INK);_title_notice.position=Vector2(440,660);_title_notice.size=Vector2(780,100)
 	_title_notice.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;_title_screen.add_child(_title_notice)
 
@@ -513,7 +512,6 @@ func _coach_story_kitchen() -> void:
 		kitchen_view.kitchen.prep.story_coach=coach
 	if coach and not profile.story.coached:
 		profile.story.coached=true
-		_message("冰箱 E 取番茄，砧板选大块。灶台 F 开始。调味按住，到量松开。失误不必重来。")
 
 func _story_purse() -> void:
 	if profile==null or profile.story==null or profile.story.paid or not profile.story.owe_pay:
@@ -1023,7 +1021,7 @@ func show_pause() -> void:
 	var save:=TDUI.button("保存进度",func()->void:_outcome(save_game()));save.disabled=not profile.at_boundary();box.add_child(save)
 	box.add_child(TDUI.button("设置",show_settings))
 	box.add_child(TDUI.button("返回主菜单",request_title))
-	box.add_child(TDUI.label("睡觉或主动保存才记录进度（新档与02:00强制收尾除外）。退出不自动保存；未保存的装修、库存、金钱和研习都会回退。营业中及厨房未整理时不能保存。",TDUI.FONT_CAPTION,TDUI.MUTED))
+	box.add_child(TDUI.label("退出不自动保存。营业中或厨房未整理时无法保存。",TDUI.FONT_CAPTION,TDUI.MUTED))
 
 func show_settings() -> void:
 	var box:=_dialog("设置",true)
@@ -1040,7 +1038,7 @@ func show_settings() -> void:
 func request_title() -> void:
 	if profile==null: return
 	var box:=_dialog("放弃未保存的进度？",true)
-	box.add_child(TDUI.label("返回主菜单不会自动保存。未保存的装修、金钱、库存、研习与任务进度会一起回到上次存档。",TDUI.FONT_BODY))
+	box.add_child(TDUI.label("未保存的进度将丢失。",TDUI.FONT_BODY))
 	var save:=TDUI.button("保存并返回主菜单",func()->void:
 		var result:=save_game()
 		if result.ok: go_title()

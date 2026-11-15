@@ -36,6 +36,8 @@ var _back_button: Button
 var _hud: Control
 var _context: Dictionary = {}
 var _message: String = ""
+var _message_left: float = 0.0
+var _last_context_message: String = ""
 var _held_label: Label
 var _simmer_label: Label
 var _near_prompt: Label
@@ -126,6 +128,7 @@ func _ready() -> void:
 		if station.id=="kitchen.trash": at.y-=24
 		var label := _sign(str(station_names.get(station.id,station.name)), at, 140, TDUI.FONT_BODY, "StationSign_"+str(station.id))
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		label.get_parent().hide()
 		if station.get("kind") == "serve":
 			var body := StaticBody2D.new(); body.name="ServingCounter"; body.position = Vector2(1040,565)
 			var collider := CollisionShape2D.new(); var shape := RectangleShape2D.new(); shape.size = Vector2(232,102); collider.shape = shape
@@ -137,6 +140,8 @@ func _process(delta: float) -> void:
 	if is_inside_tree() and not get_tree().paused:
 		_crew_time += delta
 		_staff_delta = delta
+		if is_visible_in_tree(): _message_left=maxf(0.0,_message_left-delta)
+	_refresh_held()
 	_update_prompt()
 	_update_pot_signs()
 	_sync_staff()
@@ -237,13 +242,12 @@ func _update_prompt() -> void:
 	if _near_prompt != null:
 		var sign := _near_prompt.get_parent() as Control
 		sign.visible = _controls_enabled and not station_id.is_empty()
-		if not station_id.is_empty(): sign.position=(station.get("visual",station.position-Vector2(0,120)) as Vector2)+Vector2(-38,-70)
-	if not _controls_enabled:
-		_prompt.text = "正在灶台做菜 · 关闭做菜界面后继续走动"
-	elif not station_id.is_empty():
-		_prompt.text = "[ E ]  %s · %s" % [String(station["name"]), _station_hint(station_id)]
-	else:
-		_prompt.text = "WASD 移动 · Shift 疾跑 · E 取放 · F 开灶台 · Q 取锅内材料" if single_fridge else "WASD / 方向键走动 · Shift 疾跑 · E 拿取 / 放下 / 操作 · 先去左上方拿食材"
+		if not station_id.is_empty():
+			_near_prompt.text=_station_hint(station_id)
+			sign.size.x=300 if station_id in ["kitchen.stove.left","kitchen.stove.right","kitchen.steamer"] else 170
+			sign.position=(station.get("visual",station.position-Vector2(0,120)) as Vector2)+Vector2(-sign.size.x*.5,-70)
+	_prompt.text=""
+	_prompt.get_parent().hide()
 
 func _sign(text: String, at: Vector2, width: float, font_size: int, id: String) -> Label:
 	var panel := PanelContainer.new()
@@ -317,7 +321,7 @@ func _make_hud() -> void:
 
 func _update_pot_signs() -> void:
 	for index: int in _pot_panels.size():
-		_pot_panels[index].visible=single_fridge and index<pot_contents.size()
+		_pot_panels[index].visible=single_fridge and index<pot_contents.size() and bool(pot_contents[index].get("occupied",true))
 		if index<pot_contents.size():
 			_pot_titles[index].text=str(pot_contents[index].title)
 			_pot_materials[index].text=str(pot_contents[index].materials)
@@ -337,13 +341,27 @@ func _back() -> void:
 
 func set_context(value: Dictionary, message: String = "", simmer: String = "") -> void:
 	_context = value.duplicate(true)
-	if not message.is_empty(): _message = message
-	if _held_label != null:
-		var hand: Dictionary = _context.get("hand",{})
-		_held_label.text = "手上：" + ("空" if hand.is_empty() else str(hand.name) + " · " + {"whole":"完整","slice":"片","strip":"条","chunk":"块","dice":"丁"}.get(hand.shape,hand.shape)) + "     " + _message
-		_held_label.tooltip_text=_held_label.text
+	if message!=_last_context_message:
+		_last_context_message=message
+		if not message.is_empty(): show_feedback(message)
+	_refresh_held()
 	if _simmer_label != null: _simmer_label.text = simmer
 	queue_redraw()
+
+func show_feedback(text: String) -> void:
+	_message=text;_message_left=4.0 if not text.is_empty() else 0.0
+	_refresh_held()
+
+func _refresh_held() -> void:
+	if _held_label==null: return
+	var hand: Dictionary=_context.get("hand",{})
+	var parts: Array[String]=[]
+	if not hand.is_empty():
+		parts.append(str(hand.name)+(" · "+str({"slice":"片","strip":"条","chunk":"块","dice":"丁"}.get(hand.get("shape",""),"")) if hand.get("shape","") in ["slice","strip","chunk","dice"] else ""))
+	if _message_left>0: parts.append(_message)
+	_held_label.text="\n".join(parts)
+	_held_label.tooltip_text=_held_label.text
+	_held_label.get_parent().visible=not parts.is_empty()
 
 static func cook_point(index: int, _time_sec: float) -> Vector2:
 	return COOK_POSTS[index % COOK_POSTS.size()]
@@ -502,13 +520,16 @@ func _held_place(root: Node2D, reported: String, cooking: bool, job_id: String="
 
 func _station_hint(id: String) -> String:
 	var hand: Dictionary = _context.get("hand",{})
-	if id=="kitchen.fridge" or id.begins_with("kitchen.supply."): return "选一份食材" if hand.is_empty() else "放回食材（保留切型）"
-	if id=="kitchen.trash": return "丢弃手上物品" if not hand.is_empty() else "清理锅 / 砧板"
-	if id == "kitchen.board": return "取走备好的食材" if _context.get("board_occupied",false) else "放下食材并备菜"
-	if id == "kitchen.dining": return "走进餐厅"
-	if id == "kitchen.serve": return "放到出餐口，再去餐厅送桌" if hand.get("kind") == "dish" else "把出锅的菜端到这里"
-	if single_fridge: return "取放食材 / 端盘 · F 开灶台 · Q 取回"
-	return "放入食材" if hand.get("kind") == "ingredient" else "操作 / 端起成品"
+	if id=="kitchen.fridge" or id.begins_with("kitchen.supply."): return "E 冰箱" if hand.is_empty() else "E 放回"
+	if id=="kitchen.trash": return "E 丢弃" if not hand.is_empty() else "E 清理"
+	if id == "kitchen.board": return "E 取回" if _context.get("board_occupied",false) else "E 备菜"
+	if id == "kitchen.dining": return "E 餐厅"
+	if id == "kitchen.serve": return "E 出餐"
+	var index: int=0 if id=="kitchen.stove.left" else 1
+	var pot: Dictionary=pot_contents[index] if index<pot_contents.size() else {}
+	if pot.get("state","")=="plated": return "E 端盘"
+	if not pot.get("occupied",false): return "E 放入"
+	return "E 放入 · F 开火 · Q 取回"
 
 func _draw_service_door() -> void:
 	var frame := SERVICE_DOOR_RECT
