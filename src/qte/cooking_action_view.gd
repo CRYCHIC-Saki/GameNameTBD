@@ -30,7 +30,7 @@ func _init() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_process(false)
 	_font = SystemFont.new()
-	_font.font_names = PackedStringArray(["Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans CJK SC"])
+	_font.font_names = PackedStringArray(["SimHei"])
 
 func set_progress(operation: String, progress: Dictionary) -> void:
 	var next_elapsed := _finite(progress.get("elapsed_sec", 0.0), 0.0)
@@ -64,12 +64,12 @@ func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, BASE_SIZE), DARK)
 	draw_rect(Rect2(0.0, 0.0, 380.0, 94.0), Color("#1d3832"))
 	draw_rect(Rect2(0.0, 91.0, 380.0, 3.0), Color("#456257"))
-	_text(str(TITLES.get(_operation, "烹饪动作")), Vector2(12.0, 19.0), INK, 15)
+	_text(str(TITLES.get(_operation, "烹饪动作")), Vector2(12.0, 19.0), INK, TDUI.FONT_CAPTION)
 	var kind := str(_progress.get("qte_kind", ""))
 	var hint: String = str(HINTS.get(kind, "选择工序后开始"))
 	if _progress.get("pc_module") == "M6": hint = "每拍点击材料柜 · 按实际材料调味"
 	elif _progress.get("pc_module") == "M3" and kind == "sequence": hint = "一拍一键 · 最后一拍空格收势"
-	_text(hint, Vector2(12.0, 108.0), MUTED, 12)
+	_text(hint, Vector2(12.0, 108.0), MUTED, TDUI.FONT_MICRO)
 	_draw_action()
 	match kind:
 		"charge": _draw_charge()
@@ -80,9 +80,9 @@ func _draw() -> void:
 	var status := str(_progress.get("status", ""))
 	if status == "completed":
 		var grade := str(_progress.get("grade", "miss"))
-		_text(grade.to_upper(), Vector2(283.0, 19.0), GREEN if grade == "perfect" else ORANGE, 14)
+		_text(grade.to_upper(), Vector2(283.0, 19.0), GREEN if grade == "perfect" else ORANGE, TDUI.FONT_CAPTION)
 	elif status == "cancelled":
-		_text("已取消", Vector2(305.0, 19.0), RED, 13)
+		_text("已取消", Vector2(305.0, 19.0), RED, TDUI.FONT_CAPTION)
 
 func _draw_action() -> void:
 	match _operation:
@@ -216,8 +216,8 @@ func _draw_charge() -> void:
 	_bar(20.0, 126.0, 245.0, low / maximum, high / maximum)
 	var held := _finite(_progress.get("held_sec", 0.0), 0.0)
 	_marker(20.0 + clampf(held / maximum, 0.0, 1.0) * 245.0, 122.0, INK)
-	_text("%.2f 秒" % held, Vector2(282.0, 137.0), ORANGE, 14)
-	_text("目标 %.1f–%.1f 秒" % [low, high], Vector2(20.0, 153.0), MUTED, 11)
+	_text("%.2f 秒" % held, Vector2(282.0, 137.0), ORANGE, TDUI.FONT_CAPTION)
+	_text("目标 %.1f–%.1f 秒" % [low, high], Vector2(20.0, 153.0), MUTED, TDUI.FONT_MICRO)
 
 func _draw_rhythm() -> void:
 	_pixel_rect(20.0, 127.0, 341.0, 5.0, Color("#405e54"))
@@ -233,7 +233,7 @@ func _draw_rhythm() -> void:
 		_pixel_rect(x - 5.0, 121.0, 11.0, 15.0, color)
 	if _pulse() > 0.0:
 		_pixel_rect(122.0, 119.0, 12.0, 20.0, Color(1.0, 1.0, 1.0, _pulse() * 0.5))
-	_text("连击 %d  /  命中 %d" % [int(_progress.get("combo", 0)), int(_progress.get("hits", 0))], Vector2(20.0, 153.0), MUTED, 11)
+	_text("连击 %d  /  命中 %d" % [int(_progress.get("combo", 0)), int(_progress.get("hits", 0))], Vector2(20.0, 153.0), MUTED, TDUI.FONT_MICRO)
 
 func _draw_window() -> void:
 	var duration := maxf(0.1, _finite(_progress.get("duration_sec", 2.5), 2.5))
@@ -245,12 +245,12 @@ func _draw_window() -> void:
 		var half: float = .45 * sin(TAU * good / period)
 		_bar(20,126,340,.5-half,.5+half)
 		_marker(20 + float(_progress.get("cursor",.5))*340,122,INK)
-		_text("冷 ←    强拍到绿区：空格点火    → 热",Vector2(20,153),MUTED,11)
+		_text("冷 ←    强拍到绿区：空格点火    → 热",Vector2(20,153),MUTED,TDUI.FONT_MICRO)
 		return
 	_bar(20.0, 126.0, 340.0, (target - good) / duration, (target + good) / duration)
 	_pixel_rect(20.0 + (target - perfect) / duration * 340.0, 126.0, perfect * 2.0 / duration * 340.0, 10.0, GREEN)
 	_marker(20.0 + clampf(_elapsed / duration, 0.0, 1.0) * 340.0, 122.0, INK)
-	_text("目标 %.2f 秒   Perfect ±%dms" % [target, int(round(perfect * 1000.0))], Vector2(20.0, 153.0), MUTED, 11)
+	_text("目标 %.2f 秒   Perfect ±%dms" % [target, int(round(perfect * 1000.0))], Vector2(20.0, 153.0), MUTED, TDUI.FONT_MICRO)
 
 func _draw_maintain() -> void:
 	var low := _finite(_progress.get("target_min", 0.4), 0.4)
@@ -260,8 +260,8 @@ func _draw_maintain() -> void:
 	_bar(20.0, 126.0, 245.0, low, high)
 	_marker(20.0 + clampf(power, 0.0, 1.0) * 245.0, 121.0, INK)
 	_pixel_rect(20.0 + clampf(control, 0.0, 1.0) * 245.0 - 3.0, 140.0, 6.0, 4.0, ORANGE)
-	_text("实际 %d%%" % int(round(power * 100.0)), Vector2(278.0, 138.0), INK, 13)
-	_text("橙标：控制量    白线：扰动后的实际火力", Vector2(20.0, 155.0), MUTED, 10)
+	_text("实际 %d%%" % int(round(power * 100.0)), Vector2(278.0, 138.0), INK, TDUI.FONT_CAPTION)
+	_text("橙标：控制量    白线：扰动后的实际火力", Vector2(20.0, 155.0), MUTED, TDUI.FONT_MICRO)
 
 func _draw_sequence() -> void:
 	var steps: Array = _progress.get("sequence", [])
@@ -276,14 +276,14 @@ func _draw_sequence() -> void:
 		if step_index == current:
 			_pixel_rect(center.x - 16.0, center.y - 15.0, 32.0, 29.0, Color("#48694f"))
 		var action: String = str(steps[step_index])
-		if action == "primary": _text("空格",center+Vector2(-15,5),color,12)
-		elif action.begins_with("spice:"): _text({"spice:salt":"盐","spice:sugar":"糖","spice:oil":"油","spice:starch":"粉"}.get(action,"?"),center+Vector2(-7,5),color,14)
+		if action == "primary": _text("空格",center+Vector2(-15,5),color,TDUI.FONT_MICRO)
+		elif action.begins_with("spice:"): _text({"spice:salt":"盐","spice:sugar":"糖","spice:oil":"油","spice:starch":"粉"}.get(action,"?"),center+Vector2(-7,5),color,TDUI.FONT_CAPTION)
 		else: _draw_arrow(center, action, color)
 		var beats: Array = _progress.get("beat_times_sec",[])
 		if step_index < beats.size() and step_index == current:
 			var to_beat: float = float(beats[step_index]) - _elapsed
 			draw_arc(center,maxf(16,16+absf(to_beat)*20),0,TAU,24,ORANGE,1)
-	_text("%d/%d  错键 %d" % [current, steps.size(), int(_progress.get("wrong", 0))], Vector2(20.0, 156.0), MUTED, 10)
+	_text("%d/%d  错键 %d" % [current, steps.size(), int(_progress.get("wrong", 0))], Vector2(20.0, 156.0), MUTED, TDUI.FONT_MICRO)
 
 func _draw_arrow(center: Vector2, action: String, color: Color) -> void:
 	var direction := Vector2.UP

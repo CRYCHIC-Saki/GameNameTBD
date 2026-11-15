@@ -2,7 +2,7 @@ class_name TDCutsceneView
 extends Control
 ## A full-screen deterministic stage. The owning dialogue supplies presentation seconds.
 ## Full-body action keyframes, walking frames, props and timed scene cuts; no dialogue busts.
-const ACTORS: Texture2D = preload("res://assets/story/cinematic-actors-v1.png")
+const ACTORS: Texture2D = preload("res://assets/redraw-v1/cinematic.png")
 const ARRIVAL_SCENE: PackedScene=preload("res://src/story/arrival_cutscene.tscn")
 var arrival_stage: TDArrivalCutscene
 var shot: String = ""
@@ -25,7 +25,7 @@ const CUES := {
 
 func _ready() -> void:
 	mouse_filter=Control.MOUSE_FILTER_IGNORE
-	texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST
+	texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
 	clip_contents=true
 	arrival_stage=ARRIVAL_SCENE.instantiate() as TDArrivalCutscene
 	add_child(arrival_stage);arrival_stage.hide()
@@ -218,7 +218,7 @@ func actor(who: String, feet: Vector2, height: float, facing: Vector2i=Vector2i.
 	var pose:=pose_for(who)
 	if not walking and pose>=0:
 		var row:=int({"hero":0,"aling":1,"chen":2}[who])
-		art=TDStoryArt.cropped_view("cinematic:"+who+str(pose),ACTORS,Rect2i(pose*256,[0,338,674][row],256,[338,336,350][row]))
+		art=TDRedrawArt.cell("res://assets/redraw-v1/cinematic.png",row*6+pose,6,3)
 		width=height*art.get_width()/art.get_height()
 	draw_texture_rect(art,Rect2(-width*.5,-height,width,height),false)
 	draw_set_transform_matrix(_camera)
@@ -279,8 +279,8 @@ func book(center: Vector2, openness: float, angle: float) -> void:
 	draw_rect(Rect2(-w,-28,w*2,55),Color("63462e"))
 	draw_rect(Rect2(-w+3,-25,w*2-6,49),Color("c69b55"),false,1.5)
 	if openness<.12:
-		draw_string(ThemeDB.fallback_font,Vector2(-14,-3),"密",HORIZONTAL_ALIGNMENT_LEFT,-1,23,Color("edce82"))
-		draw_string(ThemeDB.fallback_font,Vector2(-14,23),"令",HORIZONTAL_ALIGNMENT_LEFT,-1,23,Color("edce82"))
+		draw_string(TDUI.font(),Vector2(-14,-3),"密",HORIZONTAL_ALIGNMENT_LEFT,-1,23,Color("edce82"))
+		draw_string(TDUI.font(),Vector2(-14,23),"令",HORIZONTAL_ALIGNMENT_LEFT,-1,23,Color("edce82"))
 		draw_set_transform_matrix(_camera);return
 	draw_rect(Rect2(-w+4,-24,w*2-8,46),Color("e5d7af"))
 	draw_line(Vector2(0,-24),Vector2(0,20),Color("99866a"),3)
@@ -314,8 +314,8 @@ func prop(index: int, box: Rect2) -> void:
 	var art:=TDStoryArt.prop(index);draw_texture_rect(art,TDStoryArt.fit(art,box),false)
 
 func caption(value: String, at: Vector2, font_size: int=30, color: Color=Color("f1e7c8")) -> void:
-	draw_string(ThemeDB.fallback_font,at+Vector2(2,2),value,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size,Color("151b22"))
-	draw_string(ThemeDB.fallback_font,at,value,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size,color)
+	draw_string(TDUI.font(),at+Vector2(2,2),value,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size,Color("151b22"))
+	draw_string(TDUI.font(),at,value,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size,color)
 
 static func phase(t: float, start: float, end: float) -> float:
 	return smoothstep(start,end,t)

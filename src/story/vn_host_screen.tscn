@@ -1,0 +1,39 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://addons/vn_engine/src/screens/scenes/vn_stage_screen.tscn" id="1"]
+[ext_resource type="Script" path="res://src/story/vn_host_screen.gd" id="2"]
+
+[node name="OpeningStage" instance=ExtResource("1")]
+script = ExtResource("2")
+
+[node name="BackgroundBox" parent="CanvasLayer/DialogUI" index="1"]
+offset_left = 36.0
+offset_top = -218.0
+offset_right = -36.0
+offset_bottom = -25.0
+
+[node name="MarginContainer" parent="CanvasLayer/DialogUI/BackgroundBox" index="1"]
+theme_override_constants/margin_left = 26
+theme_override_constants/margin_right = 26
+theme_override_constants/margin_top = 25
+theme_override_constants/margin_bottom = 55
+
+[node name="NameRow" parent="CanvasLayer/DialogUI" index="2"]
+offset_left = 54.0
+offset_top = -254.0
+offset_right = -54.0
+offset_bottom = -211.0
+
+[node name="SpeakerLabel" parent="CanvasLayer/DialogUI/NameRow/NamePlate" index="0"]
+theme_override_font_sizes/font_size = 26
+
+[node name="InGameButtons" parent="CanvasLayer" index="2"]
+offset_left = -320.0
+offset_top = -76.0
+offset_right = -62.0
+offset_bottom = -34.0
+
+[node name="CameraManager" parent="." index="6"]
+enabled = false
+
+[editable path="CanvasLayer/DialogUI"]

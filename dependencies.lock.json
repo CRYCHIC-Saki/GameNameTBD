@@ -14,5 +14,13 @@
     "archive_sha256": "14969aa46adc84aa08cdd21b9f6d1a64addd92ae60b36f02d0521ed305aa4086",
     "path": "addons/gut"
   },
-  "powershell_minimum": "7.2"
+  "powershell_minimum": "7.2",
+  "visual_novel_engine": {
+    "version": "0.23.0",
+    "commit": "a2231b2dd985e0ca045f88b9cea993e1eb58a0c6",
+    "source": "https://github.com/kaanakgundogdu/godot-vn-engine",
+    "archive_sha256": "61ea5960cae42bd6725e48fdeb5fea13fec21305fb89aaad9cc0d34b0370feec",
+    "path": "addons/vn_engine",
+    "integration": "native Main / StoryRunner / DialogUI and scenario export; host-managed persistence; patches documented in TOWN_DINER_INTEGRATION.md"
+  }
 }

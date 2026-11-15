@@ -1,5 +1,31 @@
 # D059 餐厅体验反馈
 
+## D071 屏幕方向与出餐交接（2026-11-11，工程交付／人工待试玩）
+使用 grilling：C:/Users/Administrator/.codex/skills/grilling/SKILL.md，及 godot-gdscript-patterns 同根 SKILL.md，均无声明版本。只读审查确认旧正式厨房提前结算；用户明确真正送桌才停耐心。GRILL_RESULT=ANSWERED，无其他阻塞；不实施此前供应商合同提案。
+- AC-D071-001：主店/分店餐厅 WASD 沿屏幕四向，斜走速度归一；疾跑、墙碰撞及慢前后步频保持。真实输入/独立绘制投影验证。
+- AC-D071-002：真实厨房/厨师做完只入出餐口，钱款、评分奖励和用餐在真实送桌才发生；玩家与服务员共用唯一盘状态。真实场景集成。
+- AC-D071-003：取盘认领互斥、送错客/远程送盘/重复送盘拒绝；玩家可在出餐口退盘或丢弃。规则与场景测试。
+- AC-D071-004：出餐/持盘耐心继续；超时原盘保留并可匹配后续同菜订单，无二次耗料；暂停冻结，隐藏餐厅员工继续；收夜明确清理。
+- AC-D071-005：未清理盘阻止边界保存/跨日，原存档格式兼容；原资料不变，真实日志和人工待试玩分开记录。
+
+实现：主店和分店巡视餐厅只复原 input_transform 为单位变换，保留原投影逆矩阵、速度预算、碰撞、Shift1.6、140/224步态距离。正式 Shell 启用 TableService；实际厨房/真实厨师的 delivered 快照只排盘，Shop仍唯一负责送桌评价/钱账/家庭付款。runtime队列采用dish_id和独占carrier；复制查询，拒绝重复入盘/送出/报废重放，超时保留并重新匹配，员工撤任/失去目标安全退盘。出餐口E取放，桌边E送，出餐口Q报废。手持餐盘及待取/端送文本真实接入；教程也需把试做送到阿铃桌边，离开厨房收起厨房动作立绘。详细接口见CONTRACTS D071，参数/技术默认见AI-081。
+
+已执行证据（各命令均包含导入→149项资源加载→GUT计数门槛）：
+- `table-service-03`：3文件16/16，包括真实厨师→出餐口→玩家/服务员送桌、超时转单、重复/错桌/距离/暂停/报废/夜末/保存、真实键盘鼠标教程试做，以及分店室内四向移动。
+- `pre-export-20261111-205927` movement：4文件34/34，墙体滑动不超过180px/s、Shift288px/s、场景往返及布局。
+- `table-service-rules-stride`：`table-service-regression -ShardCount 5 -ShardIndex 3`，2文件27/27，577断言，独立经营规则与主角原步频。
+- `table-service-checkpoint-axes`：同套 `-ShardCount 5 -ShardIndex 0`，2文件11/11，846断言，原整槽回退/主动保存/02:00边界及八方向移动。
+- `table-service-game-final`：同套 `-ShardCount 10 -ShardIndex 1 -TimeoutSeconds 1200`，正式入口7/7、185断言、317.159秒。真实集市采购、菜单、手动QTE、出餐口取盘、送桌、家庭扣款/小费退款守恒、税费与等级日结、保存重启连续3日通过。保留3条既有Float/Int比较警告，非失败/跳过。
+合计95个独立用例、3048断言，exit0、无零测试/失败/跳过。AC-D071-001至005工程PASS；真实人工手感与服务压力仍PENDING。
+
+Compatibility 实机：`tools/table_service_probe.gd` 真实main.tscn、隔离新档、实际输入，39项/6图、exit0、无运行错误。核对了取盘前/后、手持餐盘、阿铃可达座位和收菜后真实83.8分（不是硬编码成绩）。最终证据 `artifacts/table-service-20261111/gpu/final.*`，音频Dummy，不能当人工设备试听或玩法平衡验收。
+本地导出：`pwsh -NoProfile -File tools/export.ps1 -CheckSuite movement -CheckTimeoutSeconds 300` exit0；614运行资源，包含新table_service，启动/退出3×4项与真实EXE headless94项通过。build/TownDiner.exe/.pck 于2026-11-11 21:00更新。原始资料/罗厄保护范围43文件哈希一致，真实玩家档未读写。
+
+保留的失败/未完成记录：`table-service-01`因测试局部变量缺静态类型导致零用例，被检查链以exit1正确拦截；修复后02/03通过。扩大回归 `table-service-regression-0` 600秒超时，不能记整组通过。`regression-1`旧三日测试还期望厨房SERVED，保留失败日志并主动终止(exit-1)，已改成真实取盘送桌；r2运行遭环境重载中断，无完整报告，不计通过。首次导出检查也在环境重载中断，最终导出已完整复验。
+
+人工试玩PENDING；全仓/远程CI未运行。本轮仅送餐规则和移动，不改变供应商合同、正式分店手工接管或新美术。试玩：1.运行本地EXE；2.餐厅WASD/斜走/Shift检查方向；3.厨房做好菜并放到出餐口；4.回餐厅E取盘，桌边E送；5.检查待送耐心/超时保留，或雇服务员观察实际取送。交付后停在本轮反馈点。
+
+
 ## D059-R4 坐姿与凳面投影（2026-11-06，工程完成／用户视觉确认待定）
 用户明确R3腿与凳子透视仍错误。实际使用已读grilling、godot-gdscript-patterns、imagegen；GRILL_RESULT=NO_BLOCKING_PRODUCT_QUESTIONS，属于明确视觉缺陷。R3的工程PASS未获用户视觉认可。本轮把入座姿势和红垫木凳作为同一投影下的组合绘制，空座继续独立显示；不重复叠空凳，不拉长腿。
 - AC-D059-R4-001：四身份两朝向保持短腿比例，臀部压在坐垫上，近腿越过相应凳面边缘、远腿在后；空凳与有人坐的姿态只绘制一次，场景截图/入座过渡核验。
@@ -105,3 +131,66 @@ GRILL_RESULT=ANSWERED。用户确认睡觉或主动保存，普通退出不保�
 2. 开店看客人走到桌边坐下；留意坐垫接触、朝向和手臂/桌沿。
 3. 筹备时主动保存，然后修改装修/采购或研习，返回主菜单选择不保存；重载应一起回到原记录。
 4. 重做改动后选择“保存并返回主菜单”，重载应保留；睡觉和02:00按新规则自动记录安全快照。
+## D073 厨师按真实工位制作（2026-11-14，ENGINEERING_READY / PLAYTEST_PENDING）
+用户本轮明确：番茄炒蛋先冰箱取番茄→砧板切配→锅中投料→冰箱取鸡蛋→锅前投料/烹饪→端成品至出餐口；移动与实际操作互相约束。覆盖原D071/远端厨师只随工序标签移动的表现层实现，客人桌边收到菜才结算规则保留。
+
+实际读取 grilling：C:/Users/Administrator/.codex/skills/grilling/SKILL.md（无版本字段）和 godot-gdscript-patterns，同目录 skills 下；前者要求的环境事实由 chef_flow_facts 只读核查。GRILL_RESULT = NO_BLOCKING_PRODUCT_QUESTIONS：用户已指定顺序，其他菜按已接入的菜谱/客人备菜谱，不新增玩法决定。参数列为 AI-083 可调假设。
+
+- AC-D073-001：真实番茄炒蛋订单，厨师逐份从冰箱取料；需要切配的原料到共享砧板执行既有真实自动输入谱，切配会话转移至已认领锅，之后取下一份。不在行走时提前切配/烹饪/出餐；验证事件轨迹、位置、库存、成品步骤。
+- AC-D073-002：工位从实际 KitchenWorld.stations/bounds 导出；行走不穿设施，四向动画按真实位移、切配/烹饪/端盘表现按当前工作状态。真实渲染截图及路段几何核验，人工手感待试玩。
+- AC-D073-003：营业/剧情/暂停/隐藏厨房共用现有逻辑时钟；粗细时间步、重进/取消/撤任/收夜无重复扣料或旧动作。暂停位置、朝向、动作时间与菜谱进度均不变。
+- AC-D073-004：两厨师不争用同一锅/砧板；不抢玩家手中/砧板/锅内食材。玩家访问员工占用设施收到明确提示；缺料可等待，取消后的原料保留加工与到期信息；未整理工作不能边界保存。
+- AC-D073-005：真实成品仅到达出餐口才存入既有 TableService，服务员/玩家原取送及评价规则保持；隔离测试、检查链、导出与本地包验证分别记实。
+
+实现：`TDKitchenStaff`持有独立手持会话/任务与物理位置，上层ShopView装配、KitchenWorld只呈现；已有Lane/Session/BeatSheet执行切配与炒/蒸，原料转锅保留ID/切型/历史/保质期，冰箱实际拿取才扣料。员工和玩家共用物理砧板但不共用可变手持会话，锅用session_id认领；出锅后走到出餐口才排盘。四向步态由位移驱动，切配刀、翻炒锅铲、调味瓶、蒸汽和端盘为轻量占位动作，留白显示等待下一拍。旧独立开发厨房的标签动画只保留兼容测试，正式ShopView不再使用。
+
+已发现并修复：等待砧板的零长路线导致微步循环；已有QTE到达结束边界但未完成Lane收尾，导致固定员工停在砧板；粗细时间步的温度积分仅有约1.5e-6℃误差，连续数值测试使用1e-5绝对容差，身份/顺序/库存仍精确比对。无效测试调用和营业中签约的探针错误已修正；真实EXE失焦会正常暂停，图形探针经原暂停菜单恢复，不关闭产品的失焦保护。
+
+失败证据保留：chef-workflow-01/final 的零测试解析失败被严格入口拦截；tests-02被中断、tests-03缺料场景和tests-04严格浮点比较失败；chef-regression-01在固定员工边界卡住后主动中断（exit -1），4个诊断副本超时不是PASS。gpu-01/02及exe-gpu首轮的招聘/失焦探针失败保留；后续成功结果不能抹去这些历史。157加载检查中的VN默认资源映射警告来自独立构造StoryRunner，正式插件配置和导出资源仍另行核验。
+
+试玩（人工PENDING）：
+1. 筹备时H签约、G给主店派驻厨师，备好番茄炒蛋主料和调料，菜单开启这道菜。
+2. 开门等真实客人落座，在厨房看取番茄→切配→入锅→再取鸡蛋→灶前炒菜→端盘至出餐口。
+3. 到餐厅由玩家E取盘/桌边E送菜，或派驻服务员观察自动取送；出餐口阶段客人仍有耐心限制。
+4. 尝试暂停、切换场景、两厨师/玩家占用砧板；重视动作可读性、等待长度及手工配合感受。
+5. 仍按D059主动保存/睡觉；员工在做菜或出餐口有盘时，先完成服务或夜末整理，不能保存任意QTE现场。
+
+范围与限制：正式主店流程已实现；用的是现有真实菜谱和自动输入，不是测试替身或固定评分假菜。没有另建分店可操作厨房、动态全屋任意家具寻路或精绘厨师职业动作图集；角色仍复用已有普通NPC素材。全仓测试/远程CI NOT_RUN，人工动作观感/双厨协作/声音待试玩，不自动推进新阶段或推送。
+
+最终验收：AC-D073-001—005工程全部PASS，人工观感PENDING。10/10专项1352断言（55.080s，artifacts/check/pre-export-20261114-205041）与34/34相关用例512断言（526.825s，artifacts/check/chef-regression-final），合计44独立用例/1864断言，均0失败/0跳过/exit0。后者覆盖玩家真实输入、双菜鼠标、原服务员实际步行、重复送桌/超时转单/退盘/收夜、固定员工连续两单、旅行/失焦/碰撞和存档迁移；最后仅等待标签/工序工具绘制调整由最终专项与EXE图形复验。
+
+引擎锁定4.7.2.stable.steam.ed1daf0bf、GUT9.7.1、Compatibility。导入exit0，加载157资源/0失败；导出1134运行资源，明确包含两个新增正式脚本、排除测试/原资料。build/TownDiner.exe＋TownDiner.pck于20:52更新，实际EXE启动3×4、headless交互94项PASS。最终EXE图形27项/7图、exit0，证据artifacts/chef-workflow-20261114/exe-gpu-final.log及artifacts/export/chef-probe/screenshots/report.json；已目检厨师切配/端盘/灶前和餐厅送达截图。隔离测试PCK只替换入口，所有运行资源来自正式runtime.zip，不依赖源码补文件。源工程GPU27项是重复环境验证，不累加为独立用例。
+
+命令：`pwsh -File tools/check.ps1 -Suite chef-workflow -TimeoutSeconds 600`；相关回归`-Suite chef-regression -TimeoutSeconds 1200`；重建`pwsh -File tools/export.ps1 -CheckSuite chef-workflow -CheckTimeoutSeconds 600`。原始资料/指定素材43文件哈希一致（protected-check.json），新增文件/包校验见delivery-hashes.json；协作integrator检查500路径通过，git diff --check通过。共享写入锁释放，未提交推送，不读写真实玩家档。
+
+
+## D074 — 厨房提示与餐厅信息栏（2026-11-15）
+
+来源：用户要求“厨房提示文字看不清、餐厅左上角文字重叠”一并修复并重建EXE。复用2387a74整合后的木纹美术，不修改原图片或设计资料。GRILL_RESULT = NO_BLOCKING_PRODUCT_QUESTIONS；使用实际grilling（C:/Users/Administrator/.codex/skills/grilling/SKILL.md，未声明版本），该技能明确的只读事实调查由hud_readability_facts完成，root唯一写代码/共享文件；godot-gdscript-patterns同级SKILL已读取。没有新增产品决策，布局为ASSUMPTION AI-084。
+
+实际实现：KitchenWorld以PanelContainer/Label/ProgressBar显示手持、锅内、工位与炖煮；显示只读取既有context/meters。提示文字不再继承暗色背景的旧配色，手持最多两行、超长省略，正常长警告完整换行；锅内容在厨房上方以免挡住人物。ShopView嵌入态将旧营业说明放到统计栏下方、任务卡右侧，隐藏重复房间标题。GameHUD/StoryGuide提供只读reserved_bottom，Shell装配RestaurantWorld.set_info_top，不增加跨场景路径或全局事件。营业信息使用有边界的ScrollContainer，保留原遮罩/装修/营业显隐，去掉重复岗位能力长串，H仍能查看完整员工信息。暂停、移动、真实送桌与经营时点不变。
+
+验收与结果：
+- AC-PHASE-4-D074-001 PASS：实际0.71875厨房缩放下检查工位名、手持/长警告、两锅与两条炖煮提示；源与正式EXE昼夜截图，木牌与文字不被夜间染暗，手持与其他文字/操作栏无重叠。
+- AC-PHASE-4-D074-002 PASS：实际主场景中统计栏、短提示、任务卡与营业信息分别占位；有任务/无任务、1280×800及1600×900、长订单显示滚动且不越过底栏均通过。
+- AC-PHASE-4-D074-003 PASS：5文件34用例514断言0失败/0跳过/exit0（445.825秒，hud-readability-regression），覆盖真实输入厨房、双菜、实际服务、超时转单、场景切换；4文件20用例870断言0失败/0跳过/exit0（5.68秒，pre-export-20261115-133349）。合计54独立用例1384断言，不把初轮重复20计数。源真实厨师→出餐口→服务员27项/7图，通过后最后仅调整锅提示位置；最终布局由源与最终EXE图形52项复验。
+- AC-PHASE-4-D074-004 PASS：锁定Godot4.7.2.stable.steam.ed1daf0bf编辑器与4.7.2.stable.official.ed1daf0bf模板，Compatibility；158加载0失败、1248运行文件白名单、正式EXE三次启动各4检查、无图形输入/保存94项。最终EXE图形52项/7截图exit0，实际查看夜间厨房和餐厅任务/营业栏。13:34:25 EXE、13:34:27 PCK，哈希见artifacts/hud-readability-20261115/build-hashes.json。
+
+显示压力验证使用明确标注的长文字/两锅meter数据，只测试呈现；实际开门/库存/订单沿真实Shop流程，真实员工制作与送桌另由现有chef_workflow_probe证明。不把压力样例当作正式订单或新玩法。实际EXE探针采用正式runtime.zip全部资源，只替换一次性入口；正式PCK不含工具/测试或原始资料。测试设置与存档都在artifacts隔离目录。
+
+复现命令（PowerShell）：
+1. tools/check.ps1 -Suite chef-regression -TimeoutSeconds 600（可传-GodotPath artifacts/vn-framework-20261113/engine/godot.exe绝对路径）。
+2. tools/export.ps1 -CheckSuite ui-wood-core -CheckTimeoutSeconds 600（同锁定GodotPath）。
+3. Godot --path F:/MyGameTBD --rendering-method gl_compatibility --script res://tools/hud_readability_probe.gd；正式包验证由tools/pack_title_probe.gd -- --hud-readability生成一次性PCK，执行脚本/日志保存在artifacts/hud-readability-20261115。
+
+人工试玩PENDING：启动build/TownDiner.exe，进厨房查看手上/锅内提示；接单后到餐厅看左上信息；有教程任务时检查互不遮挡；切换窗口大小、滚动多订单。全仓回归/远程CI NOT_RUN，未承诺所有屏幕/DPI均已人工检视。
+
+失败/限制如实保留：source-initial3项失败（任务遮手持及未推进营业的显示探针），修复布局并令探针走真实营业刷新后复验；gpu-initial/gpu-r1/gpu-r2及全部日志保留。加载工具单独构造插件StoryRunner仍产生默认asset-map警告，158加载无失败，正式插件沿既有配置。43原始资料/指定素材哈希一致，12:41旧包备份于before-build；root锁释放，未提交或推送，不自动扩展阶段。
+
+
+### D074 合并前全量回归修复（2026-11-15）
+PR #9 首轮完整 CI 发现 9 个失败用例（102 文件/808 用例，四个分片均真实运行，0 跳过）。真实运行缺陷是餐厅移出场景树后，Label 延迟尺寸通知仍查询已不存在的 viewport；`_fit_order_board` 现在拒绝已关闭/离树的回调，新增实际移除、延迟回调、重新进入的集成测试。
+
+其余失败按已确认行为修正原有测试：具名客人必须从出餐口真实端到桌边才反馈好感；厨师时钟比较先建立独立诊断目录并检查写入成功；岗位提示沿现行精简文案；立绘允许延伸到前景对话框下方，检查头部、前景层及文本边界；开篇通过实际 VN 宿主推进 CG 并验证原生对白，而非直接驱动旧 TDDialogue 时间。系统字体测试校验同一字体资源/SimHei 首选设置，不在未安装 SimHei 的 CI 主机调用无效字体句柄。
+
+音乐循环期望由源 WAV 的 RIFF 数据帧数独立读取，覆盖浮点 PCM 与压缩导入，不再假定已替换的旧 16/24 秒素材；实际厨房音乐的暂停、切场景静音及流引用保持照常测试。自动化不证明新曲目的听感/每拍音画同步，仍需设备试听；没有修改音乐资源或 QTE 判定。`publish-compat` 专项复用统一检查入口，完整 CI 仍运行全部测试，没有豁免、降级或移除用例。验证结果待本次修复后报告，失败日志永久保留于本地开发产物。

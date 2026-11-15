@@ -27,7 +27,7 @@ func _ready() -> void:
 		body_lift=sprite_height*.5
 		_apply_directional_pose()
 	_sprite_scale = _sprite.scale
-	texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST
+	texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
 
 func face(direction: Vector2) -> void:
 	if direction.is_zero_approx(): return

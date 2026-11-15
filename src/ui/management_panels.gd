@@ -2,29 +2,20 @@ class_name TDManagementPanels
 extends RefCounted
 ## Domain state is supplied by the profile. Panels never save or own a wallet.
 
-const PAPER:=Color("f4e6c9")
-const MUTED:=Color("b4bfaa")
-const GOLD:=Color("edc47b")
+const PAPER:=Color("30251b")
+const MUTED:=Color("65503a")
+const GOLD:=Color("764019")
 
 static func theme() -> Theme:
-	var result:=TDUI.theme()
-	for state: String in ["normal","hover","pressed","disabled","focus"]:
-		var style:=StyleBoxFlat.new();style.bg_color=Color("3a5545") if state=="hover" else Color("293e34")
-		style.border_color=GOLD if state in ["hover","focus"] else Color("827552")
-		style.set_border_width_all(1);style.set_corner_radius_all(3)
-		style.content_margin_left=12;style.content_margin_right=12;style.content_margin_top=9;style.content_margin_bottom=9
-		result.set_stylebox(state,"Button",style)
-	return result
+	return TDUI.theme()
 
-static func text(value: String, font_size: int=18, color: Color=PAPER) -> Label:
+static func text(value: String, font_size: int=TDUI.FONT_BODY, color: Color=PAPER) -> Label:
 	var label:=TDUI.label(value,font_size,color);label.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	return label
 
 static func card(parent: Node, accent: Color=GOLD) -> VBoxContainer:
 	var panel:=PanelContainer.new();panel.size_flags_horizontal=Control.SIZE_EXPAND_FILL;parent.add_child(panel)
-	var style:=StyleBoxFlat.new();style.bg_color=Color("263b32");style.border_color=accent.darkened(.25)
-	style.set_border_width_all(1);style.border_width_top=3;style.set_corner_radius_all(3)
-	style.content_margin_left=14;style.content_margin_right=14;style.content_margin_top=12;style.content_margin_bottom=14
+	var style:=TDUI.wood(TDUI.Surface.CARD,14)
 	panel.add_theme_stylebox_override("panel",style)
 	var box:=VBoxContainer.new();box.add_theme_constant_override("separation",8);panel.add_child(box)
 	return box
@@ -39,8 +30,8 @@ class ProductButton extends Button:
 	func _draw() -> void:
 		TDIngredientIcon.draw_on(self,product_id,Rect2(10,15,40,40),disabled)
 		var font:=get_theme_font("font")
-		draw_string(font,Vector2(60,30),caption,HORIZONTAL_ALIGNMENT_LEFT,size.x-68,18,TDManagementPanels.PAPER if not disabled else TDManagementPanels.MUTED)
-		draw_string(font,Vector2(60,54),detail,HORIZONTAL_ALIGNMENT_LEFT,size.x-68,13,TDManagementPanels.MUTED)
+		draw_string(font,Vector2(60,30),caption,HORIZONTAL_ALIGNMENT_LEFT,size.x-68,TDUI.FONT_BODY,TDManagementPanels.PAPER if not disabled else TDManagementPanels.MUTED)
+		draw_string(font,Vector2(60,54),detail,HORIZONTAL_ALIGNMENT_LEFT,size.x-68,TDUI.FONT_CAPTION,TDManagementPanels.MUTED)
 
 class BasePanel extends VBoxContainer:
 	signal changed
@@ -53,7 +44,7 @@ class BasePanel extends VBoxContainer:
 		for child: Node in get_children(): remove_child(child);child.queue_free()
 		_status=null
 	func status_line() -> void:
-		_status=TDManagementPanels.text("",17,TDManagementPanels.GOLD);_status.visible=false;add_child(_status)
+		_status=TDManagementPanels.text("",TDUI.FONT_BODY,TDManagementPanels.GOLD);_status.visible=false;add_child(_status)
 	func report(result: TDOutcome) -> void:
 		var message: String=result.message if not result.message.is_empty() else str({"INSUFFICIENT_FUNDS":"金币不足。","SHOP_OPEN":"请在营业结束后调整人员。","STALE_PROFILE":"这份存档已关闭，请重新打开界面。","POOL_EMPTY":"这个招募池中的员工都已达到三星。","NOT_OWNED":"请先招募这位员工。"}.get(result.code,result.code))
 		if _status!=null: _status.text=message;_status.visible=not message.is_empty()
@@ -70,8 +61,8 @@ class RelationshipPanel extends BasePanel:
 		super.configure(value);refresh()
 	func refresh() -> void:
 		clear();visible_ids.clear()
-		add_child(TDManagementPanels.text("镇上相识",27,TDManagementPanels.GOLD))
-		add_child(TDManagementPanels.text("记住每一位相识的街坊。聊天和一餐好饭，都能让彼此更亲近。",17,TDManagementPanels.MUTED))
+		add_child(TDManagementPanels.text("镇上相识",TDUI.FONT_TITLE,TDManagementPanels.GOLD))
+		add_child(TDManagementPanels.text("记住每一位相识的街坊。聊天和一餐好饭，都能让彼此更亲近。",TDUI.FONT_BODY,TDManagementPanels.MUTED))
 		var grid:=GridContainer.new();grid.columns=2;grid.add_theme_constant_override("h_separation",14);grid.add_theme_constant_override("v_separation",14);add_child(grid)
 		for id: String in profile.characters.definitions:
 			var relation:=profile.characters.relationship(id)
@@ -84,14 +75,14 @@ class RelationshipPanel extends BasePanel:
 			portrait.custom_minimum_size=Vector2(98,142);portrait.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;portrait.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			portrait.texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST;row.add_child(portrait)
 			var details:=VBoxContainer.new();details.size_flags_horizontal=Control.SIZE_EXPAND_FILL;row.add_child(details)
-			details.add_child(TDManagementPanels.text(str(definition.name),24))
+			details.add_child(TDManagementPanels.text(str(definition.name),TDUI.FONT_SECTION))
 			var affection: int=int(relation.affection)
-			details.add_child(TDManagementPanels.text("好感 %d / 100"%affection,19,Color("e3b6ac")))
+			details.add_child(TDManagementPanels.text("好感 %d / 100"%affection,TDUI.FONT_BODY,Color("764019")))
 			var meter:=ProgressBar.new();meter.max_value=100;meter.value=affection;meter.show_percentage=false;meter.custom_minimum_size.y=12;details.add_child(meter)
-			details.add_child(TDManagementPanels.text(" · ".join(definition.traits),15,TDManagementPanels.MUTED))
-			box.add_child(TDManagementPanels.text(public_biography(str(definition.biography)),17))
+			details.add_child(TDManagementPanels.text(" · ".join(definition.traits),TDUI.FONT_CAPTION,TDManagementPanels.MUTED))
+			box.add_child(TDManagementPanels.text(public_biography(str(definition.biography)),TDUI.FONT_BODY))
 		if visible_ids.is_empty():
-			add_child(TDManagementPanels.text("这里还没有记录。到小镇走走，向遇见的人打声招呼吧。",21,TDManagementPanels.MUTED))
+			add_child(TDManagementPanels.text("这里还没有记录。到小镇走走，向遇见的人打声招呼吧。",TDUI.FONT_SECTION,TDManagementPanels.MUTED))
 	static func public_biography(value: String) -> String:
 		# Current authored biographies append production notes after the first sentence.
 		return value.split("。",false)[0]+"。" if value.contains("。") else value
@@ -120,8 +111,8 @@ class EmployeePanel extends BasePanel:
 		var tabs:=HBoxContainer.new();add_child(tabs)
 		for mode: String in ["market","warehouse"]:
 			var button:=TDUI.button("招聘市场" if mode=="market" else "员工仓库",select_tab.bind(mode));button.toggle_mode=true;button.button_pressed=warehouse==(mode=="warehouse");tabs.add_child(button);_tabs[mode]=button
-		add_child(TDManagementPanels.text("签约入库 → 选择店铺上任；仓库待命不计薪。当天已上岗的工资仍需结算。",17,TDManagementPanels.MUTED))
-		if not profile.at_boundary(): add_child(TDManagementPanels.text("营业中仅查阅，打烊后可签约和调整岗位。",17,TDManagementPanels.GOLD))
+		add_child(TDManagementPanels.text("签约入库 → 选择店铺上任；仓库待命不计薪。当天已上岗的工资仍需结算。",TDUI.FONT_BODY,TDManagementPanels.MUTED))
+		if not profile.at_boundary(): add_child(TDManagementPanels.text("营业中仅查阅，打烊后可签约和调整岗位。",TDUI.FONT_BODY,TDManagementPanels.GOLD))
 		var filters:=HBoxContainer.new();filters.add_theme_constant_override("separation",8);add_child(filters)
 		if not warehouse:
 			var towns:=OptionButton.new();towns.custom_minimum_size=Vector2(150,42);filters.add_child(towns)
@@ -140,10 +131,10 @@ class EmployeePanel extends BasePanel:
 				if item[0]==duty_filter: duty.select(duty.item_count-1)
 			duty.item_selected.connect(func(index:int)->void:duty_filter=str(duty.get_item_metadata(index));page=0;refresh_roster())
 			_previous=TDUI.button("上一页",change_page.bind(-1));heading.add_child(_previous)
-			_page_label=TDManagementPanels.text("",16,TDManagementPanels.MUTED);heading.add_child(_page_label)
+			_page_label=TDManagementPanels.text("",TDUI.FONT_CAPTION,TDManagementPanels.MUTED);heading.add_child(_page_label)
 			_next=TDUI.button("下一页",change_page.bind(1));heading.add_child(_next)
 		else:
-			add_child(TDManagementPanels.text("候选名额：★ 5 人 · ★★ 2 人 · ★★★ 1 人。每 3 天分批轮换，签约后不再出现。",16,TDManagementPanels.MUTED))
+			add_child(TDManagementPanels.text("候选名额：★ 5 人 · ★★ 2 人 · ★★★ 1 人。每 3 天分批轮换，签约后不再出现。",TDUI.FONT_CAPTION,TDManagementPanels.MUTED))
 		_employee_grid=GridContainer.new();_employee_grid.columns=2;_employee_grid.add_theme_constant_override("h_separation",12);_employee_grid.add_theme_constant_override("v_separation",12);add_child(_employee_grid)
 		if warehouse: refresh_roster()
 		else: refresh_market()
@@ -158,22 +149,22 @@ class EmployeePanel extends BasePanel:
 		var heading:=HBoxContainer.new();box.add_child(heading)
 		var portrait:=TextureRect.new();portrait.texture=TDDinerArt.portrait(TDDinerArt.appearance(str(row.id)));portrait.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;portrait.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;portrait.texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST;portrait.custom_minimum_size=Vector2(64,72);heading.add_child(portrait)
 		var name_box:=VBoxContainer.new();name_box.size_flags_horizontal=Control.SIZE_EXPAND_FILL;heading.add_child(name_box)
-		name_box.add_child(TDManagementPanels.text(str(row.name),21))
-		name_box.add_child(TDManagementPanels.text("★".repeat(int(row.stars))+" · "+TDManagementPanels.role_name(str(row.role)),17,TDManagementPanels.GOLD))
-		box.add_child(TDManagementPanels.text(str(row.description),15,TDManagementPanels.MUTED))
-		box.add_child(TDManagementPanels.text("招徕 %d   运营 %d   品质 %d   节用 %d"%[int(row.attraction),int(row.operations),int(row.quality),int(row.economy)],15,TDManagementPanels.GOLD))
+		name_box.add_child(TDManagementPanels.text(str(row.name),TDUI.FONT_SECTION))
+		name_box.add_child(TDManagementPanels.text("★".repeat(int(row.stars))+" · "+TDManagementPanels.role_name(str(row.role)),TDUI.FONT_BODY,TDManagementPanels.GOLD))
+		box.add_child(TDManagementPanels.text(str(row.description),TDUI.FONT_CAPTION,TDManagementPanels.MUTED))
+		box.add_child(TDManagementPanels.text("招徕 %d   运营 %d   品质 %d   节用 %d"%[int(row.attraction),int(row.operations),int(row.quality),int(row.economy)],TDUI.FONT_CAPTION,TDManagementPanels.GOLD))
 		if row.role=="manager" and int(row.stars)>=2:
-			box.add_child(TDManagementPanels.text("服务 +%.0f%% · 品质 +%.0f%% · 水电减免 %.0f%%"%[100*float(row.service_bonus),100*float(row.quality_bonus),100*float(row.utility_discount)],14,TDManagementPanels.MUTED))
-		box.add_child(TDManagementPanels.text("任职日薪 %.2f 金币 · 待命免费"%(float(row.wage_cents)/100),16))
+			box.add_child(TDManagementPanels.text("服务 +%.0f%% · 品质 +%.0f%% · 水电减免 %.0f%%"%[100*float(row.service_bonus),100*float(row.quality_bonus),100*float(row.utility_discount)],TDUI.FONT_CAPTION,TDManagementPanels.MUTED))
+		box.add_child(TDManagementPanels.text("任职日薪 %.2f 金币 · 待命免费"%(float(row.wage_cents)/100),TDUI.FONT_CAPTION))
 		return box
 	func refresh_market() -> void:
 		market_candidates=employees().market_rows(town,role_filter)
 		for row: Dictionary in market_candidates:
 			var box:=person_card(row)
-			box.add_child(TDManagementPanels.text("本批有效至第 %d 天结束"%int(row.last_day),14,TDManagementPanels.MUTED))
+			box.add_child(TDManagementPanels.text("本批有效至第 %d 天结束"%int(row.last_day),TDUI.FONT_CAPTION,TDManagementPanels.MUTED))
 			var button:=TDUI.button("签约入库 · %.2f 金币"%(float(row.sign_fee_cents)/100),sign_candidate.bind(str(row.id),str(row.offer_key)))
 			button.disabled=_busy or not profile.at_boundary() or int(profile.shop.snapshot().money_cents)<int(row.sign_fee_cents);box.add_child(button);_sign_buttons[row.id]=button
-		if market_candidates.is_empty(): _employee_grid.add_child(TDManagementPanels.text("这个岗位暂无未签约的候选人，可查看其他小镇或岗位。",18,TDManagementPanels.MUTED))
+		if market_candidates.is_empty(): _employee_grid.add_child(TDManagementPanels.text("这个岗位暂无未签约的候选人，可查看其他小镇或岗位。",TDUI.FONT_BODY,TDManagementPanels.MUTED))
 	func sign_candidate(id: String, offer_key: String) -> void:
 		if _busy: return
 		_busy=true
@@ -194,13 +185,13 @@ class EmployeePanel extends BasePanel:
 		var stores:=store_rows()
 		for row: Dictionary in all.slice(page*PAGE_SIZE,(page+1)*PAGE_SIZE):
 			var box:=person_card(row)
-			box.add_child(TDManagementPanels.text("任职："+str(row.store_name),16))
+			box.add_child(TDManagementPanels.text("任职："+str(row.store_name),TDUI.FONT_CAPTION))
 			var choice:=OptionButton.new();choice.custom_minimum_size.y=40;choice.disabled=not profile.at_boundary();choice.size_flags_horizontal=Control.SIZE_EXPAND_FILL;box.add_child(choice)
 			for index: int in stores.size():
 				choice.add_item("仓库待命" if str(stores[index].id).is_empty() else str(stores[index].name));choice.set_item_metadata(index,str(stores[index].id))
 				if str(stores[index].id)==str(row.assigned): choice.select(index)
 			choice.item_selected.connect(func(index:int)->void:assign_employee(str(row.id),str(choice.get_item_metadata(index))))
-		if total==0: _employee_grid.add_child(TDManagementPanels.text("这个分类下还没有员工，先到招聘市场签约吧。",19,TDManagementPanels.MUTED))
+		if total==0: _employee_grid.add_child(TDManagementPanels.text("这个分类下还没有员工，先到招聘市场签约吧。",TDUI.FONT_BODY,TDManagementPanels.MUTED))
 	func assign_employee(id: String, store: String) -> void:
 		var result:=employees().assign(id,store)
 		if warehouse: refresh_roster()
@@ -212,7 +203,7 @@ class SupplyLineCard extends VBoxContainer:
 	var line_id: String
 	var reordered: Callable
 	func _get_drag_data(_position: Vector2) -> Variant:
-		var preview:=TDManagementPanels.text("调整产线优先级",18);set_drag_preview(preview)
+		var preview:=TDManagementPanels.text("调整产线优先级",TDUI.FONT_BODY);set_drag_preview(preview)
 		return {"supplier_line":line_id}
 	func _can_drop_data(_position: Vector2, data: Variant) -> bool:
 		return data is Dictionary and data.has("supplier_line") and data.supplier_line!=line_id
@@ -257,16 +248,16 @@ class SupplierPanel extends BasePanel:
 		return str(profile.commerce.config.towns.get(id,{}).get("name",id))
 	func refresh() -> void:
 		clear();_queue=null;_line_labels.clear()
-		add_child(TDManagementPanels.text("仅展示本地产原料 · 调料随菜系开放 · 共享调料开放任一对应菜系即可",15,TDManagementPanels.MUTED))
+		add_child(TDManagementPanels.text("仅展示本地产原料 · 调料随菜系开放 · 共享调料开放任一对应菜系即可",TDUI.FONT_CAPTION,TDManagementPanels.MUTED))
 		var towns:=HBoxContainer.new();add_child(towns)
 		for id: String in TOWNS:
 			var tab:=TDUI.button(town_name(id),select_town.bind(id));tab.toggle_mode=true;tab.button_pressed=id==selected_town;tab.size_flags_horizontal=Control.SIZE_EXPAND_FILL;towns.add_child(tab)
 		var header:=HBoxContainer.new();add_child(header)
-		_capacity_label=TDManagementPanels.text("",20,TDManagementPanels.GOLD);header.add_child(_capacity_label)
+		_capacity_label=TDManagementPanels.text("",TDUI.FONT_BODY,TDManagementPanels.GOLD);header.add_child(_capacity_label)
 		var level: int=int(suppliers().state.levels[selected_town])
 		var expand:=TDUI.button("扩充产能 · %.2f金币"%(float(suppliers().config.upgrade_base_cents)*level/100),upgrade);expand.disabled=level>=3 or not profile.at_boundary();header.add_child(expand)
 		status_line()
-		var destination:=HBoxContainer.new();destination.add_child(TDManagementPanels.text("收货店铺 / 预算",18));add_child(destination)
+		var destination:=HBoxContainer.new();destination.add_child(TDManagementPanels.text("收货店铺 / 预算",TDUI.FONT_BODY));add_child(destination)
 		var choose:=OptionButton.new();choose.custom_minimum_size=Vector2(300,40);destination.add_child(choose)
 		for store: Dictionary in store_rows():
 			if str(store.id).is_empty(): continue
@@ -274,10 +265,10 @@ class SupplierPanel extends BasePanel:
 			if str(store.id)==selected_store: choose.select(choose.item_count-1)
 		choose.item_selected.connect(func(index:int)->void:selected_store=str(choose.get_item_metadata(index));selected_item="";refresh())
 		build_automation(suppliers().state)
-		add_child(TDManagementPanels.text("产线优先级（拖动卡片空白处，或点 ↑ ↓；上方优先）",18,TDManagementPanels.GOLD))
+		add_child(TDManagementPanels.text("产线优先级（拖动卡片空白处，或点 ↑ ↓；上方优先）",TDUI.FONT_BODY,TDManagementPanels.GOLD))
 		var rows:=suppliers().line_rows(selected_town)
 		for row: Dictionary in rows: build_line(row)
-		if rows.is_empty(): add_child(TDManagementPanels.text("还没有持续产线。添加原料、目标库存和收货店即可开始。",17,TDManagementPanels.MUTED))
+		if rows.is_empty(): add_child(TDManagementPanels.text("还没有持续产线。添加原料、目标库存和收货店即可开始。",TDUI.FONT_BODY,TDManagementPanels.MUTED))
 		add_child(TDUI.button("收起新增产线" if _picker_open else "＋ 新增产线",func()->void:_picker_open=not _picker_open;refresh()))
 		_products=suppliers().catalogue(selected_town,selected_store)
 		var picker:=VBoxContainer.new();picker.visible=_picker_open;add_child(picker)
@@ -285,28 +276,28 @@ class SupplierPanel extends BasePanel:
 		for group: String in ["","vegetable","meat","fruit","seasoning"]:
 			filters.add_child(TDUI.button("全部" if group.is_empty() else GROUPS[group],select_group.bind(group)))
 		_goods=GridContainer.new();_goods.columns=3;picker.add_child(_goods)
-		_order_info=TDManagementPanels.text("",17);picker.add_child(_order_info)
+		_order_info=TDManagementPanels.text("",TDUI.FONT_BODY);picker.add_child(_order_info)
 		var controls:=HBoxContainer.new();picker.add_child(controls)
-		controls.add_child(TDManagementPanels.text("目标库存（包）",17));_quantity=SpinBox.new();_quantity.min_value=1;_quantity.max_value=100;_quantity.step=1;_quantity.value=quantity;controls.add_child(_quantity)
+		controls.add_child(TDManagementPanels.text("目标库存（包）",TDUI.FONT_BODY));_quantity=SpinBox.new();_quantity.min_value=1;_quantity.max_value=100;_quantity.step=1;_quantity.value=quantity;controls.add_child(_quantity)
 		_quantity.value_changed.connect(func(value:float)->void:quantity=int(value);refresh_quote())
 		_order_button=TDUI.button("启用产线",place_order);controls.add_child(_order_button)
 		refresh_goods();refresh_quote()
-		add_child(TDManagementPanels.text("在制 / 在途",21,TDManagementPanels.GOLD))
+		add_child(TDManagementPanels.text("在制 / 在途",TDUI.FONT_SECTION,TDManagementPanels.GOLD))
 		_queue=VBoxContainer.new();add_child(_queue);refresh_queue()
 	func build_line(row: Dictionary) -> void:
 		var box:=TDManagementPanels.card(self)
 		var card:=SupplyLineCard.new();card.line_id=row.id;card.reordered=reorder;card.mouse_filter=Control.MOUSE_FILTER_STOP;box.add_child(card)
 		var head:=HBoxContainer.new();card.add_child(head)
 		var icon:=ProductButton.new();icon.product_id=row.item_id;icon.caption=suppliers().item_name(row.item_id);icon.detail="→ "+_store_name(row.store_id);icon.custom_minimum_size=Vector2(270,68);icon.mouse_filter=Control.MOUSE_FILTER_IGNORE;head.add_child(icon)
-		var status:=TDManagementPanels.text("",15,TDManagementPanels.GOLD);head.add_child(status);_line_labels[row.id]=status
+		var status:=TDManagementPanels.text("",TDUI.FONT_CAPTION,TDManagementPanels.GOLD);head.add_child(status);_line_labels[row.id]=status
 		head.add_child(TDUI.button("↑",shift.bind(row.id,-1)));head.add_child(TDUI.button("↓",shift.bind(row.id,1)))
 		head.add_child(TDUI.button("删除",func()->void:var result:=suppliers().remove_line(row.id);refresh();report(result)))
 		var actions:=HBoxContainer.new();card.add_child(actions)
-		actions.add_child(TDManagementPanels.text("产能",16))
+		actions.add_child(TDManagementPanels.text("产能",TDUI.FONT_CAPTION))
 		actions.add_child(TDUI.button("−",edit_line.bind(row.id,int(row.target_units),maxi(1,int(row.slots)-1),bool(row.enabled))))
-		actions.add_child(TDManagementPanels.text("▣ ".repeat(int(row.slots)),18,TDManagementPanels.GOLD))
+		actions.add_child(TDManagementPanels.text("▣ ".repeat(int(row.slots)),TDUI.FONT_BODY,TDManagementPanels.GOLD))
 		actions.add_child(TDUI.button("＋",edit_line.bind(row.id,int(row.target_units),mini(suppliers().capacity(row.town_id),int(row.slots)+1),bool(row.enabled))))
-		actions.add_child(TDManagementPanels.text("目标（包）",16))
+		actions.add_child(TDManagementPanels.text("目标（包）",TDUI.FONT_CAPTION))
 		var pack: int=int(profile.shop.stock_info(row.item_id).pack_units)
 		var target:=SpinBox.new();target.min_value=.01;target.max_value=100000.0/pack;target.step=.1;target.value=float(row.target_units)/pack;target.custom_minimum_size.x=120;actions.add_child(target)
 		actions.add_child(TDUI.button("应用",func()->void:edit_line(row.id,roundi(target.value*pack),int(row.slots),bool(row.enabled))))
@@ -372,13 +363,13 @@ class SupplierPanel extends BasePanel:
 		var setting: Dictionary=state.automation.get(selected_store,{"budget_cents":int(suppliers().config.continuous.default_budget_cents)})
 		var box:=TDManagementPanels.card(self);var controls:=HBoxContainer.new();box.add_child(controls)
 		var toggle:=CheckButton.new();toggle.text="按菜单托管产线";toggle.button_pressed=bool(setting.get("enabled",false));controls.add_child(toggle)
-		controls.add_child(TDManagementPanels.text("每日上限",16));var budget:=SpinBox.new();budget.min_value=0;budget.max_value=100000;budget.value=float(setting.budget_cents)/100;budget.suffix="金币";budget.custom_minimum_size.x=160;controls.add_child(budget)
+		controls.add_child(TDManagementPanels.text("每日上限",TDUI.FONT_CAPTION));var budget:=SpinBox.new();budget.min_value=0;budget.max_value=100000;budget.value=float(setting.budget_cents)/100;budget.suffix="金币";budget.custom_minimum_size.x=160;controls.add_child(budget)
 		controls.add_child(TDUI.button("应用预算",func()->void:
 			var result:=suppliers().set_automation(selected_store,toggle.button_pressed,roundi(budget.value*100))
 			if result.ok: suppliers().automate()
 			refresh();report(result)))
-		_budget_label=TDManagementPanels.text("",15,TDManagementPanels.MUTED);box.add_child(_budget_label)
-		var hint:=TDManagementPanels.text("手动行也受预算限制 · 睡眠计入次日预算 · 已付货继续送达",14,TDManagementPanels.MUTED)
+		_budget_label=TDManagementPanels.text("",TDUI.FONT_CAPTION,TDManagementPanels.MUTED);box.add_child(_budget_label)
+		var hint:=TDManagementPanels.text("手动行也受预算限制 · 睡眠计入次日预算 · 已付货继续送达",TDUI.FONT_CAPTION,TDManagementPanels.MUTED)
 		hint.tooltip_text="托管不修改手动行。分店还受店铺采购预算限制。停用或删除不会取消已付款批次。修改后请主动保存。";box.add_child(hint)
 	func refresh_queue() -> void:
 		var state:=suppliers().state
@@ -401,8 +392,8 @@ class SupplierPanel extends BasePanel:
 				if not order.has("line_id"): status="旧单 · 剩余 "+time_text(float(job.seconds)-float(job.elapsed))+"（活动时间）"
 				elif float(job.elapsed)<float(job.seconds): status="生产 %d%%"%roundi(float(job.elapsed)/float(job.seconds)*100)
 				else: status="运输剩余 %.1f 游戏分钟"%(float(job.transit_minutes)-float(job.transit_elapsed))
-				_queue.add_child(TDManagementPanels.text("%s %.2f%s · %s → %s · %s"%[suppliers().item_name(job.item_id),float(job.units)/1000,profile.shop.stock_info(job.item_id).unit,town_name(order.town_id),_store_name(order.store_id),status],15))
-		if shown==0: _queue.add_child(TDManagementPanels.text("暂无待收货批次。",15,TDManagementPanels.MUTED))
+				_queue.add_child(TDManagementPanels.text("%s %.2f%s · %s → %s · %s"%[suppliers().item_name(job.item_id),float(job.units)/1000,profile.shop.stock_info(job.item_id).unit,town_name(order.town_id),_store_name(order.store_id),status],TDUI.FONT_CAPTION))
+		if shown==0: _queue.add_child(TDManagementPanels.text("暂无待收货批次。",TDUI.FONT_CAPTION,TDManagementPanels.MUTED))
 	static func time_text(seconds: float) -> String:
 		if seconds>=3600: return "%.1f 小时"%(seconds/3600)
 		if seconds>=60: return "%.1f 分钟"%(seconds/60)

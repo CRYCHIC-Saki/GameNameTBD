@@ -1,5 +1,32 @@
 # 公共契约：v3完整烹饪，兼容v1/v2历史入口
 
+## D073 — 后厨员工的实物与位置
+- ShopView装配唯一TDKitchenStaff，tick(活动秒)/next_boundary并入FullKitchen的现有时钟；world.staff_source只投影rows，渲染或隐藏不推进业务。暂停/剧情冻结一致，不新增Autoload或存档权威。
+- jobs按锅索引且核对真实session_id；每厨师拥有独立TDKitchenHandling。取料才调用Shop消耗；切配品带ID/历史/到期日transfer_to锅，不二次扣料。staff_prep是实际TDCookingLane，和玩家prep分离，但物理砧板由board_owner互斥；Lane.external_operator禁止玩家接管员工锅。
+- 每份主料按primary顺序经冰箱→对应preparation_sheets→锅；全部投完才start_automatic。所有阶段先实际抵达，再调用原规则。完成后take_dish→走出餐口→原deliver信号进入TableService；重复tick/重读不重复发菜、收款或扣料。
+- action_completed是只读观察事件：action/ingredient/cook/lane/session_id/position/time（厨房活动秒）；不作为外部发奖或扣料指令。zero-time更新只完成到点的真实QTE，不制造时间/成功。两种更新时间步的连续属性允许1e-5绝对浮点误差；库存、身份、顺序须精确相同。
+- 玩家手/板/锅与员工分开；撤任/收夜取消员工准备、保留冷料加工/到期日，热锅由原夜末清理。活跃员工任务阻止边界保存；close断开回调，不写真实存档。Profile9及D059保存时点不变。
+
+## D072-R1 — 原生剧情运行（覆盖下方 D072）
+- intro 的顺序/台词/角色/自动/快进来自 content/story/vn/scenario/intro/script.txt，由真正的 VNEngineStoryRunner/CommandBus 执行；原 opening.json 保留为已审核来源和后续章节权威，测试逐句比对。禁止再同时 tick 原 TDDialogue。
+- TDVisualNovelStage.start(name,request_name)/reset/set_paused 装配 Main 与局部 SubViewport；block_started/line_started/completed 为宿主信号。每次 start/reset 增加代号，旧完成/恢复回调拒绝。td_cg 与 td_name 各独占一个原生逻辑节点，完成一次恢复原 CommandBus。
+- View.talk 在 intro 仅投影供 Shell/StoryGuide 读取的 context/display_kind/speaker/body；公开 visible/closed/hero_named 不变。正常章节完成才 last_completed=true，取消不推进任务；回看不触发业务。CG仍按14/6/10秒及原暂停策略执行。
+- Main.host_managed=true 时 SaveData/Settings仅内存、SaveSystem拒绝独立存读、回滚和F5/F9也拒绝；Profile9/D059仍唯一钱物任务存档，不能恢复任意对白现场。Cast每次独立复制，昵称不改共享模板。
+- 原生配置和立绘Atlas纳入导出清单，插件烘焙 .txt.res，导出检查明确验证。完整本地补丁清单见 addons/vn_engine/TOWN_DINER_INTEGRATION.md。普通交谈不迁移。
+
+
+## D072 — 嵌入式视觉小说呈现
+TDVisualNovelStage仅接收TDDialogue只读呈现和最近CG ID；supports限定已注册剧情，present不修改拍序/任务/库存，reset清理角色/过渡，set_paused冻结全部呈现Tween。背景/表情仍只读Resource。TDDialogueView维持talk/visible/closed/hero_named契约；正常完成仍由StoryGuide调用原任务接口，取消不推进，回看不写昵称。严禁通过VNEngineMain/saves/rollback形成第二份存档。此轮只接intro；新增场景须显式登记及验证不重复发奖。
+
+
+## D071 出餐口与送桌契约
+- 正式 Shell 设置 `Shop.table_service_enabled=true`。`Shop.deliver(order_id, delivered_snapshot)` 此时只排入 `TDTableService`；`Shop._complete_delivery` 仅由验证成功的送桌调用完成评分、社会账户付款、退款、奖励与状态转换。独立旧测试/调试入口默认 false，不作为本轮物理送餐的验证替身。
+- TableService 由 Shop 持有，反向 WeakRef，无 Autoload。`place/take/put_back/serve/discard` 返回 TDOutcome；`rows/get_plate/for_order` 返回深副本。盘字段 `id=dish_id/order_id/carrier/dish`；carrier 空串表示在出餐口，player/稳定员工ID表示独占认领。重复入盘、占用认领、错桌和陈旧回调失败且不付款；被丢弃或送出的盘 ID 不允许再次排入。
+- Shop 保持待客订单的原 deadline；排盘既不完成订单也不计经济付款。超时/取消和新客落座后 reconcile 解绑/重绑最早同菜待单；真实熟菜参与可供库存分配，已有匹配盘的订单不重复占原料。ShopView 厨师调度跳过已有盘的订单，仍用实际厨房工序。
+- RestaurantWorld 验证暂停和实际桌边距离，再调用 serve；统一 dining_tick 驱动隐藏场景服务员，绘制不得推进取盘或收款。已雇服务员与玩家共用 TableService，员工撤任返还认领；不绕过真实路径。
+- 教程 `story:trial` 通过同一 TableService 的显式 `trial_check/trial_received` 接口转交 Opening，正式菜谱评分在真实交给阿铃时发生。Guide.close 解绑定回调；无虚构营业单、无家庭扣款。
+- 未送盘阻止边界保存和跨日；普通退出仍按 D059 放弃未保存进度。强制夜末清理只写 pass_waste，不再次扣库存。旧档不迁移新运行态，Profile9不变，未知存档版本仍拒绝。
+
 ## D063 集成契约
 Profile新增employees/suppliers，schema9明确兼容1–8；唯一钱账仍Shop，分店库存仍Branches，员工唯一权威EmployeeRoster，Layout的Crew是主店投影。新采购任务含来源镇/目标店/物品量/成本/真实剩余秒/幂等token，旧货单沿原路完成，不复制旧队列。经营与供应自动开关分别存档，关闭不取消已付订单。分店receive_supply原子接收带成本库存，不经过主店；有效店引用必须完整校验。
 GameHUD只发action_requested，Shell唯一负责窗口/暂停/快捷键；面板调用规则方法，不改余额/库存/好感。岗位工资按日首次履职锁定归属，不靠调岗重复付/免付，低现金欠费仍计当日经营费用。新抽卡不算经营材料成本/经营净利润。

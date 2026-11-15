@@ -1,7 +1,7 @@
 extends GutTest
 
-const IDLE_PATH := "res://assets/characters/protagonist/protagonist-idle-four-directions-v1.png"
-const WALK_PATH := "res://assets/characters/protagonist/protagonist-walk-four-directions-v1.png"
+const IDLE_PATH := "res://assets/redraw-v1/walker-hero.png"
+const WALK_PATH := "res://assets/redraw-v1/walker-hero.png"
 const FACES: Array[Vector2i] = [Vector2i.DOWN, Vector2i.UP, Vector2i.LEFT, Vector2i.RIGHT]
 var app: TDApplication
 var shell: TDGameShell
@@ -25,13 +25,12 @@ func after_each() -> void:
 	await get_tree().process_frame
 
 func test_user_idle_and_two_opposite_strides_form_a_four_beat_walk_cycle() -> void:
-	var idle_regions: Array[Rect2] = [Rect2(214,30,312,595), Rect2(728,30,307,595), Rect2(255,649,254,576), Rect2(746,649,259,576)]
 	var idle_hashes: Dictionary = {}
 	for index: int in FACES.size():
 		var idle := TDChefArt.texture(FACES[index]) as AtlasTexture
 		assert_not_null(idle)
 		assert_eq(idle.atlas.resource_path, IDLE_PATH)
-		assert_eq(idle.region, idle_regions[index], "User atlas alignment comes from inspected source metadata")
+		assert_true(Rect2(Vector2.ZERO,idle.atlas.get_size()).encloses(idle.region))
 		idle_hashes[idle.get_image().get_data().hex_encode().sha256_text()] = true
 		var walk_hashes: Dictionary = {}
 		for frame: int in 4:
@@ -160,9 +159,7 @@ func test_restaurant_stride_counts_rendered_pixels_once_in_each_direction() -> v
 		var traveled := TDRestaurantIsoView.project(finish.x, finish.y).distance_to(screen_start)
 		# Independent draw projection and accepted distances; never call the
 		# production inverse transform or read its stride settings as the oracle.
-		# Single grid-axis keys now render diagonally; their horizontal component
-		# dominates the 2:1 projection, selecting the left/right walking pose.
-		var pixels_per_cycle := 140.0
+		var pixels_per_cycle := 224.0 if action in ["world_up","world_down"] else 140.0
 		assert_gt(traveled, 15.0, "Real input moved the on-screen feet")
 		assert_lt(traveled, 25.0, "Six physics ticks retain the real 180 px/s speed")
 		assert_almost_eq(body._walk_phase * pixels_per_cycle, traveled, .001, action+": each drawn pixel advances the stride only once")

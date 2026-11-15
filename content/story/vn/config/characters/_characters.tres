@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="VNEngineCast" format=3]
+
+[ext_resource type="Script" path="res://addons/vn_engine/src/defs/cast_member.gd" id="1_ler6f"]
+[ext_resource type="Script" path="res://addons/vn_engine/src/defs/cast.gd" id="2_3bajk"]
+
+[sub_resource type="Resource" id="Resource_enigh"]
+script = ExtResource("1_ler6f")
+id = "hero"
+display_name = "？？？"
+default_outfit = "base"
+default_pose = "base"
+default_expression = "calm"
+sprite_scale = 0.64
+side_image = false
+blip = "off"
+
+[sub_resource type="Resource" id="Resource_b4t32"]
+script = ExtResource("1_ler6f")
+id = "aling"
+display_name = "阿铃"
+default_outfit = "base"
+default_pose = "base"
+default_expression = "calm"
+sprite_scale = 0.64
+side_image = false
+blip = "off"
+
+[resource]
+script = ExtResource("2_3bajk")
+characters = Array[ExtResource("1_ler6f")]([SubResource("Resource_enigh"), SubResource("Resource_b4t32")])

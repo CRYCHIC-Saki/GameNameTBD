@@ -9,9 +9,9 @@ var positions: Dictionary={}
 var icons: Dictionary={}
 var zoom: float=1.0
 var _routes: Dictionary={}
-const GOLD:=Color("d3b477")
-const JADE:=Color("9cc5a0")
-const TEXT:=Color("e4d9bc")
+const GOLD:=TDUI.ORANGE
+const JADE:=Color("315836")
+const TEXT:=TDUI.INK
 const ROW_HEIGHT:float=208.0
 
 func rebuild() -> void:
@@ -41,11 +41,11 @@ func rebuild() -> void:
 
 func _draw() -> void:
 	draw_set_transform(Vector2.ZERO,0,Vector2.ONE*zoom)
-	draw_rect(Rect2(Vector2.ZERO,size/zoom),Color("19221c"))
+	TDUI.paint_wood(self,Rect2(Vector2.ZERO,size/zoom),TDUI.Surface.FRAME)
 	for y:int in range(0,int(size.y/zoom),20):
-		for x:int in range(0,720,20): draw_circle(Vector2(x,y),.7,Color("2e3829"))
-	var font:=ThemeDB.fallback_font
-	draw_string(font,Vector2(248,32),"食 谱 研 习  ·  前 置 图 谱",HORIZONTAL_ALIGNMENT_LEFT,-1,14,Color("99a08a"))
+		for x:int in range(0,720,20): draw_circle(Vector2(x,y),.7,Color("c7a36e"))
+	var font:=TDUI.font()
+	draw_string(font,Vector2(248,32),"食 谱 研 习  ·  前 置 图 谱",HORIZONTAL_ALIGNMENT_LEFT,-1,TDUI.FONT_CAPTION,Color("65503a"))
 	# Draw focus last so inactive crossings cannot obscure the selected relation.
 	for pass_index:int in 3:
 		for id:String in positions:
@@ -55,8 +55,8 @@ func _draw() -> void:
 				var layer:int=2 if focused else (1 if active else 0)
 				if layer!=pass_index: continue
 				var path:=edge_path(p,id)
-				var col:Color=GOLD if focused else (Color(JADE,.65) if active else Color("2e382e"))
-				if focused: draw_polyline(path,Color("19221c"),8,true)
+				var col:Color=GOLD if focused else (Color(JADE,.65) if active else Color("af956d"))
+				if focused: draw_polyline(path,Color("f1ce99"),8,true)
 				draw_polyline(path,col,3 if focused else 1.4,true)
 				if focused:
 					draw_circle(path[0],3,GOLD)
@@ -65,22 +65,22 @@ func _draw() -> void:
 	for id:String in positions:
 		var row:=session.catalog.node(id); var point:Vector2=positions[id]; var state:=session.status(id)
 		var known:bool=state=="UNLOCKED"; var ready:bool=state in ["AVAILABLE","RESEARCHABLE"]
-		var color:Color=JADE if known else (GOLD if ready else Color("67745c"))
+		var color:Color=JADE if known else (GOLD if ready else Color("65503a"))
 		var matches:bool=query.is_empty() or (row.name+row.ingredients+id).to_lower().contains(query.to_lower())
 		var alpha:float=1.0 if matches else .22
 		var prerequisite:bool=edge_selected(id,selection)
 		var rect:=Rect2(point-Vector2(36,36),Vector2(72,72))
 		draw_rect(Rect2(rect.position+Vector2(4,5),rect.size),Color("101712"))
-		draw_rect(rect,Color("334b36") if known else Color("263027")); draw_rect(rect,Color(color,alpha),false,2)
+		TDUI.paint_wood(self,rect,TDUI.Surface.SELECTED if id==selection else TDUI.Surface.CARD); draw_rect(rect,Color(color,alpha),false,2)
 		draw_rect(rect.grow(-5),Color(color,alpha*.45),false,1)
 		if id==selection: draw_rect(rect.grow(5),GOLD,false,2)
 		elif prerequisite: draw_rect(rect.grow(4),Color(GOLD,.75),false,1)
-		if not icons.has(id): icons[id]=load("res://assets/kitchen/recipe-icons/%s.png"%id)
+		if not icons.has(id): icons[id]=TDRedrawArt.dish(id)
 		if icons[id]!=null: draw_texture_rect(icons[id],Rect2(point-Vector2(27,22),Vector2(54,45)),false,Color(1,1,1,alpha if known or ready or id==selection or prerequisite else alpha*.5))
 		var title:String=row.name
-		draw_string(font,point+Vector2(-72,58),title,HORIZONTAL_ALIGNMENT_CENTER,144,15,Color(GOLD if prerequisite else color,alpha))
+		draw_string(font,point+Vector2(-72,58),title,HORIZONTAL_ALIGNMENT_CENTER,144,TDUI.FONT_CAPTION,Color(GOLD if prerequisite else color,alpha))
 		var tag:String="已掌握" if known else ("可研习" if ready else ("待谱面" if state=="CHART_PENDING" else "未解锁"))
-		draw_string(font,point+Vector2(-72,80),"%s · %s · %d SP"%[id,tag,int(row.cost)],HORIZONTAL_ALIGNMENT_CENTER,144,10,Color(color,alpha*.8))
+		draw_string(font,point+Vector2(-72,80),"%s %s %dSP"%[id,tag,int(row.cost)],HORIZONTAL_ALIGNMENT_CENTER,144,TDUI.FONT_MICRO,Color(color,alpha*.8))
 	draw_set_transform(Vector2.ZERO)
 
 func _gui_input(event: InputEvent) -> void:

@@ -84,7 +84,7 @@ func test_real_input_and_repeated_room_switches_keep_passages_clear() -> void:
 		# The room grid can change display scale; walking speed is a screen-space contract.
 		assert_gt(new_screen.x,old_screen.x+30.0,"WASD moves in a clear passage on screen")
 		var displacement:=new_screen-old_screen
-		assert_almost_eq(displacement.y,displacement.x*.5,.1,"D follows the visible 2:1 tile axis (D059)")
+		assert_almost_eq(displacement.y,0.0,.1,"D moves horizontally on screen (D071)")
 		get_tree().paused=true;before=room.player_position()
 		Input.action_press("world_down");await wait_physics_frames(3);Input.action_release("world_down")
 		assert_eq(room.player_position(),before);get_tree().paused=false

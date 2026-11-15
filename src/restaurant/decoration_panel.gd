@@ -6,7 +6,7 @@ signal category_changed
 signal done
 
 const CATEGORIES: Array[String]=["地面","墙壁","陈设","餐桌","座椅","服务台"]
-const PANEL_HEIGHT: float=288.0
+const PANEL_HEIGHT: float=320.0
 const GROUPS: Dictionary={"陈设":["screen","kiosk"],"餐桌":["dining_table","hotpot_table"],"座椅":["waiting_seat","booth","sofa","stool","child_seat"],"服务台":["welcome_desk","cashier","order_counter"]}
 var catalog: TDRestaurantCatalog
 var category: String="餐桌"
@@ -35,17 +35,12 @@ class Card extends Button:
 			for y in range(3): draw_line(Vector2(25,14+y*23),Vector2(size.x-25,14+y*23),c.darkened(.24),2)
 		var font:=get_theme_font("font")
 		var lines:=details.split("\n")
-		for index in lines.size(): draw_string(font,Vector2(10,112+index*21),lines[index],HORIZONTAL_ALIGNMENT_LEFT,size.x-20,15,Color("f7ecd1"))
+		for index in lines.size(): draw_string(font,Vector2(10,118+index*24),lines[index],HORIZONTAL_ALIGNMENT_LEFT,size.x-20,TDUI.FONT_CAPTION,TDUI.INK)
 
 func _ready() -> void:
 	theme=TDUI.theme()
 	process_mode=Node.PROCESS_MODE_PAUSABLE
-	var selected_style:=theme.get_stylebox("pressed","Button").duplicate() as StyleBoxFlat
-	selected_style.bg_color=Color("4e6656");selected_style.border_color=Color("e9c780")
-	selected_style.set_border_width_all(2);theme.set_stylebox("pressed","Button",selected_style)
-	var background:=StyleBoxFlat.new();background.bg_color=Color("142c29")
-	background.border_color=Color("8c9470");background.border_width_top=2
-	add_theme_stylebox_override("panel",background)
+	add_theme_stylebox_override("panel",TDUI.wood(TDUI.Surface.FRAME,0))
 	var margin:=MarginContainer.new()
 	for side: String in ["left","right","top","bottom"]: margin.add_theme_constant_override("margin_"+side,12)
 	add_child(margin)
@@ -56,9 +51,9 @@ func _ready() -> void:
 		tab.custom_minimum_size=Vector2(76,34);tab.pressed.connect(select_category.bind(title));row.add_child(tab);_tabs.append(tab)
 	var gap:=Control.new();gap.size_flags_horizontal=Control.SIZE_EXPAND_FILL;row.add_child(gap)
 	var finish_button:=Button.new();finish_button.text="完成布置";finish_button.pressed.connect(func()->void: done.emit());row.add_child(finish_button)
-	var scroll:=ScrollContainer.new();scroll.custom_minimum_size.y=178;scroll.vertical_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;column.add_child(scroll)
+	var scroll:=ScrollContainer.new();scroll.custom_minimum_size.y=190;scroll.vertical_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;column.add_child(scroll)
 	_cards=HBoxContainer.new();_cards.add_theme_constant_override("separation",10);scroll.add_child(_cards)
-	_info=TDUI.label("选择家具放置 · 按住家具拖动 · 左上角删除 / 右上角逆时针旋转 · 右键取消",14)
+	_info=TDUI.label("选择家具放置 · 按住家具拖动 · 左上角删除 / 右上角逆时针旋转 · 右键取消",TDUI.FONT_CAPTION)
 	# A wrapping label can demand hundreds of pixels while its container is still width 0.
 	_info.autowrap_mode=TextServer.AUTOWRAP_OFF
 	_info.clip_text=true
@@ -80,7 +75,7 @@ func refresh_cards() -> void:
 	elif category=="墙壁": ids=TDRestaurantLayout.WALL_FINISHES.duplicate();ids.append("storefront")
 	else: ids=GROUPS.get(category,[])
 	for value: String in ids:
-		var card:=Card.new();card.name="Item_"+value;card.custom_minimum_size=Vector2(178,176);card.toggle_mode=true;card.button_pressed=selected==value;card.focus_mode=Control.FOCUS_NONE
+		var card:=Card.new();card.name="Item_"+value;card.custom_minimum_size=Vector2(224,188);card.toggle_mode=true;card.button_pressed=selected==value;card.focus_mode=Control.FOCUS_NONE
 		var definition:=catalog.furniture(value)
 		var finish: bool=definition.is_empty()
 		if finish:

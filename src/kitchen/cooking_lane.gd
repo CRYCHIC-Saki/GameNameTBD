@@ -78,6 +78,7 @@ var _customer_feedback: Array=[]
 var judgement_feedback: Dictionary = {}
 var _feedback_token: String = ""
 var automatic: bool = false
+var external_operator: String = ""
 var _automatic_preparation: Array = []
 var _automatic_target: String = ""
 
@@ -251,6 +252,7 @@ func advance(delta: float) -> void:
 	refresh()
 
 func input_action(action: String, pressed: bool, value: float = 1.0, operation_token: String = "") -> TDOutcome:
+	if automatic: return TDOutcome.new(false,"AUTOMATIC","自动制作不接收玩家操作。")
 	if pc_controls and action in ["adjust", "drag", "hover"] and thermal_qte != null:
 		_sequence += 1
 		var result := thermal_qte.input(_sequence, clock.qte_sec, action, pressed, value)
@@ -533,7 +535,7 @@ func _run_plan_step() -> void:
 		_plan_steps.select(mini(_plan_steps.selected + 1, _plan_steps.item_count - 1))
 
 func _build() -> void:
-	_title = TDUI.label("", 22, TDUI.ORANGE)
+	_title = TDUI.label("", TDUI.FONT_SECTION, TDUI.ORANGE)
 	add_child(_title)
 	var row := _row(self)
 	_recipes = OptionButton.new(); _recipes.fit_to_longest_item = false; _recipes.clip_text = true
@@ -574,7 +576,7 @@ func _build() -> void:
 		var result := session.move_plating(id, point, drop)
 		if not result.ok or result.code == "DISCARDED": _status.text = result.code + "：盘外松手，该份已报废。"
 		refresh())
-	_hint = TDUI.label("", 15, TDUI.MUTED); _hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; add_child(_hint)
+	_hint = TDUI.label("", TDUI.FONT_CAPTION, TDUI.MUTED); _hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; add_child(_hint)
 	_primary = Button.new(); _primary.focus_mode = Control.FOCUS_NONE
 	_primary.button_down.connect(func() -> void: input_action("primary", true))
 	_primary.button_up.connect(func() -> void: input_action("primary", false))
@@ -587,8 +589,8 @@ func _build() -> void:
 		var d: String = direction
 		_direction_row.add_child(TDUI.button({"up":"↑", "left":"←", "down":"↓", "right":"→"}[d], func() -> void:
 			input_action(d, true); input_action(d, false)))
-	_status = TDUI.label("", 15, TDUI.ORANGE); _status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; add_child(_status)
-	_summary = TDUI.label("", 14); add_child(_summary)
+	_status = TDUI.label("", TDUI.FONT_CAPTION, TDUI.ORANGE); _status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; add_child(_status)
+	_summary = TDUI.label("", TDUI.FONT_CAPTION); add_child(_summary)
 	row = _row(self)
 	row.add_child(TDUI.button("交付试吃", func() -> void: perform("deliver")))
 	row.add_child(TDUI.button("回锅", func() -> void: perform("rework")))
@@ -613,8 +615,8 @@ func _build() -> void:
 	row = _row(library_tab)
 	_plan_steps = OptionButton.new(); _plan_steps.fit_to_longest_item = false; _plan_steps.clip_text = true; _plan_steps.size_flags_horizontal = Control.SIZE_EXPAND_FILL; row.add_child(_plan_steps)
 	row.add_child(TDUI.button("按方案执行此步", _run_plan_step))
-	library_tab.add_child(TDUI.label("只保存方案；可自由修改用料/工序后另存版本。成绩必须重新操作获得。", 14, TDUI.MUTED))
-	var test_toggle := CheckButton.new(); test_toggle.text = "显示 TEST_ONLY 机制测试食谱 / 食材"; test_toggle.add_theme_font_size_override("font_size", 14)
+	library_tab.add_child(TDUI.label("只保存方案；可自由修改用料/工序后另存版本。成绩必须重新操作获得。", TDUI.FONT_CAPTION, TDUI.MUTED))
+	var test_toggle := CheckButton.new(); test_toggle.text = "显示 TEST_ONLY 机制测试食谱 / 食材"; test_toggle.add_theme_font_size_override("font_size", TDUI.FONT_CAPTION)
 	test_toggle.toggled.connect(func(value: bool) -> void: _test_enabled = value; refresh_recipes(); refresh_library())
 	add_child(test_toggle)
 
@@ -645,6 +647,14 @@ func start_preparation() -> TDOutcome:
 	var id: String = str(recipe.get("preparation_sheets",{}).get(ingredient,""))
 	if id.is_empty(): return TDOutcome.new(false,"NO_PREPARATION_CHART","这份菜谱未配置该食材的备菜谱。")
 	return start_sheet(id)
+
+func start_automatic_preparation(food: TDCookingSession, profile: TDCookingCatalog) -> TDOutcome:
+	if qte!=null or thermal_qte!=null or (sheet!=null and sheet.running): return TDOutcome.new(false,"BUSY")
+	# A single portable ingredient is cut at the shared board; never chain into a stove sheet.
+	automatic=false;_automatic_preparation.clear();_automatic_target=""
+	catalog=profile;_content=profile.data();bind_preparation(food)
+	session.set_production_mode("automatic");automatic=true
+	return start_preparation()
 
 func use_recipe_profile(value: TDCookingCatalog, identity: String, customer: Dictionary = {}) -> TDOutcome:
 	var changed := session.select_recipe(value.for_recipe(identity))

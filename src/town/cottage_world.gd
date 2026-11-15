@@ -2,7 +2,7 @@ class_name TDCottageWorld
 extends Node2D
 ## A physical room. Date, save and business decisions belong to the application.
 signal object_requested(action:String)
-const FURNITURE: Texture2D=preload("res://assets/cottage/furniture-v1.png")
+const FURNITURE: Texture2D=preload("res://assets/redraw-v1/cottage.png")
 const ROOM:=Rect2(280,160,720,480)
 const BED:=Rect2(796,210,132,172)
 const BED_ANCHOR:=Vector2(752,314)
@@ -18,7 +18,7 @@ var _hud:CanvasLayer
 var _prompt:Label
 
 func _ready() -> void:
-	texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST
+	texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
 	var walls:=StaticBody2D.new();walls.collision_layer=64;walls.collision_mask=0;add_child(walls)
 	for rect:Rect2 in [Rect2(248,128,784,32),Rect2(248,640,784,32),Rect2(248,160,32,480),Rect2(1000,160,32,480),BED,Rect2(710,218,54,60)]:
 		var collision:=CollisionShape2D.new();var shape:=RectangleShape2D.new();shape.size=rect.size;collision.shape=shape;collision.position=rect.get_center();walls.add_child(collision)
@@ -29,7 +29,7 @@ func _ready() -> void:
 	player.position=BED_ANCHOR;player.face(Vector2.RIGHT)
 	camera=Camera2D.new();camera.position=Vector2(640,400);add_child(camera)
 	_hud=CanvasLayer.new();add_child(_hud)
-	_prompt=TDUI.label("",20);_prompt.position=Vector2(290,690);_prompt.size=Vector2(800,60);_hud.add_child(_prompt)
+	_prompt=TDUI.label("",TDUI.FONT_BODY);_prompt.position=Vector2(290,690);_prompt.size=Vector2(800,60);_hud.add_child(_prompt)
 	set_presented(false)
 
 func set_presented(value:bool,at_bed:bool=false) -> void:
@@ -90,4 +90,4 @@ func _draw() -> void:
 	draw_rect(Rect2(DOOR-Vector2(48,12),Vector2(96,48)),Color("543c30"))
 	for i: int in 3:
 		draw_rect(Rect2(DOOR+Vector2(-44,-7+i*12),Vector2(88,10)),Color("ba9e70"))
-	draw_string(ThemeDB.fallback_font,Vector2(545,718),"一盏灯，一处归途",HORIZONTAL_ALIGNMENT_CENTER,190,19,Color("ead7a7"))
+	draw_string(TDUI.font(),Vector2(545,718),"一盏灯，一处归途",HORIZONTAL_ALIGNMENT_CENTER,190,TDUI.FONT_BODY,Color("ead7a7"))

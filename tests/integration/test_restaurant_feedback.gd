@@ -11,9 +11,9 @@ func after_each() -> void:
 	for action: String in ["world_left","world_right","world_up","world_down"]: Input.action_release(action)
 	room.close()
 
-func test_grid_keys_follow_each_floor_edge_and_combinations_keep_visible_speed() -> void:
+func test_keys_follow_screen_axes_and_combinations_keep_visible_speed() -> void:
 	var keys: Array=[["world_right"],["world_left"],["world_down"],["world_up"],["world_right","world_up"],["world_left","world_up"],["world_right","world_down"],["world_left","world_down"]]
-	var expected: Array[Vector2]=[Vector2(2,1),Vector2(-2,-1),Vector2(-2,1),Vector2(2,-1),Vector2.RIGHT,Vector2.UP,Vector2.DOWN,Vector2.LEFT]
+	var expected: Array[Vector2]=[Vector2.RIGHT,Vector2.LEFT,Vector2.DOWN,Vector2.UP,Vector2(1,-1),Vector2(-1,-1),Vector2(1,1),Vector2(-1,1)]
 	for index: int in keys.size():
 		room.teleport_player(Vector2i(6,8));await wait_physics_frames(2)
 		for action: String in keys[index]: Input.action_press(action)
@@ -22,7 +22,7 @@ func test_grid_keys_follow_each_floor_edge_and_combinations_keep_visible_speed()
 		await get_tree().physics_frame
 		var after:=room.player_position()/64.0
 		var travel:=TDRestaurantIsoView.project(after.x,after.y)-TDRestaurantIsoView.project(before.x,before.y)
-		assert_gt(travel.normalized().dot(expected[index].normalized()),.9999,"Actual projected movement follows tile edges")
+		assert_gt(travel.normalized().dot(expected[index].normalized()),.9999,"Actual projected movement follows screen axes")
 		assert_almost_eq(travel.length(),3.0,.05,"All eight headings remain 180px/s")
 		for action: String in keys[index]: Input.action_release(action)
 
@@ -107,3 +107,15 @@ func test_default_player_mapping_is_unchanged_outside_restaurant() -> void:
 	for heading: Vector2 in [Vector2.UP,Vector2.DOWN,Vector2.LEFT,Vector2.RIGHT]:
 		assert_eq(body.screen_input(heading),heading)
 	body.free()
+
+func test_pending_information_layout_during_scene_removal_is_safe() -> void:
+	room._order_board.text="营业信息更新后立即离开餐厅"
+	room._fit_order_board.call_deferred()
+	var parent:=room.get_parent()
+	parent.remove_child(room)
+	await wait_process_frames(2)
+	assert_false(room.is_inside_tree())
+	parent.add_child(room)
+	room.set_info_top(280)
+	await wait_process_frames(2)
+	assert_eq(room._order_plate.position.y,280.0,"Reentry can still arrange the existing information panel")

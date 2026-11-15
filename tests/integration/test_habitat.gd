@@ -104,7 +104,8 @@ func test_music_context_hidden_kitchen_pause_and_real_qte() -> void:
 	for id:String in ["casual","service","cooking"]:
 		var stream:=TDGameMusic.loop_track(id)
 		assert_eq(stream.loop_mode,AudioStreamWAV.LOOP_FORWARD);assert_gt(stream.get_length(),15.0)
-		assert_eq(stream.loop_end,roundi((24.0 if id=="casual" else (32.0*60/104 if id=="service" else 16.0))*stream.mix_rate),"Loop endpoints use samples, including compressed imports")
+		assert_eq(stream.loop_begin,0)
+		assert_eq(stream.loop_end,source_pcm_frames("res://assets/audio/%s.wav"%id),"Loop covers every source sample, including compressed imports")
 	assert_true(shell.profile.buy({"tomato":1000}).ok)
 	shell.start_day();await get_tree().process_frame;assert_eq(shell.music.context,"service")
 	shell.show_pause();await get_tree().process_frame;assert_true(shell.music.player.stream_paused)
@@ -117,9 +118,32 @@ func test_music_context_hidden_kitchen_pause_and_real_qte() -> void:
 	assert_not_null(driver.kitchen.prep.qte)
 	await get_tree().process_frame;await get_tree().process_frame
 	assert_true(driver.kitchen.music_audible());assert_eq(shell.music.context,"silent")
-	assert_eq(driver.kitchen.beat_audio.stream.get_length(),16.0,"32-beat music matches the 120 BPM chart")
+	assert_eq((driver.kitchen.beat_audio.stream as AudioStreamWAV).loop_end,source_pcm_frames("res://assets/audio/cooking.wav"),"Kitchen uses the current cooking track, not the replaced 16-second placeholder")
 	var stream:AudioStream=driver.kitchen.beat_audio.stream
 	shell._pause(true);assert_true(driver.kitchen.beat_audio.stream_paused)
 	shell._pause(false);assert_same(driver.kitchen.beat_audio.stream,stream)
 	shell.travel("restaurant");await get_tree().process_frame;await get_tree().process_frame
 	assert_false(driver.kitchen.music_audible());assert_lte(driver.kitchen.beat_audio.volume_db,-70.0)
+
+# Independently read source RIFF metadata; do not derive expectations from the
+# imported AudioStream's duration or the production loop calculation.
+func source_pcm_frames(path: String) -> int:
+	var file:=FileAccess.open(path,FileAccess.READ)
+	assert_not_null(file)
+	if file==null: return -1
+	assert_eq(file.get_buffer(4).get_string_from_ascii(),"RIFF")
+	file.seek(8)
+	assert_eq(file.get_buffer(4).get_string_from_ascii(),"WAVE")
+	var frame_bytes: int=0
+	var data_bytes: int=0
+	while file.get_position()+8<=file.get_length():
+		var kind:=file.get_buffer(4).get_string_from_ascii()
+		var length:=file.get_32()
+		var start:=file.get_position()
+		if kind=="fmt ":
+			file.seek(start+12);frame_bytes=file.get_16()
+		elif kind=="data": data_bytes=length
+		file.seek(start+length+length%2)
+	file.close()
+	assert_gt(frame_bytes,0);assert_gt(data_bytes,0)
+	return int(data_bytes/frame_bytes) if frame_bytes>0 else -1

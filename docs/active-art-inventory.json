@@ -1,0 +1,406 @@
+{
+  "date": "2026-11-12",
+  "note": "当前49张使用PNG与1张兼容备用；人物表情改用ui-wood-v1/portrait-*-v2.png。旧图保留。",
+  "files": [
+    {
+      "file": "assets/ui-wood-v1/portrait-hero-v2.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/portrait-hero-v2.png",
+      "use": "焰子对话立绘",
+      "layout": "3列×2行：平静、高兴、惊讶、疑惑、生气、难过",
+      "where": "src/ui/redraw_art.gd；src/ui/dialogue_view.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/ui-wood-v1/portrait-aling-v2.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/portrait-aling-v2.png",
+      "use": "阿铃对话立绘",
+      "layout": "3列×2行：平静、高兴、惊讶、疑惑、生气、难过",
+      "where": "src/ui/redraw_art.gd；src/ui/dialogue_view.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/ui-wood-v1/portrait-chen-v2.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/portrait-chen-v2.png",
+      "use": "灰烬司祭对话立绘",
+      "layout": "3列×2行：平静、高兴、惊讶、疑惑、生气、难过",
+      "where": "src/ui/redraw_art.gd；src/ui/dialogue_view.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/ui-wood-v1/portrait-luo-v2.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/portrait-luo-v2.png",
+      "use": "罗厄对话立绘",
+      "layout": "3列×2行：平静、高兴、惊讶、疑惑、生气、难过",
+      "where": "src/ui/redraw_art.gd；src/ui/dialogue_view.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/redraw-v1/walker-hero.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/walker-hero.png",
+      "use": "焰子地图行走",
+      "layout": "4列×3行：正面/背面/左/右；待机/步态1/步态2",
+      "where": "src/world/chef_art.gd；src/story/story_art.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/redraw-v1/walker-aling.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/walker-aling.png",
+      "use": "阿铃地图行走",
+      "layout": "4列×3行：正面/背面/左/右；待机/步态1/步态2",
+      "where": "src/world/chef_art.gd；src/story/story_art.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/redraw-v1/walker-chen.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/walker-chen.png",
+      "use": "灰烬司祭地图行走",
+      "layout": "4列×3行：正面/背面/左/右；待机/步态1/步态2",
+      "where": "src/world/chef_art.gd；src/story/story_art.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/redraw-v1/diner-walk.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/diner-walk.png",
+      "use": "普通顾客行走/顾客头像",
+      "layout": "4列×6行，男3行、女3行",
+      "where": "src/restaurant/diner_art.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/redraw-v1/diner-seated.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/diner-seated.png",
+      "use": "普通顾客四向坐姿",
+      "layout": "4列×2行，男/女",
+      "where": "src/restaurant/diner_art.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/redraw-v1/diner-iso.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/diner-iso.png",
+      "use": "非桌类座位斜向坐姿",
+      "layout": "2列×2行，男/女/阿铃/司祭",
+      "where": "src/restaurant/diner_art.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/redraw-v1/occupied.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/occupied.png",
+      "use": "餐桌人物＋凳子组合",
+      "layout": "2列×2行，男/女/阿铃/司祭",
+      "where": "src/restaurant/diner_art.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/redraw-v1/chef.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/chef.png",
+      "use": "备用主角显示及员工显示",
+      "layout": "单个人物，透明背景",
+      "where": "src/restaurant/restaurant_iso.gd；src/town/town_world.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/redraw-v1/title.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/title.png",
+      "use": "标题画面背景",
+      "layout": "单张横幅",
+      "where": "src/app/game_shell.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/redraw-v1/kitchen.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/kitchen.png",
+      "use": "可走动厨房背景",
+      "layout": "单张，工位和门位置应保留",
+      "where": "src/world/kitchen_world.tscn",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/redraw-v1/coast.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/coast.png",
+      "use": "序章港口CG背景",
+      "layout": "单张",
+      "where": "src/story/arrival_cutscene.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/redraw-v1/backgrounds.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/backgrounds.png",
+      "use": "剧情场景背景",
+      "layout": "2列×2行：港口/食材铺/食堂/餐桌",
+      "where": "src/story/story_art.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/redraw-v1/arrival-hero.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/arrival-hero.png",
+      "use": "序章焰子动作",
+      "layout": "4列×2行，8姿势",
+      "where": "src/story/arrival_cutscene.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/redraw-v1/arrival-aling.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/arrival-aling.png",
+      "use": "序章阿铃动作",
+      "layout": "3列×2行，6姿势",
+      "where": "src/story/arrival_cutscene.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/redraw-v1/arrival-props.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/arrival-props.png",
+      "use": "序章地图、账本",
+      "layout": "不等分裁切，修改前看代码坐标",
+      "where": "src/story/arrival_cutscene.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/redraw-v1/cinematic.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/cinematic.png",
+      "use": "后续CG三人动作",
+      "layout": "6列×3行，每行一位角色",
+      "where": "src/story/cutscene_view.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/redraw-v1/story-props.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/story-props.png",
+      "use": "剧情巴士/地图/汤/布/食材篮/肖像/筷子/证书",
+      "layout": "4列×2行",
+      "where": "src/story/story_art.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/redraw-v1/cottage.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/cottage.png",
+      "use": "小屋床/灯/窗/柜/桌椅/挂饰",
+      "layout": "3列×2行",
+      "where": "src/town/cottage_world.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/redraw-v1/diner-props.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/diner-props.png",
+      "use": "餐厅柜台及场景道具",
+      "layout": "4列×4行，固定顺序",
+      "where": "src/world/environment_art.gd；src/restaurant/furniture_model.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/redraw-v1/dining-parts.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/dining-parts.png",
+      "use": "独立餐桌和凳子",
+      "layout": "2列×1行：左桌、右凳",
+      "where": "src/restaurant/furniture_model.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/redraw-v1/restaurant-furniture.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/restaurant-furniture.png",
+      "use": "旧餐厅家具模型兼容图",
+      "layout": "2列×2行",
+      "where": "src/restaurant/restaurant_iso.gd",
+      "status": "备用常量；当前主家具绘制不从此图取图"
+    },
+    {
+      "file": "assets/redraw-v1/ingredients-0.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/ingredients-0.png",
+      "use": "食材图标第1组",
+      "layout": "6列×5行；最后一组28项；按index.json与icon-regions.json裁切",
+      "where": "src/ui/redraw_art.gd；src/ui/ingredient_icon.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/redraw-v1/ingredients-1.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/ingredients-1.png",
+      "use": "食材图标第2组",
+      "layout": "6列×5行；最后一组28项；按index.json与icon-regions.json裁切",
+      "where": "src/ui/redraw_art.gd；src/ui/ingredient_icon.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/redraw-v1/ingredients-2.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/ingredients-2.png",
+      "use": "食材图标第3组",
+      "layout": "6列×5行；最后一组28项；按index.json与icon-regions.json裁切",
+      "where": "src/ui/redraw_art.gd；src/ui/ingredient_icon.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/redraw-v1/ingredients-3.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/ingredients-3.png",
+      "use": "食材图标第4组",
+      "layout": "6列×5行；最后一组28项；按index.json与icon-regions.json裁切",
+      "where": "src/ui/redraw_art.gd；src/ui/ingredient_icon.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/redraw-v1/ingredients-4.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/ingredients-4.png",
+      "use": "食材图标第5组",
+      "layout": "6列×5行；最后一组28项；按index.json与icon-regions.json裁切",
+      "where": "src/ui/redraw_art.gd；src/ui/ingredient_icon.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/redraw-v1/dishes-0.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/dishes-0.png",
+      "use": "菜品图标第1组",
+      "layout": "5列×4行，每组20项；按index.json与icon-regions.json裁切",
+      "where": "src/kitchen/recipe_atlas.gd；src/kitchen/recipe_tree_canvas.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/redraw-v1/dishes-1.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/dishes-1.png",
+      "use": "菜品图标第2组",
+      "layout": "5列×4行，每组20项；按index.json与icon-regions.json裁切",
+      "where": "src/kitchen/recipe_atlas.gd；src/kitchen/recipe_tree_canvas.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/redraw-v1/dishes-2.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/dishes-2.png",
+      "use": "菜品图标第3组",
+      "layout": "5列×4行，每组20项；按index.json与icon-regions.json裁切",
+      "where": "src/kitchen/recipe_atlas.gd；src/kitchen/recipe_tree_canvas.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/redraw-v1/dishes-3.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/dishes-3.png",
+      "use": "菜品图标第4组",
+      "layout": "5列×4行，每组20项；按index.json与icon-regions.json裁切",
+      "where": "src/kitchen/recipe_atlas.gd；src/kitchen/recipe_tree_canvas.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/redraw-v1/dishes-4.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/dishes-4.png",
+      "use": "菜品图标第5组",
+      "layout": "5列×4行，每组20项；按index.json与icon-regions.json裁切",
+      "where": "src/kitchen/recipe_atlas.gd；src/kitchen/recipe_tree_canvas.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/town/restaurant-chinese-v1.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/town/restaurant-chinese-v1.png",
+      "use": "中式酒楼",
+      "layout": "单建筑，透明背景",
+      "where": "src/world/environment_art.gd；src/town/travel_catalog.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/town/restaurant-japanese-v1.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/town/restaurant-japanese-v1.png",
+      "use": "日式居酒屋",
+      "layout": "单建筑，透明背景",
+      "where": "src/town/travel_catalog.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/town/restaurant-european-v1.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/town/restaurant-european-v1.png",
+      "use": "欧式饭店",
+      "layout": "单建筑，透明背景",
+      "where": "src/town/travel_catalog.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/town/restaurant-southeast-asian-v1.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/town/restaurant-southeast-asian-v1.png",
+      "use": "东南亚餐馆",
+      "layout": "单建筑，透明背景",
+      "where": "src/town/travel_catalog.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/town/restaurant-mexican-v1.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/town/restaurant-mexican-v1.png",
+      "use": "墨西哥餐馆",
+      "layout": "单建筑，透明背景",
+      "where": "src/town/travel_catalog.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/town/town-sprites-v4.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/town/town-sprites-v4.png",
+      "use": "主镇公共建筑/小屋/树木/摆件",
+      "layout": "16图，部分为不等分坐标",
+      "where": "src/world/environment_art.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/town/residential-houses-v3.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/town/residential-houses-v3.png",
+      "use": "民居和院落",
+      "layout": "4图，不等分坐标",
+      "where": "src/world/environment_art.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/town/supply-factories-v2.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/town/supply-factories-v2.png",
+      "use": "调料/蔬菜/肉类/水果工厂",
+      "layout": "2列×2行",
+      "where": "src/world/environment_art.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/town/harbor-v2.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/town/harbor-v2.png",
+      "use": "港口船只和候船设施",
+      "layout": "按现有裁切位置",
+      "where": "src/town/harbor.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/town/four-cultures-v2.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/town/four-cultures-v2.png",
+      "use": "其他四镇建筑",
+      "layout": "4列×4行，首列餐馆被独立五张餐馆图覆盖",
+      "where": "src/town/travel_catalog.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/town/four-cultures-props-v2.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/town/four-cultures-props-v2.png",
+      "use": "四镇树木/装饰",
+      "layout": "4列×2行",
+      "where": "src/town/travel_catalog.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/town/map-surfaces-v2.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/town/map-surfaces-v2.png",
+      "use": "五镇道路/草地/水/地面",
+      "layout": "4列×5行；保持拼接边缘",
+      "where": "src/town/town_scenery.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/town/world-atlas-v1.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/town/world-atlas-v1.png",
+      "use": "M键世界地图背景",
+      "layout": "单张；只用于地图界面",
+      "where": "src/town/travel_map_view.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/ui-wood-v1/wood-light.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/wood-light.png",
+      "use": "全部木牌UI共用材质；明暗由同级样式统一调色",
+      "layout": "完整材质；保持画布与纹理边缘",
+      "where": "src/app/ui_style.gd",
+      "status": "当前使用"
+    },
+    {
+      "file": "assets/ui-wood-v1/parchment.png",
+      "path": "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/parchment.png",
+      "use": "视觉小说对话框羊皮纸材质",
+      "layout": "完整材质；保持画布与纹理边缘",
+      "where": "src/app/ui_style.gd",
+      "status": "当前使用"
+    }
+  ]
+}

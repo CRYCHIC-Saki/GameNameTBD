@@ -1,7 +1,7 @@
 class_name TDFurnitureModel
 extends RefCounted
 ## Shared read-only presentation for catalog, installed pieces and the placement ghost.
-const DINING_PARTS: Texture2D=preload("res://assets/town/dining-table-stool-separated-v1.png")
+const DINING_PARTS: Texture2D=preload("res://assets/redraw-v1/dining-parts.png")
 static var _dining_parts: Dictionary={}
 
 static func dining_part(index: int) -> AtlasTexture:

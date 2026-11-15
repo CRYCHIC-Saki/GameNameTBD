@@ -14,6 +14,10 @@ func _draw() -> void:
 static func draw_on(canvas: CanvasItem, item_id: String, rect: Rect2, muted: bool = false) -> void:
 	if rect.size.x < 4.0 or rect.size.y < 4.0:
 		return
+	var art: Texture2D=TDRedrawArt.ingredient(item_id)
+	if art!=null:
+		canvas.draw_texture_rect(art,TDStoryArt.fit(art,rect),false,Color(.5,.5,.5,.65) if muted else Color.WHITE)
+		return
 	if muted:
 		_bottle(canvas,rect,Color("71766d"),Color("494f49"),Color("9b9d93"));return
 	match item_id:

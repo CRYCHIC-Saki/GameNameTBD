@@ -332,6 +332,7 @@ func snapshot(candidate: Dictionary = {}) -> Dictionary:
 
 func save(candidate: Dictionary = {}) -> TDOutcome:
 	if not _alive: return TDOutcome.new(false,"STALE_PROFILE")
+	if not shop.table_service.empty(): return TDOutcome.new(false,"PASS_NOT_CLEAR","出餐口还有菜，请送出或清理后保存。")
 	if not at_boundary(): return TDOutcome.new(false,"NOT_AT_BOUNDARY","营业中不能存档，请打烊后保存。")
 	if kitchen_checkpoint.is_valid():
 		var ready: TDOutcome=kitchen_checkpoint.call()
@@ -395,6 +396,7 @@ func close_branch_books() -> TDOutcome:
 	return TDOutcome.new(true, "BRANCH", str(report.get("events", "")))
 
 func next_day() -> TDOutcome:
+	if not shop.table_service.empty(): return TDOutcome.new(false,"PASS_NOT_CLEAR","出餐口还有菜，请送出或清理后再休息。")
 	if kitchen_checkpoint.is_valid():
 		var ready: TDOutcome=kitchen_checkpoint.call()
 		if not ready.ok: return ready

@@ -3,8 +3,15 @@ extends RefCounted
 ## Presentation metadata only: stable economic IDs, no new ownership or wallet.
 const IDS := ["chengdu", "tokyo", "paris", "bangkok", "mexico_city"]
 const PORT := Vector2i(69,33)
-const ATLAS: Texture2D = preload("res://assets/town/four-cultures-v1.png")
-const PROPS: Texture2D = preload("res://assets/town/four-cultures-props-v1.png")
+const ATLAS: Texture2D = preload("res://assets/town/four-cultures-v2.png")
+const PROPS: Texture2D = preload("res://assets/town/four-cultures-props-v2.png")
+const RESTAURANTS: Dictionary = {
+	"chengdu": preload("res://assets/town/restaurant-chinese-v1.png"),
+	"tokyo": preload("res://assets/town/restaurant-japanese-v1.png"),
+	"paris": preload("res://assets/town/restaurant-european-v1.png"),
+	"bangkok": preload("res://assets/town/restaurant-southeast-asian-v1.png"),
+	"mexico_city": preload("res://assets/town/restaurant-mexican-v1.png"),
+}
 const REGIONS := {
  "chengdu":{"name":"河口镇 · 中式", "row":0,"grass":"748655","road":"b3aa90","water":"4d8995","leaf":"47734d","caption":"石板街、青瓦巷和东岸海港。食堂与小屋都在这里。"},
  "tokyo":{"name":"潮见町 · 日本", "row":0,"grass":"84977a","road":"9b9da0","water":"537f9d","leaf":"d58fab","caption":"以东京湾沿岸为灵感：湾岸码头、木造町屋、暖帘食铺与樱花参道。"},
@@ -18,12 +25,31 @@ static func info(id: String) -> Dictionary:
 	return REGIONS.get(id,{}).duplicate(true)
 
 static func sprite(town: String, column: int) -> Texture2D:
+	if clampi(column,0,3)==0 and RESTAURANTS.has(town):
+		return _restaurant(town)
 	var index: int=int(REGIONS[town].row)*4+clampi(column,0,3)
 	if not _sprites.has(index):
 		var result:=AtlasTexture.new();result.atlas=ATLAS;result.filter_clip=true
 		result.region=Rect2((index%4)*ATLAS.get_width()/4,(index/4)*ATLAS.get_height()/4,ATLAS.get_width()/4,ATLAS.get_height()/4)
 		_sprites[index]=result
 	return _sprites[index]
+
+static func _restaurant(town: String) -> AtlasTexture:
+	var key: String="restaurant:"+town
+	if not _sprites.has(key):
+		var source: Texture2D=RESTAURANTS[town]
+		var image: Image=source.get_image()
+		if image.is_compressed(): image.decompress()
+		var used: Rect2i=image.get_used_rect()
+		# Preserve the old atlas cell's 3:2 canvas so TravelWorld's scale and
+		# collision footprint stay unchanged. Center the art at the bottom.
+		var unit: int=ceili(maxf(used.size.x/3.0,used.size.y/2.0))
+		var padding: Vector2=Vector2(unit*3,unit*2)-Vector2(used.size)
+		var result:=AtlasTexture.new();result.atlas=source;result.filter_clip=true
+		result.region=Rect2(used)
+		result.margin=Rect2(Vector2(padding.x*.5,padding.y),padding)
+		_sprites[key]=result
+	return _sprites[key]
 
 static func map_for(profile: TDGameProfile, id: String) -> TDTownMap:
 	if id not in IDS: return null
@@ -43,7 +69,8 @@ static func prop(town: String, decoration: bool) -> Texture2D:
 	if not _sprites.has(key):
 		var source:=PROPS.get_image()
 		if source.is_compressed(): source.decompress()
-		var region:=Rect2i(int(REGIONS[town].row)*384,512 if decoration else 0,384,512)
+		var cell:=Vector2i(PROPS.get_width()/4,PROPS.get_height()/2)
+		var region:=Rect2i(Vector2i(int(REGIONS[town].row)*cell.x,cell.y if decoration else 0),cell)
 		var used:=source.get_region(region).get_used_rect()
 		var texture:=AtlasTexture.new();texture.atlas=PROPS;texture.filter_clip=true
 		texture.region=Rect2(region.position+used.position,used.size);_sprites[key]=texture

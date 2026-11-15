@@ -1,6 +1,6 @@
 class_name TDDialogueView
 extends Control
-const CHEF_STAND_IN := preload("res://assets/kitchen/chef-v1.png")
+const CHEF_STAND_IN := preload("res://assets/redraw-v1/chef.png")
 ## Portrait, dimmed room, and a bottom dialogue box.
 ## Left click advances. Holding the left button fast-forwards. Skip jumps ahead.
 
@@ -12,7 +12,7 @@ class Portrait extends Control:
 	var action: String = ""
 
 	func _draw() -> void:
-		texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST
+		texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
 		TDDialogueView.paint_bust(self, who, Rect2(Vector2.ZERO, size),emotion,action)
 
 var talk: TDDialogue
@@ -40,6 +40,9 @@ signal hero_named(value: String)
 var _name_entry: HBoxContainer
 var _hero_input: LineEdit
 var _name_confirmed: bool=false
+var _vn_stage: TDVisualNovelStage
+var _chapter: Label
+var _native: bool = false
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -59,9 +62,13 @@ func _ready() -> void:
 	_dim.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(_dim)
 	_cg=TDCutsceneView.new();_cg.position=Vector2.ZERO;_cg.size=Vector2(1280,550);add_child(_cg);_cg.hide()
+	_vn_stage=TDVisualNovelStage.new();_vn_stage.name="VisualNovelStage";add_child(_vn_stage)
+	_vn_stage.block_started.connect(_native_block)
+	_vn_stage.line_started.connect(_native_line)
+	_vn_stage.completed.connect(func()->void:_close_native(true))
 	_portrait = Portrait.new()
 	_portrait.name = "Portrait"
-	_portrait.z_index = 1
+	_portrait.z_index = 0
 	_portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_portrait.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
 	_portrait.offset_left = 32.0
@@ -76,23 +83,20 @@ func _ready() -> void:
 	var panel := Panel.new()
 	_panel=panel
 	panel.name = "Box"
+	panel.z_index=2
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
 	panel.offset_left = 28.0
 	panel.offset_right = -28.0
 	panel.offset_top = -248.0
 	panel.offset_bottom = -18.0
-	var plate := StyleBoxFlat.new()
-	plate.bg_color = Color(0.08, 0.07, 0.06, 0.94)
-	plate.border_color = Color("#ecb36e")
-	plate.set_border_width_all(2)
-	plate.set_corner_radius_all(12)
+	var plate:=TDUI.parchment(0)
 	panel.add_theme_stylebox_override("panel", plate)
 	add_child(panel)
 	_name = Label.new()
 	_name.name = "Speaker"
 	_name.position = Vector2(300, 16)
-	_name.add_theme_font_size_override("font_size", 26)
+	_name.add_theme_font_size_override("font_size", TDUI.FONT_TITLE)
 	_name.add_theme_color_override("font_color", TDUI.ORANGE)
 	panel.add_child(_name)
 	_skip = Button.new()
@@ -111,7 +115,7 @@ func _ready() -> void:
 	_body.position = Vector2(300, 58)
 	_body.size = Vector2(760, 78)
 	_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_body.add_theme_font_size_override("font_size", 22)
+	_body.add_theme_font_size_override("font_size", TDUI.FONT_SECTION)
 	_body.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_child(_body)
 	_choices = VBoxContainer.new()
@@ -124,7 +128,7 @@ func _ready() -> void:
 	_hint = Label.new()
 	_hint.name = "Hint"
 	_hint.position = Vector2(300, 206)
-	_hint.add_theme_font_size_override("font_size", 14)
+	_hint.add_theme_font_size_override("font_size", TDUI.FONT_CAPTION)
 	_hint.add_theme_color_override("font_color", TDUI.MUTED)
 	_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_child(_hint)
@@ -139,7 +143,9 @@ func _ready() -> void:
 	var skip_clip:=Button.new();skip_clip.name="SkipClip";skip_clip.text="跳过本段";skip_clip.focus_mode=Control.FOCUS_NONE
 	_skip_clip=skip_clip
 	skip_clip.pressed.connect(func()->void:
-		if talk!=null and not presentation_paused: talk.skip_cg();_pressing=false;_refresh();_emit_if_finished())
+		if _native:
+			_skip_native_cg()
+		elif talk!=null and not presentation_paused: talk.skip_cg();_pressing=false;_refresh();_emit_if_finished())
 	_film_controls.add_child(skip_clip)
 	_name_entry=HBoxContainer.new();_name_entry.name="HeroNameEntry"
 	_name_entry.position=Vector2(36,116);panel.add_child(_name_entry)
@@ -148,14 +154,23 @@ func _ready() -> void:
 	var confirm:=Button.new();confirm.text="报上真名";confirm.focus_mode=Control.FOCUS_NONE
 	confirm.pressed.connect(_confirm_hero_name);_name_entry.add_child(confirm)
 	_hero_input.text_submitted.connect(func(_value:String)->void:_confirm_hero_name())
+	_chapter=Label.new();_chapter.name="ChapterTitle";_chapter.position=Vector2(36,26)
+	_chapter.add_theme_font_size_override("font_size",22)
+	_chapter.add_theme_color_override("font_color",Color("fff0c9"))
+	_chapter.add_theme_color_override("font_shadow_color",Color("261d1a"))
+	_chapter.add_theme_constant_override("shadow_offset_x",2);_chapter.add_theme_constant_override("shadow_offset_y",2)
+	_chapter.mouse_filter=Control.MOUSE_FILTER_IGNORE;add_child(_chapter);_chapter.hide()
 
 
 func present(next: TDDialogue) -> void:
+	_vn_stage.reset()
 	talk = next
 	presentation_paused=false;_arrival_hold=""
 	_name_confirmed=not next.context.get("request_name",false)
 	_hero_input.text=""
-	talk.begin()
+	_native = TDVisualNovelStage.supports(talk)
+	_skip.visible = not _native
+	if not _native: talk.begin()
 	_pressing = false
 	_ignore_release = false
 	_choice_sig = ""
@@ -166,15 +181,23 @@ func present(next: TDDialogue) -> void:
 		_portrait.queue_redraw()
 	visible = true
 	set_process(true)
-	_refresh()
+	if _native:
+		_vn_stage.start(talk.hero_name, next.context.get("request_name", false))
+		_refresh_native()
+	else: _refresh()
 
 func finish_now() -> void:
+	if _native:
+		_close_native(false)
+		return
 	if talk == null:
 		return
 	talk.force_close()
 	_emit_if_finished()
 
 func dismiss() -> void:
+	_native = false
+	_vn_stage.reset()
 	_pressing = false
 	talk = null
 	if _cg!=null: _cg.stop_audio()
@@ -186,6 +209,7 @@ func dim_alpha() -> float:
 	return _dim.color.a if _dim != null else 0.0
 
 func _gui_input(event: InputEvent) -> void:
+	if _native: return # SubViewport forwards to the plugin DialogUI.
 	if talk == null or presentation_paused or awaiting_name() or not event is InputEventMouseButton:
 		return
 	var mouse := event as InputEventMouseButton
@@ -206,17 +230,25 @@ func _gui_input(event: InputEvent) -> void:
 	accept_event()
 
 func _process(delta: float) -> void:
+	if _native:
+		if talk != null and not presentation_paused and _vn_stage.blocked == "td_cg":
+			talk.cg_elapsed = minf(talk.cg_duration, talk.cg_elapsed + delta)
+			_refresh_native()
+			if talk.cg_elapsed >= talk.cg_duration: _skip_native_cg()
+		return
 	if talk == null or presentation_paused or awaiting_name():
 		return
 	var was_film:=talk.display_kind=="cg"
 	talk.tick(delta)
 	if was_film: _pressing=false
-	if _pressing:
+	# Intro is deliberately step-by-step; a long held frame must not cross name entry.
+	if _pressing and talk.context.get("scene")!="intro":
 		talk.hold(delta, true)
 	_refresh()
 	_emit_if_finished()
 
 func _on_skip() -> void:
+	if _native: return
 	if talk == null or presentation_paused or awaiting_name():
 		return
 	if talk.context.get("scene")=="intro":
@@ -239,31 +271,35 @@ func _emit_if_finished() -> void:
 	last_completed=not talk.cancelled
 	talk = null
 	_cg.stop_audio()
+	_vn_stage.reset()
 	_pressing = false
 	visible = false
 	set_process(false)
 	closed.emit(text, picked)
 
 func _refresh() -> void:
+	if _native:
+		_refresh_native()
+		return
 	if talk == null or _name == null:
 		return
 	_cg.size=size
 	var film:=talk.display_kind=="cg"
 	var intro: bool=str(talk.context.get("scene",""))=="intro"
 	if film and TDArrivalCutscene.SEGMENTS.has(talk.cg_id): _arrival_hold=talk.cg_id
-	if intro and not film and not _arrival_hold.is_empty():
-		_cg.show_shot(_arrival_hold,TDArrivalCutscene.SPANS[_arrival_hold],TDArrivalCutscene.SPANS[_arrival_hold],true)
-		_cg.stop_audio()
-	else: _cg.show_shot(talk.cg_id if film else "",talk.cg_elapsed,talk.cg_duration)
+	_cg.show_shot(talk.cg_id if film else "",talk.cg_elapsed,talk.cg_duration)
+	_vn_stage.set_paused(presentation_paused)
+	_chapter.visible=intro
+	_chapter.text="序章  /  赤焰之手，空腹降临" if film else "河口镇  /  港口"
 	_panel.visible=not film;_dim.visible=not film and not intro;_film_controls.visible=film or intro
 	_film_pause.text="继续播放" if presentation_paused or talk.cg_paused else "暂停"
 	_skip_clip.disabled=not film or presentation_paused
+	_skip_clip.visible=film
 	_cg.set_audio_paused(presentation_paused or talk.cg_paused)
 
 	_portrait.visible=talk.display_kind=="line"
 	_right_portrait.visible=talk.presentation=="story" and talk.display_kind=="line"
-	# During this introduction the actors remain in the scene; Aling's offscreen
-	# call must not reveal her before her entrance. Later Gal portraits are unchanged.
+	# The embedded VN stage owns intro portraits; offscreen Aling stays unrevealed.
 	if intro: _portrait.hide();_right_portrait.hide()
 	_portrait.emotion=talk.left_emotion if talk.presentation=="story" else talk.emotion
 	_right_portrait.emotion=talk.right_emotion
@@ -282,6 +318,7 @@ func _refresh() -> void:
 	elif _portrait != null and talk.portrait_id == "":
 		_portrait.who = "guest"
 		_portrait.queue_redraw()
+	_portrait.queue_redraw()
 	var signature := ""
 	for option: Variant in talk.options():
 		signature += String((option as Dictionary).get("id", "")) + "|"
@@ -290,12 +327,24 @@ func _refresh() -> void:
 		_rebuild_choices()
 	_choices.visible = talk.choices_open
 	_body.visible = true
-	var left:=36.0 if talk.presentation=="story" else 300.0
+	var left:=36.0
 	_body.position = Vector2(left, 54)
 	var plate := _body.get_parent() as Control
 	var plate_width := plate.size.x if plate != null else 1100.0
 	_body.size = Vector2(maxf(280.0, plate_width-left-40.0), 46.0 if talk.choices_open else 120.0)
 	_choices.position = Vector2(left, 104)
+	_panel.offset_top = -248.0
+	_hint.position.y = 206.0
+	if talk.choices_open:
+		var width := maxf(280.0, plate_width-left-40.0)
+		var text_height := TDUI.font().get_multiline_string_size(_body.text,HORIZONTAL_ALIGNMENT_LEFT,width,TDUI.FONT_SECTION).y
+		_body.size = Vector2(width,maxf(46.0,text_height))
+		_choices.position.y = _body.position.y+_body.size.y+12.0
+		var replies_height := talk.options().size()*48.0+maxi(0,talk.options().size()-1)*8.0
+		_choices.size = Vector2(width,replies_height)
+		var plate_height := _choices.position.y+replies_height+54.0
+		_panel.offset_top = -plate_height-18.0
+		_hint.position.y = plate_height-30.0
 	if talk.choices_open:
 		_hint.text = "请点选一句回复。跳过要等选完。"
 		_skip.text = "跳过"
@@ -316,20 +365,34 @@ func _refresh() -> void:
 
 	_name_entry.visible=awaiting_name()
 	if intro and not film: _skip.text="继续"
+	if intro and not film and not talk.exhausted: _hint.text="点击显示完整台词，再次点击继续。"
 	if awaiting_name():
 		_skip.disabled=true;_body.text="我的名字是……";_hint.text="输入昵称后报上真名。"
 
 func awaiting_name() -> bool:
+	if _native: return _vn_stage.blocked == "td_name"
 	return talk!=null and talk.action=="enter_name" and not _name_confirmed
 
 func _confirm_hero_name() -> void:
 	if not awaiting_name() or presentation_paused: return
+	if _native:
+		if _vn_stage.submit_name(_hero_input.text):
+			talk.hero_name = _vn_stage.hero_name
+			_name_confirmed = true
+			hero_named.emit(talk.hero_name)
+			_hero_input.release_focus()
+		return
 	if talk.name_hero(_hero_input.text):
 		_name_confirmed=true;hero_named.emit(talk.hero_name);_hero_input.release_focus();_refresh()
 
 func toggle_presentation_pause() -> void:
 	if talk==null: return
 	presentation_paused=not presentation_paused
+	if _native:
+		_vn_stage.set_paused(presentation_paused)
+		_cg.set_audio_paused(presentation_paused)
+		_refresh_native()
+		return
 	_pressing=false;talk.pointer_down()
 	talk.pause_cg(presentation_paused)
 	_refresh()
@@ -337,6 +400,58 @@ func toggle_presentation_pause() -> void:
 func _notification(what: int) -> void:
 	if what==NOTIFICATION_APPLICATION_FOCUS_OUT and visible and talk!=null and not presentation_paused:
 		toggle_presentation_pause()
+
+func _native_block(kind: String, args: String) -> void:
+	if not _native or talk == null: return
+	talk.display_kind = "cg" if kind == "td_cg" else "line"
+	talk.action = "enter_name" if kind == "td_name" else ""
+	if kind == "td_cg":
+		talk.cg_id = args; talk.cg_elapsed = 0.0
+		talk.cg_duration = float({"arrival":14.0,"hungry":6.0,"messenger":10.0}.get(args,0.0))
+	_refresh_native()
+
+func _native_line(speaker: String, text: String) -> void:
+	if not _native or talk == null: return
+	talk.display_kind = "line"; talk.action = ""; talk.cg_id = ""
+	if speaker == "aling" and not _vn_stage.runner.ctx.characters.active_sprites.has("aling"):
+		talk.display_kind = "offscreen"
+	talk.portrait_id = speaker; talk.body = text
+	talk.speaker_name = _vn_stage.runner.ctx.characters.cast.display_name_of(speaker)
+	_refresh_native()
+
+func _refresh_native() -> void:
+	if talk == null: return
+	var film := _vn_stage.blocked == "td_cg"
+	var naming := _vn_stage.blocked == "td_name"
+	_portrait.hide(); _right_portrait.hide(); _dim.hide(); _choices.hide(); _skip.hide()
+	_panel.visible = naming
+	_name_entry.visible = naming
+	_film_controls.show(); _chapter.show()
+	_film_pause.text = "继续播放" if presentation_paused else "暂停"
+	_skip_clip.visible = film; _skip_clip.disabled = presentation_paused
+	_chapter.text = "序章  /  赤焰之手，空腹降临" if film else "河口镇  /  港口"
+	_cg.size = size
+	_cg.show_shot(talk.cg_id if film else "", talk.cg_elapsed, talk.cg_duration)
+	_cg.set_audio_paused(presentation_paused)
+	if naming:
+		_name.text = "？？？"; _body.text = "我的名字是……"
+		_body.position = Vector2(36,54); _body.size = Vector2(1000,46)
+		_hint.text = "输入昵称后报上真名。"
+
+func _skip_native_cg() -> void:
+	if not _native or presentation_paused or _vn_stage.blocked != "td_cg": return
+	_cg.stop_audio(); _cg.hide()
+	_vn_stage.resume_cg()
+
+func _close_native(success: bool) -> void:
+	if not _native or talk == null: return
+	last_context = talk.context.duplicate(true)
+	last_completed = success
+	var text := talk.body
+	_native = false; talk = null
+	_vn_stage.reset(); _cg.stop_audio()
+	hide(); set_process(false)
+	closed.emit(text, [])
 
 func _rebuild_choices() -> void:
 	if _choices == null:
@@ -354,7 +469,7 @@ func _rebuild_choices() -> void:
 		button.text = String(item.get("label", id))
 		button.focus_mode = Control.FOCUS_NONE
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		button.custom_minimum_size = Vector2(640, 42)
+		button.custom_minimum_size = Vector2(640, 48)
 		button.pressed.connect(_choose.bind(id))
 		_choices.add_child(button)
 
@@ -367,26 +482,26 @@ func _choose(id: String) -> void:
 
 func _apply_layout() -> void:
 	var story_mode:=talk.presentation=="story"
+	var novel_mode:=TDVisualNovelStage.supports(talk)
+	_panel.z_index=5 if novel_mode else 2
+	_film_controls.z_index=6;_chapter.z_index=6
+	_panel.add_theme_stylebox_override("panel",TDUI.parchment(0))
 	_right_portrait.visible=story_mode
 	_portrait.modulate=Color.WHITE
-	_portrait.z_index=0 if story_mode else 1
+	_portrait.z_index=0;_right_portrait.z_index=0
 	_portrait.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-	_portrait.offset_left=75.0 if story_mode else 32.0
-	_portrait.offset_right=555.0 if story_mode else 308.0
-	_portrait.offset_top=-760.0 if story_mode else -620.0
-	_portrait.offset_bottom=-248.0 if story_mode else -36.0
+	_portrait.offset_left=-32.0;_portrait.offset_right=728.0
+	_portrait.offset_top=-760.0;_portrait.offset_bottom=0.0
 	_right_portrait.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-	_right_portrait.offset_left=-555.0;_right_portrait.offset_right=-75.0
-	_right_portrait.offset_top=-760.0;_right_portrait.offset_bottom=-248.0
-	_name.position.x=36.0 if story_mode else 300.0
+	_right_portrait.offset_left=-728.0;_right_portrait.offset_right=32.0
+	_right_portrait.offset_top=-760.0;_right_portrait.offset_bottom=0.0
+	_name.position.x=36.0
 	_hint.position.x=_name.position.x
-	_choices.size.x=1080.0 if story_mode else 760.0
+	_choices.size.x=1080.0
 
 static func paint_bust(canvas: CanvasItem, who: String, box: Rect2, emotion: String="", action: String="") -> void:
 	if box.size.x < 8.0 or box.size.y < 8.0:
 		return
-	if who=="luo":
-		var frame:=TDStoryArt.prop(5);canvas.draw_texture_rect(frame,TDStoryArt.fit(frame,box),false);return
 	var art:=TDStoryArt.portrait(who,emotion,action)
 	if art!=null:
 		canvas.draw_texture_rect(art,TDStoryArt.fit(art,box),false)

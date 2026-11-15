@@ -1,0 +1,550 @@
+{
+  "date": "2026-11-12",
+  "note": "统一放大字号、木牌立体边框版本；35张当前界面实图，临时隔离档。",
+  "shared": {
+    "font": "SimHei 黑体，当前系统文件 C:/Windows/Fonts/simhei.ttf",
+    "theme": "src/app/ui_style.gd",
+    "colors": {
+      "text": "#30251b",
+      "muted": "#65503a",
+      "accent": "#764019"
+    },
+    "surfaces": "主面板、卡片、输入区、选中四档共用固定木纹与明暗；同级统一",
+    "wood": "assets/ui-wood-v1/wood-light.png",
+    "dialogue": "assets/ui-wood-v1/parchment.png",
+    "portraits": "assets/ui-wood-v1/portrait-*-v2.png；完整构图，不裁掉原装饰背景",
+    "font_roles": {
+      "micro": 16,
+      "caption": 18,
+      "body_and_buttons": 22,
+      "section": 26,
+      "title": 30,
+      "display": 36
+    },
+    "borders": "共用深棕外沿、上左高光、下右暗沿和内侧细线；同层级一致，不覆盖羊皮纸"
+  },
+  "screens": [
+    {
+      "id": "UI-01",
+      "name": "主菜单",
+      "entry": "进入游戏时",
+      "parts": "开始、继续、载入、设置、退出；背景与标题",
+      "kind": "共用带立体边框的分级浅木牌纹理、黑体文字；按钮和遮罩为代码；背景为PNG",
+      "png": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/wood-light.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/title.png"
+      ],
+      "code": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/app/game_shell.gd"
+      ],
+      "shots": [
+        "UI-01-title"
+      ]
+    },
+    {
+      "id": "UI-02",
+      "name": "新建与载入存档",
+      "entry": "主菜单 → 开始游戏／载入",
+      "parts": "存档卡片、店名输入、删除确认、返回",
+      "kind": "共用带立体边框的分级浅木牌纹理、黑体文字；代码面板和系统控件",
+      "png": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/wood-light.png"
+      ],
+      "code": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/app/game_shell.gd"
+      ],
+      "shots": [
+        "UI-02-newgame",
+        "UI-02-load"
+      ]
+    },
+    {
+      "id": "UI-03",
+      "name": "常驻状态与快捷栏",
+      "entry": "进入游戏后顶部",
+      "parts": "日期、时间、等级、金币、人气、店名气、菜单图标、提示条",
+      "kind": "共用带立体边框的分级浅木牌纹理、黑体文字；图标、底板、文字均为代码绘制",
+      "png": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/wood-light.png"
+      ],
+      "code": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/ui/game_hud.gd",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/story/story_guide.gd"
+      ],
+      "shots": [
+        "UI-03-hud"
+      ]
+    },
+    {
+      "id": "UI-04",
+      "name": "任务与操作手册",
+      "entry": "J 任务 → 操作教学手册",
+      "parts": "任务标题、阶段列表、追踪按钮、教学文字",
+      "kind": "共用带立体边框的分级浅木牌纹理、黑体文字；代码面板和文字",
+      "png": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/wood-light.png"
+      ],
+      "code": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/story/story_guide.gd"
+      ],
+      "shots": [
+        "UI-04-journal",
+        "UI-04-manual"
+      ]
+    },
+    {
+      "id": "UI-05",
+      "name": "菜谱研习图鉴",
+      "entry": "B 菜谱",
+      "parts": "左菜系栏、中间树状卡片、连线、锁、右菜品详情、缩放和搜索",
+      "kind": "共用带立体边框的分级浅木牌纹理、黑体文字；菜品PNG＋代码卡片/连线；锁为内嵌SVG",
+      "png": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/wood-light.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/dishes-0.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/dishes-1.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/dishes-2.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/dishes-3.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/dishes-4.png"
+      ],
+      "code": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/kitchen/recipe_atlas.gd",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/kitchen/recipe_tree_canvas.gd"
+      ],
+      "shots": [
+        "UI-05-recipes"
+      ]
+    },
+    {
+      "id": "UI-06",
+      "name": "雇员招聘与仓库",
+      "entry": "H 雇员",
+      "parts": "招募卡、头像、星级、岗位筛选、签约/派驻、翻页",
+      "kind": "共用带立体边框的分级浅木牌纹理、黑体文字；代码卡片；头像从普通顾客行走图截取并换衣色",
+      "png": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/wood-light.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/diner-walk.png"
+      ],
+      "code": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/ui/management_panels.gd"
+      ],
+      "shots": [
+        "UI-06-employees",
+        "UI-06-warehouse"
+      ]
+    },
+    {
+      "id": "UI-07",
+      "name": "供应商与供货产线",
+      "entry": "U 供应商",
+      "parts": "五镇标签、商品图标、采购数量、购物车、报价、产线与队列",
+      "kind": "共用带立体边框的分级浅木牌纹理、黑体文字；代码列表和按钮＋食材PNG",
+      "png": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/wood-light.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/ingredients-0.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/ingredients-1.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/ingredients-2.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/ingredients-3.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/ingredients-4.png"
+      ],
+      "code": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/ui/management_panels.gd"
+      ],
+      "shots": [
+        "UI-07-suppliers"
+      ]
+    },
+    {
+      "id": "UI-08",
+      "name": "店铺管理与选址",
+      "entry": "G 店铺",
+      "parts": "店铺列表、菜单/员工/托管/账本页签、新店选址地图与报价",
+      "kind": "共用带立体边框的分级浅木牌纹理、黑体文字；代码面板；选址地图叠加绘制",
+      "png": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/wood-light.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/town/world-atlas-v1.png"
+      ],
+      "code": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/business/branch_panel.gd",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/town/travel_map_view.gd"
+      ],
+      "shots": [
+        "UI-08-stores",
+        "UI-08-store-detail",
+        "UI-08-site"
+      ]
+    },
+    {
+      "id": "UI-09",
+      "name": "世界地图",
+      "entry": "M 地图",
+      "parts": "世界底图、镇名、标记、缩放、拖动、返回",
+      "kind": "共用带立体边框的分级浅木牌纹理、黑体文字；地图PNG＋代码标记/边框/文字",
+      "png": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/wood-light.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/town/world-atlas-v1.png"
+      ],
+      "code": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/town/travel_map_view.gd"
+      ],
+      "shots": [
+        "UI-09-map"
+      ]
+    },
+    {
+      "id": "UI-10",
+      "name": "人物关系",
+      "entry": "N 关系",
+      "parts": "人物卡片、立绘、好感与关系文字",
+      "kind": "共用带立体边框的分级浅木牌纹理、黑体文字；代码卡片＋人物立绘PNG",
+      "png": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/wood-light.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/portrait-hero-v2.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/portrait-aling-v2.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/portrait-chen-v2.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/portrait-luo-v2.png"
+      ],
+      "code": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/ui/management_panels.gd"
+      ],
+      "shots": [
+        "UI-10-relationships"
+      ]
+    },
+    {
+      "id": "UI-11",
+      "name": "营业菜单与定价",
+      "entry": "餐厅营业牌／店铺菜单",
+      "parts": "菜名、启用勾选、价格框、开门按钮",
+      "kind": "共用带立体边框的分级浅木牌纹理、黑体文字；代码面板和系统控件",
+      "png": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/wood-light.png"
+      ],
+      "code": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/app/game_shell.gd",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/business/branch_panel.gd"
+      ],
+      "shots": [
+        "UI-11-menu"
+      ]
+    },
+    {
+      "id": "UI-12",
+      "name": "食材铺采购",
+      "entry": "靠近食材铺交互",
+      "parts": "商品列表、食材图标、价格、数量、购买按钮",
+      "kind": "共用带立体边框的分级浅木牌纹理、黑体文字；代码列表＋食材PNG",
+      "png": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/wood-light.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/ingredients-0.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/ingredients-1.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/ingredients-2.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/ingredients-3.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/ingredients-4.png"
+      ],
+      "code": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/app/game_shell.gd"
+      ],
+      "shots": [
+        "UI-12-market"
+      ]
+    },
+    {
+      "id": "UI-13",
+      "name": "经营账本",
+      "entry": "账本交互／店铺账目",
+      "parts": "收入、成本、利润、历史记录、滚动区域",
+      "kind": "共用带立体边框的分级浅木牌纹理、黑体文字；代码文字和列表",
+      "png": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/wood-light.png"
+      ],
+      "code": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/app/game_shell.gd",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/business/shop_view.gd",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/business/branch_panel.gd"
+      ],
+      "shots": [
+        "UI-13-ledger"
+      ]
+    },
+    {
+      "id": "UI-14",
+      "name": "经营等级与奖励",
+      "entry": "成长／等级奖励入口",
+      "parts": "等级卡片、经验条、奖励、每日成长摘要",
+      "kind": "共用带立体边框的分级浅木牌纹理、黑体文字；代码卡片和进度条",
+      "png": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/wood-light.png"
+      ],
+      "code": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/ui/level_rewards_view.gd"
+      ],
+      "shots": [
+        "UI-14-levels"
+      ]
+    },
+    {
+      "id": "UI-15",
+      "name": "银行",
+      "entry": "银行处交互",
+      "parts": "余额、金额输入、存取款按钮",
+      "kind": "共用带立体边框的分级浅木牌纹理、黑体文字；代码面板和系统控件",
+      "png": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/wood-light.png"
+      ],
+      "code": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/app/game_shell.gd"
+      ],
+      "shots": [
+        "UI-15-bank"
+      ]
+    },
+    {
+      "id": "UI-16",
+      "name": "港口旅行",
+      "entry": "港口处交互",
+      "parts": "目的地按钮、旅行说明、返回",
+      "kind": "共用带立体边框的分级浅木牌纹理、黑体文字；代码面板和按钮；后面的港口场景不属于UI贴图",
+      "png": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/wood-light.png"
+      ],
+      "code": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/app/game_shell.gd"
+      ],
+      "shots": [
+        "UI-16-harbor"
+      ]
+    },
+    {
+      "id": "UI-17",
+      "name": "暂停菜单",
+      "entry": "Esc",
+      "parts": "继续、保存、设置、返回主菜单、保存说明",
+      "kind": "共用带立体边框的分级浅木牌纹理、黑体文字；共用代码弹窗样式",
+      "png": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/wood-light.png"
+      ],
+      "code": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/app/game_shell.gd"
+      ],
+      "shots": [
+        "UI-17-pause"
+      ]
+    },
+    {
+      "id": "UI-18",
+      "name": "设置",
+      "entry": "暂停／主菜单 → 设置",
+      "parts": "音量滑条、全屏、输入校准、说明",
+      "kind": "共用带立体边框的分级浅木牌纹理、黑体文字；共用代码弹窗＋系统滑条/勾选框",
+      "png": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/wood-light.png"
+      ],
+      "code": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/app/game_shell.gd"
+      ],
+      "shots": [
+        "UI-18-settings"
+      ]
+    },
+    {
+      "id": "UI-19",
+      "name": "视觉小说对话",
+      "entry": "与角色交谈／剧情对白",
+      "parts": "左右立绘、说话人、文本框、下一句提示、跳过、选项",
+      "kind": "羊皮纸对话框＋原图完整构图表情差分；黑体文字，木牌按钮",
+      "png": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/parchment.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/wood-light.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/portrait-hero-v2.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/portrait-aling-v2.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/portrait-chen-v2.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/portrait-luo-v2.png"
+      ],
+      "code": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/ui/dialogue_view.gd"
+      ],
+      "shots": [
+        "UI-19-dialogue",
+        "UI-19-chen",
+        "UI-19-luo"
+      ]
+    },
+    {
+      "id": "UI-20",
+      "name": "CG 播放控制",
+      "entry": "剧情演出时",
+      "parts": "暂停、继续、跳过本段；演出字幕与遮幅",
+      "kind": "共用带立体边框的分级浅木牌纹理、黑体文字；控制条为代码；演出图片属于CG资产",
+      "png": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/wood-light.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/coast.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/backgrounds.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/arrival-hero.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/arrival-aling.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/arrival-props.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/cinematic.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/story-props.png"
+      ],
+      "code": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/ui/dialogue_view.gd",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/story/cutscene_view.gd",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/story/arrival_cutscene.gd"
+      ],
+      "shots": [
+        "UI-20-film"
+      ]
+    },
+    {
+      "id": "UI-21",
+      "name": "厨房订单与操作提示",
+      "entry": "进入厨房",
+      "parts": "右侧等待订单、订单进度、底部按键提示",
+      "kind": "共用带立体边框的分级浅木牌纹理、黑体文字；界面为代码；房间背景是独立PNG",
+      "png": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/wood-light.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/kitchen.png"
+      ],
+      "code": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/business/shop_view.gd",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/kitchen/full_kitchen.gd"
+      ],
+      "shots": [
+        "UI-21-kitchen"
+      ]
+    },
+    {
+      "id": "UI-22",
+      "name": "冰箱／食材选择",
+      "entry": "厨房冰箱交互",
+      "parts": "食材分类、图标、批次、保质期、拿取按钮",
+      "kind": "共用带立体边框的分级浅木牌纹理、黑体文字；代码容器＋食材PNG",
+      "png": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/wood-light.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/ingredients-0.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/ingredients-1.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/ingredients-2.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/ingredients-3.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/ingredients-4.png"
+      ],
+      "code": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/business/shop_view.gd",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/kitchen/full_kitchen.gd"
+      ],
+      "shots": [
+        "UI-22-pantry"
+      ]
+    },
+    {
+      "id": "UI-23",
+      "name": "研习与教学操作",
+      "entry": "菜谱 → 可研习菜 → 开始",
+      "parts": "操作目标、教程、完成/重试、评分反馈",
+      "kind": "共用带立体边框的分级浅木牌纹理、黑体文字；复用正式厨房与操作UI；没有独立的研习底图PNG",
+      "png": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/wood-light.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/kitchen.png"
+      ],
+      "code": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/kitchen/research_trial_view.gd",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/kitchen/research_lesson.gd",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/story/story_guide.gd"
+      ],
+      "shots": [
+        "UI-23-research"
+      ]
+    },
+    {
+      "id": "UI-24",
+      "name": "切菜／控温／调味／出锅",
+      "entry": "厨房砧板、灶台等操作",
+      "parts": "操作板、刀锅/食材示意、判定、节拍、火候、调料环、摆盘",
+      "kind": "共用带立体边框的分级浅木牌纹理、黑体文字；操作示意与仪表主要代码绘制；配料图标使用食材PNG",
+      "png": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/wood-light.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/ingredients-0.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/ingredients-1.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/ingredients-2.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/ingredients-3.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/ingredients-4.png"
+      ],
+      "code": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/kitchen/guided_cooking_view.gd",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/qte/cooking_action_view.gd",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/qte/temperature_view.gd",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/kitchen/plating_view.gd"
+      ],
+      "shots": [
+        "UI-24-cooking"
+      ]
+    },
+    {
+      "id": "UI-25",
+      "name": "餐厅装修",
+      "entry": "餐厅 → 布置",
+      "parts": "下方分类、家具卡、完成按钮、选中轮廓、删除/旋转按钮",
+      "kind": "共用带立体边框的分级浅木牌纹理、黑体文字；代码面板；家具缩略图复用实际家具，不是一张装修UI贴图；地图外侧纯黑，家具卡片扩大以容纳文字",
+      "png": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/wood-light.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/dining-parts.png",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/redraw-v1/diner-props.png"
+      ],
+      "code": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/restaurant/decoration_panel.gd",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/restaurant/restaurant_world.gd",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/restaurant/furniture_model.gd"
+      ],
+      "shots": [
+        "UI-25-decoration"
+      ]
+    },
+    {
+      "id": "UI-26",
+      "name": "确认／错误／退出提示",
+      "entry": "退出、返回、删除等操作",
+      "parts": "遮罩、标题、解释、确认与取消、错误反馈",
+      "kind": "共用带立体边框的分级浅木牌纹理、黑体文字；共用弹窗代码和少量系统确认控件",
+      "png": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/wood-light.png"
+      ],
+      "code": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/app/game_shell.gd",
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/business/shop_view.gd"
+      ],
+      "shots": [
+        "UI-26-confirm"
+      ]
+    },
+    {
+      "id": "UI-27",
+      "name": "休息与保存",
+      "entry": "小屋床边交互",
+      "parts": "休息、保存、日期和提示文字",
+      "kind": "共用带立体边框的分级浅木牌纹理、黑体文字；共用代码弹窗",
+      "png": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/wood-light.png"
+      ],
+      "code": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/app/game_shell.gd"
+      ],
+      "shots": [
+        "UI-27-rest"
+      ]
+    },
+    {
+      "id": "UI-28",
+      "name": "开发调试面板",
+      "entry": "调试快捷键／开发工具",
+      "parts": "命令输入、滚动日志、工具按钮；通常不用优先改",
+      "kind": "共用带立体边框的分级浅木牌纹理、黑体文字；开发用代码面板，无PNG",
+      "png": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/assets/ui-wood-v1/wood-light.png"
+      ],
+      "code": [
+        "C:/Users/myzpw/Documents/ChatGPT/NJU GAMING/GameNameTBD/src/app/game_shell.gd"
+      ],
+      "shots": [
+        "UI-28-console"
+      ]
+    }
+  ]
+}

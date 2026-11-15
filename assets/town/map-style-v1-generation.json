@@ -1,0 +1,281 @@
+{
+  "tool": "built-in image_gen",
+  "records": [
+	{
+	  "key": "town",
+	  "file": "town-sprites-v4.png",
+	  "reference_atlas": "town-sprites-v3.png",
+	  "prompt": "Use case: style-transfer. Asset type: production Godot 2D game map asset atlas. Image 1 is the old runtime atlas; all subsequent images are the five freshly approved restaurant sprites, defining the NEW style. Redraw the old atlas to harmonize with those restaurants: charming cozy hand-crafted pixel illustration, crisp outlined pixel clusters, simplified clean shapes, warm cream/red/wood/gold accents, cohesive warm shadows, readable at small game scale. Layout MUST be 4 columns by 4 rows, exactly 16 equal cells. row 1: Chinese two-story neighborhood eatery with green roof; small cream-plaster cottage with green tile roof; produce market stall with red-orange canopy; lush round broadleaf tree. Row 2: small Chinese snack shop; traditional woodworking workshop with chimney and woodpile; bamboo cluster; open red wooden pavilion with green tile roof. Row 3: two-story civic bank with green roof and stone guardian lions; roofed wooden bus stop shelter with bulletin board; red ceremonial paifang gate with green roof; wooden street-lantern post. Row 4: bamboo scaffolding construction with ivory cloth; red-canopy steamed-food stall; leafy plant in cream ceramic pot with red-gold trim; wooden bench. Exact original object identities and row-major index meanings. Buildings front orthographic camera slightly overhead, no deep side walls. All objects centered at bottom of their own cells. Real RGBA transparent background throughout all empty space, including inside open gates. Each object fully inside its own cell with generous 8% transparent padding, never overlaps adjacent cells. Keep equal cell centers and uniform alignment. No background gradients, white matte, glow, cast shadows, captions, letters, legends, watermark or grid lines. This is an actual game sprite/texture sheet, NOT a concept board. Do not add people or characters. Preserve every original cell's object function and sequence. Match the appropriate regional restaurant's architecture without copying its restaurant signage.",
+	  "transparent_background": true,
+	  "sha256": "239195586026987f2e7b96303965bdcc3f4e62b2aedab479ddbb3b5783cd41e9",
+	  "reference_sha256": "c9592be9d54ab8bd0e668a27159f500cefdc4e937a4edd3a45d5cd1745ecc525",
+	  "reference_images": [
+		"town-sprites-v3.png",
+		"restaurant-chinese-v1.png",
+		"restaurant-european-v1.png",
+		"restaurant-southeast-asian-v1.png",
+        "restaurant-mexican-v1.png"
+	  ],
+	  "measured_regions": [
+		[
+		  0,
+		  0,
+		  361,
+		  329
+		],
+		[
+		  361,
+		  0,
+		  309,
+		  329
+		],
+		[
+		  670,
+		  0,
+		  309,
+		  329
+		],
+		[
+		  979,
+		  0,
+		  298,
+		  329
+		],
+		[
+		  0,
+		  329,
+		  357,
+		  293
+		],
+		[
+		  357,
+		  329,
+		  382,
+		  293
+		],
+		[
+		  739,
+		  329,
+		  229,
+		  293
+		],
+		[
+		  968,
+		  329,
+		  309,
+		  293
+		],
+		[
+		  0,
+		  622,
+		  361,
+		  309
+		],
+		[
+		  361,
+		  622,
+		  310,
+		  309
+		],
+		[
+		  671,
+		  622,
+		  345,
+		  309
+		],
+		[
+		  1016,
+		  622,
+		  261,
+		  309
+		],
+		[
+		  0,
+		  931,
+		  348,
+		  300
+		],
+		[
+		  348,
+		  931,
+		  364,
+		  300
+		],
+		[
+		  712,
+		  931,
+		  251,
+		  300
+		],
+		[
+		  963,
+		  931,
+		  314,
+		  300
+		]
+	  ]
+	},
+	{
+	  "key": "housing",
+	  "file": "residential-houses-v3.png",
+	  "reference_atlas": "residential-houses-v2.png",
+	  "prompt": "Use case: style-transfer. Asset type: production Godot 2D game map asset atlas. Image 1 is the old runtime atlas; all subsequent images are the five freshly approved restaurant sprites, defining the NEW style. Redraw the old atlas to harmonize with those restaurants: charming cozy hand-crafted pixel illustration, crisp outlined pixel clusters, simplified clean shapes, warm cream/red/wood/gold accents, cohesive warm shadows, readable at small game scale. Layout MUST be 2 columns by 2 rows, exactly 4 equal cells. Four Chinese residential compounds: top-left single cozy cottage with laundry and little side shed; top-right paired townhouses; bottom-left larger enclosed courtyard house; bottom-right bamboo-garden courtyard house. Green curved tile roofs, reddish warm wood, cream plaster, narrow stone-gray lower walls, some red lanterns, warm ochre stone courtyards. Maintain structures and doors, enclosed walls and courtyard footprints like reference. Front-facing orthographic slightly overhead view, symmetry and readability; no isometric tilted ground platforms. Real RGBA transparent background throughout all empty space, including inside open gates. Each object fully inside its own cell with generous 8% transparent padding, never overlaps adjacent cells. Keep equal cell centers and uniform alignment. No background gradients, white matte, glow, cast shadows, captions, letters, legends, watermark or grid lines. This is an actual game sprite/texture sheet, NOT a concept board. Do not add people or characters. Preserve every original cell's object function and sequence. Match the appropriate regional restaurant's architecture without copying its restaurant signage.",
+	  "transparent_background": true,
+	  "sha256": "e30c8dea3a822f558e6a6713f75043396f493286c7953d829b44190f8afea9b9",
+	  "reference_sha256": "847b9c7d18771e0043104e5599070efbae747ea818b06cf5a3e77310cda836d7",
+	  "reference_images": [
+		"residential-houses-v2.png",
+		"restaurant-chinese-v1.png",
+		"restaurant-european-v1.png",
+		"restaurant-southeast-asian-v1.png",
+        "restaurant-mexican-v1.png"
+	  ],
+	  "measured_regions": [
+		[
+		  0,
+		  0,
+		  632,
+		  536
+		],
+		[
+		  632,
+		  0,
+		  658,
+		  536
+		],
+		[
+		  0,
+		  536,
+		  652,
+		  683
+		],
+		[
+		  652,
+		  536,
+		  638,
+		  683
+		]
+	  ]
+	},
+	{
+	  "key": "factory",
+	  "file": "supply-factories-v2.png",
+	  "reference_atlas": "supply-factories-v1.png",
+	  "prompt": "Use case: style-transfer. Asset type: production Godot 2D game map asset atlas. Image 1 is the old runtime atlas; all subsequent images are the five freshly approved restaurant sprites, defining the NEW style. Redraw the old atlas to harmonize with those restaurants: charming cozy hand-crafted pixel illustration, crisp outlined pixel clusters, simplified clean shapes, warm cream/red/wood/gold accents, cohesive warm shadows, readable at small game scale. Layout MUST be 2 columns by 2 rows, exactly 4 equal cells. Four Chinese suppliers: top-left seasoning shop with jars, bottles and chimney; top-right vegetable stall with green awning and cabbages; bottom-left fish and meat stall with hanging meat and fish; bottom-right fruit stall with orange canopy and baskets. Green tile roofs, warm red-brown timbers, cream plaster, red lanterns, subtle small flame emblem only as accent. Keep the four supplier identities and order, front orthographic slightly overhead view. Real RGBA transparent background throughout all empty space, including inside open gates. Each object fully inside its own cell with generous 8% transparent padding, never overlaps adjacent cells. Keep equal cell centers and uniform alignment. No background gradients, white matte, glow, cast shadows, captions, letters, legends, watermark or grid lines. This is an actual game sprite/texture sheet, NOT a concept board. Do not add people or characters. Preserve every original cell's object function and sequence. Match the appropriate regional restaurant's architecture without copying its restaurant signage.",
+	  "transparent_background": true,
+	  "sha256": "d68db981c24600af49381c0307a7727680e80115465cba9a610215279cd15895",
+	  "reference_sha256": "5e64bff1e534c10126633894dce98796ec30ec27520aed6eb76b4fbd10dfdb6d",
+	  "reference_images": [
+		"supply-factories-v1.png",
+		"restaurant-chinese-v1.png",
+		"restaurant-european-v1.png",
+		"restaurant-southeast-asian-v1.png",
+        "restaurant-mexican-v1.png"
+	  ],
+	  "measured_regions": [
+		[
+		  0,
+		  0,
+		  627,
+		  627
+		],
+		[
+		  627,
+		  0,
+		  627,
+		  627
+		],
+		[
+		  0,
+		  627,
+		  627,
+		  627
+		],
+		[
+		  627,
+		  627,
+		  627,
+		  627
+		]
+	  ]
+	},
+	{
+	  "key": "harbor",
+	  "file": "harbor-v2.png",
+	  "reference_atlas": "harbor-v1.png",
+	  "prompt": "Use case: style-transfer. Asset type: production Godot 2D game map asset atlas. Image 1 is the old runtime atlas; all subsequent images are the five freshly approved restaurant sprites, defining the NEW style. Redraw the old atlas to harmonize with those restaurants: charming cozy hand-crafted pixel illustration, crisp outlined pixel clusters, simplified clean shapes, warm cream/red/wood/gold accents, cohesive warm shadows, readable at small game scale. Layout MUST be 2 columns by 1 row, exactly 2 equal square cells on a 2:1 landscape sheet. Left cell: traditional small Chinese wooden junk boat, viewed directly from above, tall cream batten sail and little green tile-roofed cabin, bow pointing toward the TOP of the image, complete isolated boat. Right cell: front-facing Chinese port ticket booth with green tiled roof, cream canvas valance, wooden bulletin board, stacked crates, ropes and a short stone dock base. Keep the object identities and view orientations of the first reference. No white vertical divider, no surrounding water. Real RGBA transparent background throughout all empty space, including inside open gates. Each object fully inside its own cell with generous 8% transparent padding, never overlaps adjacent cells. Keep equal cell centers and uniform alignment. No background gradients, white matte, glow, cast shadows, captions, letters, legends, watermark or grid lines. This is an actual game sprite/texture sheet, NOT a concept board. Do not add people or characters. Preserve every original cell's object function and sequence. Match the appropriate regional restaurant's architecture without copying its restaurant signage.",
+	  "transparent_background": true,
+	  "sha256": "e24df5d9cc80e64fa3a989d2290066e280db698c61da4f1b2f9bc9982117cb6e",
+	  "reference_sha256": "78f6b1794e49d0a84e4e6558ae33f0cf865c13946d73ca41ddfad81c9b92eb53",
+	  "reference_images": [
+		"harbor-v1.png",
+		"restaurant-chinese-v1.png",
+		"restaurant-european-v1.png",
+		"restaurant-southeast-asian-v1.png",
+        "restaurant-mexican-v1.png"
+	  ],
+	  "measured_regions": [
+		[
+		  0,
+		  0,
+		  887,
+		  887
+		],
+		[
+		  887,
+		  0,
+		  887,
+		  887
+		]
+	  ]
+	},
+	{
+	  "key": "cultures",
+	  "file": "four-cultures-v2.png",
+	  "reference_atlas": "four-cultures-v1.png",
+	  "prompt": "Use case: style-transfer. Asset type: production Godot 2D game map asset atlas. Image 1 is the old runtime atlas; all subsequent images are the five freshly approved restaurant sprites, defining the NEW style. Redraw the old atlas to harmonize with those restaurants: charming cozy hand-crafted pixel illustration, crisp outlined pixel clusters, simplified clean shapes, warm cream/red/wood/gold accents, cohesive warm shadows, readable at small game scale. Layout MUST be 4 columns by 4 rows, exactly 16 equal rectangular cells; rows Japan, France/Europe, Thailand/Southeast Asia, Mexico; columns neighborhood food shop, residence, public landmark, port booth with small boat. Japan: dark tiled warm timber houses with cream plaster, red paper lanterns and noren, red torii/shrine, little timber dock and boat. Europe: cream limestone walls, red mansard roofs, arched windows and flower balconies, civic clocktower, elegant river ticket booth and cabin boat. Southeast Asia: red-orange tiled roofs with gold Thai trim, teak and cream stilt houses, tropical pots and rattan lights, ornate temple, floating-market pier and longtail boat. Mexico: cream stucco, terracotta tiles, blue-yellow tile bands and bougainvillea, mission bell landmark, tile-roof port and boat. Use corresponding restaurant reference for architectural details and palette, reduce flame branding outside restaurants. All buildings front-facing orthographic slightly overhead, no isometric deep sidewall. Preserve row/column identities and modest object silhouettes of original atlas. Real RGBA transparent background throughout all empty space, including inside open gates. Each object fully inside its own cell with generous 8% transparent padding, never overlaps adjacent cells. Keep equal cell centers and uniform alignment. No background gradients, white matte, glow, cast shadows, captions, letters, legends, watermark or grid lines. This is an actual game sprite/texture sheet, NOT a concept board. Do not add people or characters. Preserve every original cell's object function and sequence. Match the appropriate regional restaurant's architecture without copying its restaurant signage.",
+	  "transparent_background": true,
+	  "sha256": "1b78c24f083c92d93e9c194dd9ca3ba7a9d8dd4455d926f5703d7aafeb24a5ad",
+	  "reference_sha256": "5834d220f5c094f8348eef173bfaf3b392ff2342e5a5e60521f68644af38bf02",
+	  "reference_images": [
+		"four-cultures-v1.png",
+		"restaurant-japanese-v1.png",
+		"restaurant-european-v1.png",
+		"restaurant-southeast-asian-v1.png",
+        "restaurant-mexican-v1.png"
+	  ]
+	},
+	{
+	  "key": "props",
+	  "file": "four-cultures-props-v2.png",
+	  "reference_atlas": "four-cultures-props-v1.png",
+	  "prompt": "Use case: style-transfer. Asset type: production Godot 2D game map asset atlas. Image 1 is the old runtime atlas; all subsequent images are the five freshly approved restaurant sprites, defining the NEW style. Redraw the old atlas to harmonize with those restaurants: charming cozy hand-crafted pixel illustration, crisp outlined pixel clusters, simplified clean shapes, warm cream/red/wood/gold accents, cohesive warm shadows, readable at small game scale. Layout MUST be 4 columns by 2 rows, exactly 8 equal cells. Top row in order: Japanese cherry blossom tree, European deciduous plane tree, Southeast Asian coconut palm, Mexican cactus and agave cluster. Bottom row in order: Japanese stone lantern with floral pots; European wrought-iron lamp with wooden bench and flower urn; Southeast Asian woven baskets of bananas and tropical floral ceramic pots; Mexican red-orange-yellow patterned parasol and bougainvillea pots. Same index meanings, clear isolated silhouettes and bottom-centered objects. Keep plant sizes and silhouettes similar to old reference. No glow, no gradient halos or floor plates. Real RGBA transparent background throughout all empty space, including inside open gates. Each object fully inside its own cell with generous 8% transparent padding, never overlaps adjacent cells. Keep equal cell centers and uniform alignment. No background gradients, white matte, glow, cast shadows, captions, letters, legends, watermark or grid lines. This is an actual game sprite/texture sheet, NOT a concept board. Do not add people or characters. Preserve every original cell's object function and sequence. Match the appropriate regional restaurant's architecture without copying its restaurant signage.",
+	  "transparent_background": true,
+	  "sha256": "4a06e2489091b29118cc55e37fb75225d811aa375307cf23aa9df9cf3e2283af",
+	  "reference_sha256": "b009fea80d5fc67e6b4d1a3a04c0750d520cc8da944b20162db33756e88f3e14",
+	  "reference_images": [
+		"four-cultures-props-v1.png",
+		"restaurant-japanese-v1.png",
+		"restaurant-european-v1.png",
+		"restaurant-southeast-asian-v1.png",
+        "restaurant-mexican-v1.png"
+	  ]
+	},
+	{
+	  "key": "surfaces",
+	  "file": "map-surfaces-v1.png",
+	  "reference_atlas": "ground-materials-v4.png",
+	  "prompt": "Use case: style-transfer. Asset type: production Godot 2D game map asset atlas. All five input images are the restaurant sprites that define regional style and pavement colors, ordered Chinese, Japanese, European, Southeast Asian and Mexican. Generate a matching floor-material sheet. Redraw the old atlas to harmonize with those restaurants: charming cozy hand-crafted pixel illustration, crisp outlined pixel clusters, simplified clean shapes, warm cream/red/wood/gold accents, cohesive warm shadows, readable at small game scale. Layout MUST be 4 columns by 5 rows, exactly 20 seamless material swatches, no gutters and no grid borders; each cell has identical dimensions. Rows in order: Chinese town, Japanese town, European/French town, Southeast Asian town, Mexican town. Columns in order: grass/vegetation floor, road pavement, sandy earth, water. Roads must match restaurant reference stone thresholds: Chinese muted warm beige-gray irregular flagstones with moss flecks; Japanese warm gray-beige compact cobblestones; Europe cream honey limestone pavers; Southeast Asia warm ochre sandstone pavers; Mexico warm terracotta tile paving with rare muted turquoise tile accents. Grass in restrained sage/olive tones, avoid neon or repetitive distinct grass clumps. Sand/earth warm understated matte tones with fine flecks. Water low-contrast teal-blue with sparse little ripples, no big waves. Each swatch is TOP-DOWN FLAT seamless texture, consistent light, no shadows, no objects, no perspective, no bevel panel edges. Make pavers modest small repeated shapes, not enormous concrete slabs. Edges of each individual cell should tile naturally. Pure background floor materials only, colored opaque to every edge. Opaque surface texture sheet; no transparency. This is an actual game sprite/texture sheet, NOT a concept board. Do not add people or characters. Preserve every original cell's object function and sequence. Match the appropriate regional restaurant's architecture without copying its restaurant signage.",
+	  "transparent_background": false,
+	  "sha256": "1ebfe275db3f71cfbcddc285e7f48fbd780486d3a360d0e5f5d9af9405a9aa78",
+	  "reference_sha256": "abc5fef9fcee057c39029c07e3e62cb9514462d561583ad03e6fbf2ec65c34d3",
+	  "reference_images": [
+		"restaurant-chinese-v1.png",
+		"restaurant-japanese-v1.png",
+		"restaurant-european-v1.png",
+		"restaurant-southeast-asian-v1.png",
+        "restaurant-mexican-v1.png"
+	  ]
+	}
+  ]
+}

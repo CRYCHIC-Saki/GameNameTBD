@@ -1,0 +1,177 @@
+[
+  {
+    "file": "arrival-aling.png",
+    "sha256": "de85805079e813aa52c0a47dbe6437f7595ccfe3bc23cc04e363c002dde39be6",
+    "bytes": 2216682
+  },
+  {
+    "file": "arrival-hero.png",
+    "sha256": "c88fe8afeed5362b1945bfcd103e1ad816cadf0564769b1429467dfcb5afa419",
+    "bytes": 2191221
+  },
+  {
+    "file": "arrival-props.png",
+    "sha256": "a630665ec9d58dc4d310e6e0240cb6cec5b0121356fa91d2aa1daf05ba6915e3",
+    "bytes": 2130801
+  },
+  {
+    "file": "backgrounds.png",
+    "sha256": "8e9d824f8169246dadf4d47be2c5c372e38ee052dce95e99e102c04f1e69c43b",
+    "bytes": 2435679
+  },
+  {
+    "file": "chef.png",
+    "sha256": "94205f7c9b8c230f98310e19e2fb397846493dea25ed74ce45169273c5607c96",
+    "bytes": 1408773
+  },
+  {
+    "file": "cinematic.png",
+    "sha256": "7aacd2dda4f69c4a1ce4ee7ff9d0d65a0155055f4d58da9cce600409a842f997",
+    "bytes": 2720245
+  },
+  {
+    "file": "coast.png",
+    "sha256": "af3d906716392da7cd3cb353c43f429b28b6aa0072cb109b4e35a841b657139b",
+    "bytes": 2140221
+  },
+  {
+    "file": "cottage.png",
+    "sha256": "7ce6b70f825cbd89be4f884266447798d7a8de2a5c73ea9df3481728aaa5b406",
+    "bytes": 1715487
+  },
+  {
+    "file": "diner-iso.png",
+    "sha256": "10409fbfa695ace775c38d9de36b5ae71f521cb9c8875d7b5c4449487dfc3cd3",
+    "bytes": 827200
+  },
+  {
+    "file": "diner-props.png",
+    "sha256": "9c3b0a473b3f90917e8c9ef1eb2061651e4ae80189719c551d928849dc72d18d",
+    "bytes": 1829309
+  },
+  {
+    "file": "diner-seated.png",
+    "sha256": "05342edcf9d2da0e7dfb6962d707056a0b4f9299857e87e6600dfd72c3f64aeb",
+    "bytes": 954932
+  },
+  {
+    "file": "diner-walk.png",
+    "sha256": "050913bd6dc79cd4df00d4e85c338d909a70db7bd5a5fd347cc2524197d13bb1",
+    "bytes": 2024124
+  },
+  {
+    "file": "dining-parts.png",
+    "sha256": "79b3a1e8f14bef8c072254f68108da5db62f7f89e372ff61e914ddce59da1338",
+    "bytes": 617944
+  },
+  {
+    "file": "dishes-0.png",
+    "sha256": "9e09fc39e35804d3694335e151eac9dc79c5df64ff2c2e6ef7648049ac92db0e",
+    "bytes": 2488686
+  },
+  {
+    "file": "dishes-1.png",
+    "sha256": "7b4c33319e46d8ca481c8a0505d391e5adf841bff49f0a564a1a60483eeb5132",
+    "bytes": 2433197
+  },
+  {
+    "file": "dishes-2.png",
+    "sha256": "515563e19effbfcb9118afa249b98eccbfab59871dbe342f85239b481f6dcea7",
+    "bytes": 2548377
+  },
+  {
+    "file": "dishes-3.png",
+    "sha256": "3ae21947662c77003b56573184d5daead84edb39d160ed5d3f68aeec63162f49",
+    "bytes": 2774797
+  },
+  {
+    "file": "dishes-4.png",
+    "sha256": "d75baab561c57e0d34f02654ddad3d13ce7af0543db1b7e55bd94bc41ef433a9",
+    "bytes": 2775789
+  },
+  {
+    "file": "ingredients-0.png",
+    "sha256": "4991b56c92239565504356d9263edca0bbf01ca00900221b31baef82e9db887e",
+    "bytes": 1924874
+  },
+  {
+    "file": "ingredients-1.png",
+    "sha256": "96370131e8711b16e85752257089a3f888f5592a32b14f7c08956b4e3cd9c815",
+    "bytes": 1995455
+  },
+  {
+    "file": "ingredients-2.png",
+    "sha256": "4584d8e6416ed383cb9666c03f44f8212607435dbcde545909df88813b019e8e",
+    "bytes": 1937845
+  },
+  {
+    "file": "ingredients-3.png",
+    "sha256": "a7c0275b5f435d1fc44169c886f2103cab252db99588eac2c94900f75ecb602f",
+    "bytes": 1901922
+  },
+  {
+    "file": "ingredients-4.png",
+    "sha256": "11c5bf50c0e95e4e160b3502ea59ba93ac9f0a135638c194b0ecb0d78194a192",
+    "bytes": 1738788
+  },
+  {
+    "file": "kitchen.png",
+    "sha256": "f9c26a71abd1e3bf36e834d1b5c1e86fe2a67039853c403afb7761904a56fc31",
+    "bytes": 1520297
+  },
+  {
+    "file": "occupied.png",
+    "sha256": "fabc55a36c156e26c98e1a7e327a69820c23b9f98335073b2a4e9bb145512a63",
+    "bytes": 970323
+  },
+  {
+    "file": "portrait-aling-v1.png",
+    "sha256": "73b8207562f5804311c0e5d0a8a410227b140a38a3b4f402fecc4513a47a4aae",
+    "bytes": 1771877
+  },
+  {
+    "file": "portrait-chen-v1.png",
+    "sha256": "8d2932231543ed8cc714e9de451a8f930a579574b8c66811004936703ffcb80a",
+    "bytes": 1971600
+  },
+  {
+    "file": "portrait-hero-v1.png",
+    "sha256": "58a887e8c43f746774075e6f893d03136ce1db9edc1b4e2f5101cf04bdd948b5",
+    "bytes": 1801994
+  },
+  {
+    "file": "portrait-luo-v1.png",
+    "sha256": "7354b910254ca6490f53236a505f611a6c9cb44e6937478afc2d9290d6e3674d",
+    "bytes": 1874029
+  },
+  {
+    "file": "restaurant-furniture.png",
+    "sha256": "035fd5b67117cd7c54d979f7b8e02f4b81aa3e9c22dcb81d322d8b87ed633adb",
+    "bytes": 1499624
+  },
+  {
+    "file": "story-props.png",
+    "sha256": "5b04583c747aff2eb48d590cfacbea89b3e41c52b58aa109f4f0aae3beca73c9",
+    "bytes": 1352001
+  },
+  {
+    "file": "title.png",
+    "sha256": "80e72656c343536a3be9ca77ad2f818c86e53c228f8b6ad7c10419a4813d8a2d",
+    "bytes": 2406150
+  },
+  {
+    "file": "walker-aling.png",
+    "sha256": "19e9b273fae6a1d9d869314ff2e082b99e2661cbdf358dd202927010ff6f3266",
+    "bytes": 1576993
+  },
+  {
+    "file": "walker-chen.png",
+    "sha256": "7228b993ceb88ef194802b04975ff51b84ab66aaa1f537f7e2a603ef9a8ee8d1",
+    "bytes": 1534947
+  },
+  {
+    "file": "walker-hero.png",
+    "sha256": "c7e6c4c9f0445ebbdc0c8369a215a69efb9679f4939f6d3b3912aaf05bd60492",
+    "bytes": 1316607
+  }
+]

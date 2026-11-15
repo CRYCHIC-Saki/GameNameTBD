@@ -7,7 +7,7 @@ const ANCHOR := "harbor.hekou.arrival"
 const ARRIVAL := Vector2i(69,34)
 const GUIDE_STOP := Vector2i(67,34)
 const TOWNS := ["chengdu","paris","tokyo","bangkok","mexico_city"]
-const ART: Texture2D=preload("res://assets/town/harbor-v1.png")
+const ART: Texture2D=preload("res://assets/town/harbor-v2.png")
 static var _textures: Dictionary={}
 
 static func facility(map: TDTownMap) -> Dictionary:
@@ -25,7 +25,12 @@ static func departure_request(destination: String, home: String, unlocked: Array
 static func texture(index: int) -> Texture2D:
 	if not _textures.has(index):
 		var atlas:=AtlasTexture.new();atlas.atlas=ART;atlas.filter_clip=true
-		atlas.region=Rect2(245,5,400,870) if index==0 else Rect2(920,278,840,545)
+		var image:=ART.get_image()
+		if image.is_compressed(): image.decompress()
+		var cell:=Vector2i(ART.get_width()/2,ART.get_height())
+		var region:=Rect2i(Vector2i(clampi(index,0,1)*cell.x,0),cell)
+		var used:=image.get_region(region).get_used_rect()
+		atlas.region=Rect2(region.position+used.position,used.size)
 		_textures[index]=atlas
 	return _textures[index]
 
@@ -36,11 +41,13 @@ static func fit(art: Texture2D, box: Rect2) -> Rect2:
 static func draw(canvas: CanvasItem,map: TDTownMap,origin: Vector2,cell: float) -> void:
 	if facility(map).is_empty(): return
 	# Wide open water continues beyond the playable map; it is never buildable.
-	canvas.draw_rect(Rect2(origin+Vector2(71,0)*cell,Vector2(27,map.extent)*cell),Color("4d8995"))
-	for y: int in range(0,map.extent*int(cell),28):
-		for x: int in range(0,27*int(cell),97):
-			var offset:=Vector2(x+(y%53),y)
-			canvas.draw_line(origin+Vector2(71*cell,0)+offset,origin+Vector2(71*cell,0)+offset+Vector2(23+(y%17),0),Color("71a6ad"),2)
+	var water:=TDTownScenery.surface_texture(3)
+	var sea:=Rect2(origin+Vector2(71,0)*cell,Vector2(27,map.extent)*cell)
+	# Same material and 2x world scale as the main map's ground compositor.
+	for y: int in range(0,int(sea.size.y),240):
+		for x: int in range(0,int(sea.size.x),240):
+			var tile_size:=Vector2(minf(240,sea.size.x-x),minf(240,sea.size.y-y))
+			canvas.draw_texture_rect_region(water,Rect2(sea.position+Vector2(x,y),tile_size),Rect2(Vector2.ZERO,tile_size*.5))
 	# Stone seawall, with a gap at the walkable public pier.
 	for y: int in map.extent:
 		if y in [33,34,35]: continue
@@ -59,4 +66,4 @@ static func draw(canvas: CanvasItem,map: TDTownMap,origin: Vector2,cell: float) 
 	canvas.draw_texture_rect(booth,fit(booth,Rect2(origin+Vector2(68.8,29.5)*cell,Vector2(2.5,3.5)*cell)),false)
 	var sign:=Rect2(origin+Vector2(68,28.6)*cell,Vector2(5,0.7)*cell)
 	canvas.draw_rect(sign,Color("253c36"))
-	canvas.draw_string(ThemeDB.fallback_font,sign.position+Vector2(10,24),"河口港 · 海港客运",HORIZONTAL_ALIGNMENT_CENTER,sign.size.x-20,20,Color("f7dfad"))
+	canvas.draw_string(TDUI.font(),sign.position+Vector2(10,24),"河口港 · 海港客运",HORIZONTAL_ALIGNMENT_CENTER,sign.size.x-20,TDUI.FONT_BODY,Color("f7dfad"))

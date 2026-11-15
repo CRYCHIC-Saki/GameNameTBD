@@ -44,7 +44,7 @@ var station_names: Dictionary={}
 var single_fridge: bool = false
 var pot_contents: Array=[]
 var crew: TDRestaurantCrew
-const CHEF_SPRITE := preload("res://assets/kitchen/chef-v1.png")
+const CHEF_SPRITE := preload("res://assets/redraw-v1/chef.png")
 const COOK_POSTS: Array[Vector2] = [Vector2(640, 400), Vector2(850, 400)]
 const COOK_WALK_SPEED := 140.0
 const COOK_LEG_SEC := 1.2
@@ -52,6 +52,49 @@ var _staff_nodes: Array[Node2D] = []
 var _crew_time: float = 0.0
 var _staff_delta: float = 0.0
 var order_shop: TDShopSession
+var staff_source: Callable
+var _pot_panels: Array[PanelContainer] = []
+var _pot_titles: Array[Label] = []
+var _pot_materials: Array[Label] = []
+var _simmer_panels: Array[PanelContainer] = []
+var _simmer_titles: Array[Label] = []
+var _simmer_bars: Array[ProgressBar] = []
+
+func staff_approach(id: String, slot: int = 0) -> Vector2:
+	for station: Dictionary in stations():
+		if station.id!=id: continue
+		var bounds:=station_bounds(station)
+		if id=="kitchen.serve": return Vector2(bounds.position.x-28,bounds.get_center().y)
+		return Vector2(bounds.get_center().x+float(slot)*34,bounds.end.y+32)
+	return Vector2(640,430)
+
+func staff_home(index: int) -> Vector2:
+	return staff_approach("kitchen.stove.left" if index%2==0 else "kitchen.stove.right")+Vector2(0,80)
+
+func staff_waiting_point(index: int) -> Vector2:
+	return Vector2(staff_approach("kitchen.board").x+float(index)*40,440)
+
+func staff_walkable(point: Vector2) -> bool:
+	if not Rect2(108,296,1064,426).has_point(point): return false
+	for station: Dictionary in stations():
+		if station.id in ["kitchen.serve","kitchen.trash"] and station_bounds(station).grow(14).has_point(point): return false
+	return true
+
+func _staff_segment_clear(from: Vector2, to: Vector2) -> bool:
+	var count:=maxi(1,ceili(from.distance_to(to)/8.0))
+	for i: int in count+1:
+		if not staff_walkable(from.lerp(to,float(i)/count)): return false
+	return true
+
+func staff_route(from: Vector2, to: Vector2) -> PackedVector2Array:
+	if _staff_segment_clear(from,to): return PackedVector2Array([to])
+	# All fixtures are on the north counter or the southeast pass. Use the clear central aisle.
+	var points:=PackedVector2Array([Vector2(from.x,440),Vector2(to.x,440),to])
+	var previous:=from
+	for point: Vector2 in points:
+		if not _staff_segment_clear(previous,point): push_error("Unreachable staff work station: "+str(to));return PackedVector2Array([from])
+		previous=point
+	return points
 
 func stations() -> Array[Dictionary]:
 	if not single_fridge: return STATIONS.duplicate(true)
@@ -68,19 +111,21 @@ func stations() -> Array[Dictionary]:
 
 
 func _ready() -> void:
-	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	_player = $Player as TDKitchenPlayer
 	$Background.z_index = -10
 	$Background.scale=Vector2(1280.0/$Background.texture.get_width(),800.0/$Background.texture.get_height())
 	_player.z_index = 1
 	_make_hud()
 	_hud.z_index=2
-	_near_prompt=TDUI.label("[ E ]",20,TDUI.ORANGE); _near_prompt.size=Vector2(72,30); _near_prompt.autowrap_mode=TextServer.AUTOWRAP_OFF; _near_prompt.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER; _hud.add_child(_near_prompt)
+	_near_prompt=_sign("[ E ]", Vector2.ZERO, 76, TDUI.FONT_SECTION, "InteractionSign")
+	_near_prompt.autowrap_mode=TextServer.AUTOWRAP_OFF
+	_near_prompt.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 	for station: Dictionary in stations():
-		var label := TDUI.label(str(station_names.get(station.id,station.name)), 16, TDUI.ORANGE)
-		label.position = (station.get("visual",station.position+Vector2(0,-120)) as Vector2) + Vector2(-60,8)
-		label.size = Vector2(120,28); label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		_hud.add_child(label)
+		var at: Vector2 = (station.get("visual",station.position+Vector2(0,-120)) as Vector2) + Vector2(-70,12)
+		if station.id=="kitchen.trash": at.y-=24
+		var label := _sign(str(station_names.get(station.id,station.name)), at, 140, TDUI.FONT_BODY, "StationSign_"+str(station.id))
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		if station.get("kind") == "serve":
 			var body := StaticBody2D.new(); body.name="ServingCounter"; body.position = Vector2(1040,565)
 			var collider := CollisionShape2D.new(); var shape := RectangleShape2D.new(); shape.size = Vector2(232,102); collider.shape = shape
@@ -93,6 +138,7 @@ func _process(delta: float) -> void:
 		_crew_time += delta
 		_staff_delta = delta
 	_update_prompt()
+	_update_pot_signs()
 	_sync_staff()
 	queue_redraw()
 
@@ -125,6 +171,13 @@ func player_position() -> Vector2:
 
 func set_return_visible(value: bool) -> void:
 	if is_instance_valid(_back_button): _back_button.visible=value
+
+func set_embedded_hud() -> void:
+	# The host already presents the room and quest; keep held items above the bottom controls.
+	_hud.get_node("HeadingSign").hide()
+	for index: int in _pot_panels.size():
+		_pot_panels[index].position=Vector2(550+index*290,12)
+		_pot_panels[index].size.x=280
 
 func set_return_label(text: String) -> void:
 	if is_instance_valid(_back_button):
@@ -182,14 +235,28 @@ func _update_prompt() -> void:
 	var station := _station_at_player()
 	var station_id := String(station.get("id", ""))
 	if _near_prompt != null:
-		_near_prompt.visible = _controls_enabled and not station_id.is_empty()
-		if not station_id.is_empty(): _near_prompt.position=(station.get("visual",station.position-Vector2(0,120)) as Vector2)+Vector2(-36,-70)
+		var sign := _near_prompt.get_parent() as Control
+		sign.visible = _controls_enabled and not station_id.is_empty()
+		if not station_id.is_empty(): sign.position=(station.get("visual",station.position-Vector2(0,120)) as Vector2)+Vector2(-38,-70)
 	if not _controls_enabled:
 		_prompt.text = "正在灶台做菜 · 关闭做菜界面后继续走动"
 	elif not station_id.is_empty():
 		_prompt.text = "[ E ]  %s · %s" % [String(station["name"]), _station_hint(station_id)]
 	else:
 		_prompt.text = "WASD 移动 · Shift 疾跑 · E 取放 · F 开灶台 · Q 取锅内材料" if single_fridge else "WASD / 方向键走动 · Shift 疾跑 · E 拿取 / 放下 / 操作 · 先去左上方拿食材"
+
+func _sign(text: String, at: Vector2, width: float, font_size: int, id: String) -> Label:
+	var panel := PanelContainer.new()
+	panel.name=id;panel.position=at;panel.size=Vector2(width,0)
+	panel.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	panel.add_theme_stylebox_override("panel",TDUI.wood(TDUI.Surface.INSET,10))
+	_hud.add_child(panel)
+	var label := TDUI.label(text,font_size,TDUI.INK)
+	label.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+	label.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	panel.add_child(label)
+	return label
 
 func _make_hud() -> void:
 	_hud = Control.new()
@@ -198,38 +265,70 @@ func _make_hud() -> void:
 	_hud.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_hud.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(_hud)
-	var heading := TDUI.label("小镇食堂  /  厨房", 24)
-	heading.position = Vector2(28.0, 16.0)
-	heading.size = Vector2(350.0, 36.0)
-	heading.add_theme_color_override("font_shadow_color", Color("#172724"))
-	heading.add_theme_constant_override("shadow_offset_x", 2)
-	heading.add_theme_constant_override("shadow_offset_y", 2)
-	_hud.add_child(heading)
-	_held_label = TDUI.label("手上：空", 18, TDUI.ORANGE); _held_label.position = Vector2(28,60); _held_label.size = Vector2(900,30); _hud.add_child(_held_label)
-	_simmer_label = TDUI.label("",16); _simmer_label.position = Vector2(28,588); _simmer_label.size = Vector2(540,44); _hud.add_child(_simmer_label)
+	_sign("小镇食堂 / 厨房",Vector2(24,12),360,TDUI.FONT_SECTION,"HeadingSign")
+	_held_label = _sign("手上：空",Vector2(24,628),1232,TDUI.FONT_SECTION,"HeldSign")
+	_held_label.max_lines_visible=2
+	_held_label.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
+	_simmer_label = _sign("",Vector2(24,380),460,TDUI.FONT_SECTION,"SimmerSign")
+	_simmer_label.get_parent().hide()
 	_back_button = TDUI.button("返回主界面", _back)
 	_back_button.position = Vector2(1070.0, 14.0)
 	_back_button.size = Vector2(182.0, 50.0)
 	_hud.add_child(_back_button)
 	var bar := Panel.new()
-	bar.position = Vector2(215.0, 731.0)
-	bar.size = Vector2(850.0, 52.0)
+	bar.name="OperationSign"
+	bar.position = Vector2(108.0, 716.0)
+	bar.size = Vector2(1064.0, 72.0)
 	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.07, 0.15, 0.14, 0.94)
-	style.border_color = TDUI.ORANGE
-	style.set_border_width_all(2)
-	bar.add_theme_stylebox_override("panel", style)
+	bar.add_theme_stylebox_override("panel", TDUI.wood(TDUI.Surface.INSET,12))
 	_hud.add_child(bar)
-	_prompt = TDUI.label("", 20)
-	_prompt.position = Vector2(18.0, 11.0)
-	_prompt.size = Vector2(816.0, 30.0)
+	_prompt = TDUI.label("", TDUI.FONT_SECTION,TDUI.INK)
+	_prompt.position = Vector2(18.0, 8.0)
+	_prompt.size = Vector2(1028.0, 56.0)
+	_prompt.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_prompt.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	bar.add_child(_prompt)
-	var note := TDUI.label("像素场景原型 · 美术与动作可继续迭代", 14)
-	note.position = Vector2(28.0, 776.0)
-	note.size = Vector2(420.0, 23.0)
-	_hud.add_child(note)
+	for index: int in 2:
+		var panel := PanelContainer.new()
+		panel.name="PotSign%d"%index;panel.position=Vector2(530+index*220,352);panel.size=Vector2(214,0)
+		panel.mouse_filter=Control.MOUSE_FILTER_IGNORE
+		panel.add_theme_stylebox_override("panel",TDUI.wood(TDUI.Surface.INSET,10))
+		_hud.add_child(panel);_pot_panels.append(panel)
+		var column := VBoxContainer.new();column.mouse_filter=Control.MOUSE_FILTER_IGNORE
+		column.add_theme_constant_override("separation",4);panel.add_child(column)
+		var title := TDUI.label("",TDUI.FONT_SECTION,TDUI.ORANGE)
+		var materials := TDUI.label("",TDUI.FONT_BODY,TDUI.INK)
+		for label: Label in [title,materials]:
+			label.mouse_filter=Control.MOUSE_FILTER_IGNORE;label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+			column.add_child(label)
+		_pot_titles.append(title);_pot_materials.append(materials);panel.hide()
+		var simmer_panel := PanelContainer.new()
+		simmer_panel.name="SimmerMeter%d"%index; simmer_panel.position=Vector2(24,380+index*96);simmer_panel.size=Vector2(460,0)
+		simmer_panel.mouse_filter=Control.MOUSE_FILTER_IGNORE
+		simmer_panel.add_theme_stylebox_override("panel",TDUI.wood(TDUI.Surface.INSET,10))
+		_hud.add_child(simmer_panel)
+		var simmer_column := VBoxContainer.new();simmer_column.mouse_filter=Control.MOUSE_FILTER_IGNORE;simmer_panel.add_child(simmer_column)
+		var simmer_title := TDUI.label("",TDUI.FONT_BODY,TDUI.INK)
+		simmer_title.mouse_filter=Control.MOUSE_FILTER_IGNORE;simmer_title.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;simmer_column.add_child(simmer_title)
+		var meter := ProgressBar.new();meter.custom_minimum_size.y=18;meter.show_percentage=false;meter.mouse_filter=Control.MOUSE_FILTER_IGNORE
+		simmer_column.add_child(meter)
+		_simmer_panels.append(simmer_panel);_simmer_titles.append(simmer_title);_simmer_bars.append(meter);simmer_panel.hide()
+
+func _update_pot_signs() -> void:
+	for index: int in _pot_panels.size():
+		_pot_panels[index].visible=single_fridge and index<pot_contents.size()
+		if index<pot_contents.size():
+			_pot_titles[index].text=str(pot_contents[index].title)
+			_pot_materials[index].text=str(pot_contents[index].materials)
+	if _simmer_label!=null:
+		_simmer_label.get_parent().visible=simmer_meters.is_empty() and not _simmer_label.text.is_empty()
+	for index: int in _simmer_panels.size():
+		_simmer_panels[index].visible=index<simmer_meters.size()
+		if index<simmer_meters.size():
+			var meter: Dictionary=simmer_meters[index]
+			_simmer_titles[index].text="%s · 稳定 %d%% · %.1fs"%[meter.name,roundi(float(meter.ratio)*100),float(meter.remaining_sec)]
+			_simmer_bars[index].value=float(meter.ratio)*100
 
 func _back() -> void:
 	if _controls_enabled:
@@ -242,6 +341,7 @@ func set_context(value: Dictionary, message: String = "", simmer: String = "") -
 	if _held_label != null:
 		var hand: Dictionary = _context.get("hand",{})
 		_held_label.text = "手上：" + ("空" if hand.is_empty() else str(hand.name) + " · " + {"whole":"完整","slice":"片","strip":"条","chunk":"块","dice":"丁"}.get(hand.shape,hand.shape)) + "     " + _message
+		_held_label.tooltip_text=_held_label.text
 	if _simmer_label != null: _simmer_label.text = simmer
 	queue_redraw()
 
@@ -302,6 +402,13 @@ static func cook_task_point(index: int, time_sec: float) -> Vector2:
 	return cook_station(index, cook_flow_step(time_sec))
 
 func _sync_staff() -> void:
+	if staff_source.is_valid():
+		var rows: Array=staff_source.call()
+		while _staff_nodes.size()<rows.size():
+			var actor:=TDKitchenStaffActor.new();actor.name="Cook%d"%_staff_nodes.size();add_child(actor);_staff_nodes.append(actor)
+		while _staff_nodes.size()>rows.size(): (_staff_nodes.pop_back() as Node2D).queue_free()
+		for i: int in rows.size(): (_staff_nodes[i] as TDKitchenStaffActor).present(rows[i])
+		return
 	var wanted: Array[Dictionary] = []
 	if crew != null:
 		var cooks := crew.cooks()
@@ -337,7 +444,7 @@ func _sync_staff() -> void:
 		caption.position = Vector2(-60, -102)
 		caption.size = Vector2(120, 24)
 		caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		caption.add_theme_font_size_override("font_size", 14)
+		caption.add_theme_font_size_override("font_size", TDUI.FONT_CAPTION)
 		root.add_child(caption)
 		root.name = "Cook%d" % _staff_nodes.size()
 		add_child(root)
@@ -399,7 +506,7 @@ func _station_hint(id: String) -> String:
 	if id=="kitchen.trash": return "丢弃手上物品" if not hand.is_empty() else "清理锅 / 砧板"
 	if id == "kitchen.board": return "取走备好的食材" if _context.get("board_occupied",false) else "放下食材并备菜"
 	if id == "kitchen.dining": return "走进餐厅"
-	if id == "kitchen.serve": return "交付客人" if hand.get("kind") == "dish" else "把出锅的菜端到这里"
+	if id == "kitchen.serve": return "放到出餐口，再去餐厅送桌" if hand.get("kind") == "dish" else "把出锅的菜端到这里"
 	if single_fridge: return "取放食材 / 端盘 · F 开灶台 · Q 取回"
 	return "放入食材" if hand.get("kind") == "ingredient" else "操作 / 端起成品"
 
@@ -417,24 +524,11 @@ func _draw_service_door() -> void:
 	draw_circle(Vector2(seam - 14.0, frame.position.y + frame.size.y * 0.55), 3.0, Color("e2ba69"))
 	draw_circle(Vector2(seam + 14.0, frame.position.y + frame.size.y * 0.55), 3.0, Color("e2ba69"))
 	if _hud != null:
-		draw_string(_hud.get_theme_default_font(), frame.position + Vector2(frame.size.x * 0.5 - 20.0, -8.0), "餐厅", HORIZONTAL_ALIGNMENT_LEFT, 80, 16, TDUI.ORANGE)
+		draw_string(_hud.get_theme_default_font(), frame.position + Vector2(frame.size.x * 0.5 - 20.0, -8.0), "餐厅", HORIZONTAL_ALIGNMENT_LEFT, 80, TDUI.FONT_CAPTION, TDUI.ORANGE)
 
 func _draw() -> void:
 	if service_door:
 		_draw_service_door()
-	if single_fridge and _hud!=null:
-		for i: int in pot_contents.size():
-			var box:=Rect2(530+i*220,350,210,62)
-			draw_rect(box,Color("172b24")); draw_rect(box,Color("c5a46c"),false,2)
-			draw_colored_polygon(PackedVector2Array([box.position+Vector2(124,0),box.position+Vector2(144,-18),box.position+Vector2(153,0)]),Color("172b24"))
-			draw_string(_hud.get_theme_default_font(),box.position+Vector2(10,23),str(pot_contents[i].title),HORIZONTAL_ALIGNMENT_LEFT,232,17,TDUI.ORANGE)
-			draw_string(_hud.get_theme_default_font(),box.position+Vector2(10,46),str(pot_contents[i].materials),HORIZONTAL_ALIGNMENT_LEFT,232,16,TDUI.INK)
-	if _simmer_label!=null: _simmer_label.visible=simmer_meters.is_empty()
-	for i: int in simmer_meters.size():
-		var r:=Rect2(24,654-i*78,342,22)
-		draw_rect(Rect2(r.position-Vector2(4,33),Vector2(350,59)),Color("1d3028"))
-		draw_rect(r,Color("263c32")); draw_rect(Rect2(r.position+Vector2(3,3),Vector2(269*float(simmer_meters[i].ratio),16)),Color("92ae76"))
-		if _hud!=null: draw_string(_hud.get_theme_default_font(),r.position+Vector2(5,-10),"%s  ·  稳定 %d%%  ·  %.1fs"%[simmer_meters[i].name,roundi(float(simmer_meters[i].ratio)*100),float(simmer_meters[i].remaining_sec)],HORIZONTAL_ALIGNMENT_LEFT,-1,16,TDUI.INK)
 	for station: Dictionary in stations():
 		var feet: Vector2=station.get("visual",station.position-Vector2(0,70))
 		var index: int={"fridge":4,"board":5,"steamer":7,"serve":8,"trash":9,"supply":14}.get(str(station.get("kind","")),6)

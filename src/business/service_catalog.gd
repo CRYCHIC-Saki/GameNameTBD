@@ -20,6 +20,9 @@ func load_data(raw: Variant) -> TDOutcome:
 	for field: String in ["sheets","costs","settings"]:
 		if not raw.get(field) is Dictionary: return TDOutcome.new(false,"INVALID_SERVICE_CONTENT",field)
 	if raw.get("base") != "res://content/cooking_system.json": return TDOutcome.new(false,"INVALID_BASE")
+	if raw.has("staff_workflow"):
+		var staff: Variant=raw.staff_workflow
+		if not staff is Dictionary or not _number(staff.get("walk_speed_px_sec"),40,300) or not _number(staff.get("handling_sec"),.1,3): return TDOutcome.new(false,"INVALID_STAFF_WORKFLOW")
 	var base := TDCookingCatalog.new()
 	var loaded := base.load_file(raw.base)
 	if not loaded.ok: return loaded

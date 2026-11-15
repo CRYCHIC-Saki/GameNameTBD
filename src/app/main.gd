@@ -39,6 +39,8 @@ var _paused: bool = false
 var game_shell: TDGameShell
 
 func _ready() -> void:
+	ThemeDB.fallback_font=TDUI.font()
+	ThemeDB.get_default_theme().default_font=TDUI.font()
 	# Export smoke and developer captures can explicitly isolate every save location.
 	for argument: String in OS.get_cmdline_user_args():
 		if argument.begins_with("--validation-root="):

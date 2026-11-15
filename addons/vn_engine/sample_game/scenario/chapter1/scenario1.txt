@@ -1,0 +1,96 @@
+// Chapter one: the tour. No images or audio files needed, only .tres
+// gradients for backgrounds. Copy this folder to start your own game.
+
+# start
+@chapter_title "Qaan's Tour" "A feature walkthrough" 2.0
+@bg bg_dawn with fade 1.0
+Narrator: Welcome. This chapter is a short tour of what VN Engine can do, no art or audio files needed. Press F3 to open the debug panel.
+
+# greet
+@datecard "Day One" "The Old Observatory"
+Qaan: Hi, I'm Qaan. I run this place. Want the full tour, or should we skip ahead?\nPress F3 again to close the debug panel.
+- Give me the full tour. -> tour
+- Skip ahead. -> skip
+
+# tour
+@flow "The Full Tour"
+@flag took_tour = true
+@set_var warmth = 1
+Qaan: A name before the colon picks the speaker, and its color comes from the character file. A bare Narrator: line, like the one before this, shows no name at all. Maybe I will change it in the future to make it narrator or something like that.
+@call aside
+
+# after_tour
+Qaan: That line came right after the aside. "@return" brings you to the node below the one that called it.
+Qaan: Your warmth toward me is {$warmth} right now.
+Qaan: Hold on.{w=0.5} That was a [wave]lot[/wave] of talking, wasn't it? Words can [bounce]jump[/bounce], [jitter]shiver[/jitter] or [rainbow]shine[/rainbow] too.
+@jump hub
+
+# skip
+@flow "Skip Ahead"
+Qaan: Straight to the point, I like that.
+@jump hub
+
+# aside
+Qaan: This aside runs through "@call". Once it finishes, we jump right back to where we left off.
+@return
+
+# hub
+@flow "Workshop Hub"
+@bg bg_workshop with wipe_left 0.8
+Qaan: Let's look at two more things before we head out.
+- Ask about the telescope. -> topic_telescope once
+- Ask about Ely. (is this clickable?) -> topic_ely disabled_if met_ely == false hint "Meet Ely first."
+- A bonus: peek at Qaan's notes. -> topic_notes disabled_if warmth < 2 once hint "Needs a little more warmth."
+- A secret: the roof hatch. -> topic_roof if warmth >= 3 once
+- Move on. -> chapter_end
+- Bonus: show me the text effects. -> topic_text once
+
+# topic_telescope
+@flag warmth += 1
+Qaan: The telescope upstairs is older than the observatory itself. That was "@flag", a typed write with clamping and a default from config/flags/.
+@flag met_ely = true
+@jump hub
+
+# topic_ely
+@flag warmth += 1
+Ely: Hello. I catalog the stars here. Asking about me just unlocked through "disabled_if", it needed "met_ely" to be true first.
+@jump hub
+
+# topic_roof
+@flag warmth += 1
+Qaan: Nobody knows about the roof hatch. This choice was hidden until warmth reached 3, that's "if" at work. A hidden choice does not show up at all.
+@jump hub
+
+# topic_text
+@flow "Text Effects"
+Qaan: Text effects are BBCode tags around words. Godot has some built in: [wave]wave[/wave], [shake]shake[/shake], [tornado]tornado[/tornado], [rainbow]rainbow[/rainbow] and [pulse]pulse[/pulse].
+Qaan: These play once as the letters type: [pop]pop[/pop], [bounce]bounce[/bounce], [drop]drop[/drop], [grow]grow[/grow], [spin]spin[/spin] and [decode]decode[/decode].
+Qaan: These keep going: [jitter]jitter[/jitter], [glitch]glitch[/glitch], [ghost]ghost[/ghost], [heartbeat]heartbeat[/heartbeat] and [sway]sway[/sway].
+Qaan: Most take options too, like [jitter amp=4]a stronger jitter[/jitter] or a [pop time=0.8 rise=20]slow, high pop[/pop].
+@textfx glitch
+Qaan: And "@textfx glitch" breaks the whole line, like a bad radio signal, until "@textfx off".
+@textfx off
+Qaan: Turn on Reduce motion in Settings and the moving ones stand still. The colors stay.
+@jump hub
+
+# topic_notes
+@flow "Qaan's Notes"
+@flag warmth += 1
+Qaan: These are just old observation logs, nothing new. This choice was not clickable until warmth reached 2, that's "disabled_if" at work. Now it is clickable.
+@jump chapter_end
+
+# chapter_end
+@flow "Chapter One End"
+@if warmth >= 3
+Narrator: Qaan waves warmly. You've now seen speaker colors, choices, @flag, @set_var, and @call/@return.
+@elif warmth >= 1
+Narrator: Qaan gives a friendly nod. You've seen the basics: choices, flags, and a call/return aside.
+@else
+Narrator: Qaan shrugs. A quick visit, a quick tour. Chapter two is next either way.
+@endif
+
+# bridge
+@bg bg_dusk with fade 1.2
+Qaan: That's chapter one.
+Qaan: This node has three lines. Each click shows the next one.
+Qaan: See you in chapter two.

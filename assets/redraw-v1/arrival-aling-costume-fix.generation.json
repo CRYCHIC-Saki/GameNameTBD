@@ -1,0 +1,7 @@
+{
+  "key": "arrival-aling-costume-fix",
+  "file": "arrival-aling.png",
+  "reference": "assets/redraw-v1/arrival-aling.png",
+  "prompt": "Edit image1's six-pose atlas ONLY to correct Aling's legs and boots and simplify shading to original image2 style. All six characters must wear the exact original image2 BLUE and GOLD ankle boots with gold toe caps, crescent/flame motifs, gold laces, and pale pink ruffled knee socks over bare legs, NEVER brown boots or black stockings. Preserve all six poses, face expressions, book placement, bird, costume, scale, pixel positions and exact 3 columns x2 rows. Clean black lines, flat cel colours. Fully transparent background, remove any glow or atmospheric backdrop; empty pixels true zero alpha. Do not change any other details.",
+  "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-6ce100a0-68d1-47a2-8c16-4404f367df56.png"
+}

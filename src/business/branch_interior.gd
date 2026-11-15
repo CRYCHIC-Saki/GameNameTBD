@@ -32,7 +32,7 @@ func _ready() -> void:
 	player=TDKitchenPlayer.new();player.name="BranchPlayer";player.process_mode=Node.PROCESS_MODE_PAUSABLE
 	player.collision_layer=512;player.collision_mask=256;player.walk_speed=180;player.vertical_stride_multiplier=1.6
 	player.motion_transform=Transform2D(Vector2(TDRestaurantIsoView.HALF_W,TDRestaurantIsoView.HALF_H)/layout.cell_px,Vector2(-TDRestaurantIsoView.HALF_W,TDRestaurantIsoView.HALF_H)/layout.cell_px,Vector2.ZERO).affine_inverse()
-	player.input_transform=player.motion_transform.affine_inverse();player.confine_to=_can_stand
+	player.input_transform=Transform2D.IDENTITY;player.confine_to=_can_stand
 	var art:=Sprite2D.new();art.name="Sprite2D";player.add_child(art)
 	var collision:=CollisionShape2D.new();var shape:=CircleShape2D.new();shape.radius=12;collision.shape=shape;player.add_child(collision)
 	_floor.add_child(player);art.hide()
@@ -58,8 +58,8 @@ func _ready() -> void:
 	var panel:=PanelContainer.new();panel.position=Vector2(20,670);panel.size=Vector2(1240,110);panel.theme=TDManagementPanels.theme();_layer.add_child(panel)
 	var margin:=MarginContainer.new();margin.add_theme_constant_override("margin_left",16);margin.add_theme_constant_override("margin_top",10);panel.add_child(margin)
 	var lines:=VBoxContainer.new();margin.add_child(lines)
-	_caption=TDUI.label("",21,TDUI.ORANGE);lines.add_child(_caption)
-	_hint=TDUI.label("",17);lines.add_child(_hint)
+	_caption=TDUI.label("",TDUI.FONT_SECTION,TDUI.ORANGE);lines.add_child(_caption)
+	_hint=TDUI.label("",TDUI.FONT_BODY);lines.add_child(_hint)
 	show_room("restaurant");refresh_staff()
 
 func _isolate_physics(node: Node) -> void:

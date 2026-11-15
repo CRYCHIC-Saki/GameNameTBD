@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="VNEngineGameManifest" format=3]
+
+[ext_resource type="Script" path="res://addons/vn_engine/src/defs/chapter_def.gd" id="1_etj4k"]
+[ext_resource type="Script" path="res://addons/vn_engine/src/defs/chapter_branch.gd" id="2_v8op0"]
+[ext_resource type="Script" path="res://addons/vn_engine/src/defs/ending_def.gd" id="3_uxhpm"]
+[ext_resource type="Script" path="res://addons/vn_engine/src/defs/game_manifest.gd" id="4_5qpbj"]
+[ext_resource type="PackedScene" path="res://src/story/vn_host_screen.tscn" id="5_pa4ch"]
+[ext_resource type="Script" path="res://addons/vn_engine/src/defs/ui_def.gd" id="6_guw1h"]
+
+[sub_resource type="Resource" id="Resource_dg621"]
+script = ExtResource("1_etj4k")
+id = "intro"
+title = "赤焰之手，空腹降临"
+script_path = "res://content/story/vn/scenario/intro/script.txt"
+intro_style = "none"
+preload_assets = PackedStringArray()
+autosave_on_enter = false
+
+[sub_resource type="Resource" id="Resource_pp0g5"]
+script = ExtResource("6_guw1h")
+side_image_enabled = false
+show_skip_to_choice = false
+screen_transition = "instant"
+screen_transition_time = 0.0
+mark_seen_text = false
+autosave_before_choices = false
+loading_mode = "never"
+screens = Dictionary[StringName, PackedScene]({
+&"stage": ExtResource("5_pa4ch")
+})
+
+[resource]
+script = ExtResource("4_5qpbj")
+game_id = "town_diner_opening"
+first_chapter = "intro"
+chapters = Array[ExtResource("1_etj4k")]([SubResource("Resource_dg621")])
+blip_enabled = false
+ui = SubResource("Resource_pp0g5")

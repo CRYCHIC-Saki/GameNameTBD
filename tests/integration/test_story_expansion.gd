@@ -37,7 +37,12 @@ func test_real_escort_waits_faces_player_and_resumes_without_teleport() -> void:
 
 func test_cg_playback_is_frozen_by_pause_and_cancel_does_not_progress() -> void:
 	shell.guide.present("intro");assert_true(shell.guide.presenting());assert_false(shell.town._player.controls_enabled)
-	var talk:=shell.guide.dialogue.talk;talk.tick(.5);var elapsed:=talk.cg_elapsed
+	await wait_process_frames(2)
+	var view:=shell.guide.dialogue
+	view.set_process(false)
+	assert_eq(view._vn_stage.blocked,"td_cg")
+	var talk:=view.talk;view._process(.5);var elapsed:=talk.cg_elapsed
+	assert_gt(elapsed,0.0)
 	get_tree().paused=true;await get_tree().process_frame;assert_eq(talk.cg_elapsed,elapsed)
 	get_tree().paused=false;shell.guide.dialogue.finish_now();assert_eq(shell.profile.story.beat,"arrive")
 	assert_false(shell.town.external_story_frozen);assert_true(shell.town._player.controls_enabled)
@@ -45,13 +50,19 @@ func test_cg_playback_is_frozen_by_pause_and_cancel_does_not_progress() -> void:
 
 func test_movie_uses_full_screen_without_gal_box_and_restores_dialogue() -> void:
 	shell.guide.present("intro")
+	await wait_process_frames(2)
 	var view:=shell.guide.dialogue;var talk:=view.talk
 	view.set_process(false);view._refresh()
 	assert_false(view.get_node("Box").visible);assert_false(view.get_node("Portrait").visible)
 	assert_true(view.get_node("FilmControls").visible);assert_eq(view._cg.size,view.size)
 	var minute:=shell.profile.characters.clock.minute
-	talk.tick(talk.cg_duration);view._refresh()
-	assert_true(view.get_node("Box").visible);assert_false(view.get_node("Portrait").visible)
+	view._process(talk.cg_duration)
+	await get_tree().process_frame
+	assert_false(view._cg.visible)
+	assert_true(view._vn_stage.dialog.background_box.is_visible_in_tree())
+	assert_true(view._vn_stage.runner.ctx.characters.active_sprites.has("hero"))
+	assert_false(view._vn_stage.runner.ctx.characters.active_sprites.has("aling"),"offscreen Aling must not be revealed")
+	assert_false(view.get_node("Box").visible,"the host must not overlay a second dialogue box")
 	assert_true(view.get_node("FilmControls").visible);assert_eq(talk.full_text(),"终于到了。吾之舌啊，准备迎接万国料理的洗礼！")
 	assert_eq(shell.profile.characters.clock.minute,minute);assert_false(shell.town._player.controls_enabled)
 	view.finish_now();assert_true(shell.town._player.controls_enabled)
