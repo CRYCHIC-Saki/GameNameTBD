@@ -48,6 +48,7 @@ var _tier_button: Button
 var _greeter_button: Button
 var _cashier_button: Button
 var _bar: Panel
+var _status_left: float=0.0
 var _decoration_backdrop: ColorRect
 var _bar_box: VBoxContainer
 var _play_row: HFlowContainer
@@ -167,10 +168,13 @@ func _ready() -> void:
 		_set_status(room)
 	_pull_layout_staff()
 	if player_mode:
-		_set_status("WASD 移动 · Shift 疾跑 · E 交互 / 端菜 · Esc 暂停" if floor_service else "WASD 走动 · Shift 疾跑 · 招工处可雇厨师或服务员 · 门牌、账本、装修桌或门按 E · B 菜谱 · Esc 暂停")
+		_set_status("")
 		_iso.interaction_markers=interaction_points()
 
 func _process(delta: float) -> void:
+	if player_mode:
+		if not get_tree().paused and is_visible_in_tree(): _status_left=maxf(0.0,_status_left-delta)
+		if _bar!=null: _bar.visible=not _editing and _status_left>0 and not _status.text.is_empty()
 	if _player != null:
 		_player.z_index = int(_player.position.y)
 	for guest: TDRestaurantGuest in guest_nodes(): guest.frozen=story_frozen or (_talk_open() and str(_talk_view.talk.context.get("ticket_id",""))==guest.ticket_id)
@@ -445,7 +449,7 @@ func request_interaction() -> bool:
 		return true
 	if cell_of_player() == layout.entrance():
 		kitchen_requested.emit()
-		_set_status("走进后厨。菜做好后放在南墙出餐口，服务员去那里取，再端到客人桌上。按 V 只看餐厅，时间继续走。")
+		_set_status("后厨")
 		return true
 	var nearest := _nearest_piece()
 	if nearest.is_empty():
@@ -634,7 +638,7 @@ func _build_status_bar() -> void:
 	layer.add_child(panel)
 	get_viewport().size_changed.connect(_fit_bar)
 	_observe_banner = Label.new()
-	_observe_banner.text = "正在看餐厅 · 再按 V 回后厨 · 客人和灶台的时间都在走"
+	_observe_banner.text = "V 返回后厨"
 	_observe_banner.position = Vector2(24, 12)
 	_observe_banner.size = Vector2(900, 32)
 	_observe_banner.visible = false
@@ -968,7 +972,7 @@ func _toggle_edit() -> void:
 			_iso.set_room(layout)
 	queue_redraw()
 	_lock_player()
-	_set_status("选择分类中的家具或饰面；按住家具拖动，左上删除、右上逆时针旋转。" if _editing else "回到走动。E 可以查看家具。")
+	_set_status("拖动家具调整位置" if _editing else "")
 
 func _cycle_kind() -> void:
 	var kinds := catalog.kinds()
@@ -1257,6 +1261,7 @@ func _set_status(text: String) -> void:
 	if _decor_panel!=null and _editing: _decor_panel.show_info(text)
 	if _status != null:
 		_status.text = text
+		_status_left=4.0 if not text.is_empty() else 0.0
 
 func pump_service(steps: int, step_sec: float = 0.2) -> void:
 	for _index in steps:
@@ -2415,15 +2420,11 @@ func _refresh_order_board(orders: Array, now: float) -> void:
 	_order_board.visible = true
 	if not player_mode or _covered:
 		return
-	var decor := _decor_now()
 	var lines := PackedStringArray()
-	lines.append("装修效果 %.0f · 统一 %.0f · 高端 %.0f" % [float(decor.effect), float(decor.unity), float(decor.luxury)])
-	if layout != null and layout.crew != null:
-		lines.append("厨师 %d · 服务员 %d · H 查看员工" % [layout.crew.cooks().size(),layout.crew.waiters().size()])
-	if floor_service:
-		if unified_dining_clock:
-			lines.append("自动入座 · 送餐 / 收银：%s" % ("服务员" if _waiter_serving() else "你"))
-		else:
+	if not unified_dining_clock:
+		var decor := _decor_now()
+		lines.append("装修效果 %.0f · 统一 %.0f · 高端 %.0f" % [float(decor.effect), float(decor.unity), float(decor.luxury)])
+		if floor_service:
 			lines.append("自动入座 · 送餐：%s · 收银：%s" % ["服务员" if _waiter_serving() else "你","在岗" if duty_on("cashier") else "你"])
 	var active: Array = []
 	var arriving: int=0
@@ -2445,29 +2446,27 @@ func _refresh_order_board(orders: Array, now: float) -> void:
 		shown += 1
 		if shown >= 5:
 			break
-	if not recent.is_empty() and shown < 6:
+	if not unified_dining_clock and not recent.is_empty() and shown < 6:
 		var latest: TDRestaurantGuest = _business_guests.get(str(recent.id), null) as TDRestaurantGuest
 		var phase := "leave"
 		if latest != null and is_instance_valid(latest):
 			phase = latest.phase
 		lines.append(_order_caption(recent, phase, now))
 		shown += 1
-	if arriving>0: lines.append("%d位客人正在进店或等位，落座后点单。"%arriving)
+	if arriving>0: lines.append("%d位客人入座中"%arriving)
 	if shown == 0 and arriving==0:
 		var phase:=str(business.snapshot().phase) if business!=null else ""
 		if phase in ["OPEN","DRAINING"] and business.economic_menu().is_empty():
-			lines.append("菜单上的菜现在做不了，缺料时不会有客人进门。")
-		else:
-			lines.append("还没有客人。开门后，客人会比较本店、竞品和在家吃饭。")
+			lines.append("食材不足，请补货或调整菜单")
 	if unified_dining_clock:
 		if _physical_service():
-			lines.append("出餐口 E 取放 · 桌边 E 上菜\n出餐口 Q 丢弃")
 			if _plate_order!="": lines.append("端着："+_held_caption())
 	elif floor_service:
 		lines.append("靠近客人按 E。菜放在出餐口后，雇了服务员就由服务员去取，没雇就由你端。")
 	else:
 		lines.append("靠近客人按 E，查看点单、比较和结算。")
 	var text := "\n".join(lines)
+	if text.is_empty(): _order_plate.hide()
 	if _order_board.text!=text:
 		_order_board.text=text
 		_fit_order_board.call_deferred()

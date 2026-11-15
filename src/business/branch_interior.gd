@@ -134,8 +134,9 @@ func _process(delta: float) -> void:
 	var store: Dictionary=profile.branches.state.stores[store_id]
 	_caption.text=str(store.name)+(" · 餐厅巡视" if room=="restaurant" else " · 厨房巡视")+"    "+profile.branches.status_text(store_id)
 	var target:=nearby()
-	var hint: String={"exit":"[E] 返回小镇","kitchen":"[E] 进入本店厨房","manage":"[E] 管理本店","kitchen.dining":"[E] 返回餐厅","kitchen.fridge":"[E] 查看本店库存","kitchen.board":"[E] 查看本店菜单"}.get(target,"[E] 查看本店员工 / 账本" if not target.is_empty() else "WASD 走动 · Shift 疾跑 · 靠近门或设施按 E")
-	_hint.text=hint+" · G 店铺管理 · 员工沿原流程经营，巡视不接管做菜"
+	var hint: String={"exit":"E 出门","kitchen":"E 厨房","manage":"E 管理","kitchen.dining":"E 餐厅","kitchen.fridge":"E 库存","kitchen.board":"E 菜单"}.get(target,"E 查看" if not target.is_empty() else "")
+	_hint.text=hint if _controls else ""
+	_hint.visible=not _hint.text.is_empty()
 
 func set_day_minute(value: float) -> void:
 	if iso!=null: iso.set_day_minute(value)

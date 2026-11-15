@@ -371,12 +371,13 @@ func _station_interaction(id: String) -> void:
 		elif handling.hand != null: result = TDOutcome.new(false,"HANDS_FULL","把成品送到右下方出餐台。")
 		elif lanes[index].snapshot().state == "plated": result = handling.take_dish(lanes[index].session)
 		else: open_bench(id); return
-	_message = result.message if not result.message.is_empty() else ("已完成" if result.ok else lanes[0]._explain_error(result))
+	_message = "" if result.ok else (result.message if not result.message.is_empty() else lanes[0]._explain_error(result))
+	world.show_feedback(_message)
 	world.set_controls_enabled(true); _update_world()
 
 func _take_and_leave() -> void:
 	var result: TDOutcome = handling.take_board() if prep.visible else handling.take_dish(lanes[active_lane].session)
-	if result.ok: _message = result.message; close_bench()
+	if result.ok: _message = ""; close_bench()
 	else:
 		_title.text = result.message if not result.message.is_empty() else "先完成工序并出锅，再取走"
 
@@ -519,7 +520,8 @@ func _guided_station(id: String) -> void:
 					result=lane.start_sheet(profile)
 					if result.ok: _open_guided(id); return
 			else: _open_guided(id); return
-	_message=result.message if not result.message.is_empty() else ("已完成" if result.ok else lanes[0]._explain_error(result))
+	_message="" if result.ok else (result.message if not result.message.is_empty() else lanes[0]._explain_error(result))
+	world.show_feedback(_message)
 	world.set_controls_enabled(true); _update_world()
 
 func _open_guided(id: String) -> void:
@@ -554,7 +556,7 @@ func _refresh_guided() -> void:
 				if lane.qte!=null or lane.thermal_qte!=null or (lane.sheet!=null and lane.sheet.running): _finished_at=-1; return
 		if _finished_at<0: _finished_at=shared_clock.game_sec
 		if shared_clock.game_sec-_finished_at>=1.1:
-			_message="备菜完成 · 在砧板按 E 取走" if _on_board else "烹饪完成 · 在灶台按 E 端起"
+			_message=""
 			close_bench()
 
 func _input_guided(event: InputEvent) -> void:

@@ -45,7 +45,7 @@ func _initialize() -> void:
 		script=script.replace("await create_timer(","await get_tree().create_timer(")
 	script=script.replace("await process_frame","await get_tree().process_frame")
 	if chef: script=script.replace("res://artifacts/chef-workflow-20261114/gpu",folder+"/screenshots")
-	if hud: script=script.replace("res://artifacts/hud-readability-20261115/gpu",folder+"/screenshots")
+	if hud: script=script.replace("res://artifacts/quiet-hud-20261115/gpu",folder+"/screenshots")
 	# Match the signal only, never the similarly named physics_frames() helper.
 	script=script.replace("await physics_frame\n","await get_tree().physics_frame\n")
 	var file:=FileAccess.open(folder+"/probe.gd",FileAccess.WRITE);file.store_string(script);file.close()

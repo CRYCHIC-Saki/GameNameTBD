@@ -154,9 +154,10 @@ func _process(_delta: float) -> void:
 	if _closed: return
 	camera.position=player.position
 	_target=nearby()
-	var text: String="WASD 走动 · Shift 疾跑 · M 地图 · B 菜谱 · 港口可返回或继续旅行"
-	if not _target.is_empty(): text="E · "+("港口客运" if _target.kind=="harbor" else TDTravelCatalog.label(_target,town_id))+"　　M 地图"
-	_hint.text=TDTravelCatalog.info(town_id).name+"\n"+text
+	var text: String=""
+	if player.controls_enabled and not _target.is_empty(): text="E "+("港口客运" if _target.kind=="harbor" else TDTravelCatalog.label(_target,town_id))
+	_hint.text=text
+	_hint.get_parent().visible=not text.is_empty()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("world_interact") and not event.is_echo() and player.controls_enabled:

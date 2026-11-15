@@ -110,6 +110,7 @@ func _build_shell() -> void:
 	actions.add_child(TDUI.button("返回主界面",request_back))
 	if embedded:
 		actions.hide();_title.hide()
+		_message.hide()
 		_message.position=Vector2(414,118);_message.size=Vector2(518,50)
 		_message.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 		_message.add_theme_font_size_override("font_size",TDUI.FONT_CAPTION)
@@ -167,8 +168,6 @@ func refresh(force: bool = false) -> void:
 		if state.menu[id].enabled: fame+=int(state.fame.get(id,0))
 	_title.text="小镇食堂  ·  第 %d 天     ¥ %.2f     人气 %d   菜品名气合计 %d" % [state.day,float(state.money_cents)/100.0,state.popularity,fame]
 	var boundary: bool=state.phase in ["PREPARE","SETTLED"]
-	if embedded and _last_phase!=state.phase:
-		_message.text={"PREPARE":"厨房随时可用 · E 取放 · F 开灶 · 营业牌确认菜单与价格后迎客。","OPEN":"营业中 · 按订单备菜，做好的菜交到出餐台 · B 查看菜谱","DRAINING":"已停止接新客，请处理最后的订单。","SETTLED":"已打烊，仍可练习做菜。原料放回冰箱，成品出餐或清理后去小屋保存、休息。"}.get(state.phase,"")
 	_open_button.disabled=state.phase!="PREPARE" or _load_blocked
 	_save_button.disabled=not boundary or _load_blocked
 	_next_button.disabled=state.phase!="SETTLED" or _load_blocked
@@ -286,12 +285,9 @@ func _summary_page(column: VBoxContainer, report: Dictionary) -> void:
 
 func _orders_panel(state: Dictionary) -> void:
 	_empty(_sidebar)
-	_sidebar.add_child(TDUI.label("等候订单 · %d / %d"%[shop.active_orders().size(),service.config.settings.max_orders],TDUI.FONT_SECTION,TDUI.ORANGE))
-	var clock_text: String="筹备中 · 尚未营业" if state.phase=="PREPARE" else ("今日已结算" if state.phase=="SETTLED" else ("停止接客 · 完成剩余订单" if state.phase=="DRAINING" else "营业中 · 主动打烊或02:00收摊" if shop.day_minute_reader.is_valid() else "营业剩余 %d 秒" % maxi(0,int(service.config.settings.day_sec)-int(state.elapsed_sec))))
+	_sidebar.add_child(TDUI.label("订单 · %d"%shop.active_orders().size(),TDUI.FONT_SECTION,TDUI.ORANGE))
+	var clock_text: String={"PREPARE":"筹备中","OPEN":"营业中","DRAINING":"收摊中","SETTLED":"已打烊"}.get(state.phase,"")
 	_sidebar.add_child(TDUI.label(clock_text,TDUI.FONT_BODY))
-	_sidebar.add_child(TDUI.label("同菜先到先服务；不同菜可乱序出餐。",TDUI.FONT_CAPTION,TDUI.MUTED))
-	if shop.crew != null and not shop.crew.duty_line().is_empty():
-		_sidebar.add_child(TDUI.label(shop.crew.duty_line(),TDUI.FONT_CAPTION,TDUI.ORANGE))
 	if _new_needs_confirmation: _sidebar.add_child(TDUI.label("新店尚未覆盖旧档；首次保存前会确认。",TDUI.FONT_CAPTION,TDUI.ORANGE))
 	for item: Dictionary in state.orders:
 		if item.status not in ["WAITING","COOKING"]: continue
@@ -452,8 +448,7 @@ func _recognize(lane: TDCookingLane, method: String, complete: bool) -> TDOutcom
 	return lane.use_recipe_profile(service.cooking,"kitchen.unknown_"+method)
 
 func _show_cut_choices() -> void:
-	var column:=_dialog("选择切型 · 然后按谱切菜")
-	column.add_child(TDUI.label("切型由你选择；顾客的要求显示在订单上，做错切型仍可以继续做菜。",TDUI.FONT_BODY))
+	var column:=_dialog("切型")
 	var row:=HBoxContainer.new(); row.add_theme_constant_override("separation",18); column.add_child(row)
 	for shape: String in service.config.preparation_choices:
 		var button:=TDUI.button({"chunk":"大块","dice":"小丁","slice":"薄片","strip":"长条"}[shape],func()->void:choose_cut(shape))
@@ -523,11 +518,9 @@ func _show_pantry() -> void:
 	_sync_usage()
 	var supply:=shop.replenish_practice_materials()
 	if not supply.ok: _show(supply)
-	var column:=_dialog("大冰箱 · 每次携带一份食材")
-	column.add_child(TDUI.label("先用快到期的原料；取出再放回不会刷新保质期。调味时直接使用剩余瓶/袋。",TDUI.FONT_CAPTION,TDUI.MUTED))
+	var column:=_dialog("冰箱")
 	if shop.practice_supply_policy.is_valid() and not shop.practice_supply_policy.call().is_empty():
-		column.add_child(TDUI.label("教程补给 ∞：番茄、鸡蛋用完可再领；试做交付后停止补给。",TDUI.FONT_BODY,TDUI.ORANGE))
-		column.add_child(TDUI.label("番茄在「蔬菜」页，鸡蛋在「肉类」页。已有切配食材请直接取用。",TDUI.FONT_BODY,TDUI.ORANGE))
+		column.add_child(TDUI.label("教程补给：番茄、鸡蛋 ∞",TDUI.FONT_BODY,TDUI.ORANGE))
 	var tabs:=TabContainer.new();tabs.custom_minimum_size=Vector2(730,340);column.add_child(tabs)
 	for group: String in ["vegetable","meat","seasoning","fruit"]:
 		var scroll:=ScrollContainer.new();scroll.name={"vegetable":"蔬菜","meat":"肉类","seasoning":"调料","fruit":"水果"}[group];tabs.add_child(scroll)
@@ -581,12 +574,10 @@ func _sync_usage() -> void:
 		var names: Array[String]=[]
 		for food: Dictionary in dish.ingredients.values():
 			if str(food.name) not in names: names.append(str(food.name))
-		var status: String=" ＋ ".join(names) if not names.is_empty() else "E 放入 · F 开始 · Q 取回"
-		if not names.is_empty() and shop.is_unlocked(lane.base_recipe_id):
-			status+=" · 手艺 %.0f/400"%float(shop.mastery(lane.base_recipe_id).points)
+		var status: String=" ＋ ".join(names)
 		if lane.automatic: status="自动制作 · "+("已做好，E 端盘" if dish.state=="plated" else lane.stage_label)
 		if staff!=null and staff.owns(lane.lane_index): status="厨师占用 · "+staff_step(str(staff.jobs[lane.lane_index].cook))
-		contents.append({"title":("左锅 · " if lane.lane_index==0 else "右锅 / 蒸笼 · ")+(str(dish.recipe_name) if not names.is_empty() else "空"),"materials":status})
+		contents.append({"title":("左锅 · " if lane.lane_index==0 else "右锅 · ")+str(dish.recipe_name),"materials":status,"occupied":not names.is_empty(),"state":dish.state})
 		if dish.state=="plated":
 			var unlocked:=shop.observe_finished(dish)
 			if unlocked.code in ["RECIPE_UNLOCKED","MASTERY_GAINED"]: _show(unlocked)
@@ -622,7 +613,8 @@ func _serve() -> void:
 			kitchen.handling.clear_dish(); kitchen.close_bench()
 			lane.catalog=kitchen.catalog; lane.customer_override=[]; lane.new_session("service.tomato_egg"); lane.session.set_material_sink(shop.consume_materials,shop.available)
 			var served: Dictionary=shop.order(item.id)
-			_message.text="已放到出餐口：%s。到餐厅出餐口按 E 取菜，再到客人桌边按 E 上菜。"%shop.recipe_name(served.recipe_id) if shop.table_service_enabled else "已送达 %s · %.1f分。" % [shop.recipe_name(served.recipe_id),served.score.satisfaction]
+			_message.text="出餐口待取：%s"%shop.recipe_name(served.recipe_id) if shop.table_service_enabled else "已送达 %s · %.1f分。" % [shop.recipe_name(served.recipe_id),served.score.satisfaction]
+			if embedded: kitchen.world.show_feedback(_message.text)
 		else: _station_done(result)
 		kitchen.world.set_controls_enabled(true); kitchen.refresh_world(); _sync_usage(); refresh(true); return
 
@@ -713,6 +705,9 @@ func _show(result: TDOutcome) -> void:
 	if _message==null: return
 	var names: Dictionary={"TRANSFERRED":"食材已放入锅中。","ON_BOARD":"食材已放到砧板。","HANDS_FULL":"手里已有食材或菜品，请先放下。","NOT_OPEN":"现在尚未营业。","NO_PREPARATION_CHART":"这份食材不需要切配，可取回并直接入锅。","RECIPE_LOCKED":"这口锅已经开始加工，请使用另一口锅。","NO_INGREDIENT":"先到冰箱拿食材。","BOARD_OCCUPIED":"砧板上还有食材，请先取走。","EMPTY_BOARD":"砧板上没有食材。","SAVED":"进度已保存，可退出后继续。","PURCHASED":"采购完成，账本已记录。","RESERVED":"已预留食材。","OPENED":"开门迎客！订单自动排队，到大冰箱拿料；同菜按先到客人的要求制作。","SETTLED":"今日结束，请看收益总结。","DRAINING":"已停止迎客。剩下的客人离开后进入收益总结。","INSUFFICIENT_STOCK":"缺少整份食材，未扣料、未收款。可售罄或取消。","INSUFFICIENT_FUNDS":"资金不足，采购未发生。","GRANT_NOT_NEEDED":"当前仍买得起至少一份备货，无需补助。","GRANT_UNAVAILABLE":"补助仅次日起资金不足时可领，每日一次。","GRANTED":"应急补助已到账，账本单独列出。","PLAN_SAVED":"方案已保存；下一天可上架并重新打谱制作。","DUPLICATE":"此操作已处理，不会重复结算。","NEXT_DAY":"新的一天，从菜单与备货开始。"}
 	_message.text=result.message if not result.message.is_empty() else str(names.get(result.code,("已完成：" if result.ok else "未执行：")+result.code))
+	if embedded and kitchen!=null:
+		var quiet: bool=result.ok and result.code not in ["RECIPE_UNLOCKED","MASTERY_GAINED","SAVED","GRANTED"]
+		kitchen.world.show_feedback("" if quiet else _message.text)
 
 func save_order_plan(id: String, title: String) -> TDOutcome:
 	var item: Dictionary=shop.order(id)
