@@ -532,6 +532,12 @@ func _person(point: Vector2, _moving: bool, shirt: Color, caption: String, seate
 		var body:=chef_rect(point)
 		# The protagonist shares the physics player's frame; no wall-clock bob during pause.
 		draw_texture_rect(CHEF_SPRITE if staff else TDChefArt.texture(player_facing, player_walk_frame),body,false)
+		if not caption.is_empty():
+			var dish_at:=ground+Vector2(16,-PERSON_HEIGHT*.40)
+			draw_set_transform(dish_at,0,Vector2(1,.48))
+			draw_circle(Vector2.ZERO,14,Color("836348"));draw_circle(Vector2(0,-3),13,Color("f4f0e4"))
+			draw_circle(Vector2(0,-4),9,Color("d4573a"));draw_circle(Vector2(-3,-6),4,Color("f4ca68"))
+			draw_set_transform_matrix(Transform2D.IDENTITY)
 		if staff and caption != "":
 			var plate := Rect2(body.position + Vector2(-18, -24), Vector2(92, 22))
 			draw_rect(plate, Color(0.08, 0.12, 0.1, 0.88))

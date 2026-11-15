@@ -74,6 +74,8 @@ var _board: TDEconomyBoard
 var _pantry: TDPantryBoard
 var _order_board: Label
 var _order_plate: Panel
+var _order_scroll: ScrollContainer
+var _info_top: float = 120.0
 var characters: TDCharacterRoster
 var story_frozen: bool = false
 var _visit_seconds: float = 0.0
@@ -165,7 +167,7 @@ func _ready() -> void:
 		_set_status(room)
 	_pull_layout_staff()
 	if player_mode:
-		_set_status("WASD 走动 · Shift 疾跑 · H 雇员 · B 菜谱 · J 任务 · M 地图 · G 店铺 · U 供应 · N 关系 · 门牌、账本、装修桌或门按 E · B 菜谱 · Esc 暂停" if floor_service else "WASD 走动 · Shift 疾跑 · 招工处可雇厨师或服务员 · 门牌、账本、装修桌或门按 E · B 菜谱 · Esc 暂停")
+		_set_status("WASD 移动 · Shift 疾跑 · E 交互 / 端菜 · Esc 暂停" if floor_service else "WASD 走动 · Shift 疾跑 · 招工处可雇厨师或服务员 · 门牌、账本、装修桌或门按 E · B 菜谱 · Esc 暂停")
 		_iso.interaction_markers=interaction_points()
 
 func _process(delta: float) -> void:
@@ -227,6 +229,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if get_tree().paused:
 		return
+	if _physical_service() and not _covered and not _editing and not story_frozen and event.is_action_pressed("world_retrieve") and not event.is_echo() and _at_service_window():
+		var plate_id: String=_plate_order if _plate_order!="" else _unplated_order()
+		var result:=business.table_service.discard(plate_id,"player" if _plate_order!="" else "")
+		if result.ok: _plate_order=""
+		_set_status(result.message);get_viewport().set_input_as_handled();return
 	if event.is_action_pressed("world_interact") and not event.is_echo():
 		if request_interaction():
 			get_viewport().set_input_as_handled()
@@ -408,6 +415,8 @@ func request_interaction() -> bool:
 			return true
 		var object:=nearby_object()
 		if not object.is_empty():
+			if _physical_service() and _plate_order!="" and object.action in ["town","kitchen"]:
+				_set_status("请先把手上的菜送到客人桌边，或在出餐口按 E 放回。");return true
 			object_requested.emit(str(object.action));return true
 		var faced := _faced_guest()
 		if faced != null and not _editing:
@@ -594,7 +603,7 @@ func _build_world() -> void:
 	_player.walk_speed=180.0
 	_player.vertical_stride_multiplier=1.6
 	_player.motion_transform=Transform2D(Vector2(TDRestaurantIsoView.HALF_W,TDRestaurantIsoView.HALF_H)/layout.cell_px,Vector2(-TDRestaurantIsoView.HALF_W,TDRestaurantIsoView.HALF_H)/layout.cell_px,Vector2.ZERO).affine_inverse()
-	_player.input_transform=_player.motion_transform.affine_inverse()
+	_player.input_transform=Transform2D.IDENTITY
 	var sprite := Sprite2D.new()
 	sprite.name = "Sprite2D"
 	sprite.texture = CHEF
@@ -620,6 +629,7 @@ func _build_status_bar() -> void:
 	add_child(layer)
 	var panel := Panel.new()
 	panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	panel.add_theme_stylebox_override("panel",TDUI.wood(TDUI.Surface.CARD,0))
 	_bar = panel
 	layer.add_child(panel)
 	get_viewport().size_changed.connect(_fit_bar)
@@ -633,23 +643,31 @@ func _build_status_bar() -> void:
 	_observe_banner.add_theme_color_override("font_color", Color("f0cc70"))
 	layer.add_child(_observe_banner)
 	_order_plate = Panel.new()
-	_order_plate.position = Vector2(12, 68)
-	_order_plate.size = Vector2(540, 188)
+	_order_plate.name="DiningInfo"
+	_order_plate.position = Vector2(14, _info_top)
+	_order_plate.size = Vector2(420, 188)
 	_order_plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_order_plate.visible = false
 	var plate_style:=TDUI.wood(TDUI.Surface.CARD,0)
 	_order_plate.add_theme_stylebox_override("panel", plate_style)
 	layer.add_child(_order_plate)
+	_order_scroll=ScrollContainer.new()
+	_order_scroll.name="DetailsScroll"
+	_order_scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
+	_order_scroll.vertical_scroll_mode=ScrollContainer.SCROLL_MODE_AUTO
+	_order_scroll.position=Vector2(12,12);_order_scroll.size=Vector2(396,164)
+	_order_plate.add_child(_order_scroll)
 	_order_board = Label.new()
-	_order_board.position = Vector2(10, 8)
-	_order_board.size = Vector2(520, 172)
+	_order_board.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	_order_board.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_order_board.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_order_board.visible = false
 	_order_board.add_theme_font_size_override("font_size", TDUI.FONT_CAPTION)
 	_order_board.add_theme_color_override("font_color", TDUI.INK)
 	_order_board.add_theme_color_override("font_shadow_color", Color.TRANSPARENT)
-	_order_plate.add_child(_order_board)
+	_order_board.add_theme_constant_override("line_spacing",4)
+	_order_scroll.add_child(_order_board)
+	_order_board.minimum_size_changed.connect(_fit_order_board)
 	var box := VBoxContainer.new()
 	_bar_box = box
 	box.position = Vector2(10, 8)
@@ -660,6 +678,7 @@ func _build_status_bar() -> void:
 	_status.custom_minimum_size = Vector2(1240, 32)
 	_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_status.add_theme_font_size_override("font_size", TDUI.FONT_CAPTION)
+	_status.add_theme_color_override("font_color",TDUI.INK)
 	box.add_child(_status)
 	var play := HFlowContainer.new()
 	_play_row = play
@@ -1192,6 +1211,22 @@ func _fit_bar() -> void:
 		_bar_box.size = Vector2(view_size.x - 20, height - 16)
 	if _status != null:
 		_status.custom_minimum_size.x = view_size.x - 40
+	_fit_order_board()
+
+func set_info_top(value: float) -> void:
+	if is_equal_approx(_info_top,value): return
+	_info_top=value
+	_fit_order_board()
+
+func _fit_order_board() -> void:
+	if _order_plate==null or _order_scroll==null or _order_board==null: return
+	var view_size := get_viewport().get_visible_rect().size
+	var width := minf(420,view_size.x-28)
+	var available := maxf(96,view_size.y-_info_top-84)
+	var height := clampf(_order_board.get_minimum_size().y+24,96,available)
+	_order_plate.position=Vector2(14,_info_top)
+	_order_plate.size=Vector2(width,height)
+	_order_scroll.size=Vector2(width-24,height-24)
 
 func _spawn_cell() -> Vector2i:
 	var door := layout.entrance()
@@ -1599,6 +1634,11 @@ func _pass_has_plate() -> bool:
 	return session != null and session.ready and not session.floor.pass_plate().is_empty()
 
 func _held_caption() -> String:
+	if _physical_service() and _plate_order!="":
+		var plate:=business.table_service.get_plate(_plate_order)
+		if plate.is_empty(): return ""
+		if plate.order_id==TDTableService.TRIAL_ORDER: return "番茄炒蛋 → 阿铃 · 桌边 E 上菜"
+		return business.recipe_name(str(plate.dish.recipe_id))+" · "+(business.order_label(plate.order_id) if plate.order_id!="" else "暂无客人 · 出餐口 E 放回 / Q 丢弃")
 	if _plate_order != "":
 		return "待上桌"
 	if _held_ticket == "" or session == null:
@@ -1704,6 +1744,7 @@ func _crew_points(delta: float) -> Array:
 		return people
 	var posts: Array[Vector2] = []
 	var servers := layout.crew.waiters()
+	if _physical_service() and delta>0: business.table_service.release_missing_waiters(servers.map(func(s:Dictionary)->String:return str(s.id)))
 	for index: int in servers.size():
 		posts.append(_waiter_post(index))
 	var ready := _service_jobs()
@@ -1728,7 +1769,11 @@ func _crew_points(delta: float) -> Array:
 	var claimed: Dictionary = {}
 	for carried: String in _waiter_plate:
 		if carried != "":
-			claimed[carried] = true
+			claimed[_plate_ticket(carried)] = true
+	if _physical_service() and _plate_order!="": claimed[_plate_ticket(_plate_order)]=true
+	if _physical_service():
+		for plate: Dictionary in business.table_service.rows():
+			if plate.carrier!="": claimed[str(plate.order_id)]=true
 	for guest: TDRestaurantGuest in ready:
 		if not claimed.has(guest.ticket_id):
 			pending.append(guest)
@@ -1738,10 +1783,23 @@ func _crew_points(delta: float) -> Array:
 		var goal := _cell_at(posts[index])
 		var verb := "待命"
 		var carry := _waiter_plate[index]
+		if _physical_service():
+			carry=""
+			for plate: Dictionary in business.table_service.rows():
+				if plate.carrier==str(server.id): carry=str(plate.id);break
+			_waiter_plate[index]=carry
 		var seated: TDRestaurantGuest = null
 		if carry != "":
-			seated = _guest_by_ticket(carry)
+			seated = _guest_by_ticket(_plate_ticket(carry))
 		if seated == null or seated.phase != "wait_serve" or bool(seated.get_meta("plated", false)):
+			if _physical_service() and carry!="" and delta<=0:
+				people.append({"point":_waiter_feet[index],"actor_id":str(server.id),"label":"端菜 "+str(server.name),"color":Color("#2f7a68"),"moving":false});continue
+			if _physical_service() and carry!="" and delta>0:
+				# The customer left. Keep the dish and return it for a later order.
+				_waiter_feet[index]=_walk_waiter(index,_waiter_feet[index],service_window_cell(),delta)
+				if _waiter_feet[index].distance_to(hatch)>36:
+					people.append({"point":_waiter_feet[index],"actor_id":str(server.id),"label":"退回菜品 "+str(server.name),"color":Color("#2f7a68"),"moving":true});continue
+				business.table_service.put_back(carry,str(server.id))
 			_waiter_plate[index] = ""
 			carry = ""
 			seated = null
@@ -1755,10 +1813,12 @@ func _crew_points(delta: float) -> Array:
 		var current := _walk_waiter(index, _waiter_feet[index], goal, delta)
 		_waiter_feet[index] = current
 		if delta > 0.0 and verb == "取菜" and current.distance_to(hatch) <= 36.0:
-			_waiter_plate[index] = pending[next_job].ticket_id
+			if _physical_service():
+				var plate:=business.table_service.for_order(pending[next_job].ticket_id)
+				if not plate.is_empty() and business.table_service.take(plate.id,str(server.id)).ok: _waiter_plate[index]=str(plate.id)
+			else: _waiter_plate[index] = pending[next_job].ticket_id
 		elif delta > 0.0 and verb == "上菜" and seated != null and current.distance_to(target) <= 36.0:
-			hand_plate(seated)
-			_waiter_plate[index] = ""
+			if hand_plate(seated,str(server.id)).ok: _waiter_plate[index] = ""
 		if verb == "取菜":
 			next_job += 1
 		people.append({
@@ -1850,14 +1910,18 @@ func _service_jobs() -> Array[TDRestaurantGuest]:
 	for guest: TDRestaurantGuest in guest_nodes():
 		if guest.phase != "wait_serve" or guest.seat_id == "" or bool(guest.get_meta("plated", false)):
 			continue
-		if business == null or str(business.order(guest.ticket_id).get("status", "")) != "SERVED":
+		if business == null:
 			continue
+		if _physical_service():
+			if business.table_service.for_order(guest.ticket_id).is_empty(): continue
+		elif str(business.order(guest.ticket_id).get("status", "")) != "SERVED": continue
 		var cell := _beside_seat(guest.seat_id)
 		if layout.is_walkable(cell.x, cell.y):
 			seats.append(guest)
 	return seats
 
 func _hatch_plate_count() -> int:
+	if _physical_service(): return business.table_service.rows().filter(func(p:Dictionary)->bool:return p.carrier=="").size()
 	var count := 0
 	if _pass_has_plate() and _held_ticket == "":
 		count += 1
@@ -1948,6 +2012,7 @@ func restore_visit_boundary() -> void:
 func _sync_business_guests() -> void:
 	if business == null or layout == null or _guests == null:
 		return
+	_sync_trial_guest()
 	var snap := business.snapshot()
 	var orders: Array = snap.orders
 	var now := float(snap.elapsed_sec)
@@ -2086,6 +2151,22 @@ func _sync_business_guests() -> void:
 			guest.dish_name = _order_caption(order, guest.phase, now)
 	_refresh_order_board(orders, now)
 
+func _sync_trial_guest() -> void:
+	# Tutorial recipient shares the physical pass without inventing a paid order.
+	var waiting:=not business.table_service.for_order(TDTableService.TRIAL_ORDER).is_empty()
+	for guest: TDRestaurantGuest in guest_nodes():
+		if guest.ticket_id!=TDTableService.TRIAL_ORDER: continue
+		if not waiting: _guests.remove_child(guest);guest.free()
+		return
+	if not waiting: return
+	var seat:=_free_seat(service_window_cell())
+	if seat.is_empty(): return
+	var guest:=TDRestaurantGuest.new()
+	guest.ticket_id=TDTableService.TRIAL_ORDER;guest.character_id="aling"
+	guest.seat_id=str(seat.seat.id);guest.phase="wait_serve";guest.finished=true
+	guest.externally_driven=true;guest.dish_name="阿铃 · 等你端来番茄炒蛋"
+	_guests.add_child(guest);_place_seated(guest)
+
 func _free_seat(start: Vector2i) -> Dictionary:
 	var occupied: Array=guest_nodes().map(func(g:TDRestaurantGuest)->String:return g.seat_id)
 	for piece: Dictionary in layout.pieces():
@@ -2122,12 +2203,34 @@ func greet_guest(guest: TDRestaurantGuest) -> void:
 		return
 	guest.set_meta("welcomed", true)
 
-func hand_plate(guest: TDRestaurantGuest) -> void:
+func hand_plate(guest: TDRestaurantGuest, carrier: String="player") -> TDOutcome:
 	if guest == null:
-		return
+		return TDOutcome.new(false,"UNKNOWN_GUEST")
+	if _physical_service():
+		if get_tree().paused or story_frozen: return TDOutcome.new(false,"PAUSED")
+		var id:=_plate_order;var carrier_position:=_player.position
+		if carrier!="player":
+			var servers:=layout.crew.waiters();var found:=false
+			for i: int in servers.size():
+				if servers[i].id==carrier and i<_waiter_plate.size() and i<_waiter_feet.size(): id=_waiter_plate[i];carrier_position=_waiter_feet[i];found=true;break
+			if not found: return TDOutcome.new(false,"INVALID_CARRIER")
+		if carrier_position.distance_to(layout.cell_center(_beside_seat(guest.seat_id)))>INTERACTION_RADIUS: return TDOutcome.new(false,"TOO_FAR","请走到这位客人桌边再上菜。")
+		var result:=business.table_service.serve(id,carrier,guest.ticket_id)
+		if not result.ok: return result
+		if carrier=="player": _plate_order=""
 	guest.set_meta("plated", true)
 	if _plate_order == guest.ticket_id:
 		_plate_order = ""
+	return TDOutcome.new(true,"SERVED","已将试做交给阿铃。" if guest.ticket_id==TDTableService.TRIAL_ORDER else "菜已送到客人桌上，评价和菜款已记入账本。")
+
+func _physical_service() -> bool:
+	return player_mode and floor_service and business!=null and business.table_service_enabled
+
+func _plate_ticket(id: String) -> String:
+	return str(business.table_service.get_plate(id).get("order_id","")) if _physical_service() else id
+
+func _at_service_window() -> bool:
+	return _player.position.distance_to(layout.cell_center(service_window_cell()))<=INTERACTION_RADIUS
 
 func cash_guest(guest: TDRestaurantGuest) -> void:
 	if guest == null:
@@ -2135,13 +2238,36 @@ func cash_guest(guest: TDRestaurantGuest) -> void:
 	guest.set_meta("cashed", true)
 
 func _floor_act() -> bool:
+	if _physical_service():
+		if _plate_order!="" and business.table_service.get_plate(_plate_order).is_empty(): _plate_order=""
+		if _at_service_window():
+			if _plate_order!="":
+				var returned:=business.table_service.put_back(_plate_order,"player")
+				if returned.ok: _plate_order=""
+				_set_status(returned.message);return true
+			var id:=_unplated_order()
+			if id!="":
+				var taken:=business.table_service.take(id,"player")
+				if taken.ok: _plate_order=id
+				_set_status(taken.message);return true
+		if _plate_order!="":
+			var closest: TDRestaurantGuest=null;var gap:=INTERACTION_RADIUS
+			for guest: TDRestaurantGuest in guest_nodes():
+				if guest.seat_id=="" or guest.phase!="wait_serve": continue
+				var distance:=_player.position.distance_to(layout.cell_center(_beside_seat(guest.seat_id)))
+				if distance<=INTERACTION_RADIUS and guest.ticket_id==_plate_ticket(_plate_order): closest=guest;break
+				if distance<gap: gap=distance;closest=guest
+			if closest!=null: _set_status(hand_plate(closest).message);return true
+		var paying:=_faced_guest()
+		if paying!=null and paying.phase=="pay" and not duty_on("cashier") and not bool(paying.get_meta("cashed",false)):
+			cash_guest(paying);_set_status("这一桌已结账离开，账本不会重复收款。");return true
+		return false
 	var faced := _faced_guest()
 	if _plate_order != "" and faced != null:
 		if faced.ticket_id != _plate_order:
 			_set_status("这盘要端给点这道菜的那一桌。")
 			return true
-		hand_plate(faced)
-		_set_status("菜放到桌上了。客人开始吃。钱在后厨出餐时已经入账。")
+		_set_status(hand_plate(faced).message)
 		return true
 	if faced != null and not duty_on("greeter") and not bool(faced.get_meta("welcomed", false)):
 		greet_guest(faced)
@@ -2161,9 +2287,14 @@ func _waiter_serving() -> bool:
 	return layout != null and layout.crew != null and not layout.crew.waiters().is_empty()
 
 func _needs_player_plate() -> bool:
+	if _physical_service(): return _unplated_order()!=""
 	return floor_service and not duty_on("runner") and not _waiter_serving() and _unplated_order() != ""
 
 func _unplated_order() -> String:
+	if _physical_service():
+		for plate: Dictionary in business.table_service.rows():
+			if plate.carrier=="": return str(plate.id)
+		return ""
 	for id: String in _business_guests.keys():
 		var guest: TDRestaurantGuest = _business_guests[id]
 		if not is_instance_valid(guest) or bool(guest.get_meta("plated", false)):
@@ -2198,6 +2329,10 @@ func _send_guest_out(guest: TDRestaurantGuest) -> void:
 	guest.set_path(route, layout.cell_px)
 
 func _order_caption(order: Dictionary, phase: String, now: float) -> String:
+	if _physical_service():
+		var plate:=business.table_service.for_order(str(order.get("id","")))
+		if not plate.is_empty():
+			return business.order_label(str(order.id))+" · "+business.recipe_name(str(order.recipe_id))+" · "+("出餐口待取" if plate.carrier=="" else "端菜途中")+" · %d秒"%maxi(0,ceili(float(order.deadline_sec)-now))
 	var dish := ""
 	if not order.is_empty():
 		dish = business.recipe_name(str(order.get("recipe_id", "")))
@@ -2281,12 +2416,13 @@ func _refresh_order_board(orders: Array, now: float) -> void:
 	var decor := _decor_now()
 	var lines := PackedStringArray()
 	lines.append("装修效果 %.0f · 统一 %.0f · 高端 %.0f" % [float(decor.effect), float(decor.unity), float(decor.luxury)])
-	if layout != null and layout.crew != null and not layout.crew.duty_line().is_empty():
-		lines.append(layout.crew.duty_line())
+	if layout != null and layout.crew != null:
+		lines.append("厨师 %d · 服务员 %d · H 查看员工" % [layout.crew.cooks().size(),layout.crew.waiters().size()])
 	if floor_service:
-		lines.append("客人自己入座")
-		lines.append("收银%s" % ("在岗" if duty_on("cashier") else "你来"))
-		lines.append("出餐口取菜后服务员端上桌" if _waiter_serving() else "出餐口取菜后由你端上桌")
+		if unified_dining_clock:
+			lines.append("自动入座 · 送餐 / 收银：%s" % ("服务员" if _waiter_serving() else "你"))
+		else:
+			lines.append("自动入座 · 送餐：%s · 收银：%s" % ["服务员" if _waiter_serving() else "你","在岗" if duty_on("cashier") else "你"])
 	var active: Array = []
 	var arriving: int=0
 	var recent: Dictionary = {}
@@ -2322,12 +2458,17 @@ func _refresh_order_board(orders: Array, now: float) -> void:
 		else:
 			lines.append("还没有客人。开门后，客人会比较本店、竞品和在家吃饭。")
 	if unified_dining_clock:
-		lines.append("客人自己入座点单。菜先放到出餐口，再由%s端上桌。服务员也负责收银；未派服务员时由你送客。" % ("服务员" if _waiter_serving() else "你"))
+		if _physical_service():
+			lines.append("出餐口 E 取放 · 桌边 E 上菜\n出餐口 Q 丢弃")
+			if _plate_order!="": lines.append("端着："+_held_caption())
 	elif floor_service:
 		lines.append("靠近客人按 E。菜放在出餐口后，雇了服务员就由服务员去取，没雇就由你端。")
 	else:
 		lines.append("靠近客人按 E，查看点单、比较和结算。")
-	_order_board.text = "\n".join(lines)
+	var text := "\n".join(lines)
+	if _order_board.text!=text:
+		_order_board.text=text
+		_fit_order_board.call_deferred()
 
 var last_visit: Dictionary = {}
 

@@ -20,6 +20,8 @@ var cooking_reward: Callable
 var kitchen_gate: Callable
 var practice_supply_policy: Callable
 var require_seating: bool=false
+var table_service_enabled: bool=false
+var table_service: TDTableService
 var dining_tick: Callable
 var dining_boundary: Callable
 var day_minute_reader: Callable
@@ -129,6 +131,8 @@ func profile_for(context: Dictionary) -> TDCookingCatalog:
 
 func first_order_for(dish: Dictionary) -> Dictionary:
 	for item: Dictionary in active_orders():
+		var waiting:=table_service.for_order(str(item.id))
+		if not waiting.is_empty() and waiting.id!=dish.get("dish_id",""): continue
 		if dish.get("failed_dish",false): return item
 		if family_id(item.recipe_id)==dish.get("recipe_id"): return item
 	return {}
@@ -181,9 +185,13 @@ func _allocation(extra: Dictionary = {}) -> Dictionary:
 				if seen.has(food.id): continue
 				seen[food.id]=true; pool[food.ingredient_id]=int(pool.get(food.ingredient_id,0))+roundi(float(food.amount)*1000)
 	var requests: Array=pending_orders()
+	for plate: Dictionary in table_service.rows():
+		if str(plate.order_id).is_empty():
+			var ready: Dictionary=plate.dish.duplicate(true);ready.state="plated";pots.append(ready)
 	if not extra.is_empty(): requests.append(extra)
 	var rejected: Array[String]=[]
 	for item: Dictionary in requests:
+		if not table_service.for_order(str(item.id)).is_empty(): continue
 		var profile: TDCookingCatalog=profile_for(item)
 		if profile==null: rejected.append(str(item.id)); continue
 		var family: String=family_id(item.recipe_id)
@@ -224,6 +232,7 @@ func _init(content: TDServiceCatalog, run_id: String = "", seed_value: int = 101
 	_s.cold_foods=[]; _s.unlocked=_initial_unlocks(); _s.progress_version=1
 	_s.material_version=1; _s.stock_version=1; _s.inventory_lots=TDFoodStock.migrate(inventory,1,stock_rules)
 	_s.mastery_version=1; _s.mastery={}; _s.mastery_dishes={}
+	table_service=TDTableService.new(self)
 
 func _initial_unlocks() -> Array:
 	if not _starter_override.is_empty(): return _starter_override.duplicate()
@@ -477,6 +486,7 @@ func advance(seconds: float, paused: bool = false) -> TDOutcome:
 		if _s.phase == "OPEN" and next >= business_close_sec(): _s.phase = "DRAINING"
 		if _s.phase == "OPEN" and next >= _next_arrival:
 			_arrive()
+			table_service.reconcile()
 			_next_arrival = _scheduled_arrival() if day_minute_reader.is_valid() and commerce!=null else _next_arrival+arrival_interval_sec()
 		_tick_dining(0.0)
 		if _s.phase == "DRAINING" and pending_orders().is_empty():
@@ -594,6 +604,7 @@ func confirm_seated(id: String, seat_id: String) -> TDOutcome:
 	if id in _allocation().rejected: return cancel_order(id,"REJECTED_STOCK")
 	item.status="WAITING";item.seat_id=seat_id;item.ordered_sec=float(_s.elapsed_sec)
 	item.deadline_sec=float(_s.elapsed_sec)+float(item.patience_seconds)
+	table_service.reconcile()
 	return TDOutcome.new(true,"ORDERED","已落座点单。",{"id":id,"seat_id":seat_id})
 
 func pending_orders() -> Array:
@@ -618,6 +629,7 @@ func cancel_order(id: String, reason: String = "CANCELLED") -> TDOutcome:
 	_apply_popularity(-(int(catalog.config.settings.get("stock_rejection_popularity",1)) if reason=="REJECTED_STOCK" else 2), item)
 	if commerce!=null: _economic_review(item)
 	if reason=="REJECTED_STOCK": item.feedback="食材不足，未能供应这道菜。"
+	table_service.reconcile()
 	return TDOutcome.new(true,item.status)
 
 func can_deliver(id: String, dish: Dictionary) -> TDOutcome:
@@ -927,6 +939,11 @@ func pay_wage(cents: int, reference: String) -> TDOutcome:
 
 func deliver(id: String, dish: Dictionary) -> TDOutcome:
 	if dish.get("state")!="delivered": return TDOutcome.new(false,"NOT_DELIVERED")
+	if table_service_enabled: return table_service.place(id,dish)
+	return _complete_delivery(id,dish)
+
+func _complete_delivery(id: String, dish: Dictionary) -> TDOutcome:
+	if dish.get("state")!="delivered": return TDOutcome.new(false,"NOT_DELIVERED")
 	var preview := order(id)
 	var customer: Dictionary = preview.get("customer", {}) if preview.get("customer") is Dictionary else {}
 	var plated: Dictionary = dish if crew == null or preview.is_empty() else crew.apply_dish(dish, customer)
@@ -987,6 +1004,7 @@ func close_early() -> TDOutcome:
 	return TDOutcome.new(true,"DRAINING")
 
 func close_for_night() -> TDOutcome:
+	table_service.clear_for_night()
 	if _s.phase=="SETTLED": return TDOutcome.new(true,"ALREADY_SETTLED")
 	if _s.phase not in ["PREPARE","OPEN","DRAINING"]: return TDOutcome.new(false,"INVALID_STATE")
 	_day_end_reason="night"
@@ -1022,6 +1040,7 @@ func settle_day() -> TDOutcome:
 	return TDOutcome.new(true,"SETTLED")
 
 func next_day(expected_day: int) -> TDOutcome:
+	if not table_service.empty(): return TDOutcome.new(false,"PASS_NOT_CLEAR","出餐口还有菜，请送出或清理后再休息。")
 	if _s.phase != "SETTLED" or int(_s.day) != expected_day: return TDOutcome.new(false,"DUPLICATE_DAY")
 	_s.day += 1; _s.phase = "PREPARE"; _s.elapsed_sec = 0.0; _s.orders = []
 	_s.erase("day_open_money_cents"); _s.erase("day_open_popularity")
@@ -1197,6 +1216,7 @@ func _record(kind: String, cents: int, inventory_delta: Dictionary, reference: S
 func restore(data: Variant) -> TDOutcome:
 	var checked := validate_save(data)
 	if not checked.ok: return checked
+	table_service.clear_on_restore()
 	_s = normalize_save(data)
 	for id: String in catalog.config.get("material_cost_ids",[]):
 		if not _s.inventory.has(id): _s.inventory[id]=0
@@ -1317,7 +1337,7 @@ func validate_save(data: Variant) -> TDOutcome:
 	for id: String in catalog.config.costs: inventory[id]=0
 	for event: Variant in data.ledger:
 		if not event is Dictionary or not event.get("id") is String or ids.has(event.id) or not event.get("kind") is String or not TDServiceCatalog.integer(event.get("cents"),-1000000000,1000000000) or not event.get("inventory_delta") is Dictionary or not TDServiceCatalog.integer(event.get("day"),1,int(data.day)): return TDOutcome.new(false,"INVALID_LEDGER")
-		if not event.get("reference") is String or not event.get("extra") is Dictionary or event.kind not in ["purchase","prepayment","consumption","tip","refund_cancel","refund_served","settlement","emergency_grant","recipe_unlock","failed_delivery","world_adjustment","supply_delivery","operating_payment","bank_transfer","spoilage","wage","night_cleanup","branch_transfer"]: return TDOutcome.new(false,"INVALID_LEDGER")
+		if not event.get("reference") is String or not event.get("extra") is Dictionary or event.kind not in ["purchase","prepayment","consumption","tip","refund_cancel","refund_served","settlement","emergency_grant","recipe_unlock","failed_delivery","world_adjustment","supply_delivery","operating_payment","bank_transfer","spoilage","wage","night_cleanup","branch_transfer","pass_waste"]: return TDOutcome.new(false,"INVALID_LEDGER")
 		if event.kind=="wage" and event.extra.has("wage_expense_cents") and (not TDServiceCatalog.integer(event.extra.wage_expense_cents,0,10000000) or event.cents!=0): return TDOutcome.new(false,"INVALID_WAGE_LEDGER")
 		if event.kind=="branch_transfer" and (not event.extra.get("store_id") is String or (not event.extra.store_id.begins_with("player-branch:") and event.extra.store_id not in ["player_diner","employee-roster","supplier-network"]) or not event.extra.get("label") is String): return TDOutcome.new(false,"INVALID_BRANCH_LEDGER")
 		if event.kind=="spoilage":

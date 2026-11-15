@@ -26,18 +26,21 @@ func grant() -> void:
 
 func test_unnamed_hero_and_first_person_name_prompt() -> void:
 	shell.guide.present("intro")
+	await get_tree().process_frame;await get_tree().process_frame
 	var view:=shell.guide.dialogue
 	var talk:=view.talk
 	for n: int in 30:
 		if talk.action=="enter_name": break
-		if talk.display_kind=="cg": talk.skip_cg()
+		if talk.display_kind=="cg": view._skip_native_cg()
 		else:
 			if talk.portrait_id=="hero": assert_eq(talk.speaker_name,"？？？")
-			talk.shown=talk.body.length();talk.click()
+			view._vn_stage.dialog._advance_dialog();view._vn_stage.dialog._advance_dialog()
+		await get_tree().process_frame
 	view._refresh()
 	assert_true(view.awaiting_name())
 	assert_eq(view._body.text,"我的名字是……")
 	view._hero_input.text="小满";view._confirm_hero_name()
+	await get_tree().process_frame
 	assert_eq(talk.speaker_name,"小满")
 	assert_eq(shell.profile.story.hero_name,"小满")
 

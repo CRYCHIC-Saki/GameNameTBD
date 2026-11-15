@@ -1,4 +1,29 @@
+## 2026-11-15 集成候选送审（D071–D074）
+用户已明确授权推送并合并main。root作为集成者整理送桌/厨师实际流程、原生VN及文字可读性修复；当前基线2387a74已包含远端美术，fetch确认origin/main仍3fe4c8b，没有新增需解决的远端冲突。候选、全部未提交文件的起点备份、受保护文件清单位于artifacts/upload-20261115；只提交工程依赖、运行代码、测试与说明，原资料/罗厄保留本地，构建包和缓存沿原忽略规则。54项最近回归及最终EXE图形52项已通过；此前整合117项记录保留。接下来通过集成PR运行四份完整CI检查，失败先修复，通过后按用户授权合并main；最终远端结果以PR及该目录receipt为准，不能把此候选记录当作已合并或远程检查已通过。人工试玩仍PENDING，不开新功能阶段。
+## D074 厨房提示 / 餐厅信息栏修复（2026-11-15，LOCAL_BUILD_READY / PLAYTEST_PENDING）
+厨房改用浅木纹底与深色文字、适配0.71875实际缩放；手持提示放操作栏上方、锅内信息移到顶部、炖煮条与工位名避让，夜间不压暗提示。嵌入厨房的重复标题隐藏，旧营业提示移至顶部统计下方。餐厅信息栏由Shell根据HUD/任务卡实际底边定位，精简重复员工说明，长内容换行并可滚动，底部操作栏统一可读配色。仅显示层，Profile9/D059、实际厨房输入/订单/送桌结算不变。详见docs/phases/restaurant-feedback.md D074与AI-084。
+54独立用例1384断言通过（回归34/514、导出前20/870），导入及158加载exit0，1248运行资源；源UI图形52项7图、真实厨师/服务员流程27项7图通过。实际最终EXE三次启动各4检查、无图形交互94项，以及Compatibility界面52项7图全部exit0。build/TownDiner.exe与TownDiner.pck于13:34:25/13:34:27更新。证据artifacts/hud-readability-20261115与artifacts/check/hud-readability-regression、pre-export-20261115-133349。旧包与首轮失败证据保留，43保护资料/素材一致。人工字体观感/连续试玩PENDING，全仓/远程CI NOT_RUN。本轮未提交推送，root共享文件锁释放。
+
+## 2026-11-15 整合版EXE重建（LOCAL_BUILD_READY / PLAYTEST_PENDING）
+已用锁定Godot4.7.2生成build/TownDiner.exe与TownDiner.pck（12:41:49/12:41:55，103176704/161569852字节），包含2387a74新美术及本地D071–D073、原生VN兼容。本轮只打包与验证，不修改玩法、不提交推送。导入/158加载、20测试870断言0失败/跳过（pre-export-20261115-124114）、1248运行资源白名单、真实EXE三次启动各4检查及无图形94项通过；同正式资源的实际EXE Compatibility原生剧情21项/6图通过。上一轮117测试8057断言及源图形48项作为整合验证保留，不记为本轮重跑。
+旧包与旧导出日志保存在artifacts/rebuild-20261115；build-hashes.json记录新包SHA256。43保护资料/素材一致，真实存档未动。人工试玩PENDING，全仓测试/远程CI本轮NOT_RUN；root打包锁释放。双击EXE时须保留同目录PCK。
+
+## 2026-11-15 美术远端整合（INTEGRATED_LOCAL_PLAYTEST_PENDING，锁释放）
+远端main仍为3fe4c8b，新分支integration/phase-4-wave-restaurant-art为2387a74（实际1个新提交，非8个）。当前本地集成分支快进至2387a74；D071–D073全部500文件起点备份与安全stash 1f45915保留。root唯一处理19重叠文件和8文本冲突，合并新美术/字号与真实厨师、送桌、原生VN插件；新增VN背景/立绘只读引用新图集，Profile9/D059及钱物权威不改。AC-SYNC-20261115-001：远端完整提交可达且未提交成果保留；002：冲突消除并运行相关资源加载/规则/场景检查；003：43份原资料/指定素材字节不变。只同步本地，不提交、不推送、不合并远端main。完成：本地集成分支已快进至2387a74，19个重叠文件逐段整合，8处文本冲突全部消除；远端main仍3fe4c8b。合并后发现原对话框StyleBoxFlat假设与远端羊皮纸纹理不兼容，已改用共同纹理接口；原生VN改用远端港口背景/新立绘和可读深色文字，没有恢复第二套剧情推进。117/117独立测试、8057断言、0失败/0跳过/exit0（910.392秒），158资源加载通过；3条Float/Int比较警告保留。源工程Compatibility：VN21项6图、厨师→出餐口→服务员桌边27项7图通过，最终VN颜色复验仍21项，不重复增加检查数量。资源白名单368显式路径均存在，但本轮没有导出/重建EXE；build仍为2026-11-14 20:52版本。全仓测试、远程CI、人工试玩NOT_RUN/PENDING。
+原500文件备份、安全stash 1f45915和首轮失败/主动中断日志保留；43原资料/罗厄指定文件字节完全一致，真实存档未动。最终证据artifacts/check/sync-art-20261115-fixed及artifacts/sync-20261115-art。只读审查发现厨房深色提示底与新深色字体对比、餐厅左上长提示溢出仍待后续UI整理，不把本次流程检查称为全部美术验收。root本轮共享文件锁释放；没有新提交、没有推送、没有修改远端main。
+
+
 # 当前协作波次
+
+## D072-R1 真正接入 VN Engine（2026-11-13，ENGINEERING_READY，锁释放）
+用户明确要求直接使用插件。root 唯一写入插件宿主兼容补丁、原生开篇剧本/配置、vn_stage/dialogue_view、项目插件启用、对应测试/探针/导出与记录。vn_runtime_facts 仅只读调查。保留 D071/D072，备份 artifacts/vn-runtime-20261113/baseline，原资料/真实存档不改、不推送。AC：真实 Main→Stage→StoryRunner→DialogUI 播放；三段 CG 和昵称阻塞不可被自动播放绕过；取消重开无旧回调/单例；Profile 仍唯一存档，插件不读写独立档；原生脚本实际进入导出并验证。root亦修改test_story_playtest_fixes、pack_title_probe与导出清单。最终30/30用例611断言、1130资源、EXE无图形3×4/94及真实EXE图形21项6图PASS；14:45包更新。43保护文件一致，失败历史留档，全部本轮写入锁释放，未提交推送；人工PENDING。
+
+## D072 开篇 VN 框架（2026-11-13，PREVIEW_READY，锁释放）
+root唯一写入 addons/vn_engine、src/story/vn_stage.gd、src/ui/dialogue_view.gd、dependencies.lock.json、export_presets.cfg、dev/vn_opening_test.*、tests/integration/test_visual_novel.gd与test_arrival_coast.gd、tools/check.ps1/export.ps1/visual_novel_probe.gd及文档。vn_story_facts只读已完成。保留D071未提交成果；起点备份及只读资料哈希在artifacts/vn-framework-20261113。无推送，不接触真实档。另由root修改tools/pack_title_probe.gd增加一次性VN探针选项。26/26测试、源及PCK图形各18项通过，EXE无图形检查通过；EXE图形两次超时未验收。最终本轮全部写入锁释放，详见visual-novel报告。
+
+
+## D071 餐厅屏幕方向与真实送桌（DELIVERED_LOCAL_PLAYTEST_PENDING，2026-11-11，锁释放）
+root 是唯一写入者：RestaurantWorld/Iso/BranchInterior、Shop/ShopView/TableService、Profile/Shell/ShopStore/StoryGuide、相应测试/探针/检查/导出及工程记录；serving_flow_audit 仅只读调查已完成。备份 artifacts/table-service-20261111/baseline，43项原资料/罗厄文件哈希保持，真实存档不动。95独立用例/3048断言、GPU39项/6图、614资源、EXE启动3×4/headless94通过，21:00本地包更新。扩大旧组超时/旧断言失败/环境中断原日志保留，全量与远程CI未跑，人工PENDING；本轮不提交/推送。
 
 ## 2026-11-12 字号统一与木牌立体边框（DELIVERED_LOCAL_PLAYTEST_PENDING，锁释放）
 root独占TDUI字体层级/木牌绘制、各界面文字字号与必要布局，以及截图、验证/导出和文档。只调整显示，保留UI25纯黑背景与已有业务/存档。沿用godot-gdscript-patterns；需求明确无阻塞，不提交推送。基线artifacts/ui-type-bevel/baseline。35图/1088字体、20核心、724资源/三次启动/EXE94项通过；最新运行包与图册更新，人工PENDING，全量/远程CI未跑，锁释放。
@@ -417,3 +442,7 @@ root 唯一写入 src/business/{branch_panel,branch_network}.gd、src/town/trave
 用户授权在世界地图选择分店位置和矩形范围。五个已配置小镇全部可选，分店不再依赖主店货运商路；菜系研究、合法用地、筹备/日结、资金、店长与主动保存规则保持。世界图仅发送选址意图，报价/开办仍由原 TDPlayerBranches 执行。
 
 D062最终：31独立用例/485断言、591资源、EXE启动3×4/headless94、实际EXE图形53项/11图PASS，全部最终检查exit0；19:36包更新。161路径协作检查PASS。人工PENDING，全量/远程CI未跑；锁释放，不提交推送。
+## D073 厨师真实工位流程（2026-11-14，DELIVERED_LOCAL_PLAYTEST_PENDING）
+root 唯一写入：ShopView/新增厨师工作流、FullKitchen/Lane 必要接线、KitchenWorld/厨师表现、service_content 配置与校验、专项测试/探针/检查导出及工程记录。chef_flow_facts 仅只读核查，禁止其他写入。18份起点备份见 artifacts/chef-workflow-20261114/baseline；D071/D072未提交成果、原资料与真实玩家档保留。本轮不提交推送，不重做服务员或分店后台模拟。
+
+最终44独立用例/1864断言、157加载/1134导出资源、EXE启动3×4/headless94、最终EXE图形27项/7图PASS；20:52本地包更新。43保护文件一致，500路径协作检查及diff检查通过；失败/中断/诊断超时日志保留。人工PENDING，全仓/远程CI未跑；root共享写入锁释放，不提交推送，下一步仅本轮试玩反馈。

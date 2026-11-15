@@ -162,7 +162,7 @@ func check_room_movement() -> void:
 	var after:=room.player_position()
 	var travel:=TDRestaurantIsoView.project(after.x/layout.cell_px,after.y/layout.cell_px)-old_screen
 	print("EXPORTED_ROOM_TRAVEL screen=",travel)
-	check(travel.x>25.0 and absf(travel.y-travel.x*.5)<.1,"real movement follows the 2:1 floor tile edge")
+	check(travel.x>25.0 and absf(travel.y)<.1,"real movement follows the screen horizontal axis")
 	await capture("restaurant-clear-aisle")
 	await check_decoration(room)
 	shell.travel("kitchen");await physics_frames(2)

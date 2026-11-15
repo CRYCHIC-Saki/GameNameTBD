@@ -26,6 +26,7 @@ func test_new_slot_shows_film_first_then_harbor_once_and_load_remains_cottage() 
 	var shell:=app.game_shell;shell.automatic_time=false
 	assert_true(shell.create_game("slot-01").ok)
 	var view:=shell.guide.dialogue;view.set_process(false)
+	await get_tree().process_frame;await get_tree().process_frame
 	assert_eq(view.talk.cg_id,"arrival");assert_false(shell.town.visible);assert_false(shell._hud_layer.visible)
 	assert_false(shell.town._player.controls_enabled);assert_eq(shell.town._player_cell(),TDHarbor.ARRIVAL)
 	var minute:=shell.profile.characters.clock.minute
@@ -34,7 +35,8 @@ func test_new_slot_shows_film_first_then_harbor_once_and_load_remains_cottage() 
 		if view.talk==null: break
 		if view.awaiting_name(): view._hero_input.text="海风";view._confirm_hero_name()
 		elif view.talk.display_kind=="cg": view._process(view.talk.cg_duration)
-		else: view.talk.click();view._refresh();view._emit_if_finished()
+		else: view._vn_stage.dialog._advance_dialog();view._vn_stage.dialog._advance_dialog()
+		await get_tree().process_frame
 	assert_eq(ended.size(),1);assert_false(shell.guide.presenting());assert_true(shell.town.visible)
 	assert_true(shell.town._player.controls_enabled);assert_eq(shell.profile.story.beat,"follow")
 	assert_eq(shell.profile.story.hero_name,"海风");assert_eq(shell.profile.characters.clock.minute,minute)
@@ -46,20 +48,31 @@ func test_new_slot_shows_film_first_then_harbor_once_and_load_remains_cottage() 
 	await get_tree().process_frame;await get_tree().process_frame
 
 func test_intro_pause_focus_skip_and_offscreen_call_do_not_leak_world_or_sound() -> void:
-	var view:=TDDialogueView.new();add_child_autofree(view)
-	view.present(TDOpeningScript.conversation("intro","玩家",80));view.set_process(false)
-	view._process(2);view.toggle_presentation_pause();view._process(20)
-	assert_eq(view.talk.cg_elapsed,2.0);assert_true(view._cg._paused)
-	view.toggle_presentation_pause();view._process(12)
-	assert_eq(view.talk.display_kind,"line");assert_false(view._cg.visible);assert_true(view._vn_background.visible);assert_eq(view._cg.arrival_stage.hero_pose,3)
-	assert_true(view.get_node("Portrait").visible);assert_false(view.get_node("RightPortrait").visible)
-	view._notification(NOTIFICATION_APPLICATION_FOCUS_OUT);var shown:=view.talk.shown;view._process(9);assert_eq(view.talk.shown,shown)
-	view.toggle_presentation_pause();view.talk.click();view.talk.click();view._refresh()
-	assert_eq(view.talk.cg_id,"hungry")
-	view._skip_clip.pressed.emit();assert_eq(view.talk.display_kind,"line");assert_false(view._cg._sound.playing)
-	view.talk.click();view.talk.click();view._refresh();assert_eq(view.talk.display_kind,"offscreen")
-	assert_false(view._cg.arrival_stage.aling_visible);assert_false(view.get_node("RightPortrait").visible)
-	view.finish_now();assert_false(view.visible);assert_false(view._cg._sound.playing)
+	var view := TDDialogueView.new(); add_child_autofree(view)
+	view.present(TDOpeningScript.conversation("intro", "玩家", 80)); view.set_process(false)
+	await get_tree().process_frame
+	view._process(2); view.toggle_presentation_pause(); view._process(20)
+	assert_eq(view.talk.cg_elapsed, 2.0); assert_true(view._cg._paused)
+	view.toggle_presentation_pause(); view._process(12)
+	await get_tree().process_frame
+	assert_eq(view.talk.display_kind, "line"); assert_false(view._cg.visible)
+	assert_true(view._vn_stage.runner.ctx.characters.active_sprites.has("hero"))
+	assert_false(view._vn_stage.runner.ctx.characters.active_sprites.has("aling"))
+	view._notification(NOTIFICATION_APPLICATION_FOCUS_OUT)
+	assert_true(view.presentation_paused)
+	view.toggle_presentation_pause()
+	view._vn_stage.dialog._advance_dialog(); view._vn_stage.dialog._advance_dialog()
+	await get_tree().process_frame
+	assert_eq(view.talk.cg_id, "hungry")
+	view._skip_clip.pressed.emit()
+	await get_tree().process_frame
+	assert_false(view._cg._sound.playing)
+	view._vn_stage.dialog._advance_dialog(); view._vn_stage.dialog._advance_dialog()
+	await get_tree().process_frame
+	assert_eq(view._vn_stage.runner.current_text, "背锅的旅人，止步！")
+	assert_false(view._vn_stage.runner.ctx.characters.active_sprites.has("aling"))
+	view.finish_now(); assert_false(view.visible); assert_false(view._cg._sound.playing)
+	await get_tree().process_frame
 
 func test_seacoast_keeps_property_and_routes_but_pier_is_public() -> void:
 	var profile:=TDGameProfile.new();var map:=profile.world.town_map

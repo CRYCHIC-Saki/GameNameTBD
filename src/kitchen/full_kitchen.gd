@@ -33,6 +33,8 @@ var _closed: bool = false
 var _paused_label: Label
 var handling: TDKitchenHandling
 var prep: TDCookingLane
+var staff_prep: TDCookingLane
+var staff_prep_active: bool = false
 var shared_clock := TDClock.new()
 var beat_audio: TDBeatAudio
 var beat_bar: TDTemperatureView
@@ -144,6 +146,21 @@ func _compact_controls(node: Node) -> void:
 	if node is Button: node.custom_minimum_size.y = 32
 	for child: Node in node.get_children(): _compact_controls(child)
 
+func create_staff_preparation() -> void:
+	if staff_prep!=null: return
+	staff_prep=TDCookingLane.new();staff_prep.catalog=catalog;staff_prep.scorer=scorer
+	staff_prep.lane_index=3;staff_prep.day_san=day_san;staff_prep.pc_controls=true
+	staff_prep.station_role="board";staff_prep.shared_clock=shared_clock
+	staff_prep.document_rules=true;staff_prep.beat_offset_sec=0.0
+	staff_prep.library=TDRecipeLibrary.new(library_path,_content)
+	staff_prep.feedback_audible=false;add_child(staff_prep);staff_prep.hide()
+
+func active_work_lanes() -> Array:
+	var active: Array=lanes.duplicate()
+	if handling.board!=null: active.append(prep)
+	if staff_prep!=null and staff_prep_active: active.append(staff_prep)
+	return active
+
 func _forward_dish(dish: Dictionary) -> void:
 	dish_delivered.emit(dish.duplicate(true))
 
@@ -208,7 +225,7 @@ func _sync_time() -> void:
 	advance(elapsed)
 
 func advance(seconds: float) -> void:
-	if _closed: return
+	if _closed or get_tree().paused: return
 	if time_boundary.is_valid() and is_finite(seconds) and seconds > 0 and not shared_clock.paused:
 		var remaining: float=seconds
 		while remaining > .0000001:
@@ -223,6 +240,7 @@ func _advance_span(seconds: float) -> void:
 	else:
 		for lane: TDCookingLane in lanes: lane.advance(seconds)
 		if handling.board != null: prep.advance(seconds)
+		if staff_prep!=null and staff_prep_active: staff_prep.advance(seconds)
 		if handling.hand != null and handling.hand_kind == "ingredient" and not shared_clock.paused: handling.hand.advance_time(seconds)
 		shared_clock.advance(seconds)
 	beat_bar.beat_sec = shared_clock.qte_sec - lanes[0].beat_offset_sec; beat_bar.queue_redraw()
@@ -232,9 +250,9 @@ func _advance_span(seconds: float) -> void:
 	if business_delta > 0.0: time_advanced.emit(business_delta)
 
 func _sync_mouse_ownership() -> bool:
-	var reserved: bool = lanes.any(func(lane:TDCookingLane)->bool:return lane.qte != null and lane.progress.get("pc_module") == "M6")
+	var reserved: bool = lanes.any(func(lane:TDCookingLane)->bool:return not lane.automatic and lane.qte != null and lane.progress.get("pc_module") == "M6")
 	for lane: TDCookingLane in lanes:
-		if lane.thermal_qte != null:
+		if lane.thermal_qte != null and not lane.automatic:
 			lane.thermal_qte.set_control_suspended(reserved)
 			lane.thermal_progress = lane.thermal_qte.update().data
 	return reserved
@@ -243,8 +261,7 @@ func _advance_guided(seconds: float) -> float:
 	if not is_finite(seconds) or seconds < 0 or shared_clock.paused: return 0.0
 	var remaining: float = seconds
 	var consumed: float=0.0
-	var active: Array = lanes.duplicate()
-	if handling.board != null: active.append(prep)
+	var active: Array = active_work_lanes()
 	for iteration: int in 1024:
 		for lane: TDCookingLane in active: lane.advance(0)
 		if tutorial_gate.is_valid() and not bool(tutorial_gate.call()): return consumed
@@ -303,6 +320,7 @@ func set_paused(value: bool) -> void:
 	_last_ticks = Time.get_ticks_usec()
 	for lane: TDCookingLane in lanes: lane.set_paused(value)
 	prep.set_paused(value)
+	if staff_prep!=null: staff_prep.set_paused(value)
 	shared_clock.paused = value
 	beat_audio.stream_paused = value
 	_paused_label.visible = value
@@ -313,6 +331,7 @@ func close() -> void:
 	world.close()
 	for lane: TDCookingLane in lanes: lane.close()
 	prep.close(); handling.close(); beat_audio.stop(); beat_audio.stream = null
+	if staff_prep!=null: staff_prep.close()
 	set_process(false)
 	set_process_input(false)
 
@@ -515,6 +534,7 @@ func _guided_lanes() -> Array:
 	if _on_board: return [prep]
 	var active: Array=[]
 	for lane: TDCookingLane in lanes:
+		if lane.external_operator!="": continue
 		if lane.qte!=null or lane.thermal_qte!=null or (lane.sheet!=null and lane.sheet.running): active.append(lane)
 	if lanes[active_lane] not in active: active.append(lanes[active_lane])
 	active.sort_custom(func(a:TDCookingLane,b:TDCookingLane)->bool: return a.lane_index<b.lane_index)

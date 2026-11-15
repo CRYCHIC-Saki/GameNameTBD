@@ -1,0 +1,85 @@
+@tool
+class_name VNEngineGameManifest
+extends Resource
+
+@export_group("Identity")
+## Unique id for this game, like "my_first_vn". Used to separate save
+## files between games.
+@export var game_id: String = ""
+## Game version, like "0.1.0".
+@export var version: String = "0.1.0"
+
+@export_group("Flow")
+## ChapterDef.id a new game starts on.
+@export var first_chapter: String = ""
+## Fallback ending id used when the story ends without @end.
+@export var default_ending: String = ""
+## Add one ChapterDef per chapter in the game.
+@export var chapters: Array[VNEngineChapterDef] = []
+## Add one EndingDef per ending in the game.
+@export var endings: Array[VNEngineEndingDef] = []
+
+@export_group("Content")
+## Boot sequence played before the title screen. null means no
+## splash/opening.
+@export var boot: VNEngineBootDef
+## All flag and counter definitions for this game.
+@export var flags: VNEngineFlagList
+
+## Credits screen definition.
+@export var credits: VNEngineCreditsDef
+
+@export_group("Text")
+## How dialogue is shown: "adv" is a text box at the bottom, "nvl" is a
+## full-screen page. Scenarios can switch with @nvl and @adv.
+@export_enum("adv", "nvl") var text_mode: String = "adv"
+
+@export_group("Text blips")
+## If true, a short sound plays while dialog text types out. Players can
+## still turn it off in Settings.
+@export var blip_enabled: bool = true
+## Sound used for text blips. Empty uses a generated soft beep. A character's
+## own blip sound wins over this one.
+@export var blip_sound: AudioStream
+## A blip plays once per this many typed letters. Spaces and punctuation do
+## not count.
+@export_range(1, 6) var blip_every: int = 2
+
+@export_group("Screens")
+## Title screen definition.
+@export var title: VNEngineTitleScreenDef
+## Extras screen definition. null means default extras behaviour.
+@export var extras: VNEngineExtrasDef
+## Engine UI behaviour tuning. null means default UI behaviour.
+@export var ui: VNEngineUiDef
+
+
+func get_boot() -> VNEngineBootDef:
+	return boot if boot != null else VNEngineBootDef.new()
+
+func has_boot_sequence() -> bool:
+	return get_boot().has_sequence()
+
+func get_extras() -> VNEngineExtrasDef:
+	return extras if extras != null else VNEngineExtrasDef.new()
+
+func get_ui() -> VNEngineUiDef:
+	return ui if ui != null else VNEngineUiDef.new()
+
+func find_chapter(id: String) -> VNEngineChapterDef:
+	var key: String = id.to_lower()
+	for chapter: VNEngineChapterDef in chapters:
+		if chapter == null:
+			continue
+		if chapter.id.to_lower() == key:
+			return chapter
+	return null
+
+func find_ending(id: String) -> VNEngineEndingDef:
+	var key: String = id.to_lower()
+	for ending: VNEngineEndingDef in endings:
+		if ending == null:
+			continue
+		if ending.id.to_lower() == key:
+			return ending
+	return null

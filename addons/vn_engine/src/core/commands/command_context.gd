@@ -1,0 +1,18 @@
+class_name VNEngineCommandContext
+extends RefCounted
+
+var runner: VNEngineStoryRunner
+var state: VNEngineStoryState
+var script_res: VNEngineStoryScript
+var bus: VNEngineCommandBus
+var animations: VNEngineAnimationRegistry
+
+var background: VNEngineBackgroundSystem
+var characters: VNEngineCharacterLayer
+var audio: VNEngineAudioSystem
+var video: VNEngineVideoSystem
+var camera: VNEngineCameraSystem
+var weather: VNEngineWeatherSystem
+var dialog_ui: VNEngineDialogUI
+
+var assets: VNEngineAssetResolver

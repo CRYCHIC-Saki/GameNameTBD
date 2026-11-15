@@ -78,6 +78,7 @@ var _customer_feedback: Array=[]
 var judgement_feedback: Dictionary = {}
 var _feedback_token: String = ""
 var automatic: bool = false
+var external_operator: String = ""
 var _automatic_preparation: Array = []
 var _automatic_target: String = ""
 
@@ -251,6 +252,7 @@ func advance(delta: float) -> void:
 	refresh()
 
 func input_action(action: String, pressed: bool, value: float = 1.0, operation_token: String = "") -> TDOutcome:
+	if automatic: return TDOutcome.new(false,"AUTOMATIC","自动制作不接收玩家操作。")
 	if pc_controls and action in ["adjust", "drag", "hover"] and thermal_qte != null:
 		_sequence += 1
 		var result := thermal_qte.input(_sequence, clock.qte_sec, action, pressed, value)
@@ -645,6 +647,14 @@ func start_preparation() -> TDOutcome:
 	var id: String = str(recipe.get("preparation_sheets",{}).get(ingredient,""))
 	if id.is_empty(): return TDOutcome.new(false,"NO_PREPARATION_CHART","这份菜谱未配置该食材的备菜谱。")
 	return start_sheet(id)
+
+func start_automatic_preparation(food: TDCookingSession, profile: TDCookingCatalog) -> TDOutcome:
+	if qte!=null or thermal_qte!=null or (sheet!=null and sheet.running): return TDOutcome.new(false,"BUSY")
+	# A single portable ingredient is cut at the shared board; never chain into a stove sheet.
+	automatic=false;_automatic_preparation.clear();_automatic_target=""
+	catalog=profile;_content=profile.data();bind_preparation(food)
+	session.set_production_mode("automatic");automatic=true
+	return start_preparation()
 
 func use_recipe_profile(value: TDCookingCatalog, identity: String, customer: Dictionary = {}) -> TDOutcome:
 	var changed := session.select_recipe(value.for_recipe(identity))

@@ -31,6 +31,7 @@ func load_game() -> TDOutcome:
 	return result
 
 func save_game(data: Dictionary) -> TDOutcome:
+	if not session.table_service.empty(): return TDOutcome.new(false,"PASS_NOT_CLEAR","请先送出或清理出餐口的菜。")
 	var checked := session.validate_save(data)
 	if not checked.ok: return checked
 	var existing := load_game()

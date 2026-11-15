@@ -118,6 +118,9 @@ func _process(_delta: float) -> void:
 	_hud.set_menu_enabled(not _menu_blocked())
 	if kitchen_view!=null: kitchen_view.day_clock_label.text=profile.characters.clock.label()+" · 全天时间"
 	_hud_layer.visible=atlas==null and not (guide!=null and guide.presenting()) and not (location=="kitchen" and kitchen_view.kitchen.stage.visible)
+	if restaurant!=null:
+		var top := maxf(_hud.reserved_bottom(),guide.reserved_bottom() if guide!=null else 0.0)
+		restaurant.set_info_top(top+12)
 
 	if town!=null:
 		town.shop_open=state.phase in ["OPEN","DRAINING"]
@@ -376,6 +379,7 @@ func _activate(next: TDGameProfile,first_entry:bool=false) -> void:
 	town.characters=profile.characters;town.homecoming=profile.residence
 	town.restaurant_requested.connect(func()->void:travel("restaurant"));town.place_requested.connect(_place);town.pause_requested.connect(show_pause);add_child(town)
 	restaurant=TDRestaurantWorld.new();restaurant.player_mode=true;restaurant.floor_service=true;restaurant.session=profile.world;restaurant.layout=profile.layout;restaurant.business=profile.shop
+	profile.shop.table_service_enabled=true
 	restaurant.characters=profile.characters
 	restaurant.object_requested.connect(_object);restaurant.pause_requested.connect(show_pause);add_child(restaurant)
 	restaurant.bind_dining_clock()

@@ -39,12 +39,10 @@ func test_fixed_employee_two_real_jobs_reset_station_and_release_callbacks() -> 
 		var job:=shop.cook_job_id(offer.id);var step:=shop.cook_step(offer.id)
 		if not step.is_empty(): steps[step]=true
 		if not job.is_empty() and not jobs.has(job):
-			if not jobs.is_empty():
-				# Rendering need not observe an idle frame between adjacent jobs.
-				world._staff_nodes[0].set_meta("cook_place","出餐")
 			world._staff_delta=.1;world._sync_staff()
-			assert_eq(str(world._staff_nodes[0].get_meta("cook_job_id")),str(offer.id)+":"+job)
-			assert_ne(str(world._staff_nodes[0].get_meta("cook_place","")),"出餐","new actual session resets the previous serving station")
+			assert_eq(str(view.staff.job_for(offer.id).session_id),job)
+			assert_eq(str(view.staff.job_for(offer.id).phase),"to_fridge","each real job begins with physical pickup")
+			assert_true(world._staff_nodes[0] is TDKitchenStaffActor)
 			jobs[job]=true
 		else:
 			world._staff_delta=.1;world._sync_staff()

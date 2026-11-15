@@ -72,6 +72,7 @@ func _build() -> void:
 		button.pressed.connect(_request.bind(str(action.id)))
 		_actions.add_child(button);buttons[action.id]=button
 	_toast=TDUI.label("",TDUI.FONT_CAPTION,GOLD);_toast.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	_toast.add_theme_stylebox_override("normal",TDUI.wood(TDUI.Surface.INSET,2))
 	_toast.clip_text=true;_toast.autowrap_mode=TextServer.AUTOWRAP_OFF;add_child(_toast)
 
 func _layout() -> void:
@@ -93,6 +94,9 @@ func button_for(id: String) -> Button:
 
 func set_toast(value: String) -> void:
 	if _toast!=null: _toast.text=value;_toast.visible=not value.is_empty()
+
+func reserved_bottom() -> float:
+	return _toast.get_global_rect().end.y if _toast!=null and _toast.visible else _status.get_global_rect().end.y
 
 func update_profile(profile: TDGameProfile, current: Dictionary={}) -> void:
 	if profile==null or profile.shop==null: return

@@ -1,5 +1,23 @@
 # GameNameTBD · 小镇食堂
 
+## 厨师实物备菜流程（D073）
+运行 `build/TownDiner.exe`（同目录保留 `TownDiner.pck`）。在筹备时 H 签约厨师、G 给主店派驻，准备番茄炒蛋原料并开门，到厨房观察：取番茄→砧板切配→入锅→再取鸡蛋→灶前完成真实菜谱→端到出餐口。餐厅仍需玩家或已雇服务员把菜送到桌边；没有服务员时菜会留在出餐口。
+独立检查：`pwsh -NoProfile -File tools/check.ps1 -Suite chef-workflow`；相关回归：`pwsh -NoProfile -File tools/check.ps1 -Suite chef-regression -TimeoutSeconds 1200`；导出：`pwsh -NoProfile -File tools/export.ps1 -CheckSuite chef-workflow -CheckTimeoutSeconds 600`。需要指定引擎时追加 `-GodotPath`，锁定版本不变。实际证据及人工待试玩项见 `docs/phases/restaurant-feedback.md` 的 D073。
+
+## 原生 Visual Novel Engine 开篇（D072-R1）
+本地运行 build/TownDiner.exe（保持同目录 TownDiner.pck），新建存档体验港口开篇。现在由真正的VN Engine Main/StoryRunner和原生剧本播放；点击继续，右下自动/快进/回看，右上暂停。原三段CG动画保留，输入昵称前自动停止；完成后回到地图。存档仍按游戏原来的主动/睡觉保存规则。
+安全独立预览：Godot打开 dev/vn_opening_test.tscn 按F6，不创建经营档。原生内容在 content/story/vn/。检查命令：`pwsh -NoProfile -File tools/check.ps1 -Suite visual-novel`；导出：`pwsh -NoProfile -File tools/export.ps1 -CheckSuite visual-novel`。30项测试、611断言和真实EXE图形21项已通过，本地包14:45更新，人工观感待试玩。完整证据/范围见 docs/phases/visual-novel.md；后续章节尚未迁移，不推送。
+
+
+## 港口开篇预览（D072）
+运行正式游戏新建空槽可体验开篇；独立预览为 `dev/vn_opening_test.tscn`（F6，不创建经营存档）。专项检查：`pwsh -NoProfile -File tools/check.ps1 -Suite visual-novel`。框架接入范围、依赖补丁和验证见 `docs/phases/visual-novel.md`；插件呈现复用，进度与保存仍归游戏。
+
+
+## 餐厅移动与上菜（D071，2026-11-11）
+WASD 按屏幕方向移动，Shift 疾跑。厨房端起成品后，到出餐口按 **E** 放下；回餐厅，在后厨门旁的出餐口按 **E** 取菜，走到对应客人桌边按 **E** 上菜。有服务员时由其实际取盘送桌。客人收到菜才停止耐心并结算；超时的菜仍可匹配后续同菜订单。
+端着菜在出餐口 **E** 放回，**Q** 丢弃（空手时 Q 清理最早未认领盘）。保存/休息前先处理剩余盘子，02:00收尾自动清理。教程番茄炒蛋也需端到阿铃桌边。
+检查：`pwsh -NoProfile -File tools/check.ps1 -Suite table-service -TimeoutSeconds 600`；相关回归使用 `-Suite table-service-regression`（可加 `-ShardCount 2 -ShardIndex 0/1` 分组）。图形探针 `tools/table_service_probe.gd` 使用隔离存档。完整证据及人工试玩状态见 `docs/phases/restaurant-feedback.md` D071。
+
 ## 调料菜系开放（D070，2026-11-10 19:34）
 运行 `build/TownDiner.exe`（同目录保留 `TownDiner.pck`）。按 **U** 查看供应商：只显示已开放菜系可用的调料，共享调料开放任一对应菜系即可；供应地区限制同时生效。菜市场也执行调料门槛，食材原有规则保留。已有库存和已付款货物不丢失，旧锁定产线等待菜系开放。
 隔离测试槽可用控制台 `debug` → `cuisine open jp` 验证日本调料开放，菜谱仍须逐个研习；修改后主动保存。相关78项测试、26项图形检查及本地导出通过；旧综合77项回归600秒超时，不计通过，人工待试玩。检查：`pwsh -File tools/check.ps1 -Suite materials` 与 `-Suite condiment-rules`；报告：`docs/phases/regional-materials.md` D070。未推送。

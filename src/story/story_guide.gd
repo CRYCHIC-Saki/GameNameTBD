@@ -24,6 +24,9 @@ var _closed: bool=false
 var _bark_seen: Dictionary={}
 var _first_arrival: bool=false
 
+func reserved_bottom() -> float:
+	return _card.get_global_rect().end.y if _card!=null and _card.is_visible_in_tree() else 0.0
+
 func _ready() -> void:
 	process_mode=Node.PROCESS_MODE_ALWAYS;mouse_filter=Control.MOUSE_FILTER_IGNORE
 	_layer=CanvasLayer.new();_layer.layer=50;add_child(_layer)
@@ -42,7 +45,9 @@ func _ready() -> void:
 	dialogue.hero_named.connect(func(value:String)->void:
 		if shell.profile!=null and dialogue.talk!=null and dialogue.talk.context.get("kind")=="story": shell.profile.story.hero_name=value)
 	shell.town.story_requested.connect(request_person)
-	shell.kitchen_view.story_delivery=serve_trial
+	shell.kitchen_view.story_delivery=shell.profile.shop.table_service.place_trial
+	shell.profile.shop.table_service.trial_check=check_trial_delivery
+	shell.profile.shop.table_service.trial_received=serve_trial
 	shell.kitchen_view.story_cooking_check=check_trial_cooking
 	shell.profile.shop.practice_supply_policy=practice_supplies
 	shell.kitchen_view.kitchen.tutorial_gate=tutorial_gate
@@ -70,7 +75,7 @@ func _process(delta: float) -> void:
 	_hint.text=str(now.get("text",""));_title.text="主线 · "+str(now.get("title","第一口异端"))
 	if shell.location=="kitchen" and shell.kitchen_view.kitchen.stage.visible: _card.hide();_trail.hide()
 	if _trail.visible: update_route(now)
-	_bark.visible=not hidden and _pulse<_bark_until
+	_bark.visible=not hidden and shell.location=="kitchen" and _pulse<_bark_until
 	_bark_portrait.visible=_bark.visible
 	if not hidden and shell.location=="kitchen": cooking_barks()
 	if hidden or get_tree().paused: return
@@ -176,11 +181,16 @@ func objective() -> Dictionary:
 		"awaken","verdict": result.room="restaurant";result.target="table"
 		"cook":
 			result.title="唤醒灶火";result.room="kitchen";result.target="kitchen.fridge"
+			var plate:=shell.profile.shop.table_service.for_order(TDTableService.TRIAL_ORDER)
+			if not plate.is_empty():
+				result.room="restaurant";result.target="trial" if plate.carrier=="player" else "pass"
+				result.text="到阿铃桌边按 E 上菜。" if plate.carrier=="player" else "回餐厅，到后厨门旁的出餐口按 E 取菜，再送到阿铃桌边。"
+				return result
 			var kitchen:=shell.kitchen_view.kitchen
 			var handling:=kitchen.handling
 			if handling.hand_kind=="dish":
 				var issue:=trial_plate_problem(handling.hand.snapshot().to_dict())
-				result.text="端着成品前往出餐台，按 E 交给阿铃。" if issue.ok else issue.message
+				result.text="端着成品前往出餐口，按 E 放下，再回餐厅取菜送给阿铃。" if issue.ok else issue.message
 				result.target="kitchen.serve" if issue.ok else "kitchen.trash";return result
 			for lane: TDCookingLane in kitchen.lanes:
 				if lane.snapshot().state=="plated":
@@ -243,6 +253,10 @@ func trial_plate_problem(dish: Dictionary) -> TDOutcome:
 	elif issue.code=="TRIAL_WRONG_METHOD": cause="这盘用了蒸制，番茄炒蛋需要用炒锅。"
 	elif not dish.get("failed_dish",false): cause="这盘是其他菜，阿铃这次想尝番茄炒蛋。"
 	return TDOutcome.new(false,"WRONG_TRIAL_DISH",cause+"先到垃圾桶按 E 放下，再从冰箱领取教程食材重试。")
+
+func check_trial_delivery(dish: Dictionary) -> TDOutcome:
+	if shell.profile.story.beat!="cook": return TDOutcome.new(false,"NOT_STORY_DELIVERY")
+	return trial_plate_problem(dish)
 
 func serve_trial(dish: Dictionary) -> TDOutcome:
 	var story:=shell.profile.story
@@ -347,6 +361,10 @@ func update_route(goal: Dictionary) -> void:
 		if action=="table": action="kitchen"
 		for item: Dictionary in restaurant.interaction_points():
 			if item.action==action: end=Vector2i(item.cell)
+		if action=="pass": end=restaurant.service_window_cell()
+		if action=="trial":
+			for guest: TDRestaurantGuest in restaurant.guest_nodes():
+				if guest.ticket_id==TDTableService.TRIAL_ORDER: end=restaurant._beside_seat(guest.seat_id)
 		bounds=Rect2i(0,0,restaurant.layout.columns,restaurant.layout.rows)
 		can_walk=func(cell:Vector2i)->bool:return restaurant.layout.is_walkable(cell.x,cell.y)
 		project=func(cell:Vector2i)->Vector2:return restaurant._iso.get_global_transform_with_canvas()*restaurant._iso.project(cell.x+.5,cell.y+.5)
@@ -378,7 +396,10 @@ func close() -> void:
 	_closed=true;_pending_tutorial=""
 	if dialogue!=null: dialogue.dismiss()
 	if shell!=null and shell.town!=null: shell.town.external_story_frozen=false
-	if shell!=null and shell.profile!=null: shell.profile.shop.practice_supply_policy=Callable()
+	if shell!=null and shell.profile!=null:
+		shell.profile.shop.practice_supply_policy=Callable()
+		shell.profile.shop.table_service.trial_check=Callable()
+		shell.profile.shop.table_service.trial_received=Callable()
 	if shell!=null and shell.kitchen_view!=null: shell.kitchen_view.story_cooking_check=Callable()
 	set_process(false)
 

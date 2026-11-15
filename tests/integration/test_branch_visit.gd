@@ -45,6 +45,18 @@ func test_home_construction_blocks_entry_then_real_room_signals_preserve_main_st
 	assert_eq(shell.location,"branch");assert_eq(shell.branch_visit.store_id,id)
 	assert_false(shell.restaurant._player.controls_enabled);assert_false(shell.kitchen_view.kitchen.world._player.controls_enabled)
 	var visit:=shell.branch_visit;assert_eq(visit.room,"restaurant")
+	# Branch restaurant uses the same absolute screen directions as the main shop.
+	var start:=Vector2i(6,8)
+	for pair: Array in [["world_right",Vector2.RIGHT],["world_down",Vector2.DOWN],["world_up",Vector2.UP],["world_left",Vector2.LEFT]]:
+		visit.player.position=visit.layout.cell_center(start);await wait_physics_frames(2)
+		Input.action_press(pair[0]);await wait_physics_frames(2)
+		var old:=visit.player.position/visit.layout.cell_px
+		await get_tree().physics_frame
+		var next:=visit.player.position/visit.layout.cell_px
+		var shift:=TDRestaurantIsoView.project(next.x,next.y)-TDRestaurantIsoView.project(old.x,old.y)
+		Input.action_release(pair[0])
+		assert_gt(shift.normalized().dot(pair[1]),.999)
+		assert_almost_eq(shift.length(),3.0,.05)
 	assert_false(visit.layout.path(Vector2i(visit.player.position/visit.layout.cell_px),Vector2i(visit.kitchen_point/visit.layout.cell_px)).is_empty(),"door and kitchen connected")
 	visit.player.position=visit.kitchen_point;await key_e();assert_eq(visit.room,"kitchen")
 	visit.kitchen._player.position=Vector2(200,330);await key_e()

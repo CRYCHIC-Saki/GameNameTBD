@@ -5,79 +5,32 @@ var external_time_boundary: Callable
 var story_delivery: Callable
 var story_cooking_check: Callable
 var staff_away: bool=false
-var _staff_lanes: Dictionary={}
-var _staff_cooks: Dictionary={}
-var _staff_note: String=""
+var staff: TDKitchenStaff
 
 func staff_status() -> String:
 	if shop==null or shop.crew==null or shop.crew.cooks().is_empty(): return "主店缺厨师：可以外出，订单仍会等待或超时。"
-	return "厨师按订单在后厨做菜；菜好后由服务员端上桌。"+("\n"+_staff_note if not _staff_note.is_empty() else "")
+	return "厨师按订单取料、切配、烹饪并端至出餐口；菜好后由服务员端上桌。"+("\n"+staff.note if staff!=null and not staff.note.is_empty() else "")
 
 func staff_work(person_id: String) -> String:
 	if _closed or kitchen==null: return ""
-	for index: int in _staff_lanes:
-		if _staff_cooks.get(index,"")==person_id and kitchen.lanes[index].snapshot().session_id==_staff_lanes[index]: return "做菜"
+	if staff!=null and not staff.job_for(person_id).is_empty(): return "做菜"
 	return ""
 
 func staff_step(person_id: String) -> String:
 	if _closed or kitchen==null: return ""
-	for index: int in _staff_lanes:
-		if _staff_cooks.get(index,"")==person_id and kitchen.lanes[index].snapshot().session_id==_staff_lanes[index]: return kitchen.lanes[index].cook_step()
+	if staff!=null:
+		for row: Dictionary in staff.rows():
+			if row.id==person_id and not staff.job_for(person_id).is_empty(): return str(row.action)
 	return ""
 
 func staff_job_id(person_id: String) -> String:
 	if _closed or kitchen==null: return ""
-	for index: int in _staff_lanes:
-		if _staff_cooks.get(index,"")==person_id and kitchen.lanes[index].snapshot().session_id==_staff_lanes[index]: return str(_staff_lanes[index])
+	if staff!=null: return str(staff.job_for(person_id).get("session_id",""))
 	return ""
 
-func tick_staff() -> void:
-	if _closed or kitchen==null or shop==null or get_tree().paused: return
-	# Continue only jobs owned by this scheduler; never take over a player's pot.
-	for index: int in _staff_lanes.keys():
-		var lane: TDCookingLane=kitchen.lanes[index]
-		if lane.snapshot().session_id!=_staff_lanes[index]: _staff_lanes.erase(index);continue
-		if lane.snapshot().state=="plated":
-			var order: Dictionary=shop.first_order_for(lane.snapshot())
-			if not order.is_empty() and shop.can_deliver(order.id,lane.snapshot()).ok:
-				var result:=lane.perform("deliver") # existing signal -> Shop.deliver, once
-				if result.ok: _staff_lanes.erase(index);_reset_pot(lane)
-		elif lane.snapshot().state in ["cancelled","discarded","delivered"]: _staff_lanes.erase(index)
-	if shop.snapshot().phase not in ["OPEN","DRAINING"] or shop.crew==null or shop.crew.cooks().is_empty(): return
-	var assigned: Array=[]
-	for index: int in _staff_lanes: assigned.append(kitchen.lanes[index].base_recipe_id)
-	# A cook must not start a duplicate of a dish the player is already preparing.
-	for player_lane: TDCookingLane in kitchen.lanes:
-		if not _staff_lanes.has(player_lane.lane_index) and (not player_lane.snapshot().ingredients.is_empty() or player_lane.qte!=null or player_lane.thermal_qte!=null): assigned.append(player_lane.base_recipe_id)
-	for order: Dictionary in shop.active_orders():
-		var family: String=shop.family_id(order.recipe_id)
-		if family in assigned: continue
-		if _staff_lanes.size()>=shop.crew.cooks().size(): break
-		var lane: TDCookingLane=null
-		for candidate: TDCookingLane in kitchen.lanes:
-			if candidate.snapshot().ingredients.is_empty() and candidate.qte==null and candidate.thermal_qte==null and not _staff_lanes.has(candidate.lane_index): lane=candidate;break
-		if lane==null: break
-		var recipe:=shop.profile_for(order)
-		var need: Dictionary=service.material_needs(recipe,family)
-		var enough:=true
-		for id: String in need:
-			if shop.available(id)<int(need[id]): enough=false
-		if not enough: _staff_note="食材或调料不足，厨师无法开始新的菜。";continue
-		lane.catalog=recipe;lane.new_session(family);lane.session.set_material_sink(shop.consume_materials,shop.available)
-		var selected:=lane.use_recipe_profile(recipe,family,order.customer)
-		if not selected.ok: _staff_note=selected.message;continue
-		var loaded:=true
-		for id: String in service.offer(family).primary:
-			if not lane.perform("add",{"ingredient_id":id,"amount":1.0}).ok: loaded=false;break
-		if not loaded: _staff_note="备料失败，请回厨房整理。";continue
-		var started:=lane.start_automatic()
-		if started.ok:
-			var busy: Array=[]
-			for index: int in _staff_lanes: busy.append(_staff_cooks.get(index,""))
-			for cook: Dictionary in shop.crew.cooks():
-				if cook.id not in busy: _staff_cooks[lane.lane_index]=cook.id;break
-			_staff_lanes[lane.lane_index]=lane.snapshot().session_id;assigned.append(family);_staff_note="厨师正在按订单要求制作。"
-		else: _staff_note=started.message
+func tick_staff(seconds: float = 0.0) -> void:
+	if _closed or staff==null or kitchen==null or get_tree().paused or kitchen.shared_clock.paused: return
+	staff.tick(seconds)
 	_sync_usage()
 
 signal back_requested
@@ -155,7 +108,11 @@ func _build_shell() -> void:
 	actions.add_child(TDUI.button("经营账本",_show_ledger))
 	actions.add_child(TDUI.button("暂停 / 恢复",func()->void:pause_requested.emit()))
 	actions.add_child(TDUI.button("返回主界面",request_back))
-	if embedded: actions.hide();_title.hide()
+	if embedded:
+		actions.hide();_title.hide()
+		_message.position=Vector2(414,118);_message.size=Vector2(518,50)
+		_message.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+		_message.add_theme_font_size_override("font_size",TDUI.FONT_CAPTION)
 	day_clock_label=TDUI.label("",TDUI.FONT_SECTION,TDUI.ORANGE);day_clock_label.position=Vector2(1050,110);day_clock_label.size=Vector2(200,36);add_child(day_clock_label)
 	if embedded: day_clock_label.hide()
 	_holder=Control.new(); _holder.position=Vector2(12,174); _holder.size=Vector2(920,575); add_child(_holder)
@@ -164,6 +121,7 @@ func _build_shell() -> void:
 	_page=PanelContainer.new(); _page.position=Vector2(18,166); _page.size=Vector2(913,610); add_child(_page)
 
 func _make_kitchen() -> void:
+	if staff!=null: staff.close();staff=null
 	if kitchen!=null:
 		kitchen.close(); _holder.remove_child(kitchen); kitchen.queue_free()
 	var config:=service.with_plans(shop.snapshot().custom)
@@ -186,6 +144,7 @@ func _make_kitchen() -> void:
 	kitchen.world.crew = shop.crew
 	kitchen.world.order_shop = shop
 	if embedded:
+		kitchen.world.set_embedded_hud()
 		kitchen.world.service_door=true
 		kitchen.world.dining_requested.connect(func()->void:back_requested.emit())
 	# Saved consumption tokens survive a reload. New sessions must not restart
@@ -197,6 +156,8 @@ func _make_kitchen() -> void:
 		lane.session_namespace=kitchen_scope
 		lane.new_session("service.tomato_egg")
 		lane.session.set_material_sink(shop.consume_materials,shop.available)
+	staff=TDKitchenStaff.new(shop,kitchen,_reset_pot)
+	kitchen.world.staff_source=staff.rows
 
 func refresh(force: bool = false) -> void:
 	if shop==null or _closed: return
@@ -345,7 +306,9 @@ func _orders_panel(state: Dictionary) -> void:
 		for requirement: Dictionary in item.customer.requirements: wishes.append(str(requirement.label))
 		column.add_child(TDUI.label("要求："+" / ".join(wishes),TDUI.FONT_CAPTION,TDUI.MUTED))
 		var patience:=ProgressBar.new(); patience.max_value=float(item.deadline_sec)-float(item.get("ordered_sec",item.get("arrival_sec",float(item.deadline_sec)-float(service.config.settings.patience_sec)))); patience.value=maxf(0,float(item.deadline_sec)-float(state.elapsed_sec)); patience.show_percentage=false; patience.custom_minimum_size.y=13; column.add_child(patience)
-		column.add_child(TDUI.label("耐心 %d 秒 · %s" % [ceili(patience.value),_status_name(item.status)],TDUI.FONT_CAPTION))
+		var queued:=shop.table_service.for_order(str(item.id))
+		var status:=_status_name(item.status) if queued.is_empty() else ("出餐口待取" if queued.carrier=="" else "端菜途中")
+		column.add_child(TDUI.label("耐心 %d 秒 · %s" % [ceili(patience.value),status],TDUI.FONT_CAPTION))
 	var done: Array=state.orders.filter(func(o:Dictionary)->bool:return o.status not in ["ARRIVING","WAITING","COOKING"])
 	if not done.is_empty():
 		var last: Dictionary=done.back()
@@ -421,6 +384,7 @@ func _station_action(id: String, action: String) -> void:
 		else: _show_pantry()
 		return
 	if id=="kitchen.board":
+		if staff!=null and staff.board_owner!="": _station_done(TDOutcome.new(false,"STAFF_BUSY","厨师正在使用砧板，请稍候。"));return
 		if kitchen.prep.qte!=null or (kitchen.prep.sheet!=null and kitchen.prep.sheet.running): kitchen.open_station_view(id); return
 		if kitchen.handling.board!=null:
 			_station_done(kitchen.handling.take_board()); return
@@ -433,6 +397,7 @@ func _station_action(id: String, action: String) -> void:
 	if id not in ["kitchen.stove.left","kitchen.stove.right","kitchen.steamer"]: return
 	var index: int=1 if id in ["kitchen.stove.right","kitchen.steamer"] else 0
 	var lane: TDCookingLane=kitchen.lanes[index]
+	if staff!=null and staff.owns(index): _station_done(TDOutcome.new(false,"STAFF_BUSY","这口锅由厨师负责，完成后会端到出餐口。"));return
 	if action=="retrieve":
 		if not lane.session.is_cold(): _station_done(TDOutcome.new(false,"COOKING_STARTED","已开始加工，只能继续制作或整锅丢弃。")); return
 		_show_pot_contents(index); return
@@ -468,6 +433,7 @@ func _begin_manual(lane: TDCookingLane, station_id: String) -> void:
 
 func start_automatic(index: int) -> TDOutcome:
 	if index<0 or index>=kitchen.lanes.size() or get_tree().paused or not shop.kitchen_available(): return TDOutcome.new(false,"KITCHEN_UNAVAILABLE")
+	if staff!=null and staff.owns(index): return TDOutcome.new(false,"STAFF_BUSY")
 	var lane: TDCookingLane=kitchen.lanes[index]
 	if not shop.mastery(lane.base_recipe_id).automatic_available: return TDOutcome.new(false,"NOT_MASTERED","手工制作评分80以上可积累手艺，满400后开放。")
 	var dish:=lane.snapshot();var required: Dictionary=service.material_needs(lane.catalog,lane.base_recipe_id,dish.steps)
@@ -528,6 +494,7 @@ func _show_pot_contents(index: int) -> void:
 
 func take_pot_ingredient(index: int, id: String) -> TDOutcome:
 	if get_tree().paused: return TDOutcome.new(false,"PAUSED")
+	if staff!=null and staff.owns(index): return TDOutcome.new(false,"STAFF_BUSY")
 	var lane: TDCookingLane=kitchen.lanes[index]
 	if lane.qte!=null or lane.thermal_qte!=null or (lane.sheet!=null and lane.sheet.running): return TDOutcome.new(false,"COOKING_STARTED")
 	var result:=kitchen.handling.take_ingredient(lane.session,id)
@@ -536,6 +503,7 @@ func take_pot_ingredient(index: int, id: String) -> TDOutcome:
 	_station_done(result); return result
 
 func _reset_pot(lane: TDCookingLane) -> void:
+	lane.external_operator=""
 	lane.cancel_operation(); lane.catalog=kitchen.catalog; lane.customer_override=[]; lane.new_session("service.tomato_egg"); lane.session.set_material_sink(shop.consume_materials,shop.available)
 
 func _trash() -> void:
@@ -548,7 +516,7 @@ func _trash() -> void:
 	var column:=_dialog("清理厨房 · 丢弃后不返还食材")
 	if kitchen.handling.board!=null: column.add_child(TDUI.button("丢弃砧板食材",func()->void:kitchen.prep.cancel_operation();kitchen.handling.board.cancel();kitchen.handling.board=null;_close_popup();_station_done(TDOutcome.new(true,"DISCARDED"))))
 	for i: int in kitchen.lanes.size():
-		if not kitchen.lanes[i].snapshot().ingredients.is_empty(): column.add_child(TDUI.button("丢弃"+("左锅" if i==0 else "右锅 / 蒸笼")+"整份食物",func()->void:_reset_pot(kitchen.lanes[i]);_close_popup();_station_done(TDOutcome.new(true,"DISCARDED"))))
+		if (staff==null or not staff.owns(i)) and not kitchen.lanes[i].snapshot().ingredients.is_empty(): column.add_child(TDUI.button("丢弃"+("左锅" if i==0 else "右锅 / 蒸笼")+"整份食物",func()->void:_reset_pot(kitchen.lanes[i]);_close_popup();_station_done(TDOutcome.new(true,"DISCARDED"))))
 	column.add_child(TDUI.button("返回厨房",_close_popup))
 
 func _show_pantry() -> void:
@@ -617,6 +585,7 @@ func _sync_usage() -> void:
 		if not names.is_empty() and shop.is_unlocked(lane.base_recipe_id):
 			status+=" · 手艺 %.0f/400"%float(shop.mastery(lane.base_recipe_id).points)
 		if lane.automatic: status="自动制作 · "+("已做好，E 端盘" if dish.state=="plated" else lane.stage_label)
+		if staff!=null and staff.owns(lane.lane_index): status="厨师占用 · "+staff_step(str(staff.jobs[lane.lane_index].cook))
 		contents.append({"title":("左锅 · " if lane.lane_index==0 else "右锅 / 蒸笼 · ")+(str(dish.recipe_name) if not names.is_empty() else "空"),"materials":status})
 		if dish.state=="plated":
 			var unlocked:=shop.observe_finished(dish)
@@ -627,6 +596,7 @@ func _sync_usage() -> void:
 		snapshots.append({"location":"pot","dish":dish,"future_materials":needs})
 	for source: TDCookingSession in [kitchen.handling.hand,kitchen.handling.board]:
 		if source!=null: snapshots.append({"location":"loose","dish":source.snapshot().to_dict()})
+	if staff!=null: snapshots.append_array(staff.extra_snapshots())
 	shop.sync_kitchen(snapshots)
 	kitchen.world.pot_contents=contents
 
@@ -640,7 +610,7 @@ func _serve() -> void:
 			var story_result: TDOutcome=story_delivery.call(lane.snapshot())
 			if story_result.code!="NOT_STORY_DELIVERY":
 				if story_result.ok:
-					# The story consumed this held plate, without emitting an ordinary order delivery.
+					# Story food enters the same pass; its recipient evaluates it at the table.
 					kitchen.handling.clear_dish();kitchen.close_bench();_reset_pot(lane);_sync_usage();refresh(true)
 				_station_done(story_result);return
 		var item: Dictionary=shop.first_order_for(lane.snapshot())
@@ -652,7 +622,7 @@ func _serve() -> void:
 			kitchen.handling.clear_dish(); kitchen.close_bench()
 			lane.catalog=kitchen.catalog; lane.customer_override=[]; lane.new_session("service.tomato_egg"); lane.session.set_material_sink(shop.consume_materials,shop.available)
 			var served: Dictionary=shop.order(item.id)
-			_message.text="已送达 %s · %.1f分。" % [shop.recipe_name(served.recipe_id),served.score.satisfaction]
+			_message.text="已放到出餐口：%s。到餐厅出餐口按 E 取菜，再到客人桌边按 E 上菜。"%shop.recipe_name(served.recipe_id) if shop.table_service_enabled else "已送达 %s · %.1f分。" % [shop.recipe_name(served.recipe_id),served.score.satisfaction]
 		else: _station_done(result)
 		kitchen.world.set_controls_enabled(true); kitchen.refresh_world(); _sync_usage(); refresh(true); return
 
@@ -665,14 +635,17 @@ func _on_work(seconds: float) -> void:
 		shop.commerce.cooking_time(seconds)
 
 func _next_time_boundary(seconds: float) -> float:
+	# Settle zero-time transitions before choosing a span; movement never advances here.
+	tick_staff()
 	var span: float=shop.next_boundary(seconds)
+	if staff!=null: span=staff.next_boundary(span)
 	if external_time_boundary.is_valid(): span=minf(span,float(external_time_boundary.call(seconds)))
 	return span
 
 func _on_time(seconds: float) -> void:
 	if _closed or shop==null: return
 	_sync_usage(); shop.advance(seconds,get_tree().paused); _cleanup_terminal(); refresh()
-	tick_staff()
+	tick_staff(seconds)
 	active_time_advanced.emit(seconds)
 
 func cancel_order(id: String) -> void:
@@ -686,6 +659,7 @@ func _cleanup_terminal() -> void:
 
 func checkpoint_ready() -> TDOutcome:
 	if kitchen==null: return TDOutcome.new(true,"KITCHEN_CLEAR")
+	if staff!=null and not staff.jobs.is_empty(): return TDOutcome.new(false,"KITCHEN_BUSY","厨师还在处理食材或成品，请先完成或收夜整理。")
 	var busy: bool=kitchen.handling.hand!=null or kitchen.handling.board!=null
 	for lane: TDCookingLane in kitchen.lanes+[kitchen.prep]:
 		var dish:=lane.snapshot()
@@ -696,6 +670,9 @@ func checkpoint_ready() -> TDOutcome:
 
 func finish_night() -> TDOutcome:
 	# In-flight heat cannot be undone into raw stock.
+	if staff!=null:
+		var released:=staff.release_all()
+		if not released.ok: return released
 	var returned:=0
 	var waste: Dictionary={}
 	kitchen.close_bench();_close_popup();kitchen.prep.cancel_operation()
@@ -805,6 +782,8 @@ func set_paused(value: bool) -> void:
 
 func close() -> void:
 	_closed=true
+	if staff!=null:
+		kitchen.world.staff_source=Callable();staff.close()
 	if shop!=null and shop.crew_status_source==staff_work: shop.crew_status_source=Callable()
 	if shop!=null and shop.cook_step_source==staff_step: shop.cook_step_source=Callable()
 	if shop!=null and shop.cook_job_source==staff_job_id: shop.cook_job_source=Callable()

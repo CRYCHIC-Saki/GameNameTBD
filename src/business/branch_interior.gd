@@ -32,7 +32,7 @@ func _ready() -> void:
 	player=TDKitchenPlayer.new();player.name="BranchPlayer";player.process_mode=Node.PROCESS_MODE_PAUSABLE
 	player.collision_layer=512;player.collision_mask=256;player.walk_speed=180;player.vertical_stride_multiplier=1.6
 	player.motion_transform=Transform2D(Vector2(TDRestaurantIsoView.HALF_W,TDRestaurantIsoView.HALF_H)/layout.cell_px,Vector2(-TDRestaurantIsoView.HALF_W,TDRestaurantIsoView.HALF_H)/layout.cell_px,Vector2.ZERO).affine_inverse()
-	player.input_transform=player.motion_transform.affine_inverse();player.confine_to=_can_stand
+	player.input_transform=Transform2D.IDENTITY;player.confine_to=_can_stand
 	var art:=Sprite2D.new();art.name="Sprite2D";player.add_child(art)
 	var collision:=CollisionShape2D.new();var shape:=CircleShape2D.new();shape.radius=12;collision.shape=shape;player.add_child(collision)
 	_floor.add_child(player);art.hide()
