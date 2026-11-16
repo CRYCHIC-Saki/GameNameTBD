@@ -20,6 +20,12 @@ save authority; native read history is ephemeral, not a mid-scene save feature.
 
 Local patches (standalone defaults remain available):
 
+- D077-R3: `plugin.gd` selects the project's local export subclass at
+  `addons/td_vn_editor/export_plugin.gd`. It reuses the original scenario baker,
+  but for Town Diner only exports `intro` plus enabled `content/story/events.json`
+  entries. Unregistered author drafts stay out of the game. Other content roots
+  use the original implementation. The upstream version remains 0.23.0.
+
 - Main `host_managed`: memory-only SaveData and Settings; no window/audio settings,
   separate menu, independent saves or dev overlay. On exit break the stack cycle.
 - SaveData memory mode covers constructor, flow snapshots, slot queries and flush.

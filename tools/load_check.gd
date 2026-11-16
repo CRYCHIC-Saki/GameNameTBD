@@ -4,6 +4,8 @@ var checked: int = 0
 var failures: int = 0
 
 func _initialize() -> void:
+	var story_events := TDStoryEvents.new()
+	if not story_events.error.is_empty(): printerr(story_events.error); failures += 1
 	for directory: String in ["res://src", "res://dev"]:
 		visit(directory)
 	if failures > 0:

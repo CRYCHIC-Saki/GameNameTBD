@@ -1,10 +1,14 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="PackedScene" path="res://addons/vn_engine/src/screens/scenes/vn_stage_screen.tscn" id="1"]
 [ext_resource type="Script" path="res://src/story/vn_host_screen.gd" id="2"]
+[ext_resource type="Script" path="res://src/story/vn_character_layer.gd" id="3"]
 
 [node name="OpeningStage" instance=ExtResource("1")]
 script = ExtResource("2")
+
+[node name="CharacterLayer" parent="." index="2"]
+script = ExtResource("3")
 
 [node name="BackgroundBox" parent="CanvasLayer/DialogUI" index="1"]
 offset_left = 36.0

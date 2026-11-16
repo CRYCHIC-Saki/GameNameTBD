@@ -1,3 +1,27 @@
+## 2026-11-16 剧情编辑器发布候选
+独立integration/phase-4-wave-vn-editor从远端main=df2972d整理D077–R4；main检查时无新增提交。PPT编排、导入、原生试玩、游戏触发及中文保存交接为本轮范围，主角斜向D076与本地原始资料保留未提交。当前只记录候选，最终远程检查/合并回执见artifacts/upload-vn-editor-20261116，人工PENDING。没有重建EXE。
+
+## D077-R4 美术交接保存（2026-11-16，LOCAL_EDITOR_READY / AUTHOR_PLAYTEST_PENDING）
+覆盖R3的作者操作方式：美术保存时填中文剧情名/章节/插入位置/备注，跟随TXT保存；默认drafts，已接入原篇只另存副本。AI/开发者后续按说明接入，“开发接入”保留高级步骤。保存不执行中文说明、不登记/发奖/改主线，原Profile9/D059不变；详见docs/VN_EDITOR.md。
+59/59用例448断言、导入/161加载exit0；实际编辑器28检查2图、原生播放6检查1图及1267资源隔离导出通过。证据artifacts/vn-handoff-20261116、artifacts/check/vn-handoff-fixed；34原资料/正式intro/登记一致，临时草稿清理，作者恢复文件保留。首轮失败保留，全仓/CI NOT_RUN，人工制作体验PENDING。EXE仍14:44包，不推送，root锁释放。下一步由作者保存实际作品并交接，不自动扩展或插入新剧情。
+
+## D077-R3 游戏触发（2026-11-16，历史 LOCAL_EDITOR_READY / AUTHOR_PLAYTEST_PENDING）
+保存剧本后在“游戏触发”中选择人物/地点/任务节点、前置、一次/重复及已有菜系/商路解锁；J查看新增节点与取消后的重试。阿铃/老陈在镇上和用餐时接统一入口，五镇实际旅行入口可触发，原教学和服务交互优先。继续原生VN0.23.0与Profile9/D059，新增完成次数属于当前槽内存，主动保存才落盘；原开篇保持，不自动创作正式章节。
+最终53/53、398断言、0失败/跳过，导入/161加载exit0（artifacts/check/vn-triggers-interaction）；真实编辑器14项1图、最终游戏Compatibility18项1图、隔离导出1268资源及空目录包加载4项PASS，清理测试登记后161加载exit0。证据artifacts/vn-triggers-20261116；首两轮测试夹具住所不完整/JSON整数恢复失败日志保留并修正。34原资料一致，临时示例/未发布草稿逐文件移除、登记恢复空表、作者恢复草稿保留。全仓/CI NOT_RUN，人工编排PENDING；未重建EXE或提交推送，root锁释放。下一步用真实演出配置触发并在Godot运行体验。
+
+## D077-R2 素材导入（2026-11-16，历史 LOCAL_EDITOR_READY / AUTHOR_PLAYTEST_PENDING）
+R2.1：根据用户反馈补上弹窗内部右上×，不依赖外部标题栏；Esc与取消可关闭，未提交关闭不登记，重开清表单。修正换行说明撑高窗口，最终500×631，底部按钮可见。0.3.1真实独立窗口输入12检查1图通过，证据artifacts/vn-import-close-20261116/editor-close-routing.log，失败记录保留。仅关闭入口修复，不重跑下方40项或重建EXE，未推送。
+Godot「剧情 → 导入素材」已支持PNG/JPG/WebP背景、新剧情角色、已有角色新表情；填中文名即可自动归档/原生登记/加入导出列表，可选立即插入当前页。旧素材/原图不覆盖，真实扫描与缓存刷新后才能试玩；失败回滚和外部并发保护已接入。工具0.3.0，正式剧情、Profile9与前轮主角成果不改。
+最终40/40用例287断言、160加载exit0，实际编辑器33检查4图、原生新素材播放9检查1图、临时素材1276资源隔离导出及空目录实际加载3检查均PASS。证据artifacts/vn-import-20261116与artifacts/check/vn-import-final，初轮失败保留。34原资料相同；三份测试素材已按哈希清理，cast/preset逐字恢复基线。人工导入/长篇编排待反馈，全仓与远程CI未跑；未重建EXE、未提交推送，root锁释放。下一步由用户导入实际素材，后续章节仍需独立接入任务。
+
+## D077-R1 PPT剧情画布（2026-11-16，LOCAL_EDITOR_READY / AUTHOR_PLAYTEST_PENDING）
+用户要求进一步简化：Godot「剧情」默认页缩略图，插入背景/角色卡、鼠标二维拖动、等比大小/表情/移除、即时对白、复制/删除/同页撤销；原步骤编辑保留高级开关。本地0.2.0，位置在原生TXT中保存，由本地CharacterLayer子类与编辑器共用几何，不升级上游、不改正式剧情。用法docs/VN_EDITOR.md，边界与AC见phases/vn-editor.md R1。
+最终32用例216断言/160加载exit0，实际编辑器43项3图与高级回归35项4图、原生播放10项2图均exit0，1264资源隔离导出白名单PASS。证据artifacts/vn-slides-20261116及artifacts/check/vn-slides-final；首轮失败保留。34保护文件一致，前轮主角/正式intro/原图保持。长篇作者体验PENDING，全仓/远程CI未跑，EXE仍14:44包；本轮未提交推送，root锁释放。下一步仅等待工具试用，不自动扩剧情。
+
+## D077 剧情可视化编辑器（历史初版，2026-11-16，LOCAL_EDITOR_READY / AUTHOR_PLAYTEST_PENDING）
+Godot顶部「剧情」页已启用：真实TXT步骤编辑、背景/立绘/表情/对白/分支表单、静态构图、排序/撤销、备份保存、外部修改保护、最近草稿恢复；Ctrl+Enter打开独立真实VN试玩，CG/姓名/选择沿用原生播放器。正式开篇原文、上游插件和Profile9/D059不改，新章不自动进入任务或发布。使用见docs/VN_EDITOR.md，验收见docs/phases/vn-editor.md。
+最终21/21测试133断言、158加载、原生编辑器35项4图、真实草稿16项3图、1252运行资源隔离导出均exit0；34保护文件一致。证据artifacts/vn-editor-20261116及artifacts/check/vn-editor-release。原始失败/图形超时日志保留。长篇作者体验与试听PENDING，全仓/远程CI NOT_RUN。D076-R1修改和14:44 EXE/PCK保留，本轮未重建EXE、未提交推送，root锁释放。下一步等用户试用编辑器，不自动扩展剧情。
+
 ## D075 发布候选（2026-11-15）
 用户要求将文字精简推送并合并main，开发交付时“不推送”约束随本次明确授权解除。远端API核实main仍2cf048b；本轮候选20文件不含未提交原资料/罗厄素材或EXE缓存。已有83独立用例/3703断言、实际EXE图形81项10图及导出检查通过，完整远程CI将在本PR运行。全部检查通过且主分支未前进后合并，再同步本地；最终PR、CI与合并提交以artifacts/upload-quiet-20261115/delivery-receipt.json为准。本段是候选状态，不预先宣称远程验收通过。
 

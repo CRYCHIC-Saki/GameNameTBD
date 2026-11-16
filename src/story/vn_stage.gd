@@ -14,6 +14,8 @@ var blocked: String = ""
 var block_args: String = ""
 var hero_name: String = ""
 var needs_name: bool = false
+var event_chapter: Dictionary = {}
+var chapter_id: String = "intro"
 var _dialog_layer: CanvasLayer
 var _generation: int = 0
 var _paused: bool = false
@@ -32,13 +34,14 @@ func _ready() -> void:
 	hide()
 
 static func supports(talk: TDDialogue) -> bool:
-	return talk != null and talk.presentation == "story" and str(talk.context.get("scene", "")) == "intro"
+	return talk != null and talk.presentation == "story" and (str(talk.context.get("scene", "")) == "intro" or talk.context.get("kind") == "authored_event")
 
 func start(name_value: String, request_name: bool) -> void:
 	reset()
 	_completed = false
 	hero_name = name_value
 	needs_name = request_name
+	chapter_id = str(event_chapter.get("id","intro"))
 	container = SubViewportContainer.new()
 	container.stretch = true
 	add_child(container)
@@ -50,13 +53,21 @@ func start(name_value: String, request_name: bool) -> void:
 	main = VNEngineMain.new()
 	main.host_managed = true
 	main.content_root = "res://content/story/vn/"
-	main.start_mode = "chapter"
-	main.start_chapter = "intro"
+	main.start_mode = "chapter" if event_chapter.is_empty() else "title"
+	main.start_chapter = chapter_id
 	main.manage_window_scaling = false
 	main.return_to_title_on_finish = false
 	main.set_meta("host", self)
 	main.chapter_finished.connect(_on_completed)
 	viewport.add_child(main)
+	if not event_chapter.is_empty():
+		var game := VNEngineMain.game()
+		game.manifest = game.manifest.duplicate(true)
+		var chapter := VNEngineChapterDef.new()
+		chapter.id = chapter_id; chapter.title = event_chapter.title; chapter.script_path = event_chapter.script_path
+		chapter.autosave_on_enter = false; chapter.intro_style = "none"
+		game.manifest.chapters.append(chapter)
+		main.play_chapter(chapter_id)
 	show()
 
 func attach_stage(stage: VNEngineStageScreen) -> void:
@@ -113,8 +124,9 @@ func _on_line(node: VNEngineStoryNode) -> void:
 	# Projection for story/music shell; never a second progression runner.
 	for who: String in runner.ctx.characters.active_sprites:
 		var actor: VNEngineCharacterSprite = runner.ctx.characters.active_sprites[who]
-		actor.offset_top = -720.0
-		actor.offset_bottom = -115.0
+		if str(actor.get_meta("td_layout", "")).is_empty():
+			actor.offset_top = -720.0
+			actor.offset_bottom = -115.0
 		if who == "aling" and not actor.sprite.has_node("LedgerTitle"):
 			var title := LedgerTitle.new()
 			title.name = "LedgerTitle"
@@ -124,7 +136,7 @@ func _on_line(node: VNEngineStoryNode) -> void:
 	line_started.emit(node.speaker_id, runner.current_text)
 
 func _on_completed(chapter: String) -> void:
-	if chapter != "intro" or _completed: return
+	if chapter != chapter_id or _completed: return
 	_completed = true
 	_emit_completed.call_deferred(_generation)
 

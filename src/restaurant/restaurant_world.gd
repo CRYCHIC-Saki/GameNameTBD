@@ -408,6 +408,8 @@ func guest_nodes() -> Array[TDRestaurantGuest]:
 			result.append(child)
 	return result
 
+var authored_interaction: Callable
+
 func request_interaction() -> bool:
 	if _closed or _player == null or layout == null or get_tree().paused or _covered or _editing:
 		return false
@@ -426,6 +428,7 @@ func request_interaction() -> bool:
 		if faced != null and not _editing:
 			var conversation: TDDialogue
 			if characters!=null and faced.character_id!="":
+				if authored_interaction.is_valid() and authored_interaction.call(faced.character_id): return true
 				conversation=characters.conversation(faced.character_id)
 				conversation.context.ticket_id=faced.ticket_id
 			else:

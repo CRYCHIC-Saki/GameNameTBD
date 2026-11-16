@@ -23,6 +23,7 @@ var _bark_key: String=""
 var _closed: bool=false
 var _bark_seen: Dictionary={}
 var _first_arrival: bool=false
+var _event_place: String=""
 
 func reserved_bottom() -> float:
 	return _card.get_global_rect().end.y if _card!=null and _card.is_visible_in_tree() else 0.0
@@ -44,6 +45,8 @@ func _ready() -> void:
 	dialogue.hero_named.connect(func(value:String)->void:
 		if shell.profile!=null and dialogue.talk!=null and dialogue.talk.context.get("kind")=="story": shell.profile.story.hero_name=value)
 	shell.town.story_requested.connect(request_person)
+	shell.town.authored_interaction = request_authored_person
+	shell.restaurant.authored_interaction = request_authored_person
 	shell.kitchen_view.story_delivery=shell.profile.shop.table_service.place_trial
 	shell.profile.shop.table_service.trial_check=check_trial_delivery
 	shell.profile.shop.table_service.trial_received=serve_trial
@@ -62,6 +65,7 @@ func begin_arrival() -> void:
 
 func _process(delta: float) -> void:
 	if shell==null or shell.profile==null: return
+	observe_authored()
 	var story:=shell.profile.story
 	if presenting() and dialogue.talk!=null and dialogue.talk.display_kind=="line": shell.profile.characters.mark_met(dialogue.talk.portrait_id)
 	if shell.atlas!=null and shell.atlas.selected_id=="C02" and story.waiting_cook(): story.recipe_viewed=true
@@ -78,7 +82,9 @@ func _process(delta: float) -> void:
 	_bark.visible=not hidden and shell.location=="kitchen" and _pulse<_bark_until
 	_bark_portrait.visible=_bark.visible
 	if not hidden and shell.location=="kitchen": cooking_barks()
-	if hidden or get_tree().paused: return
+	if hidden or get_tree().paused:
+		if shell.location=="voyage" or not story.started(): play_authored()
+		return
 	if not shell.profile.has_residence():
 		if story.served and shell.profile.shop.snapshot().phase=="SETTLED": shell.profile.invite_home("first_day")
 		if shell.profile.residence.stage=="invited" and shell.location=="town": begin_homecoming();return
@@ -86,9 +92,11 @@ func _process(delta: float) -> void:
 	if story.beat=="awaken" and shell.location=="restaurant": present("awaken")
 	elif story.beat=="verdict" and shell.location=="restaurant": present("verdict_good" if story.good else "verdict_bad")
 	elif story.beat=="founded" and not story.setup_seen and shell.location=="restaurant": present("setup")
+	else: play_authored()
 
 func request_person(who: String) -> void:
 	if presenting() or shell._modal!=null: return
+	if request_authored_person(who): return
 	if who=="aling" and not shell.profile.has_residence():
 		if shell.profile.residence.stage=="locked": shell.profile.invite_home("first_day")
 		if shell.profile.residence.stage=="invited": begin_homecoming();return
@@ -133,7 +141,10 @@ func show_talk(talk: TDDialogue) -> void:
 func _on_dialogue_closed(_text: String, _picks: Array) -> void:
 	var story:=shell.profile.story
 	var home_finished: bool=false
-	if _scene_key in ["home_invite","home_late","home_door"]:
+	if dialogue.last_context.get("kind") == "authored_event":
+		var committed := shell.profile.story_events.finish(int(dialogue.last_context.get("event_token",-1)),dialogue.last_completed,_apply_event_effect)
+		if dialogue.last_completed and not committed: shell._message("演出的完成效果未能应用，未记录完成；可重新触发后再试。")
+	elif _scene_key in ["home_invite","home_late","home_door"]:
 		if dialogue.last_completed:
 			if _scene_key=="home_door": home_finished=shell.profile.unlock_residence().ok
 			elif shell.profile.residence.stage=="invited": shell.profile.residence.stage="following"
@@ -164,6 +175,15 @@ func show_journal() -> void:
 	box.add_child(TDUI.button("停止追踪 [T]" if story.tracked else "追踪任务 [T]",func()->void:story.tracked=not story.tracked;shell._close_dialog()))
 	box.add_child(TDUI.button("操作教学手册",show_manual))
 	if story.finished(): box.add_child(TDUI.button("第一章回顾（不改变进度或奖励）",show_replay))
+	for event: Dictionary in shell.profile.story_events.definitions:
+		if shell.profile.story_events.counts.has(event.id): box.add_child(TDUI.label("✓ "+str(event.title),TDUI.FONT_BODY,TDUI.MUTED))
+		elif shell.profile.story_events.eligible(event,TDStoryEvents.milestones_for(shell.profile)):
+			var label: String = {"person":"交谈：","place":"前往：","milestone":"等待节点："}[event.type]
+			var names: Dictionary = {"person":TDStoryEvents.PEOPLE,"place":TDStoryEvents.PLACES,"milestone":TDStoryEvents.MILESTONES}[event.type]
+			box.add_child(TDUI.label(str(event.title)+" · "+label+str(names[event.target]),TDUI.FONT_BODY))
+			if event.type=="milestone" and TDStoryEvents.milestones_for(shell.profile).get(event.target,false):
+				box.add_child(TDUI.button("观看演出",func()->void:
+					shell._close_dialog();shell.profile.story_events.notify("milestone",event.target,TDStoryEvents.milestones_for(shell.profile));play_authored()))
 
 func objective() -> Dictionary:
 	var story:=shell.profile.story
@@ -393,6 +413,9 @@ func update_route(goal: Dictionary) -> void:
 
 func close() -> void:
 	_closed=true;_pending_tutorial=""
+	if shell!=null and shell.profile!=null: shell.profile.story_events.cancel(); shell.profile.story_events.pending.clear()
+	if shell!=null and shell.town!=null: shell.town.authored_interaction=Callable()
+	if shell!=null and shell.restaurant!=null: shell.restaurant.authored_interaction=Callable()
 	if dialogue!=null: dialogue.dismiss()
 	if shell!=null and shell.town!=null: shell.town.external_story_frozen=false
 	if shell!=null and shell.profile!=null:
@@ -401,6 +424,58 @@ func close() -> void:
 		shell.profile.shop.table_service.trial_received=Callable()
 	if shell!=null and shell.kitchen_view!=null: shell.kitchen_view.story_cooking_check=Callable()
 	set_process(false)
+
+func authored_place() -> String:
+	return "town:"+str(shell.visiting_town) if shell.location in ["town","voyage"] else shell.location
+
+func observe_authored() -> void:
+	var events := shell.profile.story_events
+	if events.definitions.is_empty(): return
+	var milestones := TDStoryEvents.milestones_for(shell.profile)
+	events.observe(milestones)
+	var place := authored_place()
+	if place != _event_place:
+		_event_place = place; events.notify("place",place,milestones)
+
+func authored_safe() -> bool:
+	if _closed or presenting() or shell.profile == null or get_tree().paused: return false
+	if shell._modal != null or shell.atlas != null or shell._night_closing or shell.kitchen_view._popup != null: return false
+	if shell.town.story_dialogue_open() or shell.kitchen_view.kitchen.stage.visible or _pending_tutorial != "": return false
+	if shell.restaurant._talk_open() or shell.restaurant._editing: return false
+	var story := shell.profile.story
+	if shell.location=="restaurant" and (story.beat in ["awaken","verdict"] or (story.beat=="founded" and not story.setup_seen)): return false
+	if not shell.profile.has_residence() and shell.profile.residence.stage != "locked": return false
+	return true
+
+func request_authored_person(who: String) -> bool:
+	if not authored_safe(): return false
+	var story := shell.profile.story
+	# Existing mandatory conversation and escort/homecoming always take priority.
+	if story.scene_for(who) != "" or story.beat in ["follow","return"]: return false
+	if who == "aling" and not shell.profile.has_residence() and story.served: return false
+	shell.profile.story_events.notify("person",who,TDStoryEvents.milestones_for(shell.profile))
+	return play_authored()
+
+func play_authored() -> bool:
+	if not authored_safe(): return false
+	if shell.profile.story_events.pending.is_empty(): return false
+	var event := shell.profile.story_events.begin_next(TDStoryEvents.milestones_for(shell.profile),authored_place(),shell.profile.at_boundary())
+	if event.is_empty(): return false
+	var script := VNEngineScenarioLoader.load_script(event.script_path,null)
+	var issue := TDStoryEvents.validate_authored_source(FileAccess.get_file_as_string(event.script_path)) if FileAccess.file_exists(event.script_path) else ""
+	if script==null or script.has_errors() or not issue.is_empty():
+		shell.profile.story_events.cancel();shell._message("这段演出未通过检查，请在剧情编辑器中修复后重试。");return false
+	var talk := TDDialogue.new(); talk.story_layout(hero_name(),"")
+	talk.context = {"kind":"authored_event","scene":"authored:"+str(event.id),"event_chapter":event,"event_token":event.token}
+	show_talk(talk)
+	return true
+
+func _apply_event_effect(event: Dictionary) -> TDOutcome:
+	var token: String = "authored:"+str(event.id)
+	match event.effect.kind:
+		"cuisine": return shell.profile.research.recommend_cuisine(token,event.effect.target)
+		"route": return shell.profile.recommend_route(event.effect.target,token)
+	return TDOutcome.new(true)
 
 func show_manual() -> void:
 	var box:=shell._dialog("操作教学手册",true)
