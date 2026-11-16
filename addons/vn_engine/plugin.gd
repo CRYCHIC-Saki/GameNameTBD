@@ -1,7 +1,8 @@
 @tool
 extends EditorPlugin
 
-const VNEngineExportPluginScript := preload("res://addons/vn_engine/src/editor/vn_export_plugin.gd")
+# Local host patch: reuse native baking, only ship explicitly registered chapters.
+const VNEngineExportPluginScript := preload("res://addons/td_vn_editor/export_plugin.gd")
 
 var _export_plugin: EditorExportPlugin
 

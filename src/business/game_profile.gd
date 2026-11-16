@@ -28,10 +28,12 @@ var region_migrated_on_load: bool=false
 var region_layout_version: int=2
 var region_migration: Dictionary={}
 var story := TDOpening.new()
+var story_events := TDStoryEvents.new()
 var characters := TDCharacterRoster.new()
 var main_management_auto: bool=false
 
 func _init() -> void:
+	if not story_events.error.is_empty(): error=TDOutcome.new(false,"INVALID_STORY_CATALOG",story_events.error);return
 	if not characters.error.ok: error=characters.error;return
 	error=service.load_file()
 	if not error.ok: return
@@ -325,6 +327,7 @@ func snapshot(candidate: Dictionary = {}) -> Dictionary:
 	progress.world_time={"day":int(business.day),"phase":state.day_phase,"spent":state.free_spent}
 	var data:={"schema_version":9,"kind":"town-diner-profile","slot_id":slot_id,"title":title,"updated_at":updated_at,"revision":revision,"imported_legacy":imported_legacy,"shop":business,"research":progress,"world":state,"layout":layout.to_dict(),"economy":commerce.snapshot(),"branches":branches.snapshot(),"employees":employees.snapshot(),"suppliers":suppliers.snapshot(),"progression":progression.snapshot(),"residence":residence.duplicate(true),"characters":characters.snapshot(),"map_migration":map_migration.duplicate(true)}
 	data.main_management_auto=main_management_auto
+	data.story_events=story_events.snapshot()
 	data.region_layout_version=region_layout_version;data.region_migration=region_migration.duplicate(true)
 	var chapter:=story.export_state()
 	if not chapter.is_empty(): data.story=chapter
@@ -332,6 +335,7 @@ func snapshot(candidate: Dictionary = {}) -> Dictionary:
 
 func save(candidate: Dictionary = {}) -> TDOutcome:
 	if not _alive: return TDOutcome.new(false,"STALE_PROFILE")
+	if not story_events.active.is_empty(): return TDOutcome.new(false,"STORY_PLAYING","请先结束当前演出再保存。")
 	if not shop.table_service.empty(): return TDOutcome.new(false,"PASS_NOT_CLEAR","出餐口还有菜，请送出或清理后保存。")
 	if not at_boundary(): return TDOutcome.new(false,"NOT_AT_BOUNDARY","营业中不能存档，请打烊后保存。")
 	if kitchen_checkpoint.is_valid():
@@ -556,6 +560,7 @@ func restore(data: Dictionary) -> TDOutcome:
 	slot_id=data.slot_id;title=data.title;updated_at=int(data.updated_at);revision=int(data.revision);imported_legacy=data.imported_legacy
 	if data.has("story") and data.story is Dictionary: story.restore(data.story)
 	else: story.clear()
+	story_events.restore(data.get("story_events",{"schema_version":1,"counts":{}}))
 	# Older slots already owned their cottage. Never remove a previously saved entitlement.
 	if int(data.schema_version)<7:
 		residence.merge({"schema_version":2,"anchor":"cottage_bed","stage":"unlocked","reason":"legacy"},true)
@@ -602,6 +607,7 @@ func initialize_legacy_commerce() -> void:
 	_wire_commerce()
 
 static func validate_save(raw: Variant) -> TDOutcome:
+	if raw is Dictionary and raw.has("story_events") and not TDStoryEvents.validate_progress(raw.story_events): return TDOutcome.new(false,"INVALID_STORY_EVENTS")
 	if not raw is Dictionary or not TDServiceCatalog.integer(raw.get("schema_version"),1,9) or raw.get("kind")!="town-diner-profile": return TDOutcome.new(false,"UNSUPPORTED_VERSION")
 	if raw.has("main_management_auto") and not raw.main_management_auto is bool: return TDOutcome.new(false,"INVALID_MAIN_MANAGEMENT")
 	if not TDServiceCatalog.integer(raw.get("region_layout_version",1),1,2): return TDOutcome.new(false,"UNKNOWN_REGION_VERSION")

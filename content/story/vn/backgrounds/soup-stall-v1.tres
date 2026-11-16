@@ -1,0 +1,8 @@
+[gd_resource type="AtlasTexture" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/redraw-v1/backgrounds.png" id="1"]
+
+[resource]
+atlas = ExtResource("1")
+region = Rect2(838.5, 3, 829.5, 464.5)
+filter_clip = true

@@ -321,6 +321,8 @@ func close() -> void:
 	_close_factory_panel()
 	_close_backpack()
 
+var authored_interaction: Callable
+
 func _interact() -> void:
 	if external_story_frozen: return
 	if at_chen_door():
@@ -337,6 +339,7 @@ func _interact() -> void:
 				break
 	var story_person := _story_faced()
 	if player_mode and plot.is_empty() and story_person != "":
+		if authored_interaction.is_valid() and authored_interaction.call(story_person): return
 		if story!=null and story.started() and not story.finished():
 			if story_requested.has_connections(): story_requested.emit(story_person)
 			else: _open_talk(story.talk(story_person, hero_name, chapter_ready, session.san, story_board))

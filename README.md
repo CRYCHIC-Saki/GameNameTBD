@@ -1,5 +1,9 @@
 # GameNameTBD · 小镇食堂
 
+## 可视化剧情编辑（D077）
+顶部 **导入素材** 可选择PNG/JPG/WebP，添加背景、新角色或已有角色的新表情；填中文名即可，自动复制归档、登记及加入导出名单，完成后可直接插入当前页。原图和已有素材不覆盖，使用范围和步骤见下方说明。
+用锁定 Godot 打开 project.godot，点击顶部 **剧情**。像PPT一样选页、插入背景/角色，拖动人物摆位，右侧输入对白；Ctrl+S 保存时填写中文章节与插入位置说明，跟随TXT交给AI/开发者接入，美术无需设置触发。Ctrl+Enter 用真实 VN 独立试玩。选中人物可换表情/调整大小；复制页、撤销、备份与草稿恢复可用。高级步骤保留分支/转场及开发接入，不读取玩家存档。使用与素材目录见 [docs/VN_EDITOR.md](docs/VN_EDITOR.md)，检查入口为 `pwsh -NoProfile -File tools/check.ps1 -Suite vn-editor`。编辑器直接使用，保存草稿不会自动加入正式游戏；实际接入后需重新导出。
+
 ## 厨师实物备菜流程（D073）
 运行 `build/TownDiner.exe`（同目录保留 `TownDiner.pck`）。在筹备时 H 签约厨师、G 给主店派驻，准备番茄炒蛋原料并开门，到厨房观察：取番茄→砧板切配→入锅→再取鸡蛋→灶前完成真实菜谱→端到出餐口。餐厅仍需玩家或已雇服务员把菜送到桌边；没有服务员时菜会留在出餐口。
 独立检查：`pwsh -NoProfile -File tools/check.ps1 -Suite chef-workflow`；相关回归：`pwsh -NoProfile -File tools/check.ps1 -Suite chef-regression -TimeoutSeconds 1200`；导出：`pwsh -NoProfile -File tools/export.ps1 -CheckSuite chef-workflow -CheckTimeoutSeconds 600`。需要指定引擎时追加 `-GodotPath`，锁定版本不变。实际证据及人工待试玩项见 `docs/phases/restaurant-feedback.md` 的 D073。

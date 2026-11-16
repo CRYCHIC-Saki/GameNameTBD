@@ -1,3 +1,23 @@
+## D077 发布整合（2026-11-16，VALIDATING）
+用户授权推送剧情可视化编辑器并合并main。root唯一集成者，分支integration/phase-4-wave-vn-editor；GitHub API确认main=df2972d，无新主线。使用独立干净工作树，仅提交D077至R4及必要VN运行/触发/导出/测试文档；通过开发起点快照剥离D076主角斜向修改，原目录完整155文件备份，34受保护资料不上传不覆盖。登记共享写入：addons/td_vn_editor、VN插件本地导出入口、src/story、Profile及镇/餐厅交互、project.godot、export_presets.cfg、检查/导出工具和对应记录。当前不是新玩法阶段，不增加原剧本；人工编排PENDING。专项和完整CI通过且main未前进才合并；最终回执见artifacts/upload-vn-editor-20261116。Git HTTPS连接失败时使用官方GitHub Git Data API并验证远端树/提交与本地完全相同，不强推。下方开发时“不推送”记录由本次明确授权覆盖，原日期测试保持历史含义。
+
+发布前独立副本：`tools/check.ps1 -Suite vn-editor -ReportName vn-editor-publish` 59/59、448断言、161加载、0失败/跳过、exit0；所有权103文件PASS。原D077原生编辑器/播放器证据仍有效；本次从干净main验证没有依赖未发布D076。完整远程CI在PR候选运行，未通过不得合并。
+
+## D077-R4 美术交接（2026-11-16，LOCAL_EDITOR_READY，锁释放）
+root完成作者保存中文说明、TXT注释、正式文件副本保护和高级开发入口；vn_handoff_facts只读完成。59用例448断言/161加载、实际编辑器28检查2图/原生播放6检查1图、1267资源隔离导出PASS，初轮失败保留。证据artifacts/vn-handoff-20261116与artifacts/check/vn-handoff-fixed；34保护文件、正式intro/登记不变，测试草稿移除且作者恢复文件还原。未重建EXE/提交推送，全仓CI未跑，人工PENDING。保留所有前轮未提交成果，全部本轮锁释放。
+
+## D077-R3 游戏触发（2026-11-16，LOCAL_EDITOR_READY，锁释放）
+root完成本地编辑器、StoryEvents/Guide/Stage/Profile/Town/Restaurant接入与检查/精确导出，vn_trigger_facts只读完成。53用例398断言/161加载，编辑器14项1图、最终游戏GPU18项1图、临时注册1268资源隔离包及包内加载4项PASS。起点及证据artifacts/vn-triggers-20261116；34保护文件一致，临时演出/登记已恢复，D076–D077前轮成果保持。真实玩家档不动，不推送、不重建EXE；人工PENDING，全仓/CI未跑。仅新增触发配置，不创作或替换正式剧情，root锁释放。
+
+## D077-R2 素材导入（2026-11-16，LOCAL_EDITOR_READY，锁释放）
+root完成导入窗口/事务登记/精确导出规则及测试记录；vn_authoring_facts只读结束。40用例287断言/160加载、编辑器33项4图、原生播放9项1图、临时素材1276资源隔离导出与空目录包加载3项PASS。34原资料一致，cast/preset恢复基线，临时素材逐文件清理。人工PENDING，全仓/CI未跑，未重建EXE、未推送；root锁释放。证据artifacts/vn-import-20261116。
+
+## D077-R1 PPT式剧情编辑（2026-11-16，LOCAL_EDITOR_READY，锁释放）
+root完成addons/td_vn_editor、本地VN人物层/布局辅助、host场景与台词布局保护、测试/导出/记录。vn_authoring_facts仅只读已结束。32用例216断言/160加载、编辑器43项3图+高级35项4图、原生播放10项2图及1264资源隔离导出PASS；证据artifacts/vn-slides-20261116。34资料/前轮成果保持，正式剧情/上游不改；人工PENDING，全仓/CI未跑。未重建EXE、未提交推送，root锁释放。
+
+## D077 剧情编辑器（2026-11-16，LOCAL_EDITOR_READY，锁释放）
+root 唯一写入 addons/td_vn_editor、对应测试、project.godot、tools/check.ps1 和项目记录。vn_authoring_facts 仅只读语法/宿主核实。D076-R1 未提交成果及34保护文件保留；基线副本 artifacts/vn-editor-20261116/baseline。真实档/原始资料不动，不提交推送。D077最终21用例133断言、编辑器35项4图/原生草稿16项3图及1252资源隔离导出通过，34保护文件一致；人工编排PENDING，全仓/远程CI未跑。详见docs/phases/vn-editor.md。
+
 ## 2026-11-15 D075 发布检查（当前）
 用户现已明确授权推送并合并main，覆盖D075开发交付时的“本轮不推送”。root作为唯一集成者整理20个工程/记录文件，原资料/罗厄素材保持本地。GitHub API核实main仍为2cf048b，无新的主分支提交；Git读取曾连接重置，保留日志并重试。本地83独立用例、源与EXE图形81项及导出验证通过。上传后运行当前提交完整四分片CI与ownership；结果合格且main未发生新变化才合并并同步本地。当前为发布候选，不能据本段声称远程检查已通过；最终回执位于artifacts/upload-quiet-20261115。
 

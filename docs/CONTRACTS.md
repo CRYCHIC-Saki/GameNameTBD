@@ -1,5 +1,20 @@
 # 公共契约：v3完整烹饪，兼容v1/v2历史入口
 
+## D077 — 编辑器与原生剧情的边界
+- D077-R4：`handoff.gd`读写TXT首部`// td_handoff_begin v1`注释JSON，schema1/purpose author_handoff，id/title/section/placement/notes/source_script/source_sha256。只说明作者意图，事件权威仍是events.json。`Document.save_for_handoff`保护intro及所有登记路径（含停用、大小写/分隔符标准化），坏登记拒绝；通过后才注入注释并调用原save_to。既有内部save_to供开发工具使用，不是美术UI保存入口。
+- 美术Save/Ctrl+S/SaveAs统一经过交接表单，正文/备注同文件原子替换，不引入双文件事务。注释行变化后选中页锚同步；重存不重复加头，未知版本/损坏/多头拒绝。未确认表单可取消，已进入文档的头参与撤销/恢复；开发接入仅高级模式显示。没有AI自动接入动作，不修改游戏事件、Profile或原教学。
+- D077-R3：`content/story/events.json`为触发定义权威，schema1记录稳定id/title/script_path/enabled/type/target/requires/milestone_required/repeat/effect。TDStoryEvents只管理资格、待播和完成次数；待播/当前播放器不入档。Profile9可选story_events内部schema1，旧缺项默认空，合法历史ID即使被停用仍保留；恢复次数转为整数。
+- Guide装配Town/Restaurant人物回调及场景/任务节点观察，原剧情/服务交互/暂停/QTE/装修/夜末优先；原生宿主复制manifest添加单章，不修改共享模板，完成令牌校验后才记次数和应用一次解锁。TDOpening始终拥有既有教学进度，不由编辑器任意改写。普通退出不保存，不保存演出现场。插件编辑层不作为运行时依赖。
+- 发布复用上游烘焙，本地export_plugin只收原intro和启用登记；本地VN插件入口适配见补丁记录。tools/export.ps1使用同一登记名单核对产物，未登记草稿不能进入发布。作者改剧本/绑定需重新运行游戏、重新导出可执行包。
+- D077-R2：asset_import.gd仅编辑器，prepare只准备资源/副本，commit对cast与preset做读时哈希核对，按显式目标写入；新图和.tres不得覆盖，必要共享文件有备份，失败逆序恢复且拒绝覆盖外部后续变更。原图只读；资源导入/扫描未完成不能启用试玩。PNG/JPG/WebP归档到assets/story/imported，自动产生原生AtlasTexture、cast新成员和精确导出条目，名称在metadata/td_display_name中，ID稳定不使用中文名做引用。
+- 导入资源不属于剧本撤销栈；撤销插入只改当前剧本，不删除素材。新角色只进入原生VN cast，绝不自动创建CharacterRoster、经济身份、任务或Profile字段。新角色/表情缓存通过CACHE_MODE_REPLACE刷新，原生试玩仍独立进程，未修改插件资产解析规则。
+- D077-R1：本地src/story/vn_layout.gd给编辑器和实际宿主共用二维几何；src/story/vn_character_layer.gd继承原生CharacterLayer，host场景替换该层脚本而非插件源码。`td:x:y:scale`保存在原生角色position，x/y为0–1、scale为0.25–1.25；数值有限且合法才应用，旧命名/横向数值位置保持。重播/原生状态恢复/宿主台词信号不能清空二维位置。
+- 简单页编辑以原文行作为锚点，生成`td_canvas_begin v1`注释块和原生bg/hide/show，更新本页且保留下一对白页原构图；一次编辑一次文档撤销。未知命令/分支原文不删除；静态画布只显示按文本顺序的构图，实际分支以原生试玩为准。旁白使用原生`narrator:`，UI投影为旁白。
+- addons/td_vn_editor 仅编辑器使用，不被src依赖、不增加Autoload或Profile字段。TXT为唯一剧本权威；Document保留原行/注释/未知语句，真正语法及跳转由VNEngineScenarioParser校验。
+- 保存仅允许content/story/vn/scenario内TXT，禁止覆盖源资料；校验/备份/临时文件验证完成后替换，外部内容哈希不同则拒绝。最近草稿/备份/试玩文件在.godot，不入库。
+- PreviewStage继承既有宿主，只复制manifest并修改副本intro路径，沿用原Main/Runner/DialogUI/阻塞命令；不建游戏档、经济模型或任务推进。实际CG和姓名输入可播放，取消释放原生单例。
+- 新章保存不自动进入任务、发布或剧情触发；正式接入需集成者登记manifest、触发契约和导出白名单。开篇保存后直接被既有游戏入口采用，但必须保留CG/命名/末尾结束及姓名变量。
+
 ## D073 — 后厨员工的实物与位置
 - ShopView装配唯一TDKitchenStaff，tick(活动秒)/next_boundary并入FullKitchen的现有时钟；world.staff_source只投影rows，渲染或隐藏不推进业务。暂停/剧情冻结一致，不新增Autoload或存档权威。
 - jobs按锅索引且核对真实session_id；每厨师拥有独立TDKitchenHandling。取料才调用Shop消耗；切配品带ID/历史/到期日transfer_to锅，不二次扣料。staff_prep是实际TDCookingLane，和玩家prep分离，但物理砧板由board_owner互斥；Lane.external_operator禁止玩家接管员工锅。
