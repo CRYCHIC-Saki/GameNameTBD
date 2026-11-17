@@ -7,6 +7,9 @@ func _enter_tree() -> void:
 	panel = StoryPanel.new()
 	EditorInterface.get_editor_main_screen().add_child(panel)
 	_make_visible(false)
+	if "--td-vn-canvas-probe" in OS.get_cmdline_user_args():
+		var probe: Node = load("res://tools/vn_canvas_probe.gd").new()
+		probe.panel = panel; add_child(probe)
 	if "--td-vn-handoff-probe" in OS.get_cmdline_user_args():
 		var probe: Node = load("res://tools/vn_handoff_editor_probe.gd").new()
 		probe.panel = panel; add_child(probe)

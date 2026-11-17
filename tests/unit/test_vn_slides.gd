@@ -22,10 +22,61 @@ func test_native_legacy_and_two_dimensional_geometry() -> void:
 	assert_eq(TDVNLayout.rect("td:0.6:0.8:0.8",.64,Vector2(640,400)),Rect2(rect.position*.5,rect.size*.5))
 
 func test_reject_invalid_layout_tokens() -> void:
-	for token: String in ["td:x:.5:1","td:1.1:.5:1","td:.5:-1:1","td:.5:.5:8","td:.5:nan:1","td:.5:.5", "td:.5:inf:1"]:
+	for token: String in ["td:x:.5:1","td:11.1:.5:1","td:.5:-10.1:1","td:.5:.5:5.01","td:.5:.5:.24","td:.5:nan:1","td:.5:.5", "td:.5:inf:1"]:
 		assert_true(TDVNLayout.parse(token).is_empty(),token)
 		var doc := Document.new(); doc.load_text(SOURCE.replace("at left","at "+token))
 		assert_false(doc.validate().is_empty(),token)
+	assert_eq(TDVNLayout.encode(NAN,.5,1.0),"")
+	assert_eq(TDVNLayout.encode(.5,INF,1.0),"")
+
+func test_offscreen_large_layout_roundtrip_and_page_independence() -> void:
+	var doc := Document.new(); doc.load_text(SOURCE)
+	var next_before := doc.composition(5)
+	var anchor := doc.set_page_visual(3,"position","hero","td:-.3:1.4:5")
+	assert_eq(doc.validate(),PackedStringArray())
+	var rect := TDVNLayout.rect(doc.composition(anchor).actors.hero.position)
+	assert_almost_eq(rect.position.x,-1600.0,.001)
+	assert_almost_eq(rect.position.y,-1905.0,.001)
+	assert_almost_eq(rect.size.x,2432.0,.001)
+	assert_almost_eq(rect.size.y,3025.0,.001)
+	var reloaded := Document.new(); reloaded.load_text(doc.text())
+	assert_eq(reloaded.composition(reloaded.pages()[0].line).actors.hero.position,"td:-.3:1.4:5")
+	assert_eq(reloaded.composition(reloaded.pages()[1].line),next_before)
+	assert_eq(doc.undo_stack.size(),1)
+	doc.undo(); assert_eq(doc.text(),SOURCE)
+	for token: String in ["td:1.1:.5:1","td:.5:-1:1","td:-10:11:5","td:11:-10:.25"]:
+		assert_false(TDVNLayout.parse(token).is_empty(),token)
+
+func test_drag_outside_each_edge_at_different_editor_zooms() -> void:
+	var canvas := Canvas.new(); add_child_autofree(canvas)
+	canvas.size = Vector2(640,400); canvas.editable = true
+	var doc := Document.new(); doc.load_text(SOURCE)
+	var moved: Array = []
+	canvas.actor_moved.connect(func(who: String,token: String) -> void: moved.append([who,token]))
+	for zoom: float in [.1,.5,1.0]:
+		canvas.set_view_zoom(zoom)
+		for delta: Vector2 in [Vector2(-1000,0),Vector2(1500,0),Vector2(0,-1000),Vector2(0,1000)]:
+			canvas.assign_state(doc.composition(3))
+			var start := TDVNLayout.fit(canvas.actor_texture("hero"),canvas.actor_bounds("hero")).get_center()
+			var down := InputEventMouseButton.new(); down.button_index=MOUSE_BUTTON_LEFT; down.pressed=true; down.position=canvas.canvas_transform()*start
+			canvas._gui_input(down)
+			var motion := InputEventMouseMotion.new(); motion.position=canvas.canvas_transform()*(start+delta)
+			canvas._gui_input(motion)
+			var up := InputEventMouseButton.new(); up.button_index=MOUSE_BUTTON_LEFT; up.position=motion.position
+			canvas._gui_input(up)
+			var rect := canvas.actor_bounds("hero")
+			assert_almost_eq(rect.position.x,76.8+delta.x,.002)
+			assert_almost_eq(rect.position.y,80.0+delta.y,.002)
+	assert_eq(moved.size(),12)
+	canvas.assign_state(doc.composition(3))
+	var down := InputEventMouseButton.new(); down.button_index=MOUSE_BUTTON_LEFT; down.pressed=true; down.position=canvas.canvas_transform()*canvas.actor_bounds("hero").get_center()
+	canvas._gui_input(down)
+	var motion := InputEventMouseMotion.new(); motion.position=down.position+Vector2(400,0)
+	canvas._gui_input(motion)
+	canvas.set_view_zoom(.3)
+	assert_false(canvas.dragging)
+	assert_eq(canvas.state.actors.hero.position,"left","changing editor zoom cancels uncommitted drag")
+	assert_eq(moved.size(),12)
 
 func test_edit_one_slide_preserves_next_slide_and_undo_is_one_step() -> void:
 	var doc := Document.new(); doc.load_text(SOURCE)

@@ -12,6 +12,12 @@ var dragging: bool = false
 var drag_start := Vector2.ZERO
 var drag_token: String = ""
 var drag_bounds := Rect2()
+var view_zoom: float = 1.0
+
+func set_view_zoom(value: float) -> void:
+	cancel_drag()
+	view_zoom = clampf(value,0.1,1.0)
+	queue_redraw()
 
 func assign_state(value: Dictionary) -> void:
 	cancel_drag()
@@ -20,7 +26,7 @@ func assign_state(value: Dictionary) -> void:
 	queue_redraw()
 
 func canvas_transform() -> Transform2D:
-	var factor := minf(size.x/1280.0,size.y/800.0)
+	var factor := minf(size.x/1280.0,size.y/800.0) * (1.0 if thumbnail else view_zoom)
 	return Transform2D(0,Vector2.ONE*factor,0,(size-TDVNLayout.DESIGN*factor)*.5)
 
 func actor_bounds(who: String) -> Rect2:
@@ -66,9 +72,7 @@ func _gui_input(event: InputEvent) -> void:
 		var factor := float(layout.get("scale",1.0))
 		var bounds := drag_bounds
 		bounds.position += delta
-		# Keep the authored box on the slide. Position is independent of editor zoom.
-		bounds.position.x = clampf(bounds.position.x,0,maxf(0,1280-bounds.size.x))
-		bounds.position.y = clampf(bounds.position.y,0,maxf(0,800-bounds.size.y))
+		# Keep design coordinates even outside the game frame, independently of view zoom.
 		state.actors[selected_actor].position = TDVNLayout.encode(bounds.get_center().x/1280,bounds.end.y/800,factor)
 		queue_redraw(); accept_event()
 	elif event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
@@ -114,3 +118,11 @@ func _draw() -> void:
 	if not str(state.get("cg", "")).is_empty():
 		draw_rect(Rect2(0,0,1280,80),Color(0,0,0,.8))
 		draw_string(font,Vector2(35,52),"CG · " + str(state.cg) + "（点击试玩播放动画）",HORIZONTAL_ALIGNMENT_LEFT,1200,29)
+	# The dark surround is authoring space, never extra game screen. Thumbnails
+	# crop it completely; the working canvas keeps offscreen actors visible but dim.
+	draw_set_transform_matrix(Transform2D.IDENTITY)
+	var frame := canvas_transform() * Rect2(Vector2.ZERO,TDVNLayout.DESIGN)
+	var shade := Color("161e29"); shade.a = 1.0 if thumbnail or not editable else .70
+	for outside: Rect2 in [Rect2(0,0,size.x,frame.position.y),Rect2(0,frame.end.y,size.x,maxf(0,size.y-frame.end.y)),Rect2(0,frame.position.y,frame.position.x,frame.size.y),Rect2(frame.end.x,frame.position.y,maxf(0,size.x-frame.end.x),frame.size.y)]:
+		if outside.has_area(): draw_rect(outside,shade)
+	if not thumbnail: draw_rect(frame,Color("9bacbc"),false,1.0)
