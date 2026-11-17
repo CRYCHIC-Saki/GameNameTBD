@@ -38,6 +38,9 @@ var handoff_dialog: ConfirmationDialog
 var trigger_button: Button
 var _handoff_pending: Dictionary = {}
 var _handoff_copy: bool = false
+var zoom_control: SpinBox
+var actor_picker: OptionButton
+var actor_scale: SpinBox
 
 func _ready() -> void:
 	name = "TownDinerStoryEditor"
@@ -84,8 +87,15 @@ func _ready() -> void:
 	page_list = VBoxContainer.new(); page_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL; page_scroll.add_child(page_list)
 	var right_split := HSplitContainer.new(); split.add_child(right_split)
 	var middle := VBoxContainer.new(); middle.size_flags_horizontal = Control.SIZE_EXPAND_FILL; right_split.add_child(middle)
-	var note := Label.new(); note.text = "点选人物后直接拖动 · Esc 取消拖动"; middle.add_child(note)
+	var view_bar := HBoxContainer.new(); middle.add_child(view_bar)
+	var note := Label.new(); note.text = "画布"; view_bar.add_child(note)
+	zoom_control = SpinBox.new(); zoom_control.min_value = 10; zoom_control.max_value = 100
+	zoom_control.step = 5; zoom_control.value = 70; zoom_control.suffix = "%"; view_bar.add_child(zoom_control)
+	zoom_control.tooltip_text = "只缩放编辑视图；暗区是屏幕外，可拖入角色。"
+	var hint := Label.new(); hint.text = "暗区为画外 · Esc 取消拖动"; view_bar.add_child(hint)
 	preview = Composition.new(); middle.add_child(preview)
+	preview.set_view_zoom(zoom_control.value / 100.0)
+	zoom_control.value_changed.connect(func(value: float) -> void: preview.set_view_zoom(value / 100.0))
 	preview.actor_selected.connect(_select_actor)
 	preview.actor_moved.connect(func(who: String, token: String) -> void: _visual("position",who,token))
 	status = RichTextLabel.new(); status.custom_minimum_size.y = 95; status.fit_content = false; status.scroll_active = true; middle.add_child(status)
@@ -521,8 +531,15 @@ func _fill_page_fields() -> void:
 	_entry("text","对白",str(item.text).replace("\\n","\n"),true)
 	_label("直接输入，画面即时更新。")
 	var state := document.composition(selected)
+	actor_picker = OptionButton.new(); fields.add_child(actor_picker)
+	actor_picker.add_item("本页角色（含画外）"); actor_picker.set_item_metadata(0,"")
+	for who: String in state.actors:
+		actor_picker.add_item(str(Document.cast_names().get(who,who)))
+		actor_picker.set_item_metadata(actor_picker.item_count-1,who)
+		if who == selected_actor: actor_picker.select(actor_picker.item_count-1)
+	actor_picker.item_selected.connect(func(at: int) -> void: _select_actor(str(actor_picker.get_item_metadata(at))))
 	if not state.actors.has(selected_actor):
-		_label("点击画面中的角色，拖动即可调整位置。")
+		_label("点击角色或从上方列表选中。")
 		return
 	_label("选中：" + ("主角" if selected_actor == "hero" else str(Document.cast_names().get(selected_actor,selected_actor))))
 	var expressions := OptionButton.new(); fields.add_child(expressions)
@@ -534,18 +551,36 @@ func _fill_page_fields() -> void:
 	var row := HBoxContainer.new(); fields.add_child(row)
 	_button(row,"缩小",func() -> void: _resize_actor(-.1))
 	_button(row,"放大",func() -> void: _resize_actor(.1))
+	actor_scale = SpinBox.new(); actor_scale.min_value = TDVNLayout.MIN_SCALE; actor_scale.max_value = TDVNLayout.MAX_SCALE
+	actor_scale.step = .05; actor_scale.suffix = "倍"
+	actor_scale.value = float(TDVNLayout.parse(state.actors[selected_actor].position).get("scale",1.0))
+	fields.add_child(actor_scale)
+	actor_scale.value_changed.connect(_set_actor_scale)
+	_button(fields,"回到画面",_recenter_actor)
 	_button(fields,"移除角色",func() -> void: _visual("remove",selected_actor))
 
 func _select_actor(who: String) -> void:
-	_commit_fields(); selected_actor = who; _fill_fields()
+	_commit_fields(); selected_actor = who; preview.selected_actor = who; preview.queue_redraw(); _fill_fields()
 
 func _resize_actor(delta: float) -> void:
 	var state := document.composition(selected)
 	if not state.actors.has(selected_actor): return
+	var scale_value := float(TDVNLayout.parse(state.actors[selected_actor].position).get("scale",1.0))
+	_set_actor_scale(scale_value+delta)
+
+func _set_actor_scale(value: float) -> void:
+	var state := document.composition(selected)
+	if not state.actors.has(selected_actor): return
 	var token: String = state.actors[selected_actor].position
 	var bounds := TDVNLayout.rect(token,Document.cast_scale(selected_actor))
-	var scale_value := float(TDVNLayout.parse(token).get("scale",1.0))
-	_visual("position",selected_actor,TDVNLayout.encode(bounds.get_center().x/1280,bounds.end.y/800,scale_value+delta))
+	_visual("position",selected_actor,TDVNLayout.encode(bounds.get_center().x/1280,bounds.end.y/800,value))
+
+func _recenter_actor() -> void:
+	var state := document.composition(selected)
+	if not state.actors.has(selected_actor): return
+	var scale_value := float(TDVNLayout.parse(state.actors[selected_actor].position).get("scale",1.0))
+	# Centre the whole actor, including enlarged close-ups, without changing its scale.
+	_visual("position",selected_actor,TDVNLayout.encode(.5,.5+TDVNLayout.BASE_HEIGHT*scale_value/1600.0,scale_value))
 
 func _visual(kind: String, value: String, extra: String = "") -> void:
 	_commit_fields()

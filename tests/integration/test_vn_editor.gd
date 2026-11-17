@@ -94,3 +94,28 @@ func test_editor_slide_isolation_matches_native_playback() -> void:
 	var actor: Control = stage.runner.ctx.characters.active_sprites.hero
 	assert_almost_eq(actor.position.x,76.8,.02)
 	assert_almost_eq(actor.position.y,80.0,.02)
+
+func test_offscreen_large_character_native_move_restore_and_resize() -> void:
+	await start("# first\n@bg restaurant-v1 with instant 0\n@show hero calm at td:-.3:1.4:5 with instant\nhero: 画外特写\n# next\n@move hero to td:1.4:.9:2 over 0\nhero: 另一边\n# end\n@end\n")
+	var actor: Control = stage.runner.ctx.characters.active_sprites.hero
+	assert_almost_eq(actor.position.x,-1600.0,.02)
+	assert_almost_eq(actor.position.y,-1905.0,.02)
+	assert_almost_eq(actor.size.x,2432.0,.02)
+	assert_almost_eq(actor.size.y,3025.0,.02)
+	stage.runner.is_skip = true; stage.runner.next_node(); stage.runner.is_skip = false
+	await get_tree().process_frame
+	assert_eq(stage.runner.current_text,"另一边")
+	actor = stage.runner.ctx.characters.active_sprites.hero
+	assert_almost_eq(actor.position.x,1305.6,.02)
+	assert_almost_eq(actor.position.y,-490.0,.02)
+	assert_eq(stage.runner.state.characters.hero.position,"td:1.4:.9:2")
+	stage.runner.ctx.characters._on_state_restored(stage.runner.state)
+	await get_tree().process_frame
+	actor = stage.runner.ctx.characters.active_sprites.hero
+	assert_almost_eq(actor.position.x,1305.6,.02)
+	stage.size = Vector2(640,400)
+	await get_tree().process_frame; await get_tree().process_frame
+	assert_almost_eq(actor.position.x,652.8,.02)
+	assert_almost_eq(actor.position.y,-245.0,.02)
+	assert_almost_eq(actor.size.x,486.4,.02)
+	assert_almost_eq(actor.size.y,605.0,.02)

@@ -4,6 +4,11 @@ extends RefCounted
 ## Shared editor/runtime geometry. td:x:y:scale = centre X / bottom Y / uniform size.
 const DESIGN := Vector2(1280,800)
 const BASE_HEIGHT := 605.0
+const MIN_SCALE := 0.25
+const MAX_SCALE := 5.0
+# Offscreen staging is intentional; keep a finite guard against corrupt geometry.
+const MIN_POSITION := -10.0
+const MAX_POSITION := 11.0
 
 static func parse(token: String) -> Dictionary:
 	if not token.begins_with("td:"): return {}
@@ -12,11 +17,12 @@ static func parse(token: String) -> Dictionary:
 	for value: String in parts.slice(1):
 		if not value.is_valid_float() or not is_finite(float(value)): return {}
 	var x := float(parts[1]); var y := float(parts[2]); var scale_value := float(parts[3])
-	if x < 0 or x > 1 or y < 0 or y > 1 or scale_value < .25 or scale_value > 1.25: return {}
+	if x < MIN_POSITION or x > MAX_POSITION or y < MIN_POSITION or y > MAX_POSITION or scale_value < MIN_SCALE or scale_value > MAX_SCALE: return {}
 	return {"x":x,"y":y,"scale":scale_value}
 
 static func encode(x: float, y: float, scale_value: float = 1.0) -> String:
-	return "td:%.6f:%.6f:%.6f" % [clampf(x,0,1),clampf(y,0,1),clampf(scale_value,.25,1.25)]
+	if not is_finite(x) or not is_finite(y) or not is_finite(scale_value): return ""
+	return "td:%.6f:%.6f:%.6f" % [clampf(x,MIN_POSITION,MAX_POSITION),clampf(y,MIN_POSITION,MAX_POSITION),clampf(scale_value,MIN_SCALE,MAX_SCALE)]
 
 static func rect(token: String, cast_scale: float = .64, viewport_size: Vector2 = DESIGN) -> Rect2:
 	var layout := parse(token)

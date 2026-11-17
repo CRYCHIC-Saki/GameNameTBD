@@ -1,3 +1,6 @@
+## D077-R5 发布整合（2026-11-17，VALIDATING）
+用户授权推送并合并main；root唯一集成者，integration/phase-4-wave-vn-canvas独立工作树，仅接入R5编辑器/布局/测试/记录。远端main@5760d10无新提交，74份本地未提交文件备份保留。检查通过再合并，不重建EXE；最终结果以PR及artifacts/upload-vn-canvas-20261117回执为准。
+
 ## D077 发布整合（2026-11-16，VALIDATING）
 用户授权推送剧情可视化编辑器并合并main。root唯一集成者，分支integration/phase-4-wave-vn-editor；GitHub API确认main=df2972d，无新主线。使用独立干净工作树，仅提交D077至R4及必要VN运行/触发/导出/测试文档；通过开发起点快照剥离D076主角斜向修改，原目录完整155文件备份，34受保护资料不上传不覆盖。登记共享写入：addons/td_vn_editor、VN插件本地导出入口、src/story、Profile及镇/餐厅交互、project.godot、export_presets.cfg、检查/导出工具和对应记录。当前不是新玩法阶段，不增加原剧本；人工编排PENDING。专项和完整CI通过且main未前进才合并；最终回执见artifacts/upload-vn-editor-20261116。Git HTTPS连接失败时使用官方GitHub Git Data API并验证远端树/提交与本地完全相同，不强推。下方开发时“不推送”记录由本次明确授权覆盖，原日期测试保持历史含义。
 
@@ -481,3 +484,5 @@ root 唯一写入：ShopView/新增厨师工作流、FullKitchen/Lane 必要接�
 ## D075 提示精简（2026-11-15，LOCAL_BUILD_READY / PLAYTEST_PENDING）
 基线 main@2cf048b（PR #9 已合并，全量809项/32177断言通过），integration/phase-4-wave-quiet-hud。root唯一写入本轮场景显示、对应测试/检查/文档；hint_cleanup_facts只读调查已完成。备份 artifacts/quiet-hud-20261115/baseline。原资料/未发布罗厄素材保持，不提交推送。
 83独立用例3703断言、源/最终EXE图形各81项10图、158加载/1248资源、EXE启动3×4/headless94通过；34保护文件一致。18:07本地包更新，原失败与旧包保留，详见restaurant-feedback D075。全仓/远程CI本轮未跑、人工PENDING；root写入锁释放，下一步为本轮试玩反馈，不自动开新阶段或发布。
+## D077-R5 画外构图（2026-11-17，LOCAL_EDITOR_READY，锁释放）
+root完成addons/td_vn_editor、src/story/vn_layout.gd、测试/探针与记录；vn_canvas_bounds_facts只读完成。0.6.0支持0.25–5倍、画外拖动、编辑视图缩放、角色列表与居中，原生/缩略图正确裁切。62用例506断言/161加载、编辑器22检查3图/原生播放器12检查3图均exit0；37保护/恢复核对一致。证据artifacts/vn-canvas-20261117，首轮测试夹具失败日志保留。本地D076、原剧本、上游、存档与EXE保持；不提交推送，人工PENDING，全仓/远程CI/导出NOT_RUN。
