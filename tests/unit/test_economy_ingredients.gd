@@ -6,12 +6,16 @@ func test_runtime_index_preserves_all_source_identities_without_flavor_conversio
 	assert_eq(runtime.schema_version,1.0)
 	assert_eq(runtime.source_sha256,FileAccess.get_sha256("res://doc/source/ingredients.json"))
 	assert_eq(runtime.categories.size(),source.categories.size())
+	var pantry: Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://content/pantry.json"))
+	var pantry_items := {}
+	for ingredients: Array in pantry.dishes.values():
+		for id: String in ingredients: pantry_items[id]=true
 	var count:int=0
 	var book:=TDIngredientBook.new()
 	assert_true(book.load_file().ok)
 	for i:int in source.categories.size():
 		var expected:Dictionary=source.categories[i].duplicate(true)
-		expected.items = expected.items.filter(func(row: Dictionary)->bool: return row.id not in TDMaterialCatalog.retired_ids())
+		expected.items = expected.items.filter(func(row: Dictionary)->bool: return row.id not in TDMaterialCatalog.retired_ids() or pantry_items.has(row.id))
 		var actual:Dictionary=runtime.categories[i]
 		assert_eq(actual.id,expected.id)
 		assert_eq(actual.name,expected.name)

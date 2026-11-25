@@ -164,7 +164,12 @@ static func convert(original: Dictionary) -> TDOutcome:
 	_fields(data.world, ["home_skill","branch_skill"], dishes)
 	_fields(data.world, ["branch_stock"], removed_materials)
 	if data.world.get("pantry") is Dictionary and data.world.pantry.get("lots") is Array:
-		data.world.pantry.lots = data.world.pantry.lots.filter(func(row: Dictionary)->bool: return row.get("ingredient_id") not in removed_materials)
+		var pantry_book:=TDIngredientBook.new()
+		var loaded:=pantry_book.load_file()
+		if not loaded.ok: return loaded
+		data.world.pantry.lots = data.world.pantry.lots.filter(func(row: Dictionary)->bool:
+			var id: String=str(row.get("ingredient_id",""))
+			return id not in removed_materials or pantry_book.items.has(id))
 	if data.world.has("supply"):
 		_erase(data.world.supply.get("stock"), removed_materials)
 

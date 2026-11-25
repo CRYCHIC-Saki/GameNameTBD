@@ -26,12 +26,16 @@ func test_three_towns_share_travel_recruitment_supply_and_research() -> void:
 func test_real_slot_refund_is_itemised_by_actual_unfulfilled_cost_and_paid_once() -> void:
 	var profile := TDGameProfile.new()
 	var original := old_slot()
+	var cumin := profile.world.pantry.store(profile.world.ingredients.get_item("cumin"),"dry_store",1)
+	profile.world.pantry.store({"id":"laksa_paste","name":"叻沙酱","category":"spice"},"dry_store",1)
+	original.world.pantry=profile.snapshot().world.pantry
 	var before := original.duplicate(true)
 	var result := profile.restore(original)
 	assert_true(result.ok,result.code)
 	assert_eq(original,before)
 	if result.ok:
 		var saved := profile.snapshot()
+		assert_eq(saved.world.pantry.lots,[cumin],"The Chinese pantry keeps its spice when the retired-region lots are cleared")
 		assert_eq(int(saved.shop.money_cents),int(original.shop.money_cents)+28100+56+111)
 		assert_eq(saved.shop.ledger.size(),original.shop.ledger.size()+1)
 		assert_true(saved.branches.stores.is_empty())

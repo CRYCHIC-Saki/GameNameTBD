@@ -853,11 +853,6 @@
       "name": "香辛料",
       "items": [
         {
-          "id": "cumin",
-          "name": "孜然",
-          "sub": "辛香"
-        },
-        {
           "id": "sichuanpepper",
           "name": "花椒",
           "sub": "辛香"
@@ -875,6 +870,11 @@
         {
           "id": "clove",
           "name": "丁香",
+          "sub": "辛香"
+        },
+        {
+          "id": "cumin",
+          "name": "孜然",
           "sub": "辛香"
         },
         {
