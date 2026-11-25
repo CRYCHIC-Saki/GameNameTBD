@@ -48,7 +48,11 @@ func test_three_towns_plant_banks_avenues_and_groves_in_local_species() -> void:
 			feet_seen[cell]=true
 			habitats[plant.habitat] = int(habitats.get(plant.habitat,0))+1
 			if plant.index==3: flowers+=1
-		for habitat: String in ["bank","avenue","grove"]:
+		# Egret's stone seawall and working quay occupy the waterfront.
+		var expected := ["avenue","grove"] if town=="paris" else ["bank","avenue","grove"]
+		if town=="paris":
+			assert_true(map.terrain_at(Vector2i(TDTravelCatalog.harbor_rect(town).get_center())).walkable)
+		for habitat: String in expected:
 			assert_gte(int(habitats.get(habitat,0)),5,town+" has planted "+habitat)
 		assert_false(blocked,town+" planting avoids public paths and water")
 		assert_false(repeated_feet,town+" no stacked trunks")
@@ -57,7 +61,7 @@ func test_three_towns_plant_banks_avenues_and_groves_in_local_species() -> void:
 		assert_not_null(tex.atlas)
 		accents[tex.region]=true
 		print("GREENBELT ",town," ",plants.size()," plants ",habitats," signature ",flowers)
-	assert_eq(accents.size(),5,"each town draws a distinct signature plant")
+	assert_eq(accents.size(),TDTravelCatalog.IDS.size(),"each town draws a distinct signature plant")
 	profile.close()
 
 func test_chens_paved_walkway_leads_to_his_shop_and_story_door() -> void:
@@ -89,7 +93,7 @@ func test_visible_diner_base_blocks_steps_but_empty_part_of_plot_is_walkable() -
 	await wait_physics_frames(2)
 	var facade: Dictionary = town._facades.filter(func(item: Dictionary) -> bool: return item.get("plot", {}).get("id") == "player_diner")[0]
 	var base: Rect2 = facade.bases[0]
-	var door := Vector2(base.get_center().x, base.end.y + 26.0)
+	var door := Vector2(base.get_center().x, base.end.y + 64.0)
 	town._player.position = door
 	Input.action_press("world_up")
 	await wait_physics_frames(25)

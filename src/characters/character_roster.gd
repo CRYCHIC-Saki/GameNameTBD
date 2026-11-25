@@ -251,18 +251,23 @@ func _patrol_target(id: String, span: Dictionary, a: Dictionary) -> Vector2i:
 	var reserved:=_reserved_stops(id)
 	var anchor:=safe_stop_near(_zone_target(str(span.zone),id),id,reserved)
 	if span.get("activity","roam")=="stand" or int(a.patrol)==0: return anchor
-	var key: String="%s:%s:%s"%[span.zone,id,span.get("radius_tiles",7)]
+	var radius := float(span.get("radius_tiles",7))
+	var key := "%s:%s:%s:%s"%[span.zone,id,radius,anchor]
 	if not _activity_points.has(key):
-		var candidates: Array[Vector2i]=[]
+		var points: Array[Vector2i]=[]
 		for point: Vector2i in _safe_roads:
-			if Vector2(point).distance_to(Vector2(anchor))<=float(span.get("radius_tiles",7)): candidates.append(point)
-		_activity_points[key]=candidates
-	var points: Array=_activity_points[key]
-	if points.is_empty(): return anchor
-	var start: int=(absi(id.hash())+int(a.patrol)*17)%points.size()
-	for i: int in points.size():
-		var point: Vector2i=points[(start+i)%points.size()]
-		if Vector2(point).distance_to(Vector2(a.cell))>=4.0 and not reserved.any(func(other:Vector2i)->bool:return point.distance_to(other)<2.0): return point
+			if point.distance_to(anchor)<=radius*2: points.append(point)
+		_activity_points[key]=points
+	var candidates: Array=_activity_points[key]
+	if candidates.is_empty(): return anchor
+	var start := (absi(id.hash())+int(a.patrol)*17)%candidates.size()
+	# Expand along the adjoining street if another resident is using the only local stop.
+	for reach: float in [radius, radius * 1.5, radius * 2.0]:
+		for i: int in candidates.size():
+			var point: Vector2i=candidates[(start+i)%candidates.size()]
+			if point.distance_to(anchor)>reach or point.distance_to(a.cell)<=4.0: continue
+			if reserved.any(func(other:Vector2i)->bool:return point.distance_to(other)<2.0): continue
+			if not _path(a.cell,point).is_empty(): return point
 	return anchor
 
 func _reserved_stops(id: String) -> Array:

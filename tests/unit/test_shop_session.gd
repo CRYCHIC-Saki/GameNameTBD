@@ -217,8 +217,12 @@ func test_customer_requirements_compile_different_charts_without_changing_dish_i
 	assert_true(chart.configure(small.data().pc_operations.document_sheets[recipe.preparation_sheets.tomato],source.operations).ok)
 	var cut: Dictionary=chart.snapshot().events[0].settings
 	assert_eq(cut.cut_actions.count("primary"),6)
-	assert_eq(cut.beat_times_sec.size(),8)
-	assert_almost_eq(float(cut.beat_times_sec[1])-float(cut.beat_times_sec[0]),.25,.000001)
+	var original_sheet: Dictionary=source.pc_operations.document_sheets[catalog.cooking.recipe_data("service.tomato_egg").preparation_sheets.tomato]
+	var original_chart:=TDBeatSheet.new()
+	assert_true(original_chart.configure(original_sheet,source.operations).ok)
+	var original: Dictionary=original_chart.snapshot().events[0].settings
+	assert_gt(cut.cut_actions.size(),original.cut_actions.size())
+	assert_eq(cut.beat_times_sec.slice(0,original.beat_times_sec.size()),original.beat_times_sec,"Fine dice preserves this dish's authored preparation rhythm")
 	assert_eq(catalog.material_needs(sweet,"service.tomato_egg").sugar,200)
 	assert_eq(catalog.material_needs(small,"service.tomato_egg").soy_sauce,150)
 	assert_eq(catalog.cooking.data(),source)

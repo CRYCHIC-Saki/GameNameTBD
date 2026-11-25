@@ -28,10 +28,15 @@ func _twenty(prefix: String, study: bool=true) -> void:
 func test_chinese_twenty() -> void: await _twenty("C")
 func test_european_twenty() -> void: await _twenty("E")
 func test_japanese_twenty() -> void: await _twenty("J")
-func test_southeast_twenty() -> void: await _twenty("S")
-func test_latin_twenty() -> void: await _twenty("L")
 func test_chinese_daily_twenty() -> void: await _twenty("C",false)
 func test_european_daily_twenty() -> void: await _twenty("E",false)
 func test_japanese_daily_twenty() -> void: await _twenty("J",false)
-func test_southeast_daily_twenty() -> void: await _twenty("S",false)
-func test_latin_daily_twenty() -> void: await _twenty("L",false)
+
+func test_retired_cuisines_have_no_playable_lessons_or_kitchen_recipes() -> void:
+	var catalog := TDResearchCatalog.new()
+	assert_true(catalog.load_file().ok)
+	for prefix: String in ["S","L"]:
+		for index: int in range(1,21):
+			var id := "%s%02d" % [prefix,index]
+			assert_true(catalog.node(id).is_empty(),id)
+			assert_true(catalog.chart(id).is_empty(),id)

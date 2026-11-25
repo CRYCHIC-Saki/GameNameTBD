@@ -14,7 +14,7 @@ func own(p: TDGameProfile, id: String, copies: int=1) -> void:
 
 func ready_branch(p: TDGameProfile) -> String:
 	own(p,"manager.steady");own(p,"cook-he");own(p,"waiter-ning")
-	var result:=p.branches.open_store("chengdu",JIANGNAN_SITE.duplicate(),"cn","manager.steady","test-open")
+	var result:=p.branches.open_store("chengdu",TDRegionMigration.find_site(p.world.town_map, JIANGNAN_SITE),"cn","manager.steady","test-open")
 	assert_true(result.ok,result.code)
 	return str(result.data.get("store_id",""))
 
@@ -106,7 +106,7 @@ func test_main_payroll_accrues_once_as_operating_cost_and_debt() -> void:
 
 func test_legacy8_migrates_existing_workers_manager_and_supply_entitlements() -> void:
 	var p:=make_profile();p.branches.managed=false
-	assert_true(p.branches.open_store("chengdu",JIANGNAN_SITE.duplicate(),"cn","manager.master","legacy-open").ok)
+	assert_true(p.branches.open_store("chengdu",TDRegionMigration.find_site(p.world.town_map, JIANGNAN_SITE),"cn","manager.master","legacy-open").ok)
 	var raw:=p.snapshot();raw.schema_version=8;raw.erase("employees");raw.erase("suppliers")
 	var crew:=TDRestaurantCrew.new();assert_true(crew.hire("cook-he").ok)
 	raw.layout.crew=crew.export_state()
@@ -219,7 +219,7 @@ func test_fixed_manager_branch_and_schema_one_employee_compatibility() -> void:
 	var p:=make_profile();var hired:=sign_first(p,"manager","fixed-manager")
 	var manager: String=str(hired.id)
 	var name_before: String=str(hired.name)
-	var opened:=p.branches.open_store("chengdu",JIANGNAN_SITE.duplicate(),"cn",manager,"generated-branch")
+	var opened:=p.branches.open_store("chengdu",TDRegionMigration.find_site(p.world.town_map, JIANGNAN_SITE),"cn",manager,"generated-branch")
 	assert_true(opened.ok,opened.code)
 	var raw: Dictionary=JSON.parse_string(JSON.stringify(p.snapshot()));var checked:=TDGameProfile.validate_save(raw)
 	assert_true(checked.ok,checked.code)

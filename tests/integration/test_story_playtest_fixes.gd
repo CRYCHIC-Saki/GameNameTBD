@@ -60,19 +60,19 @@ func test_restaurant_actor_scale_keeps_feet_anchored() -> void:
 	var grid:=room.player_position()/float(room.layout.cell_px)
 	assert_almost_eq(rect.end.y,TDRestaurantIsoView.project(grid.x,grid.y).y,.001)
 
-func test_first_escort_passes_gate_centre_before_heading_to_chen() -> void:
+func test_first_escort_crosses_a_real_bridge_deck_before_heading_to_chen() -> void:
 	var town:=shell.town;shell.profile.story.beat="follow"
 	town._tick_escort(0)
-	var centre_crossings: Dictionary={}
+	var crossed_bridge := false
+	var bridge := town._reference_map.get_node("BridgeDeck") as TileMapLayer
 	for tick: int in 1600:
 		town._player.position=town.escort_position()+Vector2(48,0)
 		town._tick_escort(.1)
-		var cell: Vector2i=town._escort
-		if cell.y in [32,31,30,29] and cell.x>=62 and not centre_crossings.has(cell.y):
-			centre_crossings[cell.y]=cell.x
+		var tile := bridge.local_to_map(bridge.to_local(town.to_global(town.escort_position())))
+		if bridge.get_cell_source_id(tile)>=0: crossed_bridge=true
 		if shell.profile.story.beat!="follow": break
 	assert_eq(shell.profile.story.beat,"soup")
-	for y: int in [32,31,30,29]: assert_eq(centre_crossings.get(y,-1),64,"Guide walks through the arch, not a pillar")
+	assert_true(crossed_bridge,"The guide crosses the mapped river on a real bridge deck")
 	assert_gte(town._chen_cell().distance_to(town._aling_market_cell()),2.0)
 
 func test_practice_retries_keep_real_stock_ledger_and_stop_after_tutorial() -> void:

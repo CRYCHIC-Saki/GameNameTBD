@@ -101,19 +101,21 @@ func test_sleep_completes_game_time_lines_but_not_legacy_and_respects_next_budge
 	assert_true(n.order("chengdu","player_diner",{"egg":1000},"legacy-night").ok)
 	var tomato: int=p.shop.available("tomato");var eggs: int=p.shop.available("egg")
 	n.set_automation("player_diner",false,200)
+	n.advance_game_minutes(1)
+	var paid_orders: int = n.state.orders.size()
 	p.characters.clock.minute=1560
 	assert_true(p.shop.close_for_night().ok);assert_true(p.next_day().ok)
 	assert_eq(int(p.shop.snapshot().day),2);assert_eq(p.characters.clock.minute,480.0)
-	assert_eq(p.shop.available("tomato"),tomato+1000,"Only one distance-priced batch fits 200 cents")
+	assert_eq(p.shop.available("tomato"),tomato+1000,"The batch paid before bedtime finishes during the night")
 	assert_eq(p.shop.available("egg"),eggs)
-	assert_eq(int(n.state.automation.player_diner.spent_day),2)
+	assert_eq(n.state.orders.size(),paid_orders,"Legacy lines cannot start a new purchase overnight")
 	var checked:=TDGameProfile.validate_save(p.snapshot());assert_true(checked.ok,checked.code)
 
 func test_two_sources_count_same_stock_and_branch_budget_does_not_touch_home() -> void:
 	var p:=make_profile();var n:=p.suppliers;line(p,1000);line(p,1000,"tokyo")
 	n.advance_game_minutes(300);assert_eq(n.state.orders.size(),1)
 	p.branches.managed=false
-	var result:=p.branches.open_store("chengdu",[6,48,3,4],"cn","manager.steady","branch-test");assert_true(result.ok,result.code)
+	var result:=p.branches.open_store("chengdu",TDRegionMigration.find_site(p.world.town_map,[6,48,3,4]),"cn","manager.steady","branch-test");assert_true(result.ok,result.code)
 	var id: String=result.data.store_id
 	p.branches.state.stores[id].budget_cents=100
 	assert_true(n.create_line("chengdu",id,"tomato",2000).ok)
