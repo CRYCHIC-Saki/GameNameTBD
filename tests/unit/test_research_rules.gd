@@ -11,15 +11,17 @@ func start(s:TDResearchSession,id:String) -> TDOutcome:
 	return begun
 
 func perform(s:TDResearchSession,id:String) -> TDOutcome:
-	var begun:=start(s,id);assert_true(DRIVER.play(s,begun.data.token))
+	var begun:=start(s,id)
+	if not begun.ok: return begun
+	assert_true(DRIVER.play(s,begun.data.token))
 	return s.finish(begun.data.token)
 
 func after_each() -> void:
 	for child:Node in get_children():
 		if child is TDResearchLesson and not child.is_queued_for_deletion(): child.dispose()
 
-func test_catalog_100_nodes_references_cycles_and_real_kitchen_charts() -> void:
-	var s:=make();assert_eq(s.catalog.nodes.size(),100)
+func test_catalog_60_nodes_references_cycles_and_real_kitchen_charts() -> void:
+	var s:=make();assert_eq(s.catalog.nodes.size(),60)
 	var bad:=s.catalog.data.duplicate(true);bad.recipes[0].prerequisites=["C05"]
 	assert_eq(TDResearchCatalog.new().load_data(bad).code,"CYCLIC_ATLAS")
 	bad=s.catalog.data.duplicate(true);bad.recipes[0].prerequisites=["NO"]
@@ -29,7 +31,14 @@ func test_catalog_100_nodes_references_cycles_and_real_kitchen_charts() -> void:
 		assert_false(TDResearchCatalog.new().load_data(bad).ok)
 
 func test_two_starters_pending_chart_locked_and_insufficient_points_no_spend() -> void:
-	var s:=make();assert_eq(s.snapshot().unlocked,["C01","C02"])
+	var production := make()
+	assert_eq(production.status("C05"), "AVAILABLE")
+	var raw := production.catalog.data.duplicate(true)
+	raw.charts.erase("C05")
+	var missing_chart := TDResearchCatalog.new()
+	assert_true(missing_chart.load_data(raw).ok)
+	var s := TDResearchSession.new(missing_chart)
+	assert_eq(s.snapshot().unlocked,["C01","C02"])
 	var before:=s.snapshot()
 	for pair:Array in [["E01","STORY_LOCKED"],["C05","CHART_PENDING"],["C20","PREREQUISITES"]]:
 		assert_eq(s.begin(pair[0]).code,pair[1]);assert_eq(s.snapshot(),before)
@@ -44,7 +53,7 @@ func test_real_kitchen_missed_inputs_fail_license_retry_cancel_and_steam_pass() 
 	var retry:=s.begin("C04");assert_eq(retry.data.cost,0);s.cancel(retry.data.token)
 	assert_eq(s.input(retry.data.token,"primary",true).code,"STALE_ATTEMPT")
 	var passed:=perform(s,"C04");assert_eq(passed.code,"UNLOCKED");assert_almost_eq(passed.data.score,100.0,.01)
-	assert_eq(passed.data.modules.keys(),["M6","M3","M7"])
+	assert_eq(passed.data.modules.keys(),["M3","M6","M2","M7"])
 	assert_eq(s.snapshot().points,2);assert_eq(s.finish(passed.data.token).code,"STALE_ATTEMPT")
 
 func test_boil_uses_real_continuous_temperature_and_score_read_only() -> void:
@@ -53,9 +62,12 @@ func test_boil_uses_real_continuous_temperature_and_score_read_only() -> void:
 	assert_gte(passed.data.score,80.0);var before:=s.snapshot()
 	passed.data.score=0;s.progress().quality=0;assert_eq(s.snapshot(),before)
 
-func test_same_lesson_host_supports_real_cut_stir_without_parallel_qte() -> void:
+func test_same_lesson_host_supports_real_cut_and_heat_with_stir() -> void:
 	var s:=make();var raw:=s.catalog.data.duplicate(true)
-	raw.charts.C03.recipe_id="service.tomato_egg";raw.charts.C03.primary=["tomato","egg"]
+	var tomato_chart: Dictionary = raw.charts.C02
+	raw.charts.C03.recipe_id = tomato_chart.recipe_id
+	raw.charts.C03.profile = tomato_chart.profile
+	raw.charts.C03.primary = tomato_chart.primary.duplicate()
 	var catalog:=TDResearchCatalog.new();assert_true(catalog.load_data(raw).ok)
 	s=TDResearchSession.new(catalog);var passed:=perform(s,"C03")
 	assert_eq(passed.code,"UNLOCKED");assert_true(passed.data.modules.has("M1"));assert_true(passed.data.modules.has("M4"));assert_true(passed.data.modules.has("M6"))
@@ -81,7 +93,7 @@ func test_pause_long_frame_cancel_and_separate_sessions_do_not_pollute_templates
 
 func test_story_and_inspiration_idempotency_and_unlock_validation() -> void:
 	var s:=make();assert_true(s.recommend_cuisine("story.europe","eu").ok)
-	assert_false(s.has("E01"));assert_eq(s.status("E01"),"CHART_PENDING")
+	assert_false(s.has("E01"));assert_eq(s.status("E01"),"AVAILABLE")
 	assert_eq(s.recommend_cuisine("story.europe","eu").code,"ALREADY_APPLIED")
 	assert_eq(s.recommend_cuisine("story.europe","jp").code,"EVENT_CONFLICT")
 	assert_false(s.recommend_cuisine("x","unknown").ok)

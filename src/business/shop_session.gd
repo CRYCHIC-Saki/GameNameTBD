@@ -6,6 +6,7 @@ signal day_settled(day: int)
 signal day_opened()
 ## Money, orders and stock have one owner. The kitchen provides real dish snapshots.
 var catalog: TDServiceCatalog
+var cuisine_id: String = "cn"
 var scorer := TDCustomerScorer.new()
 var _s: Dictionary = {}
 var _rng: RefCounted
@@ -46,15 +47,16 @@ func purchasable(id: String) -> bool:
 		if is_unlocked(item.id) and id in item.primary: return true
 	return false
 
-func market_sells(id: String) -> bool:
-	# D070 gates condiments; the neighbourhood market still sells all stocked foods.
+func market_sells(id: String, region: String = "") -> bool:
+	# A counter passes its supply region. Kitchen kits also use the general catalogue.
 	if catalog==null or not catalog.config.costs.has(id): return false
+	if not region.is_empty() and not TDMaterialCatalog.supplies(region,id): return false
 	return not stock_rules.get(id,{}).get("condiment",false) or TDMaterialCatalog.condiment_unlocked(id,material_cuisine_unlocks)
 
-func market_ids() -> Array[String]:
+func market_ids(region: String = "") -> Array[String]:
 	var result: Array[String]=[]
 	for id: String in catalog.config.costs:
-		if market_sells(id): result.append(id)
+		if market_sells(id,region): result.append(id)
 	return result
 
 func purchase_ids() -> Array[String]:
@@ -105,15 +107,31 @@ func family_id(id: String) -> String:
 	var item: Dictionary=offer(id)
 	return str(item.custom_entry.plan.recipe_id) if item.has("custom_entry") else id
 
-func context_for_ingredients(ids: Array, complete: bool = false, method: String = "") -> Dictionary:
-	for item: Dictionary in active_orders():
-		if _method_matches(family_id(item.recipe_id),method) and _matches_materials(ids,offer(item.recipe_id).primary,complete): return item
+func contexts_for_ingredients(ids: Array, complete: bool = false, method: String = "") -> Array:
+	var result: Array=[]
 	for item: Dictionary in catalog.config.offers:
-		if _method_matches(item.id,method) and _matches_materials(ids,item.primary,complete): return {"recipe_id":item.id,"customer":{}}
-	return {}
+		if _method_matches(item.id,method) and _matches_materials(ids,item.primary,complete): result.append({"recipe_id":item.id,"customer":{}})
+	# Any explicitly loaded sauce/broth disambiguates candidates that declare it.
+	var flavored: Array=[]
+	for candidate: Dictionary in result:
+		var recipe:=catalog.cooking.recipe_data(candidate.recipe_id)
+		if ids.any(func(id:String)->bool:return id in recipe.get("seasoning_palette",[])): flavored.append(candidate)
+	if not flavored.is_empty(): result=flavored
+	# Flavor/station recognition precedes queue priority; an incompatible earlier
+	# request must not override the ingredients the player actually loaded.
+	for item: Dictionary in active_orders():
+		if result.any(func(candidate:Dictionary)->bool:return candidate.recipe_id==family_id(item.recipe_id)): return [item]
+	return result
+
+func context_for_ingredients(ids: Array, complete: bool = false, method: String = "") -> Dictionary:
+	var candidates:=contexts_for_ingredients(ids,complete,method)
+	return candidates[0] if not candidates.is_empty() else {}
 
 func _method_matches(id: String, method: String) -> bool:
-	return method.is_empty() or catalog.cooking.for_recipe(id).get("recipe",{}).get("cooking_method","stir")==method
+	var recipe:=catalog.cooking.recipe_data(id)
+	if str(recipe.get("cuisine_id","cn"))!=cuisine_id: return false
+	if method.begins_with("kitchen."): return TDCuisineKitchen.accepts(cuisine_id,method,recipe)
+	return method.is_empty() or recipe.get("cooking_method","stir")==method
 
 func _matches_materials(ids: Array, primary: Array, complete: bool) -> bool:
 	if ids.is_empty(): return false
@@ -236,7 +254,7 @@ func _init(content: TDServiceCatalog, run_id: String = "", seed_value: int = 101
 
 func _initial_unlocks() -> Array:
 	if not _starter_override.is_empty(): return _starter_override.duplicate()
-	return catalog.config.offers.filter(func(o:Dictionary)->bool:return catalog.cooking.for_recipe(o.id).recipe.get("initially_unlocked",true)).map(func(o:Dictionary)->String:return o.id)
+	return catalog.config.offers.filter(func(o:Dictionary)->bool:return catalog.cooking.recipe_data(o.id).get("initially_unlocked",true)).map(func(o:Dictionary)->String:return o.id)
 
 func is_unlocked(id: String) -> bool:
 	return id in _s.unlocked
@@ -248,7 +266,7 @@ func grant_recipe(id: String) -> TDOutcome:
 	if not _s.menu.has(id): _s.menu[id] = {"enabled":true,"price_cents":int(item.reference_cents)}
 	else: _s.menu[id].enabled = true
 	if not _s.fame.has(id): _s.fame[id] = 0
-	return TDOutcome.new(true,"RECIPE_GRANTED",str(catalog.cooking.for_recipe(id).get("recipe",{}).get("name",id)))
+	return TDOutcome.new(true,"RECIPE_GRANTED",str(catalog.cooking.recipe_data(id).get("name",id)))
 
 func observe_finished(dish: Dictionary) -> TDOutcome:
 	var id: String=str(dish.get("recipe_id",""))
@@ -259,11 +277,11 @@ func observe_finished(dish: Dictionary) -> TDOutcome:
 	if is_unlocked(id): return TDOutcome.new(true,"ALREADY_UNLOCKED")
 	if research_controlled: return TDOutcome.new(false,"RESEARCH_REQUIRED","请在菜谱研习中通过谱面后解锁。")
 	if not dish.get("missing_required") is Array or not dish.missing_required.is_empty() or not dish.get("steps") is Array or dish.steps.is_empty(): return TDOutcome.new(false,"NOT_PERFECT")
-	var threshold: float=float(catalog.cooking.data().rules.perfect_grade_threshold)
+	var threshold: float=catalog.cooking.rule_value("perfect_grade_threshold")
 	for step: Dictionary in dish.steps:
 		if not step.get("quality") is float and not step.get("quality") is int: return TDOutcome.new(false,"INVALID_DISH")
 		if not is_finite(float(step.quality)) or float(step.quality)<threshold: return TDOutcome.new(false,"NOT_PERFECT")
-	var recipe: Dictionary=catalog.cooking.for_recipe(id).recipe
+	var recipe: Dictionary=catalog.cooking.recipe_data(id)
 	for kind: String in recipe.required_steps:
 		if not dish.steps.any(func(s:Dictionary)->bool:return s.operation==kind): return TDOutcome.new(false,"NOT_PERFECT")
 	_s.unlocked.append(id); _record("recipe_unlock",0,{},id,{"dish_id":dish.dish_id})
@@ -312,7 +330,10 @@ func take_stored(id: String) -> TDOutcome:
 
 func _check_food(data: Variant) -> TDOutcome:
 	if not data is Dictionary or not catalog.config.costs.has(data.get("ingredient_id")): return TDOutcome.new(false,"INVALID_STORED_FOOD")
-	var model:=TDCookingModel.new("storage-validation",1,catalog.cooking.for_recipe("service.tomato_egg"),{"pc_controls":true,"document_rules":true})
+	var config := catalog.cooking.scoped_data("service.tomato_egg")
+	if config.is_empty(): return TDOutcome.new(false,"INVALID_STORED_FOOD")
+	config.recipe = config.recipes[0]
+	var model := TDCookingModel.new("storage-validation", 1, config, {"pc_controls":true,"document_rules":true})
 	return model.restore_portable(data)
 
 func snapshot() -> Dictionary:
@@ -346,7 +367,7 @@ func offer(id: String) -> Dictionary:
 func recipe_name(id: String) -> String:
 	var item: Dictionary = offer(id)
 	if item.has("custom_entry"): return str(item.custom_entry.name)
-	return str(catalog.cooking.for_recipe(id).get("recipe",{}).get("name",id))
+	return str(catalog.cooking.recipe_data(id).get("name",id))
 
 func order(id: String) -> Dictionary:
 	for item: Dictionary in _s.orders:
@@ -372,13 +393,13 @@ func kit_cost(id: String, missing_only: bool = false) -> int:
 		total += amount_cost(units,int(catalog.config.costs[ingredient]))
 	return total
 
-func buy(cart: Dictionary, token: String, price_override: Dictionary = {}) -> TDOutcome:
+func buy(cart: Dictionary, token: String, price_override: Dictionary = {}, region: String = "") -> TDOutcome:
 	if _s.phase != "PREPARE": return TDOutcome.new(false,"NOT_PREPARING")
 	if token.is_empty() or _s.seen.has(token): return TDOutcome.new(false,"DUPLICATE")
 	if cart.is_empty(): return TDOutcome.new(false,"EMPTY_CART")
 	var cost: int = 0; var change: Dictionary = {}
 	for id: Variant in cart:
-		if not market_sells(str(id)): return TDOutcome.new(false,"INGREDIENT_LOCKED","原料不可购买；特色调料需先开放对应菜系。")
+		if not market_sells(str(id),region): return TDOutcome.new(false,"INGREDIENT_LOCKED","这家店未出售该原料或调料。")
 		if not catalog.config.costs.has(id) or not TDServiceCatalog.integer(cart[id],1,100000) or int(_s.inventory[id])+int(cart[id])>1000000: return TDOutcome.new(false,"INVALID_QUANTITY")
 		if price_override.has(id) and not TDServiceCatalog.integer(price_override[id],1,10000000): return TDOutcome.new(false,"INVALID_QUOTE")
 		change[id] = int(cart[id]); cost += amount_cost(int(cart[id]),int(price_override.get(id,catalog.config.costs[id])))
@@ -511,7 +532,7 @@ func next_boundary(maximum: float) -> float:
 
 func economic_menu(assume_restocked: bool = false) -> Array:
 	var result: Array=[]
-	var definitions: Array=catalog.cooking.data().ingredients
+	var definitions: Array=catalog.cooking.ingredient_definitions()
 	for id: String in _s.menu:
 		if not _s.menu[id].enabled or (not assume_restocked and not menu_available(id)): continue
 		var family:=family_id(id)
@@ -529,8 +550,8 @@ func economic_menu(assume_restocked: bool = false) -> Array:
 func _arrive_economic() -> void:
 	var slot:=floori(maxf(0,float(_s.elapsed_sec)-1.0)/arrival_interval_sec()+0.000001)
 	var arrivals: Array
-	if day_minute_reader.is_valid(): arrivals=commerce.arrivals_at(_opening_minute+float(_s.elapsed_sec),economic_menu(),pending_orders().size(),int(catalog.config.settings.max_orders),catalog.cooking.data().customers,float(catalog.config.settings.patience_sec))
-	else: arrivals=commerce.arrivals(slot,economic_menu(),pending_orders().size(),int(catalog.config.settings.max_orders),catalog.cooking.data().customers,float(catalog.config.settings.patience_sec))
+	if day_minute_reader.is_valid(): arrivals=commerce.arrivals_at(_opening_minute+float(_s.elapsed_sec),economic_menu(),pending_orders().size(),int(catalog.config.settings.max_orders),catalog.cooking.customer_definitions(),float(catalog.config.settings.patience_sec))
+	else: arrivals=commerce.arrivals(slot,economic_menu(),pending_orders().size(),int(catalog.config.settings.max_orders),catalog.cooking.customer_definitions(),float(catalog.config.settings.patience_sec))
 	for arrival: Dictionary in arrivals:
 		var id: String=arrival.intent.recipe_id
 		var customer: Dictionary=arrival.template.duplicate(true)
@@ -568,7 +589,7 @@ func _arrive() -> void:
 		_arrive_economic()
 		return
 	var menu: Array = []
-	var profiles: Array = catalog.cooking.data().customers
+	var profiles: Array = catalog.cooking.customer_definitions()
 	var prospective: Dictionary=profiles[int(_s.order_serial)%profiles.size()].duplicate(true)
 	for id: String in _s.menu:
 		if _s.menu[id].enabled and menu_available(id,prospective): menu.append(id)
@@ -734,8 +755,10 @@ func tick_crew(seconds: float) -> void:
 			continue
 		if _hands_on_recipe(family_id(str(item.get("recipe_id", "")))):
 			continue
-		var next_cook: Dictionary = idle_cooks[0]
-		idle_cooks.remove_at(0)
+		var eligible := idle_cooks.filter(func(cook: Dictionary)->bool: return cook_can_prepare(cook,item.recipe_id))
+		if eligible.is_empty(): continue
+		var next_cook: Dictionary = eligible[0]
+		idle_cooks.erase(next_cook)
 		var index := _order_index(waiting_id)
 		if index < 0:
 			continue
@@ -774,6 +797,11 @@ func tick_crew(seconds: float) -> void:
 			finished.append(order_id)
 	for done_id: String in finished:
 		_crew_jobs.erase(done_id)
+
+func cook_can_prepare(cook: Dictionary, dish_id: String) -> bool:
+	var cuisine := catalog.cooking.recipe_cuisine(dish_id)
+	if cuisine.is_empty(): cuisine=catalog.cooking.recipe_cuisine(family_id(dish_id))
+	return not cuisine.is_empty() and cuisine==cook.get("cuisine_id","cn")
 
 func _hands_on_recipe(family: String) -> bool:
 	if family.is_empty():

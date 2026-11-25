@@ -82,6 +82,18 @@ func cash_audit(player_cash: int) -> Dictionary:
 func configure_parcels(town: String, plots: Array, parcels: Array, layout_version: int = 1) -> TDOutcome:
 	if town not in config.active_towns: return TDOutcome.new(false,"UNKNOWN_TOWN")
 	var view:=TDEconomicGeography.new();view.configure(town,plots,state.cells,layout_version)
+	if town=="chengdu" and layout_version==2 and expansion.state.parcels.has(town):
+		var held: Dictionary=expansion.state.parcels[town]
+		for site: Dictionary in parcels:
+			var title: Dictionary=held.get(site.id,{})
+			if title.is_empty() or (title.x==site.x and title.y==site.y and title.approach_x==site.approach_x and title.approach_y==site.approach_y): continue
+			for field: String in TDRegionMigration.GEOMETRY: title[field]=site[field]
+			if str(title.owner_id).is_empty():
+				title.land_cents=0
+				for y: int in range(int(site.y),int(site.y+site.h)):
+					for x: int in range(int(site.x),int(site.x+site.w)): title.land_cents+=int(view.cell(Vector2i(x,y)).land_value_cents)
+			for firm: Dictionary in state.competitors[town]:
+				if firm.get("parcel_id","")==site.id: firm.travel_minutes=float(view.cell(Vector2i(site.x,site.y)).travel_minutes.residential)
 	return expansion.register(town,parcels,view,state.competitors[town])
 
 static func validate_config(raw: Variant) -> TDOutcome:
@@ -97,11 +109,11 @@ static func validate_config(raw: Variant) -> TDOutcome:
 	for id: Variant in raw.active_towns:
 		if not id is String or not raw.get("towns",{}).has(id) or seen.has(id): return TDOutcome.new(false,"INVALID_ECONOMY_TOWNS")
 		seen[id]=true
-	if seen.size()!=5: return TDOutcome.new(false,"FIVE_TOWNS_REQUIRED")
+	if seen.size()!=3: return TDOutcome.new(false,"THREE_TOWNS_REQUIRED")
 	var cuisines: Dictionary={}
 	for town: String in raw.towns:
 		var row: Variant=raw.towns[town]
-		if not row is Dictionary or row.get("cuisine_id") not in ["cn","eu","jp","sea","lat"] or cuisines.has(row.cuisine_id): return TDOutcome.new(false,"INVALID_CUISINE_TOWN")
+		if not row is Dictionary or row.get("cuisine_id") not in ["cn","eu","jp"] or cuisines.has(row.cuisine_id): return TDOutcome.new(false,"INVALID_CUISINE_TOWN")
 		for field: String in ["name","culture","source_id"]:
 			if not row.get(field) is String or row[field].is_empty(): return TDOutcome.new(false,"INVALID_CUISINE_TOWN")
 		cuisines[row.cuisine_id]=town
@@ -191,34 +203,39 @@ func lead_days(town: String) -> int:
 func freight(town: String) -> int:
 	return int(config.market.freight_cents_per_portion)*lead_days(town)
 
-func quote(town: String, cart: Dictionary) -> TDOutcome:
-	if town not in state.routes: return TDOutcome.new(false,"ROUTE_LOCKED","这条商路尚未收到推荐。")
+func quote(town: String, cart: Dictionary, at_counter: bool = false) -> TDOutcome:
+	if not state.markets.has(town) or (not at_counter and town not in state.routes): return TDOutcome.new(false,"ROUTE_LOCKED","这条商路尚未收到推荐。")
 	if cart.is_empty(): return TDOutcome.new(false,"EMPTY_CART")
 	var rows: Dictionary={};var total: int=0;var units: int=0;var freight_total: int=0
+	var freight_rate := 0 if at_counter else freight(town)
 	for item: Variant in cart:
 		if not costs.has(item) or not TDServiceCatalog.integer(cart[item],1,100000): return TDOutcome.new(false,"INVALID_QUANTITY")
 		if int(cart[item])>int(state.markets[town].stock[item]): return TDOutcome.new(false,"MARKET_SOLD_OUT","供应地现货不足，本次未扣款。")
 		var product_cost := roundi(float(cart[item])*int(state.markets[town].price[item])/1000.0)
-		var shipping_cost := roundi(float(cart[item])*freight(town)/1000.0)
+		var shipping_cost := roundi(float(cart[item])*freight_rate/1000.0)
 		rows[item]={"units":int(cart[item]),"goods_cents":product_cost,"freight_cents":shipping_cost,"price_cents":int(state.markets[town].price[item])}
 		total+=product_cost+shipping_cost;freight_total+=shipping_cost;units+=int(cart[item])
-	var booked: int=0
-	for shipment: Dictionary in state.shipments:
-		if shipment.source==town and int(shipment.ordered_day)==int(state.day): booked+=int(shipment.units)
-	if town!=state.home and booked+units>int(config.market.route_capacity_units): return TDOutcome.new(false,"ROUTE_CAPACITY","今天这条商路的运力不足。")
+	if at_counter:
+		return TDOutcome.new(true,"COUNTER_QUOTED","",{"source":town,"day":int(state.day),"serial":int(state.shipping_serial)+1,"rows":rows,"total_cents":total})
+	if town!=state.home:
+		var booked: int=0
+		for shipment: Dictionary in state.shipments:
+			if shipment.source==town and int(shipment.ordered_day)==int(state.day): booked+=int(shipment.units)
+		if booked+units>int(config.market.route_capacity_units): return TDOutcome.new(false,"ROUTE_CAPACITY","今天这条商路的运力不足。")
 	return TDOutcome.new(true,"QUOTED","",{"quote_id":"%d:%s:%d"%[state.day,town,state.shipping_serial+1],"day":int(state.day),"source":town,"destination":state.home,"arrival_day":int(state.day)+lead_days(town),"rows":rows,"units":units,"total_cents":total,"freight_cents":freight_total})
 
-func commit_quote(value: Dictionary, token: String) -> TDOutcome:
+func commit_quote(value: Dictionary, token: String, at_counter: bool = false) -> TDOutcome:
 	if token.is_empty() or state.shipments.any(func(s:Dictionary)->bool:return s.id==token): return TDOutcome.new(false,"DUPLICATE")
 	var cart: Dictionary={}
 	for item: String in value.get("rows",{}): cart[item]=value.rows[item].units
-	var current:=quote(str(value.get("source","")),cart)
+	var current:=quote(str(value.get("source","")),cart,at_counter)
 	if not current.ok or current.data!=value: return TDOutcome.new(false,"STALE_QUOTE")
 	for item: String in cart:
 		state.markets[value.source].stock[item]-=int(cart[item])
 		state.markets[value.source].sold[item]=int(state.markets[value.source].sold.get(item,0))+int(cart[item])
 		state.markets[value.source].requested[item]=int(state.markets[value.source].requested.get(item,0))+int(cart[item])
 	state.shipping_serial+=1
+	if at_counter: return TDOutcome.new(true,"COLLECTED")
 	var shipment:=value.duplicate(true)
 	shipment.id=token;shipment.delivered=false;shipment.ordered_day=int(state.day)
 	state.shipments.append(shipment)
@@ -391,6 +408,23 @@ func skip_closed_before(minute: float) -> void:
 func next_meal_minute() -> float:
 	var events:=meal_events();var index: int=int(state.day_stats.opportunities)
 	return float(events[index].minute) if index<events.size() else INF
+
+func advance_town_market(town: String, minute: float) -> void:
+	# Only towns with a live player kitchen need streaming. Their already processed
+	# opportunities are the same finite pool used by the end-of-day simulation.
+	if town==state.home or town not in config.active_towns or state.day_stats.npc_finished: return
+	var events:=meal_schedule.events(int(config.opportunities_per_day),int(state.seed),int(state.day),town)
+	var index: int=int(state.day_stats.get("remote_opportunities",{}).get(town,0))
+	if index>=events.size() or float(events[index].minute)>minute+.00001: return
+	if not state.day_stats.has("remote_opportunities"): state.day_stats.remote_opportunities={}
+	if player_branches!=null: player_branches.prepare()
+	while index<events.size() and float(events[index].minute)<=minute+.00001:
+		var group:=_group((index*37+int(state.day)*7)%100)
+		var family:=society.identity(town,group.id,index)
+		group=spending_group(group,town,index)
+		var choice:=TDEconomicDemand.pick(TDEconomicDemand.choices(group,_firms(town,group),config.outside_utility,config.menu_tau),unit("choice:%s:%d:%d"%[town,state.day,index]))
+		if choice.store_id!="outside": _sell_npc(town,choice.store_id,family,choice.recipe_id)
+		index+=1;state.day_stats.remote_opportunities[town]=index
 
 func arrivals_at(minute: float, menu: Array, waiting: int, capacity: int, templates: Array, patience: float) -> Array:
 	var result: Array=[]
@@ -591,7 +625,7 @@ func _simulate_remaining() -> void:
 	if state.day_stats.npc_finished: return
 	if player_branches!=null: player_branches.prepare()
 	for town: String in config.active_towns:
-		var start: int=int(state.day_stats.opportunities) if town==state.home else 0
+		var start: int=int(state.day_stats.opportunities) if town==state.home else int(state.day_stats.get("remote_opportunities",{}).get(town,0))
 		for index: int in range(start,int(config.opportunities_per_day)):
 			var group:=_group((index*37+int(state.day)*7)%100)
 			var family:=society.identity(town,group.id,index)
@@ -710,7 +744,7 @@ func _migrate_v1(raw: Dictionary) -> TDOutcome:
 	for event: String in raw.route_events:
 		if raw.route_events[event] in fresh.state.routes: fresh.state.route_events[event]=raw.route_events[event]
 	fresh.state.legacy_archive=archived
-	var cultures: Dictionary={"cn":"chinese","eu":"continental","fr":"continental","french":"continental","en":"continental","british":"continental","jp":"japanese","sea":"southeast_asian","lat":"latin_american"}
+	var cultures: Dictionary={"cn":"chinese","eu":"continental","fr":"continental","french":"continental","en":"continental","british":"continental","jp":"japanese"}
 	for key: String in raw.familiarity:
 		var parts:=key.split(":")
 		if parts.size()!=2 or not cultures.has(parts[1]): continue
@@ -754,7 +788,12 @@ func validate_save(raw: Variant) -> TDOutcome:
 	if int(raw.day)<1 or int(raw.last_settled_day) not in [int(raw.day)-1,int(raw.day)] or raw.home not in towns or not raw.routes is Array or not raw.books is Array or raw.books.size()>28: return TDOutcome.new(false,"INVALID_ECONOMY_DAY")
 	for field: String in ["markets","competitors","reputation","cost_stock","factory_costs","cells","lease","day_stats","route_events","residents","familiarity","food_memory"]:
 		if not raw[field] is Dictionary: return TDOutcome.new(false,"INVALID_ECONOMY_DATA",field)
-	if not raw.economy_open is bool or not _shape(raw.day_stats,state.day_stats) or not _shape(raw.lease,state.lease): return TDOutcome.new(false,"INVALID_ECONOMY_STATE")
+	var stats_model: Dictionary=state.day_stats.duplicate(false);stats_model.erase("remote_opportunities")
+	if not raw.economy_open is bool or not _shape(raw.day_stats,stats_model) or not _shape(raw.lease,state.lease): return TDOutcome.new(false,"INVALID_ECONOMY_STATE")
+	if raw.day_stats.has("remote_opportunities"):
+		if not raw.day_stats.remote_opportunities is Dictionary: return TDOutcome.new(false,"INVALID_REMOTE_OPPORTUNITIES")
+		for town: Variant in raw.day_stats.remote_opportunities:
+			if town not in config.active_towns or town==raw.home or not TDServiceCatalog.integer(raw.day_stats.remote_opportunities[town],0,int(config.opportunities_per_day)): return TDOutcome.new(false,"INVALID_REMOTE_OPPORTUNITIES")
 	for field: String in ["awareness","brand"]:
 		if not TDEconomicCustomer.finite_range(raw[field],0,1): return TDOutcome.new(false,"INVALID_REPUTATION")
 	if not TDEconomicCustomer.finite_range(raw.popularity,0,100): return TDOutcome.new(false,"INVALID_REPUTATION")

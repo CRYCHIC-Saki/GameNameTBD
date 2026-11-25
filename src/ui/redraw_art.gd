@@ -12,7 +12,9 @@ static func catalog() -> Dictionary:
 		_index=JSON.parse_string(FileAccess.get_file_as_string(INDEX))
 		_index.regions=JSON.parse_string(FileAccess.get_file_as_string("res://assets/redraw-v1/icon-regions.json"))
 		_index.ingredients={};_index.dishes={}
-		for i: int in _index.ingredient_ids.size(): _index.ingredients[_index.ingredient_ids[i]]={"path":"res://assets/redraw-v1/ingredients-%d.png"%(i/30),"index":i%30}
+		for id: String in _index.ingredient_ids:
+			var cell_index: int = _index.ingredient_slots[id]
+			_index.ingredients[id] = {"path":"res://assets/redraw-v1/ingredients-%d.png" % (cell_index/30),"index":cell_index%30}
 		for i: int in _index.dish_ids.size(): _index.dishes[_index.dish_ids[i]]={"path":"res://assets/redraw-v1/dishes-%d.png"%(i/20),"index":i%20}
 	return _index
 
@@ -62,7 +64,8 @@ static func ingredient(id: String) -> Texture2D:
 	var key: String=id if catalog().ingredients.has(id) else {"peanut_oil":"oil","peppercorn":"pepper","cooking_wine":"wine","shanxi_vinegar":"vinegar"}.get(id,id)
 	var entry: Dictionary=catalog().ingredients.get(key,{})
 	if entry.is_empty(): return null
-	return cell(str(entry.path),int(entry.index),6,5)
+	# Ingredient regions already contain the measured visible bounds of the artwork.
+	return cell(str(entry.path),int(entry.index),6,5,false)
 
 static func dish(id: String) -> Texture2D:
 	var entry: Dictionary=catalog().dishes.get(id,{})

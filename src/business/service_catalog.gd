@@ -6,6 +6,12 @@ var config: Dictionary = {}
 var _profiles: Dictionary = {}
 var _needs: Dictionary = {}
 
+func copy_content_from(template: TDServiceCatalog) -> void:
+	config = template.config.duplicate(true)
+	cooking = template.cooking.copy_validated()
+	_profiles.clear()
+	_needs.clear()
+
 func load_file(path: String = "res://content/service_content.json") -> TDOutcome:
 	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
 	return load_data(parsed)
@@ -64,7 +70,7 @@ func load_data(raw: Variant) -> TDOutcome:
 	for offer: Variant in raw.offers:
 		if not offer is Dictionary or not offer.get("id") is String or seen.has(offer.id): return TDOutcome.new(false,"INVALID_OFFER")
 		seen[offer.id] = true
-		var recipe: Dictionary = cooking.for_recipe(offer.id).get("recipe",{})
+		var recipe: Dictionary = cooking.recipe_data(offer.id)
 		if recipe.is_empty() or recipe.scope == "TEST_ONLY" or recipe.get("failed_dish",false) or not offer.get("source") is String or offer.source.is_empty() or not integer(offer.get("reference_cents"),1,1000000): return TDOutcome.new(false,"INVALID_OFFER")
 		if not offer.get("stock") is Dictionary or offer.stock.is_empty() or not offer.get("primary") is Array or offer.primary.is_empty(): return TDOutcome.new(false,"INVALID_STOCK")
 		for id: Variant in offer.stock:
@@ -108,13 +114,14 @@ static func _number(value: Variant, low: float, high: float) -> bool:
 func request_profile(family: String, customer: Dictionary, entry: Dictionary = {}) -> TDCookingCatalog:
 	var key: String=JSON.stringify([family,customer,entry])
 	if _profiles.has(key): return _profiles[key]
-	var data: Dictionary=cooking.data()
-	var recipe: Dictionary=cooking.for_recipe(family).get("recipe",{})
+	var data: Dictionary=cooking.scoped_data(family)
+	var recipe: Dictionary=cooking.recipe_data(family)
 	if recipe.is_empty(): return null
 	var source_chart: Dictionary=data.pc_operations.document_sheets[recipe.guided_profile].duplicate(true)
 	if not entry.is_empty():
 		var compiled:=compile_plan(entry)
 		if not compiled.ok: return null
+		data.pc_operations.document_sheets.merge(compiled.data.sheets,true)
 		source_chart=compiled.data.sheets[entry.id].duplicate(true)
 		recipe.preparation_sheets=compiled.data.recipe.preparation_sheets.duplicate(true)
 	var rules: Dictionary=config.get("request_rules",{})
@@ -124,19 +131,17 @@ func request_profile(family: String, customer: Dictionary, entry: Dictionary = {
 		if requirement.get("kind")=="fine" and float(requirement.get("min",0))>=float(rules.get("fine_threshold",.6)):
 			var ingredient: String=str(requirement.get("ingredient_id",""))
 			if recipe.preparation_sheets.has(ingredient):
-				var cut: Dictionary=data.pc_operations.document_sheets.prepare.duplicate(true)
-				cut.id="request.small"; cut.dish="按要求切小丁"
-				cut.groups.cut.label="番茄切小丁 · 按谱密集落刀与转向"
-				cut.beats=cut.beats.filter(func(row:Dictionary)->bool:return float(row.t)<5)
-				var actions: Array=rules.get("small_cut_actions",[])
-				for i: int in actions.size(): cut.beats.append({"t":5+i*float(rules.small_cut_interval_beats),"lanes":{"hand":{"group":"cut","op":"cut","input":actions[i],"form":"tap"}}})
-				cut.beats.append({"t":6+actions.size()*float(rules.small_cut_interval_beats),"rest":true,"lanes":{}})
+				var cut:=TDCuisineKitchen.preparation_variant(data.pc_operations.document_sheets[recipe.preparation_sheets[ingredient]],"dice")
+				cut.id="request.small."+ingredient;cut.dish=str(recipe.name)+" · 小丁"
+				cut.groups.cut.label=str(cooking.ingredient_data(ingredient).get("name",ingredient))+"切小丁 · 按谱落刀与转向"
 				data.pc_operations.document_sheets[cut.id]=cut; recipe.preparation_sheets[ingredient]=cut.id
 		if requirement.get("kind")=="flavor":
 			for target: Dictionary in rules.get("flavor_targets",[]):
 				if int(requirement.get("taste",-1))==int(target.taste):
 					var spice: String=TDMaterialCatalog.preference_spice(str(recipe.get("cuisine_id","cn")),int(target.taste),str(target.ingredient_id))
-					if not spice.is_empty(): targets[spice]=float(target.amount)
+					if not spice.is_empty():
+						targets[spice]=float(target.amount)
+						if spice not in recipe.allowed_ingredients: recipe.allowed_ingredients.append(spice)
 	var chart: Dictionary=source_chart.duplicate(true)
 	chart.id="request.cook"; recipe.guided_profile=chart.id
 	var notes: Array=[]
@@ -170,10 +175,19 @@ func request_profile(family: String, customer: Dictionary, entry: Dictionary = {
 func material_needs(profile: TDCookingCatalog, family: String, completed: Array = []) -> Dictionary:
 	var key: String=family+":"+str(profile.get_instance_id())+JSON.stringify(completed.map(func(s:Dictionary)->Array:return [s.operation,s.parameters.get("mode","")]))
 	if _needs.has(key): return _needs[key].duplicate(true)
+	var recipe: Dictionary=profile.recipe_data(family)
+	var chart: Dictionary=profile.sheet_data(recipe.guided_profile)
+	var needed:=_chart_material_needs(family,chart,completed)
+	_needs[key]=needed.duplicate(true)
+	return needed
+
+func legacy_material_needs(family: String) -> Dictionary:
+	var legacy: Dictionary=config.get("legacy_cooking",{}).get(family,{})
+	return {} if legacy.is_empty() else _chart_material_needs(family,legacy.sheet,[])
+
+func _chart_material_needs(family: String, chart: Dictionary, completed: Array) -> Dictionary:
 	var needed: Dictionary={}
 	for id: String in offer(family).get("primary",[]): needed[id]=1000
-	var recipe: Dictionary=profile.for_recipe(family).recipe
-	var chart: Dictionary=profile.data().pc_operations.document_sheets[recipe.guided_profile]
 	var used_modules: Dictionary={}
 	for step: Dictionary in completed:
 		var tag: String=str(step.operation)+":"+str(step.parameters.get("mode",""))
@@ -193,7 +207,6 @@ func material_needs(profile: TDCookingCatalog, family: String, completed: Array 
 		elif group.parameters.has("ingredient_id"):
 			var id: String=str(group.parameters.ingredient_id)
 			needed[id]=int(needed.get(id,0))+roundi(float(group.parameters.get("amount",.1))*1000)
-	_needs[key]=needed.duplicate(true)
 	return needed
 
 func offer(id: String) -> Dictionary:
@@ -205,6 +218,13 @@ func is_primary(id: String) -> bool:
 	return config.offers.any(func(item:Dictionary)->bool:return id in item.primary)
 
 func compile_plan(entry: Dictionary) -> TDOutcome:
+	var result:=_compile_plan(entry,false)
+	if not result.ok and config.get("legacy_cooking",{}).has(entry.plan.get("recipe_id","")):
+		var historical:=_compile_plan(entry,true)
+		if historical.ok: return historical
+	return result
+
+func _compile_plan(entry: Dictionary, legacy: bool) -> TDOutcome:
 	var plan: Dictionary = entry.plan
 	var checked := TDRecipeLibrary.new("",cooking.data()).validate_plan(plan)
 	if not checked.ok: return checked
@@ -217,9 +237,15 @@ func compile_plan(entry: Dictionary) -> TDOutcome:
 	for id: String in amounts:
 		if not original.stock.has(id) or roundi(float(amounts[id])*1000)>int(original.stock[id]): return TDOutcome.new(false,"PLAN_STOCK_LIMIT")
 	var data: Dictionary = cooking.data()
-	var recipe: Dictionary = cooking.for_recipe(plan.recipe_id).recipe
+	var recipe: Dictionary = cooking.recipe_data(plan.recipe_id)
 	var steam: bool=recipe.get("cooking_method","stir")=="steam"
 	var chart: Dictionary = data.pc_operations.document_sheets[recipe.guided_profile].duplicate(true)
+	if legacy:
+		recipe=config.legacy_cooking[plan.recipe_id].recipe.duplicate(true)
+		chart=config.legacy_cooking[plan.recipe_id].sheet.duplicate(true)
+		steam=recipe.get("cooking_method","stir")=="steam"
+	elif int(recipe.get("version",1))>=2:
+		return _compile_cuisine_plan(entry,recipe,chart,data)
 	chart.id=entry.id; chart.dish=entry.name
 	var made: Dictionary = {}; var cuts: Dictionary = {}; var precise: Array=[]; var precise_amounts: Array=[]; var counts: Dictionary={}
 	var last_rank: int=-1
@@ -269,9 +295,69 @@ func compile_plan(entry: Dictionary) -> TDOutcome:
 		var shape: String=str(cuts.get(ingredient,"whole"))
 		if shape=="whole": return TDOutcome.new(false,"INCOMPLETE_PLAN","先完成有效备菜再保存方案。")
 		preparations[ingredient]={"slice":"service.slice","strip":"service.strips","chunk":"prepare","dice":"service.dice"}[shape]
+	for sheet_id: String in preparations.values(): additions[sheet_id]=data.pc_operations.document_sheets[sheet_id].duplicate(true)
 	recipe.id=entry.id; recipe.name=entry.name; recipe.version=int(entry.version); recipe.is_custom=true
 	recipe.guided_profile=entry.id; recipe.preparation_sheets=preparations
 	return TDOutcome.new(true,"COMPILED","",{"recipe":recipe,"sheets":additions})
+
+func _compile_cuisine_plan(entry: Dictionary, recipe: Dictionary, chart: Dictionary, data: Dictionary) -> TDOutcome:
+	# Preserve the authored technique order; only the player's cut and pour plan varies.
+	var expected: Dictionary={};var actual: Dictionary={};var cuts: Dictionary={}
+	var pours: Array=[];var actual_hand: Array=[];var expected_hand: Array=[]
+	for step: Dictionary in entry.plan.operations:
+		if step.operation=="add": continue
+		if step.operation=="cut": cuts[step.parameters.ingredient_id]=step.parameters.shape;continue
+		actual[step.operation]=int(actual.get(step.operation,0))+1
+		if step.operation not in ["heat","boil"]: actual_hand.append(step.operation)
+		if step.operation=="season": pours.append(step.parameters)
+	var ordered: Array=[]
+	for row: Dictionary in chart.beats:
+		for note: Dictionary in row.lanes.values():
+			if note.group not in ordered: ordered.append(note.group)
+	for group_id: String in ordered:
+		var group: Dictionary=chart.groups[group_id]
+		expected[group.operation]=int(expected.get(group.operation,0))+1
+		if group.operation not in ["heat","boil"]: expected_hand.append(group.operation)
+	if actual!=expected or actual_hand!=expected_hand: return TDOutcome.new(false,"PLAN_STRUCTURE_UNSUPPORTED","请完成当前菜谱的全部工序后保存。")
+	var pour_index: int=0
+	for group_id: String in ordered:
+		var group: Dictionary=chart.groups[group_id]
+		if group.operation!="season": continue
+		var pour: Dictionary=pours[pour_index];pour_index+=1
+		if group.parameters.get("mode")=="common":
+			if pour.get("ingredient_id")!=group.parameters.get("ingredient_id"): return TDOutcome.new(false,"PLAN_STRUCTURE_UNSUPPORTED")
+			group.parameters.amount=roundf(float(pour.get("amount",.1))*1000)/1000.0
+			continue
+		var sequence: Array=pour.get("sequence",[]);var amounts: Array=pour.get("amounts",[])
+		if sequence.is_empty() or sequence.size()>5 or amounts.size()!=sequence.size(): return TDOutcome.new(false,"INCOMPLETE_PLAN")
+		var notes: Array=[]
+		for row: Dictionary in chart.beats:
+			if row.lanes.get("mouse",{}).get("group")==group_id: notes.append(row)
+		if sequence.size()>notes.size(): return TDOutcome.new(false,"PLAN_STRUCTURE_UNSUPPORTED")
+		for index: int in notes.size():
+			var row: Dictionary=notes[index]
+			if index>=sequence.size(): row.lanes.erase("mouse");row.rest=row.lanes.is_empty();continue
+			var note: Dictionary=row.lanes.mouse
+			note.input="spice:"+str(sequence[index]);note.form="hold"
+			note.hold_beats=float(amounts[index])/float(group.get("pour_rate_per_sec",.2))/(60.0/float(chart.bpm))
+		group.parameters.ingredient_id=sequence[0]
+	chart.id=entry.id;chart.dish=entry.name
+	var preparations: Dictionary={}
+	var sheets: Dictionary={entry.id:chart}
+	for ingredient: String in recipe.preparation_sheets:
+		if not cuts.has(ingredient):
+			if recipe.get("cooking_method","")=="steam": continue
+			return TDOutcome.new(false,"INCOMPLETE_PLAN")
+		var source: String=recipe.preparation_sheets[ingredient]
+		if not data.pc_operations.document_sheets.has(source): return TDOutcome.new(false,"MISSING_REFERENCE")
+		var cut:=TDCuisineKitchen.preparation_variant(data.pc_operations.document_sheets[source],str(cuts[ingredient]))
+		cut.id=entry.id+".prep."+ingredient
+		preparations[ingredient]=cut.id;sheets[cut.id]=cut
+	var sheet_check:=TDBeatSheet.new().configure(chart,data.operations,data.pc_operations.document_rules.assistance)
+	if not sheet_check.ok: return sheet_check
+	recipe.id=entry.id;recipe.name=entry.name;recipe.version=int(entry.version);recipe.is_custom=true
+	recipe.guided_profile=entry.id;recipe.preparation_sheets=preparations
+	return TDOutcome.new(true,"COMPILED","",{"recipe":recipe,"sheets":sheets})
 
 func with_plans(entries: Array) -> TDOutcome:
 	var data: Dictionary=cooking.data()

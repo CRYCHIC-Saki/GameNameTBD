@@ -142,6 +142,8 @@ func _make_kitchen() -> void:
 	_holder.add_child(kitchen); kitchen.world.scale=Vector2(.71875,.71875)
 	kitchen.world.get_node("Background").z_index=-1
 	kitchen.world.set_return_visible(false)
+	kitchen.world.cuisine_id=shop.cuisine_id
+	kitchen.world.station_names.merge(TDCuisineKitchen.names(shop.cuisine_id),true)
 	kitchen.world.crew = shop.crew
 	kitchen.world.order_shop = shop
 	if embedded:
@@ -203,7 +205,8 @@ func _planning_page(state: Dictionary) -> void:
 			price.value_changed.connect(func(v:float)->void:_show(shop.set_menu(id,check.button_pressed,roundi(v*100))))
 			var reference:=TDUI.label("参考 %.2f" % (float(shop.offer(id).reference_cents)/100),TDUI.FONT_CAPTION,TDUI.MUTED)
 			reference.custom_minimum_size.x=105; reference.autowrap_mode=TextServer.AUTOWRAP_OFF; row.add_child(reference)
-			row.add_child(TDUI.button("补齐 ¥%.2f" % (float(shop.kit_cost(id,true))/100),func()->void:buy_kit(id)))
+			var replenish:=TDUI.button("补齐 ¥%.2f" % (float(shop.kit_cost(id,true))/100),func()->void:buy_kit(id))
+			replenish.set_meta("recipe_id",id);row.add_child(replenish)
 			row.add_child(TDUI.button("再备1份",func()->void:buy_kit(id,false)))
 		column.add_child(TDUI.button("资金困难 · 申请应急补助",func()->void:_show(shop.claim_grant());refresh(true)))
 	else:
@@ -320,9 +323,7 @@ func _feedback_text(value: String) -> String:
 	return value
 
 func _ingredient(id: String) -> Dictionary:
-	for item: Dictionary in service.cooking.data().ingredients:
-		if item.id==id: return item
-	return {}
+	return service.cooking.ingredient_data(id)
 
 func buy_kit(id: String, missing_only: bool = true) -> TDOutcome:
 	var cart: Dictionary={}
@@ -400,17 +401,27 @@ func _station_action(id: String, action: String) -> void:
 	if action!="open":
 		if kitchen.handling.hand_kind=="ingredient":
 			var result:=kitchen.handling.put_pot(lane.session)
-			if result.ok: _recognize(lane,"steam" if id=="kitchen.steamer" else "stir",false)
+			if result.ok: _recognize(lane,id,false)
 			_station_done(result); return
 		if lane.snapshot().state=="plated": _station_done(kitchen.handling.take_dish(lane.session)); return
 		_station_done(TDOutcome.new(true,"OPEN_HINT","F 开始做菜 / 查看操作 · Q 取出食材")); return
 	if lane.qte!=null or lane.thermal_qte!=null or (lane.sheet!=null and lane.sheet.running): kitchen.open_station_view(id); return
 	if lane.snapshot().state=="plated": _station_done(TDOutcome.new(true,"READY","已做好，按 E 端盘。")); return
 	if lane.snapshot().ingredients.is_empty(): _station_done(TDOutcome.new(false,"NO_INGREDIENT")); return
-	var method: String="steam" if id=="kitchen.steamer" else "stir"
+	var method: String=id
 	if story_cooking_check.is_valid():
-		var allowed: TDOutcome=story_cooking_check.call(lane.snapshot(),method)
+		var allowed: TDOutcome=story_cooking_check.call(lane.snapshot(),"steam" if id=="kitchen.steamer" else "stir")
 		if not allowed.ok: _station_done(allowed); return
+	var candidates:=shop.contexts_for_ingredients(lane.snapshot().ingredients.values().map(func(x:Dictionary)->String:return x.ingredient_id),true,method)
+	if candidates.size()>1:
+		var choices:=_dialog("选择本次制作的菜")
+		for candidate: Dictionary in candidates:
+			choices.add_child(TDUI.button(shop.recipe_name(candidate.recipe_id),func()->void:
+				_close_popup()
+				var chosen:=_apply_context(lane,candidate)
+				if chosen.ok: lane.document_rules=true;_begin_manual(lane,id)
+				else: _station_done(chosen)))
+		choices.add_child(TDUI.button("取消",_close_popup));return
 	var selected:=_recognize(lane,method,true)
 	if not selected.ok: _station_done(selected); return
 	lane.document_rules=true; lane.dual=true
@@ -423,7 +434,7 @@ func _station_action(id: String, action: String) -> void:
 	_begin_manual(lane,id)
 
 func _begin_manual(lane: TDCookingLane, station_id: String) -> void:
-	var result:=lane.start_sheet(str(lane.catalog.for_recipe(lane.base_recipe_id).recipe.guided_profile))
+	var result:=lane.start_sheet(str(lane.catalog.recipe_data(lane.base_recipe_id).guided_profile))
 	if result.ok: kitchen.open_station_view(station_id)
 	else: _station_done(result)
 
@@ -445,7 +456,7 @@ func _recognize(lane: TDCookingLane, method: String, complete: bool) -> TDOutcom
 	var ids: Array=lane.snapshot().ingredients.values().map(func(x:Dictionary)->String:return x.ingredient_id)
 	var context: Dictionary=shop.context_for_ingredients(ids,complete,method)
 	if not context.is_empty(): return _apply_context(lane,context)
-	return lane.use_recipe_profile(service.cooking,"kitchen.unknown_"+method)
+	return lane.use_recipe_profile(service.cooking,"kitchen.unknown_"+("steam" if method in ["steam","kitchen.steamer"] else "stir"))
 
 func _show_cut_choices() -> void:
 	var column:=_dialog("切型")
@@ -458,10 +469,24 @@ func _show_cut_choices() -> void:
 func choose_cut(shape: String) -> TDOutcome:
 	if get_tree().paused: return TDOutcome.new(false,"PAUSED")
 	if kitchen.handling.board==null or not service.config.preparation_choices.has(shape): return TDOutcome.new(false,"INVALID_CUT")
-	kitchen.prep.catalog=service.cooking
-	var selected:=kitchen.prep.use_recipe_profile(service.cooking,"service.tomato_egg")
+	var board:=kitchen.handling.board.snapshot().to_dict()
+	var family: String=board.recipe_id
+	var food: String=board.ingredients.values()[0].ingredient_id
+	var data:=service.cooking.scoped_data(family)
+	var recipe:=service.cooking.recipe_data(family)
+	var sheet_id: String=recipe.get("preparation_sheets",{}).get(food,"")
+	if sheet_id.is_empty(): sheet_id=str(service.config.preparation_choices[shape])
+	var chart:=service.cooking.sheet_data(sheet_id)
+	# A shape selects an authored cutting pattern; execution still determines
+	# the actual successful cuts under the existing M1 rules.
+	chart=TDCuisineKitchen.preparation_variant(chart,shape)
+	data.pc_operations.document_sheets[sheet_id]=chart
+	var profile:=TDCookingCatalog.new()
+	var loaded:=profile.load_data(data,"manual preparation")
+	if not loaded.ok: return loaded
+	var selected:=kitchen.prep.use_recipe_profile(profile,family)
 	if not selected.ok: return selected
-	var result:=kitchen.prep.start_sheet(str(service.config.preparation_choices[shape]))
+	var result:=kitchen.prep.start_sheet(sheet_id)
 	_close_popup()
 	if result.ok: kitchen.open_station_view("kitchen.board")
 	else: _station_done(result)

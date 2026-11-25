@@ -3,7 +3,7 @@ extends RefCounted
 ## External suppliers reserve finite world-market stock at payment. The target
 ## store alone owns delivered inventory; production never creates a second ledger.
 const SOURCE := "res://content/suppliers.json"
-const TOWNS := ["chengdu","paris","tokyo","bangkok","mexico_city"]
+const TOWNS := ["chengdu","paris","tokyo"]
 const STATE_KEYS := ["schema_version","serial","levels","legacy_lines","orders","automation","legacy_migrated"]
 const ORDER_KEYS := ["id","token","town_id","store_id","day","total_cents","jobs"]
 const JOB_KEYS := ["id","item_id","units","cost_cents","seconds","elapsed","delivered"]
@@ -412,7 +412,7 @@ func _start_batch(line: Dictionary) -> String:
 	state.orders.append({"id":id,"token":token,"town_id":line.town_id,"store_id":line.store_id,"day":day,"total_cents":cost,"line_id":line.id,"jobs":[{"id":id+":0","item_id":line.item_id,"units":units,"cost_cents":cost,"seconds":duration,"elapsed":0.0,"delivered":false,"transit_minutes":travel,"transit_elapsed":0.0}]})
 	return "生产中"
 
-func _allocation() -> Array:
+func _allocation(start_new: bool) -> Array:
 	var active: Array=[];_statuses.clear()
 	for town: String in TOWNS:
 		var free: int=capacity(town)
@@ -431,6 +431,7 @@ func _allocation() -> Array:
 			var job:=_live_job(line.id)
 			if free<=0: _statuses[line.id]="等待产能";continue
 			if job.is_empty():
+				if not start_new: continue
 				_statuses[line.id]=_start_batch(line)
 				job=_live_job(line.id)
 			if job.is_empty(): continue
@@ -439,11 +440,12 @@ func _allocation() -> Array:
 			_statuses[line.id]="生产中 · %d产能"%count
 	return active
 
-func advance_active_time(seconds: float, game_minutes: float) -> void:
+func advance_active_time(seconds: float, game_minutes: float, start_new: bool=true) -> void:
 	# Split at legacy completions so a long frame cannot lend new lines capacity
 	# for time when the original real-second job was still occupying it.
 	if not is_finite(seconds) or seconds<0 or not is_finite(game_minutes) or game_minutes<0: return
-	if seconds<=0: advance_game_minutes(game_minutes);return
+	if state.orders.is_empty() and not start_new: return
+	if seconds<=0: advance_game_minutes(game_minutes,start_new);return
 	var remaining: float=seconds
 	while remaining>0.0000001:
 		var step: float=remaining
@@ -451,17 +453,17 @@ func advance_active_time(seconds: float, game_minutes: float) -> void:
 			if row.has("line_id"): continue
 			for job: Dictionary in row.jobs:
 				if float(job.elapsed)<float(job.seconds): step=minf(step,float(job.seconds)-float(job.elapsed))
-		advance_game_minutes(step*game_minutes/seconds)
+		advance_game_minutes(step*game_minutes/seconds,start_new)
 		advance(step)
 		remaining=maxf(0,remaining-step)
-	advance_game_minutes(0)
+	advance_game_minutes(0,start_new)
 
-func advance_game_minutes(minutes: float) -> void:
+func advance_game_minutes(minutes: float, start_new: bool=true) -> void:
 	var p:=owner_profile()
 	if p==null or not p._alive or not is_finite(minutes) or minutes<0: return
 	var remaining: float=minutes
 	_deliver_ready()
-	var active:=_allocation()
+	var active:=_allocation(start_new)
 	while remaining>0.0000001:
 		var travel: Array=[];var step: float=remaining
 		for entry: Dictionary in active: step=minf(step,(float(entry.job.seconds)-float(entry.job.elapsed))/(60.0*int(entry.slots)))
@@ -474,7 +476,7 @@ func advance_game_minutes(minutes: float) -> void:
 		for entry: Dictionary in active: entry.job.elapsed=minf(float(entry.job.seconds),float(entry.job.elapsed)+step*60.0*int(entry.slots))
 		for job: Dictionary in travel: job.transit_elapsed=minf(float(job.transit_minutes),float(job.transit_elapsed)+step)
 		remaining=maxf(0,remaining-step)
-		_deliver_ready();active=_allocation()
+		_deliver_ready();active=_allocation(start_new)
 
 func line_rows(town: String="") -> Array[Dictionary]:
 	var rows: Array[Dictionary]=[]

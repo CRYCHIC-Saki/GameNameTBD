@@ -48,7 +48,7 @@ func test_chen_is_at_shop_front_and_door_opens_story() -> void:
 	var town:=shell.town;shell.profile.story.beat="soup"
 	var shop:=town._plot_of_kind("market")
 	assert_eq(town._chen_cell().y,int(shop.y+shop.h))
-	town._player.position=town._origin()+Vector2(shop.x+shop.w*.5,shop.y+shop.h)*town.CELL+Vector2(0,20)
+	town._player.position=town._origin()+Vector2(shop.x+shop.w*.5,shop.y+shop.h)*town.cell_size()+Vector2(0,20)
 	town._interact()
 	assert_true(shell.guide.presenting(),"E at Chen's actual front door starts soup story")
 	if shell.guide.presenting(): assert_eq(shell.guide.dialogue.talk.context.get("scene"),"soup")

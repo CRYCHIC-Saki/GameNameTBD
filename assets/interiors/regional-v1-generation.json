@@ -1,0 +1,40 @@
+{
+  "tool": "built-in image_gen",
+  "decision": "D078-R1 / AI-089",
+  "reference": "assets/redraw-v1/kitchen.png (room geometry only)",
+  "assets": [
+    {
+      "path": "assets/interiors/regional-kitchens-v1.png",
+      "original": "C:\\Users\\Administrator\\.codex\\generated_images\\01a11e94-e1d7-7c40-8dde-4cfdbe246fc8\\exec-dab772c9-2325-4e9a-a2a1-667cbd53d3e7.png",
+      "size": [
+        1586,
+        992
+      ],
+      "sha256": "4612093057828b79d99fd764cb38ee8f92dbd40f4fa1836d18ea7832df21c4c9"
+    },
+    {
+      "path": "assets/interiors/regional-dining-v1.png",
+      "original": "C:\\Users\\Administrator\\.codex\\generated_images\\01a11e94-e1d7-7c40-8dde-4cfdbe246fc8\\exec-02823f9b-8d67-401d-8a6e-b1ec0d7145ec.png",
+      "size": [
+        1086,
+        1448
+      ],
+      "sha256": "735b18f65eb45295c3f02894b0711b214547717f59acb1f2002562c2e0d20879"
+    },
+    {
+      "path": "assets/interiors/regional-props-v1.png",
+      "original": "C:\\Users\\Administrator\\.codex\\generated_images\\01a11e94-e1d7-7c40-8dde-4cfdbe246fc8\\exec-adc7ed27-96e6-47a0-ac9e-e1fb454a3a99.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "95ec2fc8fccdfa7106e4319153f7188d757720d04457ab62f99d3d887e24f762"
+    }
+  ],
+  "prompts": [
+    "2x2 kitchen room atlas: Paris bistro cream/sage/checker, Japan hinoki/indigo/gray tile, Thai teak/jade/terracotta, Mexico adobe/turquoise/Talavera/clay; empty back counter and floor, front centered door, no baked appliances or characters. Fixed RPG view, crisp pixel art.",
+    "4 rows x 3 columns transparent furniture atlas. Rows Paris/Japan/Thai/Mexico. Columns square dining table only, separate matching backless stool, service/cashier cabinet. Consistent 2:1 isometric perspective and chibi proportions; cream/sage linen, hinoki/indigo, teak/rattan, turquoise/woven runner/Talavera.",
+    "4x4 transparent kitchen props. Rows Paris/Japan/Thai/Mexico; columns refrigerator, cutting cabinet with knife, plate service cabinet, lidded waste bin. Front-facing top-down. Same palettes as room. No people, text, floor backgrounds or stoves."
+  ],
+  "sources_read_only": true
+}

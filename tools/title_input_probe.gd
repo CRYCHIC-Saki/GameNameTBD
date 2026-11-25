@@ -119,17 +119,24 @@ func check_checkpoint() -> void:
 	var original:=FileAccess.get_file_as_bytes(path)
 	check(shell.restaurant.layout.set_surface_finish("carpet").ok,"exported unsaved decoration")
 	check(shell.profile.research.calibrate(.05).ok,"exported research change stays in memory")
+	shell.advance_world_time(120)
 	shell.request_title();await frames();await capture("discard-confirmation")
 	await click("确认返回主菜单",shell._modal_box)
 	check(FileAccess.get_file_as_bytes(path)==original,"actual return does not silently checkpoint decoration or research")
 	check(shell.load_game("slot-03").ok,"export reloads last whole checkpoint")
 	check(shell.profile.research.snapshot().input_offset_sec==0.0,"unsaved research rolls back")
 	check(shell.restaurant.layout.finish_at(2,2)!="carpet","unsaved decoration rolls back with research")
-	check(shell.restaurant.layout.set_surface_finish("carpet").ok,"new decoration can be explicitly saved")
-	shell.request_title();await frames()
-	await click("保存并返回主菜单",shell._modal_box)
-	check(shell.profile==null and FileAccess.get_file_as_bytes(path)!=original,"explicit save and return commits")
-	check(shell.load_game("slot-03").ok and shell.restaurant.layout.finish_at(2,2)=="carpet","explicitly saved decoration survives reload")
+	check(shell.profile.characters.clock.minute==480.0,"unsaved clock returns to 08:00")
+	check(shell.restaurant.layout.set_surface_finish("carpet").ok,"new decoration is ready for the sleep checkpoint")
+	shell.profile.story.beat="done"
+	shell.profile.residence.stage="door"
+	check(shell.profile.unlock_residence().ok,"cottage ready for sleep")
+	shell.profile.characters.clock.minute=1560.0
+	check(shell.finish_night().ok and FileAccess.get_file_as_bytes(path)==original,"02:00 closes without writing")
+	shell.show_rest();await frames()
+	await click("休息到明天",shell._modal_box)
+	check(int(shell.profile.shop.snapshot().day)==2 and FileAccess.get_file_as_bytes(path)!=original,"sleep commits next morning")
+	check(shell.load_game("slot-03").ok and shell.restaurant.layout.finish_at(2,2)=="carpet" and shell.profile.characters.clock.minute==480.0,"sleep checkpoint restores decoration and 08:00")
 
 func physics_frames(count: int) -> void:
 	for i:int in count: await physics_frame

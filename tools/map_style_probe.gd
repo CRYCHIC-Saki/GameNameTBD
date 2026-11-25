@@ -75,15 +75,15 @@ func run() -> void:
 		shell.town._camera.zoom=Vector2.ONE*.75
 		await capture("chengdu-"+id)
 	shell.town.spawn_at_harbor();await capture("chengdu-harbor")
-	for town: String in ["tokyo","paris","bangkok","mexico_city"]:
+	for town: String in TDRegionalLayout.IDS:
 		check(shell.voyage(town).ok,"travel "+town);await process_frame
 		var visitor: TDTravelWorld=shell.visiting
 		visitor.camera.zoom=Vector2.ONE*.75
 		await capture(town+"-port")
 		var plaza: Dictionary=visitor.map._by_id("plaza")
-		visitor.player.position=(Vector2(plaza.approach_x,plaza.approach_y)+Vector2.ONE*.5)*48
+		visitor.player.position=(Vector2(plaza.approach_x,plaza.approach_y)+Vector2.ONE*.5)*visitor.cell_size
 		await capture(town+"-streets")
-		visitor.player.position=(Vector2(TDTravelCatalog.port(town))+Vector2.ONE*.5)*48
+		visitor.player.position=(Vector2(TDTravelCatalog.port(town))+Vector2.ONE*.5)*visitor.cell_size
 	check(shell.voyage("chengdu").ok,"return home")
 	check(shell.profile.snapshot()==before,"all map views preserve state")
 	shell._dispose_game();app.queue_free();await process_frame;await process_frame

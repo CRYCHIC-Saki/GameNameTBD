@@ -261,10 +261,10 @@ func test_factory_build_and_panel_use_e_not_the_mouse() -> void:
 	town.player_mode = true
 	add_child_autofree(town)
 	await get_tree().process_frame
-	var bounds := TDInteractionRange.plot_bounds(factory, town.CELL, town._origin())
+	var bounds := TDInteractionRange.plot_bounds(factory, town.cell_size(), town._origin())
 	var stood := false
 	for at: Vector2 in [Vector2(bounds.position.x - 20, bounds.get_center().y), Vector2(bounds.end.x + 20, bounds.get_center().y), Vector2(bounds.get_center().x, bounds.position.y - 20), Vector2(bounds.get_center().x, bounds.end.y + 20)]:
-		var cell := Vector2i((at - town._origin()) / town.CELL)
+		var cell := Vector2i((at - town._origin()) / town.cell_size())
 		if not session.town_map.is_walkable(cell.x, cell.y):
 			continue
 		town._player.position = at
@@ -311,7 +311,7 @@ func test_building_a_factory_keeps_the_map_and_the_player() -> void:
 	await get_tree().process_frame
 	var away := Vector2i(TDTownMap.CENTER + 3, TDTownMap.CENTER)
 	assert_true(session.town_map.is_walkable(away.x, away.y))
-	town._player.position = town._origin() + (Vector2(away) + Vector2(0.5, 0.5)) * TDTownWorld.CELL
+	town._player.position = town._origin() + (Vector2(away) + Vector2(0.5, 0.5)) * town.cell_size()
 	assert_eq(session.build_factory(String(factory["id"])).code, "BUILT")
 	await get_tree().process_frame
 	assert_eq(town._player_cell(), away)

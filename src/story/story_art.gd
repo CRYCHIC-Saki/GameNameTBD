@@ -25,9 +25,20 @@ const BACKGROUNDS: Texture2D=preload("res://assets/redraw-v1/backgrounds.png")
 static var _views: Dictionary = {}
 
 static func sprite(who: String, facing: Vector2i = Vector2i.DOWN, walk_frame: int=-1) -> Texture2D:
-	if who not in ["aling","chen"]: return null
-	var row: int=1 if walk_frame==0 else (2 if walk_frame==2 else 0)
-	return TDRedrawArt.cell("res://assets/redraw-v1/walker-%s.png"%who,row*4+TDChefArt.direction_index(facing),4,3)
+	if not REGIONS.has(who): return null
+	var index:=TDChefArt.direction_index(facing)
+	if walk_frame==0 or walk_frame==2:
+		var key: String=who+":walk:"+str(index)+":"+str(walk_frame)
+		if not _views.has(key):
+			var source: Texture2D=ALING_WALK if who=="aling" else CHEN_WALK
+			var size:=Vector2i(source.get_width()/4,source.get_height()/2)
+			var origin:=Vector2i(index,walk_frame/2)*size
+			var image:=source.get_image()
+			if image.is_compressed(): image.decompress()
+			var used:=_walk_bounds(image.get_region(Rect2i(origin,size)))
+			return _view(key,source,Rect2(origin+used.position,used.size))
+		return _views[key]
+	return _view(who+str(index),ALING if who=="aling" else CHEN,REGIONS[who][index])
 
 static func _walk_bounds(image: Image) -> Rect2i:
 	# Generated transparent gutters contain a few alpha=1 pixels. They must not shift

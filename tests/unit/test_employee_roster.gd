@@ -11,7 +11,7 @@ func own(roster: TDEmployeeRoster, id: String, copies: int=1) -> void:
 	roster.state.owned[id]={"id":id,"copies":copies,"xp":0,"assigned":""}
 func add_stores(p: TDGameProfile) -> void:
 	for id: String in ["player-branch:1","player-branch:2"]:
-		p.branches.state.stores[id]={"id":id,"name":id,"start_day":int(p.shop.snapshot().day),"construction":{"kind":"paid"}}
+		p.branches.state.stores[id]={"id":id,"name":id,"cuisine_id":"cn","start_day":int(p.shop.snapshot().day),"construction":{"kind":"paid"}}
 func sign_first(r: TDEmployeeRoster, role: String="cook", token: String="sign") -> Dictionary:
 	var offer: Dictionary=r.market_rows("chengdu",role)[0]
 	var signed:=r.sign_employee(offer.id,token,offer.offer_key);assert_true(signed.ok,signed.code)
@@ -150,9 +150,9 @@ func test_versioned_archetype_membership_does_not_remap_when_new_templates_are_a
 	var bad:=r.config.duplicate(true);bad.name_generator.archetypes.cook.append("missing")
 	assert_eq(TDEmployeeRoster.validate_config(bad).code,"EMPLOYEE_CONFIG_ARCHETYPES")
 
-func test_fixed_catalogue_has_360_unique_people_and_descending_star_counts() -> void:
+func test_fixed_catalogue_has_216_unique_people_and_descending_star_counts() -> void:
 	var r:=TDEmployeeRoster.new();assert_true(r.error.ok,r.error.code)
-	assert_eq(r.config.fixed_employees.size(),360)
+	assert_eq(r.config.fixed_employees.size(),216)
 	var names: Dictionary={};var ids: Dictionary={}
 	for town: String in r.config.recruitment.towns:
 		for role: String in TDEmployeeRoster.ROLES:

@@ -64,6 +64,6 @@ func test_backup_preserves_exact_old_bytes_and_new_save_reloads() -> void:
 	var backup:=store.backup_map_migration("slot-01",true);assert_true(backup.ok)
 	assert_eq(FileAccess.get_file_as_bytes(backup.data.path),bytes)
 	next.persistence=store.save_slot;assert_true(next.save().ok)
-	assert_eq(int(store.load_slot("slot-01").data.region_layout_version),2)
+	assert_eq(int(store.load_slot("slot-01").data.region_layout_version),11)
 	assert_eq(FileAccess.get_file_as_bytes(backup.data.path),bytes)
 	assert_true(store._slot_file("slot-01",str(backup.data.path).get_file()))

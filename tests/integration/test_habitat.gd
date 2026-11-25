@@ -57,7 +57,7 @@ func test_four_faces_nearby_building_and_cottage_is_a_real_room() -> void:
 	assert_eq(shell.cottage.target(),"rest")
 	assert_not_null(body.move_and_collide(Vector2(200,0)),"Bed is solid")
 	body.position=TDCottageWorld.BED_ANCHOR;driver.tap(KEY_E)
-	assert_not_null(button("保存进度"));assert_false(body.controls_enabled)
+	assert_null(button("保存进度"));assert_false(body.controls_enabled)
 	var before:=body.position;Input.action_press("world_down");await wait_physics_frames(3);Input.action_release("world_down")
 	assert_eq(body.position,before)
 	shell._close_dialog();assert_true(body.controls_enabled)
@@ -86,16 +86,17 @@ func test_bed_saves_next_day_once_and_loads_there_with_existing_progress() -> vo
 	var unchanged:=shell.profile.snapshot()
 	assert_eq(shell.profile.restore(invalid).code,"INVALID_RESIDENCE");assert_eq(shell.profile.snapshot(),unchanged)
 
-func test_bed_write_failure_cannot_advance_or_destroy_last_good_slot() -> void:
+func test_bed_write_failure_preserves_last_good_slot_and_retry_commits_once() -> void:
 	shell.profile.shop.open_day();shell.profile.shop.close_early();shell.travel("cottage",true)
 	assert_true(shell.save_game().ok)
 	var path:=shell.slots.path_for("slot-01");var bytes:=FileAccess.get_file_as_bytes(path)
 	shell.profile.persistence=func(_id:String,_data:Dictionary)->TDOutcome:return TDOutcome.new(false,"INJECTED_WRITE_FAILURE")
 	driver.tap(KEY_E);button("休息到明天").pressed.emit()
-	assert_eq(shell.profile.shop.snapshot().day,1);assert_eq(shell.profile.shop.snapshot().phase,"SETTLED")
-	assert_eq(FileAccess.get_file_as_bytes(path),bytes);assert_false(shell._rest_busy)
-	shell._close_dialog();shell.profile.persistence=shell.slots.save_slot
-	driver.tap(KEY_E);button("休息到明天").pressed.emit();assert_eq(shell.profile.shop.snapshot().day,2)
+	assert_eq(shell.profile.shop.snapshot().day,2);assert_eq(shell.profile.shop.snapshot().phase,"PREPARE")
+	assert_eq(FileAccess.get_file_as_bytes(path),bytes);assert_true(get_tree().paused)
+	shell.profile.persistence=shell.slots.save_slot
+	button("重试保存").pressed.emit();assert_eq(shell.profile.shop.snapshot().day,2)
+	assert_eq(int(shell.slots.load_slot("slot-01").data.shop.day),2)
 	shell.profile.shop.open_day();assert_true(shell.travel("cottage").ok)
 
 func test_music_context_hidden_kitchen_pause_and_real_qte() -> void:
@@ -114,16 +115,36 @@ func test_music_context_hidden_kitchen_pause_and_real_qte() -> void:
 	var picked:=shell.kitchen_view.pick_ingredient("tomato");assert_true(picked.ok,picked.code)
 	driver.station("kitchen.board")
 	var cut:=shell.kitchen_view.choose_cut("chunk");assert_true(cut.ok,cut.code)
-	driver.kitchen.advance(3.0)
+	for i: int in 100:
+		if driver.kitchen.prep.qte!=null: break
+		driver.kitchen.advance(.1)
 	assert_not_null(driver.kitchen.prep.qte)
 	await get_tree().process_frame;await get_tree().process_frame
 	assert_true(driver.kitchen.music_audible());assert_eq(shell.music.context,"silent")
-	assert_eq((driver.kitchen.beat_audio.stream as AudioStreamWAV).loop_end,source_pcm_frames("res://assets/audio/cooking.wav"),"Kitchen uses the current cooking track, not the replaced 16-second placeholder")
+	var cooking_track := driver.kitchen.beat_audio.stream as AudioStreamWAV
+	assert_eq(cooking_track.loop_end,96*cooking_track.mix_rate,"48 full bars stay on the original recording beat across every loop")
+	assert_lt(cooking_track.loop_end,source_pcm_frames("res://assets/audio/cooking.wav"),"Exclude the off-grid trailing fade")
 	var stream:AudioStream=driver.kitchen.beat_audio.stream
 	shell._pause(true);assert_true(driver.kitchen.beat_audio.stream_paused)
 	shell._pause(false);assert_same(driver.kitchen.beat_audio.stream,stream)
 	shell.travel("restaurant");await get_tree().process_frame;await get_tree().process_frame
 	assert_false(driver.kitchen.music_audible());assert_lte(driver.kitchen.beat_audio.volume_db,-70.0)
+
+func test_interaction_keeps_bgm_while_pause_still_freezes_rules() -> void:
+	await get_tree().process_frame
+	var stream: AudioStream=shell.music.player.stream
+	shell.show_relationships()
+	await get_tree().process_frame
+	assert_true(get_tree().paused,"interaction freezes gameplay")
+	assert_false(shell.music.player.stream_paused,"interaction keeps ambient music")
+	assert_same(shell.music.player.stream,stream,"interaction does not restart the track")
+	shell._close_dialog()
+	shell._story_frozen=true
+	assert_false(shell._music_should_pause(),"dialogue freeze is separate from explicit pause")
+	shell.show_pause();await get_tree().process_frame
+	assert_true(shell.music.player.stream_paused)
+	shell._close_dialog();await get_tree().process_frame
+	assert_false(shell.music.player.stream_paused)
 
 # Independently read source RIFF metadata; do not derive expectations from the
 # imported AudioStream's duration or the production loop calculation.

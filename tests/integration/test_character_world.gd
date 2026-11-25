@@ -47,6 +47,7 @@ func test_profile_clock_relationship_roundtrip_legacy_and_slot_isolation() -> vo
 	shell.advance_world_time(123.5)
 	assert_true(shell.save_game().ok)
 	var expected:=profile.characters.snapshot()
+	expected.clock.minute = TDWorldDayClock.START_MINUTE
 	shell.go_title();assert_true(shell.load_game("slot-01").ok)
 	assert_true(TDLevelProgression.same_value(shell.profile.characters.snapshot(),expected))
 	var saved:=shell.profile.snapshot();var legacy:=saved.duplicate(true)
@@ -62,7 +63,7 @@ func test_profile_clock_relationship_roundtrip_legacy_and_slot_isolation() -> vo
 	assert_eq(shell.profile.characters.relationship("chen").affection,0)
 	assert_eq(shell.profile.characters.clock.minute,480.0)
 
-func test_night_returns_raw_and_cut_stock_discards_heated_food_then_saves_once() -> void:
+func test_night_returns_raw_and_cut_stock_discards_heated_food_then_advances_once() -> void:
 	var shop:=shell.profile.shop
 	assert_true(shell.profile.buy({"tomato":2000,"egg":1000}).ok)
 	shell.travel("kitchen")
@@ -88,27 +89,23 @@ func test_night_returns_raw_and_cut_stock_discards_heated_food_then_saves_once()
 	var before:=shop.snapshot();assert_eq(shell.finish_night().code,"NIGHT_ALREADY_CLOSED")
 	assert_eq(shop.snapshot(),before)
 	assert_eq(shell.travel("town").code,"NIGHT_CLOSED")
-	shell.go_title();assert_true(shell.load_game("slot-01").ok)
-	assert_eq(shell.profile.characters.clock.closed_day,1)
-	assert_eq(shell.profile.shop.snapshot().day,1)
 	assert_true(shell.profile.next_day().ok)
 	assert_eq(shell.profile.characters.clock.minute,480.0)
 	assert_eq(shell.profile.shop.snapshot().day,2)
 
-func test_night_write_failure_preserves_last_good_save_and_can_retry() -> void:
+func test_night_does_not_call_persistence_and_reloads_morning() -> void:
 	assert_true(shell.save_game().ok)
 	var path:=shell.slots.path_for("slot-01");var bytes:=FileAccess.get_file_as_bytes(path)
 	var before_cash:=int(shell.profile.shop.snapshot().money_cents)
 	shell.profile.persistence=func(_id:String,_data:Dictionary)->TDOutcome:return TDOutcome.new(false,"INJECTED_WRITE_FAILURE")
 	shell.profile.characters.clock.minute=1560
-	assert_eq(shell.finish_night().code,"INJECTED_WRITE_FAILURE")
+	assert_true(shell.finish_night().ok)
 	assert_eq(shell.location,"cottage");assert_eq(shell.profile.shop.snapshot().day,1)
 	assert_eq(int(shell.profile.shop.snapshot().money_cents),before_cash,"No opening fee on an idle unopened day")
 	assert_eq(FileAccess.get_file_as_bytes(path),bytes)
-	shell.profile.persistence=shell.slots.save_slot
-	assert_true(shell.save_game().ok)
 	shell.go_title();assert_true(shell.load_game("slot-01").ok)
-	assert_eq(shell.profile.characters.clock.minute,1560.0)
+	assert_eq(shell.profile.characters.clock.minute,480.0)
+	assert_eq(shell.profile.characters.clock.closed_day,0)
 
 func test_night_ends_open_orders_without_duplicate_reviews_or_dates() -> void:
 	var shop:=shell.profile.shop

@@ -16,7 +16,7 @@ const INTERACTION_RADIUS := 78.0
 const BRUSHES: Array[String] = ["wood", "tile", "stone", "carpet", "paper", "stripe", "floral", "brick", "#", ".", "+"]
 
 var save_path: String = ""
-var guest_speed: float = 150.0
+var guest_speed: float = 180.0
 var layout: TDRestaurantLayout
 var catalog: TDRestaurantCatalog
 var _player: TDKitchenPlayer
@@ -65,11 +65,17 @@ var _runner_points := PackedVector2Array()
 var _runner_index: int = 0
 var _runner_ticket: String = ""
 var _runner_button: Button
-var _waiter_feet: Array[Vector2] = []
-var _waiter_plate: Array[String] = []
-var _waiter_routes: Array = []
-var _waiter_route_at: Array[int] = []
-var _waiter_route_goal: Array[Vector2i] = []
+class Waiter:
+	var feet: Vector2
+	var plate := ""
+	var pickup_ticket := ""
+	var route := PackedVector2Array()
+	var waypoint := 0
+	var goal := Vector2i(-1, -1)
+	var destination := Vector2.INF
+
+var _waiters: Dictionary = {}
+var _wall_posts: Array[Vector2i] = []
 var _iso: TDRestaurantIsoView
 var _board: TDEconomyBoard
 var _pantry: TDPantryBoard
@@ -96,7 +102,24 @@ var _drag_start := Vector2.ZERO
 var _drag_offset := Vector2.ZERO
 var _drag_cell := Vector2i(-1,-1)
 
+# A visited branch supplies its own player, camera and management UI. Both rooms
+# use the same guest seats, waiter movement and physical order handoff.
+func host_dining(floor_layout: TDRestaurantLayout, shop: TDShopSession, host_player: TDKitchenPlayer) -> void:
+	layout = floor_layout
+	business = shop
+	_player = host_player
+	player_mode = true
+	floor_service = true
+	_guests = Node2D.new()
+	add_child(_guests)
+	hide()
+	bind_dining_clock()
+
 func _ready() -> void:
+	if _guests != null:
+		set_process(false)
+		set_process_unhandled_input(false)
+		return
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	_theme = TDUI.theme()
@@ -766,6 +789,7 @@ func _furniture_icon(symbol: String, hint: String, action: Callable, color: Colo
 func _cancel_decoration() -> void:
 	_reset_drag()
 	_tool="select"
+	_culture=layout.culture;_tier=layout.tier
 	_selected=""
 	if _decor_panel!=null: _decor_panel.clear_selection()
 	_clear_hover()
@@ -773,6 +797,8 @@ func _cancel_decoration() -> void:
 	_set_status("选择家具或饰面，点击已摆好的家具可转向或删除。")
 
 func _choose_decoration(id: String, finish: bool) -> void:
+	var choice: Dictionary={} if finish else _decor_panel.furniture_choice(id)
+	if not finish and choice.is_empty(): return
 	_reset_drag()
 	_selected="";_context_menu.hide()
 	_clear_hover()
@@ -780,8 +806,9 @@ func _choose_decoration(id: String, finish: bool) -> void:
 		_tool="select"
 		_apply(layout.set_surface_finish(id))
 		return
-	_armed_kind=id;_tool="place";_place_rotation=0
-	_set_status("%s：移动鼠标查看预览，左键放置，右键取消。"%str(catalog.furniture(id).name))
+	_armed_kind=choice.kind;_tool="place";_place_rotation=0
+	_culture=str(choice.style_id).get_slice("_",0);_tier=str(choice.style_id).get_slice("_",1)
+	_set_status("%s：移动鼠标查看预览，左键放置，右键取消。"%str(catalog.furniture(_armed_kind).name))
 
 func _select_furniture(id: String) -> void:
 	_selected=id;_tool="select";_clear_hover()
@@ -809,6 +836,12 @@ func _position_context() -> void:
 func _rebuild() -> void:
 	if layout == null or _floor == null:
 		return
+	_wall_posts.clear()
+	for waiter: Waiter in _waiters.values():
+		waiter.goal = Vector2i(-1,-1)
+		var cell := _cell_at(waiter.feet)
+		if not layout.feet_inside(waiter.feet) and not (cell.x == 0 and layout.is_walkable(1,cell.y)):
+			waiter.feet = layout.cell_center(_nearest_walkable(cell,service_window_cell()))
 	_floor.texture = TDRestaurantArt.floor_texture(layout)
 	_floor.visible = false
 	if _iso != null:
@@ -942,8 +975,6 @@ func _interact_message(piece: Dictionary, code: String) -> String:
 			return "自助点餐机可以直接使用，不必雇人。客人点的菜和这个人绑在一起，后厨能看到。"
 		"order_counter":
 			return "点餐台。点下的菜就是后厨那一单，客人坐下后才等上菜。"
-		"hotpot_table":
-			return "火锅桌，桌面上是电磁炉。"
 		"waiting_seat":
 			return "等候座。客人入座时优先去用餐区。"
 		"screen":
@@ -955,6 +986,7 @@ func _interact_message(piece: Dictionary, code: String) -> String:
 
 func _toggle_edit() -> void:
 	_reset_drag()
+	_culture=layout.culture;_tier=layout.tier
 	_editing = not _editing
 	_iso.editing=_editing
 	_decoration_backdrop.visible = _editing
@@ -1599,11 +1631,7 @@ func _step_runner(goal: Vector2i, delta: float) -> void:
 		_runner_index += 1
 
 func _runner_speed() -> float:
-	var shift := 0
-	if session != null and session.ready and session.staff_on("runner"):
-		var card := session.staff_card("home", "runner")
-		shift = int(card["shift"])
-	return clampf(130.0 + float(shift) * 5.0, 70.0, 180.0)
+	return 180.0
 
 func _handoff(ticket_id: String, by_runner: bool) -> TDOutcome:
 	var active := _session()
@@ -1752,94 +1780,85 @@ func _crew_points(delta: float) -> Array:
 	var people: Array = []
 	if layout == null or layout.crew == null:
 		return people
-	var posts: Array[Vector2] = []
 	var servers := layout.crew.waiters()
-	if _physical_service() and delta>0: business.table_service.release_missing_waiters(servers.map(func(s:Dictionary)->String:return str(s.id)))
-	for index: int in servers.size():
-		posts.append(_waiter_post(index))
-	var ready := _service_jobs()
-	while _waiter_feet.size() < servers.size():
-		_waiter_feet.append(posts[_waiter_feet.size()])
-	while _waiter_feet.size() > servers.size():
-		_waiter_feet.pop_back()
-	while _waiter_plate.size() < servers.size():
-		_waiter_plate.append("")
-	while _waiter_plate.size() > servers.size():
-		_waiter_plate.pop_back()
-	while _waiter_routes.size() < servers.size():
-		_waiter_routes.append(PackedVector2Array())
-		_waiter_route_at.append(0)
-		_waiter_route_goal.append(Vector2i(-999, -999))
-	while _waiter_routes.size() > servers.size():
-		_waiter_routes.pop_back()
-		_waiter_route_at.pop_back()
-		_waiter_route_goal.pop_back()
-	var hatch := layout.cell_center(service_window_cell())
-	var pending: Array[TDRestaurantGuest] = []
-	var claimed: Dictionary = {}
-	for carried: String in _waiter_plate:
-		if carried != "":
-			claimed[_plate_ticket(carried)] = true
-	if _physical_service() and _plate_order!="": claimed[_plate_ticket(_plate_order)]=true
-	if _physical_service():
+	var ids := servers.map(func(person: Dictionary) -> String: return str(person.id))
+	for id: String in _waiters.keys():
+		if id not in ids: _waiters.erase(id)
+	var physical := _physical_service()
+	if physical and delta > 0:
+		business.table_service.release_missing_waiters(ids)
+	if _wall_posts.size() != servers.size():
+		_wall_posts = _waiter_posts(servers.size())
+	var ready: Dictionary = {}
+	for guest: TDRestaurantGuest in _service_jobs():
+		ready[guest.ticket_id] = guest
+	var held: Dictionary = {}
+	if physical:
 		for plate: Dictionary in business.table_service.rows():
-			if plate.carrier!="": claimed[str(plate.order_id)]=true
-	for guest: TDRestaurantGuest in ready:
-		if not claimed.has(guest.ticket_id):
-			pending.append(guest)
-	var next_job := 0
+			if plate.carrier != "":
+				held[plate.carrier] = str(plate.id)
+				ready.erase(plate.order_id)
+	for index: int in servers.size():
+		var id: String = servers[index].id
+		if not _waiters.has(id):
+			var newcomer := Waiter.new()
+			newcomer.feet = _waiting_feet(_wall_posts[index])
+			_waiters[id] = newcomer
+		var waiter: Waiter = _waiters[id]
+		if physical: waiter.plate = held.get(id, "")
+		if waiter.plate != "": ready.erase(_plate_ticket(waiter.plate))
+	# Keep an approaching employee's assignment even if a colleague finishes first.
+	for id: String in ids:
+		var waiter: Waiter = _waiters[id]
+		if waiter.plate == "" and ready.has(waiter.pickup_ticket):
+			ready.erase(waiter.pickup_ticket)
+		else:
+			waiter.pickup_ticket = ""
+	var tickets := ready.keys()
 	for index: int in servers.size():
 		var server: Dictionary = servers[index]
-		var goal := _cell_at(posts[index])
+		var waiter: Waiter = _waiters[server.id]
+		if delta > 0 and waiter.plate == "" and waiter.pickup_ticket == "" and not tickets.is_empty():
+			waiter.pickup_ticket = tickets.pop_front()
+		var seated: TDRestaurantGuest
+		if waiter.plate != "":
+			seated = _guest_by_ticket(_plate_ticket(waiter.plate))
+			if seated != null and (seated.phase != "wait_serve" or seated.get_meta("plated", false)):
+				seated = null
+			if not physical and seated == null: waiter.plate = ""
+		var goal := _wall_posts[index]
 		var verb := "待命"
-		var carry := _waiter_plate[index]
-		if _physical_service():
-			carry=""
-			for plate: Dictionary in business.table_service.rows():
-				if plate.carrier==str(server.id): carry=str(plate.id);break
-			_waiter_plate[index]=carry
-		var seated: TDRestaurantGuest = null
-		if carry != "":
-			seated = _guest_by_ticket(_plate_ticket(carry))
-		if seated == null or seated.phase != "wait_serve" or bool(seated.get_meta("plated", false)):
-			if _physical_service() and carry!="" and delta<=0:
-				people.append({"point":_waiter_feet[index],"actor_id":str(server.id),"label":"端菜 "+str(server.name),"color":Color("#2f7a68"),"moving":false});continue
-			if _physical_service() and carry!="" and delta>0:
-				# The customer left. Keep the dish and return it for a later order.
-				_waiter_feet[index]=_walk_waiter(index,_waiter_feet[index],service_window_cell(),delta)
-				if _waiter_feet[index].distance_to(hatch)>36:
-					people.append({"point":_waiter_feet[index],"actor_id":str(server.id),"label":"退回菜品 "+str(server.name),"color":Color("#2f7a68"),"moving":true});continue
-				business.table_service.put_back(carry,str(server.id))
-			_waiter_plate[index] = ""
-			carry = ""
-			seated = null
-		if carry != "":
+		if seated != null:
 			goal = _beside_seat(seated.seat_id)
 			verb = "上菜"
-		elif next_job < pending.size():
+		elif waiter.plate != "" or waiter.pickup_ticket != "":
 			goal = service_window_cell()
-			verb = "取菜"
-		var target := layout.cell_center(goal)
-		var current := _walk_waiter(index, _waiter_feet[index], goal, delta)
-		_waiter_feet[index] = current
-		if delta > 0.0 and verb == "取菜" and current.distance_to(hatch) <= 36.0:
-			if _physical_service():
-				var plate:=business.table_service.for_order(pending[next_job].ticket_id)
-				if not plate.is_empty() and business.table_service.take(plate.id,str(server.id)).ok: _waiter_plate[index]=str(plate.id)
-			else: _waiter_plate[index] = pending[next_job].ticket_id
-		elif delta > 0.0 and verb == "上菜" and seated != null and current.distance_to(target) <= 36.0:
-			if hand_plate(seated,str(server.id)).ok: _waiter_plate[index] = ""
-		if verb == "取菜":
-			next_job += 1
-		people.append({
-			"point": current,
-			"actor_id":str(server.id),
-			"label": "%s %s%d" % [verb, String(server["name"]), int(server.get("level", 1))],
-			"color": Color("#2f7a68"),
-			"moving": current.distance_to(target) > 0.5,
-		})
-	var active := _session()
-	if active != null and active.ready and layout != null and not player_mode:
+			verb = "退菜" if waiter.plate != "" else "取菜"
+		var previous := waiter.feet
+		var waiting := waiter.plate == "" and waiter.pickup_ticket == ""
+		var destination := _waiting_feet(goal) if waiting else layout.cell_center(goal)
+		if delta > 0:
+			_walk_waiter(waiter, goal, destination, delta)
+			if waiter.feet.is_equal_approx(destination):
+				if seated != null:
+					if hand_plate(seated, server.id).ok: waiter.plate = ""
+				elif waiter.plate != "":
+					if business.table_service.put_back(waiter.plate, server.id).ok: waiter.plate = ""
+				elif waiter.pickup_ticket != "":
+					if physical:
+						var plate := business.table_service.for_order(waiter.pickup_ticket)
+						if not plate.is_empty() and business.table_service.take(plate.id, server.id).ok:
+							waiter.plate = plate.id
+					else: waiter.plate = waiter.pickup_ticket
+					waiter.pickup_ticket = ""
+		var at_wall := waiting and waiter.feet.is_equal_approx(destination)
+		people.append({"point":waiter.feet, "actor_id":server.id, "role":"waiter",
+			"cuisine_id":server.get("cuisine_id","cn"), "appearance_variant":server.get("appearance_variant",0),
+			"carrying":waiter.plate != "", "moving":not previous.is_equal_approx(waiter.feet),
+			"at_wall":at_wall, "idle_lift":TDEmployeeArt.breath_lift(_visit_seconds,index) if at_wall else 0.0,
+			"label":"%s %s%d" % [verb, server.name, server.get("level",1)], "color":Color("#2f7a68")})
+	var active := _session() if not player_mode else null
+	if active != null and active.ready:
 		if active.staff_on("greeter"):
 			people.append({"actor_id":"floor-greeter","point": layout.cell_center(layout.entrance()), "label": "迎宾", "color": Color("#d7a15a"), "moving": false})
 		if active.staff_on("cashier"):
@@ -1850,44 +1869,52 @@ func _crew_points(delta: float) -> Array:
 			people.append({"actor_id":"floor-cashier","point": layout.cell_center(at), "label": "收银", "color": Color("#c4b15a"), "moving": false})
 	return people
 
-func _walk_waiter(index: int, feet: Vector2, goal: Vector2i, delta: float) -> Vector2:
-	if layout == null or index < 0 or index >= _waiter_routes.size() or not layout.is_walkable(goal.x, goal.y):
-		return feet
-	if _waiter_route_goal[index] != goal:
-		var from := _cell_at(feet)
-		if not layout.is_walkable(from.x, from.y):
-			from = _nearest_walkable(from, goal)
-		var points := PackedVector2Array()
-		for cell: Vector2i in layout.path(from, goal):
-			points.append(layout.cell_center(cell))
-		_waiter_routes[index] = points
-		_waiter_route_goal[index] = goal
-		_waiter_route_at[index] = 1 if points.size() > 1 else 0
-	var route: PackedVector2Array = _waiter_routes[index]
-	var at := _waiter_route_at[index]
-	if route.is_empty():
-		return feet
-	if at >= route.size():
-		return layout.cell_center(goal)
-	var moved := feet.move_toward(route[at], 90.0 * maxf(delta, 0.0))
-	if delta > 0.0 and moved.distance_to(route[at]) <= 1.0:
-		moved = route[at]
-		_waiter_route_at[index] = at + 1
-	return moved
+func _walk_waiter(waiter: Waiter, goal: Vector2i, destination: Vector2, delta: float) -> void:
+	if waiter.feet.is_equal_approx(destination): return
+	if waiter.goal != goal or waiter.destination != destination:
+		var from := _cell_at(waiter.feet)
+		# The visible west wall is on x=0. Enter and leave its narrow
+		# standing strip through the adjacent aisle, then use normal floor paths.
+		from.x = maxi(1, from.x)
+		var cells := layout.path(from, goal)
+		waiter.route.clear()
+		for cell: Vector2i in cells:
+			waiter.route.append(layout.cell_center(cell))
+		if not cells.is_empty() and not destination.is_equal_approx(waiter.route[-1]):
+			waiter.route.append(destination)
+		waiter.waypoint = 0
+		if waiter.route.size() > 1:
+			# Continue straight through this cell, or return to its center before turning.
+			var first := waiter.route[0]
+			var second := waiter.route[1]
+			if Geometry2D.get_closest_point_to_segment(waiter.feet, first, second).is_equal_approx(waiter.feet):
+				waiter.waypoint = 1
+		waiter.goal = goal
+		waiter.destination = destination
+	var budget := guest_speed * delta
+	while budget > 0 and waiter.waypoint < waiter.route.size():
+		var target := waiter.route[waiter.waypoint]
+		var distance := waiter.feet.distance_to(target)
+		if distance > budget:
+			waiter.feet = waiter.feet.move_toward(target, budget)
+			break
+		waiter.feet = target
+		budget -= distance
+		waiter.waypoint += 1
 
 func _beside_seat(seat_id: String) -> Vector2i:
 	var seat := layout.piece(seat_id)
 	if seat.is_empty():
 		return service_window_cell()
 	var approach := Vector2i(int(seat.approach_x), int(seat.approach_y))
-	var anchor := Vector2i(int(seat.x) + int(seat.w) / 2, int(seat.y) + int(seat.h) / 2)
-	var away := approach - anchor
-	var step := Vector2i(signi(away.x), signi(away.y))
-	if step == Vector2i.ZERO:
-		step = Vector2i(-1, 0)
-	var outside := approach + (Vector2i(step.x, 0) if absi(away.x) >= absi(away.y) else Vector2i(0, step.y))
-	if layout.is_walkable(outside.x, outside.y) and not _piece_covers(seat, outside):
-		return outside
+	# The diner uses the approach to sit. Serve from the neighbouring
+	# space on the same side of a two-cell table, clear of the occupied stool.
+	if seat.kind == "dining_table":
+		var along := Vector2i.RIGHT if approach.x == int(seat.x) else Vector2i.LEFT
+		if approach.x < int(seat.x) or approach.x >= int(seat.x + seat.w):
+			along = Vector2i.DOWN if approach.y == int(seat.y) else Vector2i.UP
+		var side := approach + along
+		if layout.is_walkable(side.x,side.y) and layout.is_walkable(approach.x,approach.y): return side
 	if layout.is_walkable(approach.x, approach.y) and not _piece_covers(seat, approach):
 		return approach
 	return _nearest_walkable(approach, approach)
@@ -1936,9 +1963,8 @@ func _hatch_plate_count() -> int:
 	if _pass_has_plate() and _held_ticket == "":
 		count += 1
 	var carried := {}
-	for plate_id: String in _waiter_plate:
-		if plate_id != "":
-			carried[plate_id] = true
+	for waiter: Waiter in _waiters.values():
+		if waiter.plate != "": carried[waiter.plate] = true
 	if _plate_order != "":
 		carried[_plate_order] = true
 	for guest: TDRestaurantGuest in _service_jobs():
@@ -1946,19 +1972,27 @@ func _hatch_plate_count() -> int:
 			count += 1
 	return count
 
-func _waiter_post(index: int) -> Vector2:
-	return _staff_spot(Vector2i(layout.columns - 2, layout.rows - 3), index)
+func _waiter_posts(count: int) -> Array[Vector2i]:
+	var posts: Array[Vector2i] = []
+	if count == 0: return posts
+	var hatch := service_window_cell()
+	# x=0 is the full wall on the left of the isometric room. Start
+	# toward its kitchen end, leaving room for the decoration and menu boards.
+	for x: int in range(1, layout.columns - 1):
+		for y: int in range(layout.rows - 4, 1, -1):
+			var cell := Vector2i(x, y)
+			if (x == 1 and (y == 3 or layout.furniture_blocks(0,y))) or cell == layout.entrance() or cell == hatch: continue
+			if layout.path(hatch, cell).is_empty(): continue
+			posts.append(cell)
+			if posts.size() == count: return posts
+	# A sealed-off hatch has no reachable row. Do not spawn staff inside furniture.
+	while posts.size() < count: posts.append(hatch)
+	return posts
 
-func _staff_spot(origin: Vector2i, slot: int) -> Vector2:
-	var offsets: Array[Vector2i] = [
-		Vector2i.ZERO, Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN,
-		Vector2i(-2, 0), Vector2i(2, 0), Vector2i(0, 2), Vector2i(0, -2),
-	]
-	for step: int in offsets.size():
-		var cell := origin + offsets[(slot + step) % offsets.size()]
-		if layout.is_walkable(cell.x, cell.y):
-			return layout.cell_center(cell)
-	return layout.cell_center(Vector2i(clampi(origin.x, 1, layout.columns - 2), clampi(origin.y, 1, layout.rows - 2)))
+func _waiting_feet(post: Vector2i) -> Vector2:
+	var point := layout.cell_center(post)
+	if post.x == 1: point.x = layout.cell_px * .28
+	return point
 
 func nearby_object() -> Dictionary:
 	var nearest: Dictionary={};var distance: float=1.0
@@ -1999,7 +2033,7 @@ func advance_dining(seconds: float) -> void:
 	for guest: TDRestaurantGuest in guest_nodes(): _place_seated(guest)
 
 func next_dining_boundary(maximum: float) -> float:
-	var next: float=maximum
+	var next := _waiter_boundary(maximum)
 	for guest: TDRestaurantGuest in guest_nodes():
 		if guest.frozen: continue
 		if guest.phase=="sitting": next=minf(next,maxf(.0000001,guest.sit_duration-guest.sit_elapsed))
@@ -2008,6 +2042,29 @@ func next_dining_boundary(maximum: float) -> float:
 			var age: float=_visit_seconds-float(guest.get_meta("settled_at"))
 			var target: float=TDGuestVisit.EAT_SEC if guest.phase=="eat" else TDGuestVisit.EAT_SEC+TDGuestVisit.PAY_SEC
 			if age<target: next=minf(next,target-age)
+	return next
+
+# Stop the shared clock at real pickup/handoff, even when advancing a large span off screen.
+func _waiter_boundary(maximum: float) -> float:
+	if not _physical_service() or _waiters.is_empty() or business.table_service.empty(): return maximum
+	var available := {}
+	for plate: Dictionary in business.table_service.rows():
+		if plate.carrier == "" and not str(plate.order_id).is_empty():
+			var guest := _guest_by_ticket(plate.order_id)
+			if guest != null and guest.phase=="wait_serve": available[plate.order_id] = true
+	for waiter: Waiter in _waiters.values(): available.erase(waiter.pickup_ticket)
+	var next := maximum
+	for waiter: Waiter in _waiters.values():
+		if waiter.plate == "" and waiter.pickup_ticket == "" and available.is_empty(): continue
+		var guest := _guest_by_ticket(_plate_ticket(waiter.plate)) if waiter.plate != "" else null
+		var target := _beside_seat(guest.seat_id) if guest != null and guest.phase=="wait_serve" else service_window_cell()
+		if waiter.goal != target or waiter.waypoint >= waiter.route.size():
+			next = minf(next, 0.05)
+			continue
+		var distance := waiter.feet.distance_to(waiter.route[waiter.waypoint])
+		for i: int in range(waiter.waypoint + 1, waiter.route.size()):
+			distance += waiter.route[i - 1].distance_to(waiter.route[i])
+		next = minf(next, maxf(.000001, distance / guest_speed))
 	return next
 
 func restore_visit_boundary() -> void:
@@ -2220,14 +2277,17 @@ func hand_plate(guest: TDRestaurantGuest, carrier: String="player") -> TDOutcome
 		if get_tree().paused or story_frozen: return TDOutcome.new(false,"PAUSED")
 		var id:=_plate_order;var carrier_position:=_player.position
 		if carrier!="player":
-			var servers:=layout.crew.waiters();var found:=false
-			for i: int in servers.size():
-				if servers[i].id==carrier and i<_waiter_plate.size() and i<_waiter_feet.size(): id=_waiter_plate[i];carrier_position=_waiter_feet[i];found=true;break
-			if not found: return TDOutcome.new(false,"INVALID_CARRIER")
+			var waiter: Waiter = _waiters.get(carrier)
+			if waiter == null: return TDOutcome.new(false,"INVALID_CARRIER")
+			id = waiter.plate
+			carrier_position = waiter.feet
 		if carrier_position.distance_to(layout.cell_center(_beside_seat(guest.seat_id)))>INTERACTION_RADIUS: return TDOutcome.new(false,"TOO_FAR","请走到这位客人桌边再上菜。")
 		var result:=business.table_service.serve(id,carrier,guest.ticket_id)
 		if not result.ok: return result
 		if carrier=="player": _plate_order=""
+		if guest.ticket_id != TDTableService.TRIAL_ORDER:
+			guest.phase = "eat"
+			guest.set_meta("settled_at", _visit_seconds)
 	guest.set_meta("plated", true)
 	if _plate_order == guest.ticket_id:
 		_plate_order = ""

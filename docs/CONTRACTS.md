@@ -1,3 +1,10 @@
+## D080 地块、立面和家具兼容
+TDTravelCatalog.facade(town,plot,variation) 供实景和 M 地图共用。地形与经济查询共用 district_id、surface_type、walkable、buildable。道路、存档身份由原模型持有。旧 hotpot_table 在 Layout 载入时转换为 dining_table 并保留服务过道，正式目录只允许普通餐桌。厨房动作只读谱面、工位和最近判定。
+
+## D078-R2 地域装修选项
+DecorationPanel.item_chosen(id, finish)仍为只发意图：家具默认kind兼容旧调用，其他卡片ID为kind__culture_tier，由面板只读解析/校验为kind和style_id；World调用原Layout预览与提交，渲染层不改布置。选择款式不调用apply_venue_style。
+Layout.finish_ids沿用schema1字符串格表，新增floor_<culture>/wall_<culture>十个稳定枚举（chinese/french/japanese/thai/mexican）；导入严格校验墙地类型，旧8ID不改含义。整屋替换仍由set_surface_finish原子完成；只在D059已有主动/睡觉保存时落盘。经济菜系与Profile9保持。渲染和缩略图按饰面ID找同一地域样式。
+
 # 公共契约：v3完整烹饪，兼容v1/v2历史入口
 
 ## D077 — 编辑器与原生剧情的边界

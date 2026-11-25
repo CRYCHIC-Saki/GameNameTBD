@@ -5,11 +5,11 @@ const PATH := "res://content/research/recipe_atlas.json"
 var data: Dictionary = {}
 var nodes: Dictionary = {}
 
-func load_file(path: String = PATH) -> TDOutcome:
+func load_file(path: String = PATH, cooking: TDCookingCatalog = null) -> TDOutcome:
 	var raw: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
-	return load_data(raw)
+	return load_data(raw, cooking)
 
-func load_data(raw: Variant) -> TDOutcome:
+func load_data(raw: Variant, cooking: TDCookingCatalog = null) -> TDOutcome:
 	if not raw is Dictionary or not raw.get("recipes") is Array or not raw.get("cuisines") is Array or not raw.get("charts") is Dictionary:
 		return TDOutcome.new(false,"INVALID_ATLAS")
 	var found: Dictionary = {}; var cuisines: Array = []
@@ -38,12 +38,15 @@ func load_data(raw: Variant) -> TDOutcome:
 	for field: String in ["pass_score","good_quality","perfect_sec","good_sec","error_weight","attempt_hours","input_offset_sec"]:
 		if not number(raw.settings.get(field)): return TDOutcome.new(false,"INVALID_SETTINGS")
 	if raw.settings.pass_score<0 or raw.settings.pass_score>100 or raw.settings.attempt_hours!=1: return TDOutcome.new(false,"INVALID_SETTINGS")
-	var service:=TDServiceCatalog.new()
-	if not service.load_file().ok or not TDResearchRuntime.install(service).ok: return TDOutcome.new(false,"INVALID_KITCHEN_CONTENT")
+	if cooking == null:
+		var service := TDServiceCatalog.new()
+		if not TDResearchRuntime.load_default(service).ok:
+			return TDOutcome.new(false, "INVALID_KITCHEN_CONTENT")
+		cooking = service.cooking
 	for id: String in raw.charts:
 		var c: Variant=raw.charts[id]
 		if not found.has(id) or not c is Dictionary or c.get("kind")!="kitchen" or not integer(c.get("version"),2,100) or not c.get("primary") is Array or c.primary.is_empty(): return TDOutcome.new(false,"INVALID_CHART")
-		var recipe:Dictionary=service.cooking.for_recipe(str(c.get("recipe_id",""))).get("recipe",{})
+		var recipe := cooking.recipe_data(str(c.get("recipe_id", "")))
 		if recipe.is_empty(): return TDOutcome.new(false,"INVALID_CHART")
 		var required:Array=recipe.required_ingredients.map(func(r:Dictionary)->String:return r.id)
 		if c.primary.size()!=required.size(): return TDOutcome.new(false,"INVALID_CHART")

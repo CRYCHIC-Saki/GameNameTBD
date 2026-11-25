@@ -21,25 +21,33 @@ var _result:Dictionary={}
 func configure(chart:Dictionary) -> TDOutcome:
 	definition=chart.duplicate(true)
 	_service=TDServiceCatalog.new()
-	var loaded:=_service.load_file()
+	var loaded:=TDResearchRuntime.load_default(_service)
 	if not loaded.ok: return loaded
-	loaded=TDResearchRuntime.install(_service)
-	if not loaded.ok: return loaded
-	_recipe=_service.cooking.for_recipe(str(chart.get("recipe_id",""))).get("recipe",{})
+	# Research uses a denser authored chart through the same kitchen controllers.
+	if chart.has("profile"):
+		var content:=_service.cooking.scoped_data(str(chart.recipe_id))
+		if not content.pc_operations.document_sheets.has(chart.profile): return TDOutcome.new(false,"UNKNOWN_SHEET")
+		for recipe: Dictionary in content.recipes:
+			if recipe.id==chart.recipe_id: recipe.guided_profile=chart.profile
+		loaded=_service.cooking.load_data(content,"research chart variant")
+		if not loaded.ok: return loaded
+	_recipe=_service.cooking.recipe_data(str(chart.get("recipe_id","")))
 	if _recipe.is_empty(): return TDOutcome.new(false,"UNKNOWN_RECIPE")
-	_pot_index=1 if _recipe.cooking_method=="steam" else 0
+	_pot_index=0 if TDCuisineKitchen.station_for(str(_recipe.get("cuisine_id","cn")),_recipe)=="kitchen.stove.left" else 1
 	return TDOutcome.new(true,"CONFIGURED")
 
 func _ready() -> void:
 	process_mode=Node.PROCESS_MODE_ALWAYS
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	kitchen=TDFullKitchen.new(); kitchen.catalog=_service.cooking; kitchen.scorer=TDCustomerScorer.new()
-	kitchen.shared_clock=clock; kitchen.auto_advance=false; kitchen.lesson_mode=true
+	kitchen.shared_clock=clock; kitchen.auto_advance=false; kitchen.lesson_mode=true;kitchen.single_fridge=true
 	kitchen.day_san=100.0
 	kitchen.library_path="res://content/research/no-player-library.json"
 	kitchen.pause_requested.connect(func()->void:pause_requested.emit())
 	kitchen.back_requested.connect(func()->void:cancel_requested.emit())
 	add_child(kitchen)
+	kitchen.world.cuisine_id=str(_recipe.get("cuisine_id","cn"))
+	kitchen.world.station_names.merge(TDCuisineKitchen.names(kitchen.world.cuisine_id),true)
 	kitchen.stage.navigation_hint="E 放下研习   ·   Esc 暂停"
 	kitchen.stage.requirements_hint="依照菜谱完成全部工序 · 80分解锁"
 	kitchen.stage.show_san=false
@@ -74,7 +82,7 @@ func _next_ingredient() -> void:
 	_preparing=false
 	var result:=_pot().start_sheet(recipe.guided_profile)
 	if not result.ok: _error=result.code; return
-	kitchen.open_station_view("kitchen.steamer" if recipe.cooking_method=="steam" else "kitchen.stove.left")
+	kitchen.open_station_view(TDCuisineKitchen.station_for(str(recipe.get("cuisine_id","cn")),recipe))
 
 func advance(seconds:float) -> TDOutcome:
 	if _closed: return TDOutcome.new(false,"CANCELLED")

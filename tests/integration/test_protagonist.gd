@@ -1,7 +1,9 @@
 extends GutTest
 
-const IDLE_PATH := "res://assets/redraw-v1/walker-hero.png"
-const WALK_PATH := "res://assets/redraw-v1/walker-hero.png"
+const IDLE_PATH := "res://assets/characters/protagonist/protagonist-idle-four-directions-v1.png"
+const WALK_PATH := "res://assets/characters/protagonist/protagonist-walk-four-directions-v1.png"
+const DIAGONAL_FRONT_PATH := "res://assets/characters/protagonist/protagonist-diagonal-front-v2.png"
+const DIAGONAL_BACK_PATH := "res://assets/characters/protagonist/protagonist-diagonal-back-v2.png"
 const FACES: Array[Vector2i] = [Vector2i.DOWN, Vector2i.UP, Vector2i.LEFT, Vector2i.RIGHT]
 var app: TDApplication
 var shell: TDGameShell
@@ -163,3 +165,54 @@ func test_restaurant_stride_counts_rendered_pixels_once_in_each_direction() -> v
 		assert_gt(traveled, 15.0, "Real input moved the on-screen feet")
 		assert_lt(traveled, 25.0, "Six physics ticks retain the real 180 px/s speed")
 		assert_almost_eq(body._walk_phase * pixels_per_cycle, traveled, .001, action+": each drawn pixel advances the stride only once")
+
+func test_real_diagonal_input_uses_distinct_poses_and_stops_facing_that_direction() -> void:
+	assert_true(shell.travel("kitchen").ok)
+	var body:=shell.kitchen_view.kitchen.world._player
+	var directions: Array[Vector2i]=[Vector2i(1,1),Vector2i(-1,1),Vector2i(-1,-1),Vector2i(1,-1)]
+	var idle_hashes: Dictionary={}
+	for direction: Vector2i in directions:
+		body.set_controls_enabled(false);body.position=Vector2(640,470)
+		await wait_physics_frames(2);body.set_controls_enabled(true)
+		var actions: Array[String]=["world_right" if direction.x>0 else "world_left","world_down" if direction.y>0 else "world_up"]
+		var seen: Dictionary={}
+		for action: String in actions: Input.action_press(action)
+		for tick: int in 38:
+			await get_tree().physics_frame
+			seen[body.walk_frame]=true
+		for action: String in actions: Input.action_release(action)
+		assert_eq(body.facing,direction,"Two keys choose the actual diagonal, not a cardinal pose")
+		var offset:=body.position-Vector2(640,470)
+		assert_gt(offset.dot(Vector2(direction).normalized()),130.0)
+		assert_almost_eq(absf(offset.x),absf(offset.y),1.0,"Diagonal speed remains normalized")
+		for frame: int in 4: assert_true(seen.has(frame),"Actual diagonal input reaches all four beats")
+		await wait_physics_frames(2)
+		assert_eq(body.walk_frame,-1)
+		assert_eq(body.facing,direction,"Release preserves the diagonal idle direction")
+		var idle:=body.animation_texture() as AtlasTexture
+		assert_eq(idle.atlas.resource_path,DIAGONAL_FRONT_PATH if direction.y>0 else DIAGONAL_BACK_PATH)
+		assert_eq(body._sprite.flip_h,direction in [Vector2i(-1,1),Vector2i(1,-1)],"Paired left/right facing is mirrored only at render time")
+		idle_hashes[idle.get_image().get_data().hex_encode().sha256_text()+str(body._sprite.flip_h)]=true
+		var poses: Dictionary={}
+		for frame: int in [-1,0,1,2,3]:
+			var texture:=TDChefArt.texture(direction,frame) as AtlasTexture
+			assert_eq(texture.atlas.resource_path,DIAGONAL_FRONT_PATH if direction.y>0 else DIAGONAL_BACK_PATH)
+			assert_eq(texture.get_height(),idle.get_height(),"Bending knees cannot rescale the head")
+			if frame>=0: assert_ne(texture.region,idle.region,"Moving uses a passing/contact pose, never idle")
+			assert_true(Rect2(Vector2.ZERO,texture.atlas.get_size()).encloses(texture.region))
+			poses[texture.get_image().get_data().hex_encode().sha256_text()]=true
+		assert_eq(poses.size(),5,"Idle and all four contact/passing poses are separate artwork")
+		var cardinal := Vector2i.DOWN if direction.y > 0 else Vector2i.UP
+		var size := body._sprite.scale * body._sprite.texture.get_size()
+		assert_almost_eq(size.x,TDChefArt.render_size(cardinal,-1,body.sprite_height).x,.001,"Diagonal standing silhouette matches the cardinal view at the same height")
+		assert_almost_eq(size.y,body.sprite_height,.001)
+		assert_almost_eq(body._sprite.position.y+body._sprite.texture.get_height()*body._sprite.scale.y*.5,0.0,.001)
+	assert_eq(idle_hashes.size(),4)
+
+func test_eight_direction_player_does_not_change_npc_four_column_atlases() -> void:
+	for index: int in FACES.size():
+		assert_eq(TDChefArt.direction_index(FACES[index]),index)
+		for who: String in ["aling","chen"]:
+			var idle:=TDStoryArt.sprite(who,FACES[index]) as AtlasTexture
+			assert_same(idle.atlas, TDStoryArt.ALING if who == "aling" else TDStoryArt.CHEN,"NPC keeps the selected idle atlas")
+			assert_eq(idle.region,TDStoryArt.REGIONS[who][index],"NPC retains its four-direction region")

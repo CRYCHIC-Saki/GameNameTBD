@@ -8,11 +8,16 @@ static func convert(raw: Dictionary) -> TDOutcome:
 	var restored:=TDWorldSnapshot.restore(previous,raw.world)
 	if not restored.ok: return restored
 	data.world.map_version=2
-	var planned:=TDPhase3Session.new();planned.map_version=2;planned.load_default()
+	var planned:=TDPhase3Session.new()
+	planned.map_version=2
+	planned.town_map.jiangnan_layout_revision=1
+	planned.load_default()
 	if bool(data.world.branch_open):
-		var remote:=TDTownMap.new();remote.layout_version=2
+		var remote:=TDTownMap.new()
+		remote.layout_version=2
+		remote.jiangnan_layout_revision=1
 		remote.build(planned.catalog,TDTownMap.seed_of(str(data.world.branch_town)))
-		var at:=TDPlannedTown.branch_site(remote,int(data.world.branch_w),int(data.world.branch_h))
+		var at:=TDLegacyJiangnanLayout.branch_site(remote,int(data.world.branch_w),int(data.world.branch_h))
 		if at.x<0: return TDOutcome.new(false,"MIGRATION_NO_BRANCH_SITE")
 		data.world.branch_x=at.x;data.world.branch_y=at.y
 	restored=TDWorldSnapshot.restore(planned,data.world)

@@ -10,17 +10,18 @@ func before_each() -> void:
 	layout = catalog.default_layout()
 	assert_not_null(layout)
 
-func test_default_room_has_every_zone_fixture_and_hotpot_surface() -> void:
+func test_default_room_has_every_fixture_and_only_ordinary_tables() -> void:
 	var kinds: Dictionary = {}
 	for item: Variant in layout.pieces():
 		var piece: Dictionary = item
 		kinds[piece["kind"]] = true
-		assert_eq(String(piece["style_id"]), "chinese_low")
+		assert_eq(String(piece["style_id"]), "plain_low" if piece.kind in ["kiosk","screen"] else "chinese_low")
 	for kind: String in catalog.kinds():
 		assert_true(kinds.has(kind), kind)
-	var hotpot := layout.piece_by_kind("hotpot_table")
-	assert_eq(String(hotpot["surface"]), "induction")
-	assert_eq(String(hotpot["seat_use"]), "dining")
+	assert_true(layout.piece_by_kind("hotpot_table").is_empty())
+	assert_eq(layout.place("hotpot_table", 12, 8, 0).code, "UNKNOWN_KIND")
+	assert_eq(str(layout.piece("piece-table-2").surface), "")
+	assert_eq(str(layout.piece("piece-table-2").seat_use), "dining")
 	assert_false(layout.staff_hired("greeter"))
 	assert_false(layout.staff_hired("cashier"))
 	assert_eq(layout.interact_code(String(layout.piece_by_kind("welcome_desk")["id"])), "NEED_GREETER")
@@ -251,3 +252,24 @@ func _open_floor_outside(skip_zone: String) -> Vector2i:
 			if bool(preview["ok"]):
 				return Vector2i(x, y)
 	return Vector2i(-1, -1)
+
+func test_legacy_hotpot_preserves_footprint_rotation_and_service_aisle_across_save() -> void:
+	var payload := layout.to_dict()
+	var old := {"id":"legacy-table","kind":"hotpot_table","x":1,"y":7,"rotation":0,"style_id":"japanese_high"}
+	payload.pieces = [old]
+	var imported := TDRestaurantLayout.import_dict(payload,catalog)
+	assert_not_null(imported,TDRestaurantLayout.import_code)
+	if imported == null: return
+	assert_eq(old.kind,"hotpot_table","Migration reads a copy")
+	var item := imported.piece("legacy-table")
+	assert_eq(item.kind,"dining_table")
+	assert_eq(item.rotation,0)
+	assert_eq(item.style_id,"japanese_high")
+	assert_eq(Vector2i(item.approach_x,item.approach_y),Vector2i(3,7))
+	assert_true(imported.move_piece("legacy-table",7,6).ok)
+	assert_true(imported.rotate_piece_by("legacy-table",90).ok)
+	var rotated := imported.piece("legacy-table")
+	assert_eq(Vector2i(rotated.approach_x,rotated.approach_y),Vector2i(7,5))
+	var restored := TDRestaurantLayout.import_dict(imported.to_dict(),catalog)
+	assert_not_null(restored)
+	if restored: assert_eq(restored.piece("legacy-table"),rotated)

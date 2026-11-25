@@ -28,24 +28,6 @@
       "chapter": "卷三",
       "roman": "III",
       "english": "JAPANESE CUISINE"
-    },
-    {
-      "id": "sea",
-      "name": "东南亚料理",
-      "desc": "酸、辣、香草、椰浆与发酵酱料交织，最终汇聚成香料盛宴。",
-      "seal": "南",
-      "chapter": "卷四",
-      "roman": "IV",
-      "english": "SOUTHEAST ASIAN CUISINE"
-    },
-    {
-      "id": "lat",
-      "name": "拉丁美洲料理",
-      "desc": "玉米、豆类、青柠、辣椒与炭火，连接墨西哥、秘鲁、巴西和阿根廷风味。",
-      "seal": "美",
-      "chapter": "卷五",
-      "roman": "V",
-      "english": "LATIN AMERICAN CUISINE"
     }
   ],
   "recipes": [
@@ -907,580 +889,6 @@
       "description": "协调汤、烤物、寿司与季节食材的完整体验。",
       "cuisine_id": "jp",
       "difficulty": 5
-    },
-    {
-      "id": "S01",
-      "name": "越式鲜春卷",
-      "tier": 1,
-      "prerequisites": [],
-      "cost": 1,
-      "ingredients": "米纸、鲜虾、香草、生菜",
-      "flavor": "鲜食 / 香草",
-      "description": "以清爽香草与蘸酱建立风味基础。",
-      "cuisine_id": "sea",
-      "difficulty": 1
-    },
-    {
-      "id": "S02",
-      "name": "椰香米饭",
-      "tier": 1,
-      "prerequisites": [],
-      "cost": 1,
-      "ingredients": "米、椰浆、盐",
-      "flavor": "米饭 / 椰香",
-      "description": "控制椰浆比例，让米饭香浓而不腻。",
-      "cuisine_id": "sea",
-      "difficulty": 1
-    },
-    {
-      "id": "S03",
-      "name": "越式清汤粉",
-      "tier": 1,
-      "prerequisites": [],
-      "cost": 1,
-      "ingredients": "米粉、清汤、香草",
-      "flavor": "清汤 / 米粉",
-      "description": "练习清澈高汤、米粉和香草搭配。",
-      "cuisine_id": "sea",
-      "difficulty": 1
-    },
-    {
-      "id": "S04",
-      "name": "泰式炒河粉",
-      "tier": 1,
-      "prerequisites": [],
-      "cost": 1,
-      "ingredients": "河粉、鸡蛋、豆芽、鱼露",
-      "flavor": "炒粉 / 镬气",
-      "description": "在高温下快速翻炒，平衡咸甜酸。",
-      "cuisine_id": "sea",
-      "difficulty": 1
-    },
-    {
-      "id": "S05",
-      "name": "越南牛肉河粉",
-      "tier": 2,
-      "prerequisites": [
-        "S03",
-        "S02"
-      ],
-      "cost": 1,
-      "ingredients": "牛肉、米粉、香料高汤",
-      "flavor": "汤粉 / 香料",
-      "description": "让香料高汤、牛肉与香草形成层次。",
-      "cuisine_id": "sea",
-      "difficulty": 2
-    },
-    {
-      "id": "S06",
-      "name": "印尼炒饭",
-      "tier": 2,
-      "prerequisites": [
-        "S02",
-        "S04"
-      ],
-      "cost": 1,
-      "ingredients": "米饭、甜酱油、虾片",
-      "flavor": "炒饭 / 甜咸",
-      "description": "用甜酱油和香料打造浓郁炒饭。",
-      "cuisine_id": "sea",
-      "difficulty": 2
-    },
-    {
-      "id": "S07",
-      "name": "沙嗲串烧",
-      "tier": 2,
-      "prerequisites": [
-        "S01"
-      ],
-      "cost": 1,
-      "ingredients": "鸡肉、花生酱、香料",
-      "flavor": "炭烤 / 花生酱",
-      "description": "掌握腌制、串烤与浓郁花生蘸酱。",
-      "cuisine_id": "sea",
-      "difficulty": 2
-    },
-    {
-      "id": "S08",
-      "name": "泰式红咖喱",
-      "tier": 2,
-      "prerequisites": [
-        "S02",
-        "S03"
-      ],
-      "cost": 1,
-      "ingredients": "红咖喱酱、椰浆、肉类",
-      "flavor": "咖喱 / 椰浆",
-      "description": "理解咖喱酱煸炒与椰浆分次加入。",
-      "cuisine_id": "sea",
-      "difficulty": 2
-    },
-    {
-      "id": "S09",
-      "name": "泰式绿咖喱",
-      "tier": 3,
-      "prerequisites": [
-        "S08",
-        "S01"
-      ],
-      "cost": 2,
-      "ingredients": "绿咖喱酱、椰浆、茄子",
-      "flavor": "咖喱 / 青香",
-      "description": "用香草与青辣椒构建清亮辛香。",
-      "cuisine_id": "sea",
-      "difficulty": 3
-    },
-    {
-      "id": "S10",
-      "name": "冬阴功汤",
-      "tier": 3,
-      "prerequisites": [
-        "S03",
-        "S04"
-      ],
-      "cost": 2,
-      "ingredients": "虾、香茅、青柠、辣椒",
-      "flavor": "酸辣汤 / 海鲜",
-      "description": "平衡酸、辣、咸与香茅气息。",
-      "cuisine_id": "sea",
-      "difficulty": 3
-    },
-    {
-      "id": "S11",
-      "name": "马来西亚叻沙",
-      "tier": 3,
-      "prerequisites": [
-        "S08",
-        "S10"
-      ],
-      "cost": 2,
-      "ingredients": "米粉、咖喱汤底、虾",
-      "flavor": "汤面 / 香料",
-      "description": "将咖喱厚度与海鲜酸香整合为复合汤底。",
-      "cuisine_id": "sea",
-      "difficulty": 3
-    },
-    {
-      "id": "S12",
-      "name": "越式炸春卷",
-      "tier": 3,
-      "prerequisites": [
-        "S01",
-        "S04"
-      ],
-      "cost": 2,
-      "ingredients": "米纸、肉馅、木耳",
-      "flavor": "油炸 / 脆皮",
-      "description": "将鲜春卷的包制基础转为酥脆炸制。",
-      "cuisine_id": "sea",
-      "difficulty": 3
-    },
-    {
-      "id": "S13",
-      "name": "海南鸡饭",
-      "tier": 4,
-      "prerequisites": [
-        "S02",
-        "S05"
-      ],
-      "cost": 2,
-      "ingredients": "鸡肉、鸡油饭、姜葱酱",
-      "flavor": "白切 / 米饭",
-      "description": "控制鸡肉熟度，并用鸡油饭和蘸酱提升风味。",
-      "cuisine_id": "sea",
-      "difficulty": 4
-    },
-    {
-      "id": "S14",
-      "name": "椰浆咖喱面",
-      "tier": 4,
-      "prerequisites": [
-        "S08",
-        "S11"
-      ],
-      "cost": 2,
-      "ingredients": "面条、椰浆咖喱汤、豆腐泡",
-      "flavor": "浓汤 / 椰香",
-      "description": "将椰浆咖喱与叻沙汤面技法结合。",
-      "cuisine_id": "sea",
-      "difficulty": 4
-    },
-    {
-      "id": "S15",
-      "name": "泰式打抛猪肉饭",
-      "tier": 4,
-      "prerequisites": [
-        "S02",
-        "S06"
-      ],
-      "cost": 2,
-      "ingredients": "猪肉、罗勒、辣椒、米饭",
-      "flavor": "快炒 / 香草",
-      "description": "用罗勒、辣椒与鱼露快速炒出强烈香气。",
-      "cuisine_id": "sea",
-      "difficulty": 4
-    },
-    {
-      "id": "S16",
-      "name": "马萨曼咖喱",
-      "tier": 5,
-      "prerequisites": [
-        "S08",
-        "S07"
-      ],
-      "cost": 3,
-      "ingredients": "马萨曼咖喱酱、土豆、花生",
-      "flavor": "慢炖 / 温和香料",
-      "description": "把烤香料、坚果与慢炖肉类结合。",
-      "cuisine_id": "sea",
-      "difficulty": 5
-    },
-    {
-      "id": "S17",
-      "name": "印尼沙爹饭",
-      "tier": 5,
-      "prerequisites": [
-        "S07",
-        "S06"
-      ],
-      "cost": 3,
-      "ingredients": "沙嗲串烧、米饭、花生酱",
-      "flavor": "炭烤 / 套餐",
-      "description": "把沙嗲烧烤与印尼风味米饭组合。",
-      "cuisine_id": "sea",
-      "difficulty": 5
-    },
-    {
-      "id": "S18",
-      "name": "海鲜叻沙",
-      "tier": 5,
-      "prerequisites": [
-        "S11",
-        "S10"
-      ],
-      "cost": 3,
-      "ingredients": "虾、鱼片、叻沙汤底",
-      "flavor": "海鲜 / 复合汤底",
-      "description": "强化叻沙的海鲜层次与酸辣平衡。",
-      "cuisine_id": "sea",
-      "difficulty": 5
-    },
-    {
-      "id": "S19",
-      "name": "特色香料海鲜拼盘",
-      "tier": 5,
-      "prerequisites": [
-        "S16",
-        "S18"
-      ],
-      "cost": 3,
-      "ingredients": "海鲜、香料酱、香草",
-      "flavor": "拼盘 / 香料",
-      "description": "用咖喱香料和海鲜汤底打造多种海鲜组合。",
-      "cuisine_id": "sea",
-      "difficulty": 5
-    },
-    {
-      "id": "S20",
-      "name": "东南亚风味宴席",
-      "tier": 5,
-      "prerequisites": [
-        "S13",
-        "S17",
-        "S19"
-      ],
-      "cost": 4,
-      "ingredients": "鸡饭、沙嗲、海鲜、咖喱",
-      "flavor": "宴席 / 多风味统筹",
-      "description": "让清爽、炭烤、浓郁咖喱与海鲜形成完整宴席。",
-      "cuisine_id": "sea",
-      "difficulty": 5
-    },
-    {
-      "id": "L01",
-      "name": "墨西哥玉米饼",
-      "tier": 1,
-      "prerequisites": [],
-      "cost": 1,
-      "ingredients": "玉米面、盐、水",
-      "flavor": "玉米面团 / 平煎",
-      "description": "学习玉米面团的含水量与饼皮厚度。",
-      "cuisine_id": "lat",
-      "difficulty": 1
-    },
-    {
-      "id": "L02",
-      "name": "黑豆饭",
-      "tier": 1,
-      "prerequisites": [],
-      "cost": 1,
-      "ingredients": "黑豆、米饭、香料",
-      "flavor": "豆类 / 主食",
-      "description": "用豆类、米饭与香料建立基础组合。",
-      "cuisine_id": "lat",
-      "difficulty": 1
-    },
-    {
-      "id": "L03",
-      "name": "阿根廷肉馅饼",
-      "tier": 1,
-      "prerequisites": [],
-      "cost": 1,
-      "ingredients": "酥皮、牛肉、洋葱",
-      "flavor": "包馅 / 烘烤",
-      "description": "练习馅料调味、封口和烘烤。",
-      "cuisine_id": "lat",
-      "difficulty": 1
-    },
-    {
-      "id": "L04",
-      "name": "秘鲁青柠腌鱼",
-      "tier": 1,
-      "prerequisites": [],
-      "cost": 1,
-      "ingredients": "鲜鱼、青柠、红洋葱",
-      "flavor": "酸腌 / 鲜食",
-      "description": "利用酸汁改变鱼肉质地，掌握腌制时间。",
-      "cuisine_id": "lat",
-      "difficulty": 1
-    },
-    {
-      "id": "L05",
-      "name": "墨西哥玉米片配莎莎酱",
-      "tier": 2,
-      "prerequisites": [
-        "L01"
-      ],
-      "cost": 1,
-      "ingredients": "玉米片、番茄、洋葱、辣椒",
-      "flavor": "脆食 / 莎莎酱",
-      "description": "从玉米饼延伸出脆片与新鲜莎莎酱。",
-      "cuisine_id": "lat",
-      "difficulty": 2
-    },
-    {
-      "id": "L06",
-      "name": "墨西哥塔可",
-      "tier": 2,
-      "prerequisites": [
-        "L01",
-        "L02"
-      ],
-      "cost": 1,
-      "ingredients": "玉米饼、肉类、豆类、莎莎酱",
-      "flavor": "玉米饼 / 组合",
-      "description": "练习饼皮、馅料和配料的平衡。",
-      "cuisine_id": "lat",
-      "difficulty": 2
-    },
-    {
-      "id": "L07",
-      "name": "巴西芝士面包",
-      "tier": 2,
-      "prerequisites": [
-        "L03"
-      ],
-      "cost": 1,
-      "ingredients": "木薯淀粉、奶酪、鸡蛋",
-      "flavor": "烘焙 / 木薯",
-      "description": "学习木薯淀粉带来的弹韧口感。",
-      "cuisine_id": "lat",
-      "difficulty": 2
-    },
-    {
-      "id": "L08",
-      "name": "墨西哥玉米粽",
-      "tier": 2,
-      "prerequisites": [
-        "L01",
-        "L02"
-      ],
-      "cost": 1,
-      "ingredients": "玉米面、玉米叶、馅料",
-      "flavor": "蒸制 / 包裹",
-      "description": "将玉米面团包馅后蒸制，拓展玉米主食路线。",
-      "cuisine_id": "lat",
-      "difficulty": 2
-    },
-    {
-      "id": "L09",
-      "name": "阿根廷炭烤牛肉",
-      "tier": 2,
-      "prerequisites": [
-        "L03"
-      ],
-      "cost": 1,
-      "ingredients": "牛肉、盐、炭火",
-      "flavor": "炭烤 / 肉类",
-      "description": "用简单调味和稳定炭火突出牛肉本味。",
-      "cuisine_id": "lat",
-      "difficulty": 2
-    },
-    {
-      "id": "L10",
-      "name": "秘鲁海鲜酸橘汁",
-      "tier": 2,
-      "prerequisites": [
-        "L04"
-      ],
-      "cost": 1,
-      "ingredients": "鲜虾、贝类、青柠、香菜",
-      "flavor": "酸腌 / 海鲜",
-      "description": "把酸腌技法拓展到多种海鲜。",
-      "cuisine_id": "lat",
-      "difficulty": 2
-    },
-    {
-      "id": "L11",
-      "name": "墨西哥辣椒炖肉",
-      "tier": 3,
-      "prerequisites": [
-        "L02",
-        "L06"
-      ],
-      "cost": 2,
-      "ingredients": "牛肉、豆类、辣椒、番茄",
-      "flavor": "炖煮 / 辣椒",
-      "description": "以干辣椒、豆类和长时间炖煮建立厚重风味。",
-      "cuisine_id": "lat",
-      "difficulty": 3
-    },
-    {
-      "id": "L12",
-      "name": "墨西哥辣酱焖鸡",
-      "tier": 3,
-      "prerequisites": [
-        "L05",
-        "L11"
-      ],
-      "cost": 2,
-      "ingredients": "鸡肉、辣椒酱、番茄",
-      "flavor": "焖煮 / 辣酱",
-      "description": "将莎莎酱的鲜味与炖煮辣椒酱结合。",
-      "cuisine_id": "lat",
-      "difficulty": 3
-    },
-    {
-      "id": "L13",
-      "name": "巴西黑豆炖肉",
-      "tier": 3,
-      "prerequisites": [
-        "L02",
-        "L09"
-      ],
-      "cost": 2,
-      "ingredients": "黑豆、猪肉、香肠",
-      "flavor": "慢炖 / 豆类",
-      "description": "把豆类主食与肉类慢炖技法组合。",
-      "cuisine_id": "lat",
-      "difficulty": 3
-    },
-    {
-      "id": "L14",
-      "name": "秘鲁鸡肉辣酱饭",
-      "tier": 3,
-      "prerequisites": [
-        "L02",
-        "L10"
-      ],
-      "cost": 2,
-      "ingredients": "鸡肉、黄辣椒酱、米饭",
-      "flavor": "奶香辣酱 / 米饭",
-      "description": "以秘鲁黄辣椒酱构建浓郁鸡肉酱汁。",
-      "cuisine_id": "lat",
-      "difficulty": 3
-    },
-    {
-      "id": "L15",
-      "name": "墨西哥卷饼",
-      "tier": 4,
-      "prerequisites": [
-        "L06",
-        "L11"
-      ],
-      "cost": 2,
-      "ingredients": "大面饼、肉馅、豆类、米饭",
-      "flavor": "卷制 / 组合",
-      "description": "把塔可馅料扩展为更丰富的卷饼结构。",
-      "cuisine_id": "lat",
-      "difficulty": 4
-    },
-    {
-      "id": "L16",
-      "name": "墨西哥摩尔酱鸡",
-      "tier": 4,
-      "prerequisites": [
-        "L11",
-        "L12"
-      ],
-      "cost": 2,
-      "ingredients": "鸡肉、辣椒、可可、香料",
-      "flavor": "复合酱汁 / 慢炖",
-      "description": "通过辣椒、香料与少量可可构建复杂酱汁。",
-      "cuisine_id": "lat",
-      "difficulty": 4
-    },
-    {
-      "id": "L17",
-      "name": "巴西海鲜炖锅",
-      "tier": 4,
-      "prerequisites": [
-        "L10",
-        "L13"
-      ],
-      "cost": 2,
-      "ingredients": "鱼、虾、椰奶、番茄、香菜",
-      "flavor": "海鲜炖煮 / 椰香",
-      "description": "结合海鲜与巴西海岸炖锅风味。",
-      "cuisine_id": "lat",
-      "difficulty": 4
-    },
-    {
-      "id": "L18",
-      "name": "阿根廷炭烤拼盘",
-      "tier": 4,
-      "prerequisites": [
-        "L09",
-        "L13"
-      ],
-      "cost": 2,
-      "ingredients": "牛肉、香肠、内脏、炭火",
-      "flavor": "炭烤 / 拼盘",
-      "description": "组合不同肉类与火候，体现阿根廷烧烤文化。",
-      "cuisine_id": "lat",
-      "difficulty": 4
-    },
-    {
-      "id": "L19",
-      "name": "墨西哥辣酱千层玉米饼",
-      "tier": 5,
-      "prerequisites": [
-        "L12",
-        "L15",
-        "L16"
-      ],
-      "cost": 3,
-      "ingredients": "玉米饼、鸡肉、摩尔酱、奶酪",
-      "flavor": "分层烘烤 / 复合辣酱",
-      "description": "把卷饼、焖鸡和摩尔酱的风味层层叠合。",
-      "cuisine_id": "lat",
-      "difficulty": 5
-    },
-    {
-      "id": "L20",
-      "name": "拉丁美洲炭火盛宴",
-      "tier": 5,
-      "prerequisites": [
-        "L17",
-        "L18",
-        "L19"
-      ],
-      "cost": 4,
-      "ingredients": "炖海鲜、炭烤肉、玉米料理",
-      "flavor": "宴席 / 炭火",
-      "description": "整合海岸炖锅、阿根廷炭烤与墨西哥复合辣酱。",
-      "cuisine_id": "lat",
-      "difficulty": 5
     }
   ],
   "unlock_rules": {
@@ -1515,14 +923,69 @@
     "C03": "yangchun_noodles",
     "C04": "steamed_egg",
     "C09": "gongbaojiding",
-    "C14": "mapodoufu"
+    "C14": "mapodoufu",
+    "C05": "cuisine_c05",
+    "C06": "cuisine_c06",
+    "C07": "cuisine_c07",
+    "C08": "cuisine_c08",
+    "C10": "cuisine_c10",
+    "C11": "cuisine_c11",
+    "C12": "cuisine_c12",
+    "C13": "cuisine_c13",
+    "C15": "cuisine_c15",
+    "C16": "cuisine_c16",
+    "C17": "cuisine_c17",
+    "C18": "cuisine_c18",
+    "C19": "cuisine_c19",
+    "C20": "cuisine_c20",
+    "E01": "cuisine_e01",
+    "E02": "cuisine_e02",
+    "E03": "cuisine_e03",
+    "E04": "cuisine_e04",
+    "E05": "cuisine_e05",
+    "E06": "cuisine_e06",
+    "E07": "cuisine_e07",
+    "E08": "cuisine_e08",
+    "E09": "cuisine_e09",
+    "E10": "cuisine_e10",
+    "E11": "cuisine_e11",
+    "E12": "cuisine_e12",
+    "E13": "cuisine_e13",
+    "E14": "cuisine_e14",
+    "E15": "cuisine_e15",
+    "E16": "cuisine_e16",
+    "E17": "cuisine_e17",
+    "E18": "cuisine_e18",
+    "E19": "cuisine_e19",
+    "E20": "cuisine_e20",
+    "J01": "cuisine_j01",
+    "J02": "cuisine_j02",
+    "J03": "cuisine_j03",
+    "J04": "cuisine_j04",
+    "J05": "cuisine_j05",
+    "J06": "cuisine_j06",
+    "J07": "cuisine_j07",
+    "J08": "cuisine_j08",
+    "J09": "cuisine_j09",
+    "J10": "cuisine_j10",
+    "J11": "cuisine_j11",
+    "J12": "cuisine_j12",
+    "J13": "cuisine_j13",
+    "J14": "cuisine_j14",
+    "J15": "cuisine_j15",
+    "J16": "cuisine_j16",
+    "J17": "cuisine_j17",
+    "J18": "cuisine_j18",
+    "J19": "cuisine_j19",
+    "J20": "cuisine_j20"
   },
   "charts": {
     "C03": {
       "id": "study.C03",
       "kind": "kitchen",
-      "version": 2,
+      "version": 3,
       "recipe_id": "study.yangchun_noodles",
+      "profile": "lesson.C03",
       "primary": [
         "wheat_noodles",
         "water"
@@ -1531,11 +994,695 @@
     "C04": {
       "id": "study.C04",
       "kind": "kitchen",
-      "version": 2,
+      "version": 3,
       "recipe_id": "study.steamed_egg",
+      "profile": "lesson.C04",
       "primary": [
         "egg",
         "water"
+      ]
+    },
+    "C01": {
+      "id": "study.C01",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.egg_fried_rice",
+      "profile": "lesson.C01",
+      "primary": [
+        "rice",
+        "egg"
+      ]
+    },
+    "C02": {
+      "id": "study.C02",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "service.tomato_egg",
+      "profile": "lesson.C02",
+      "primary": [
+        "tomato",
+        "egg"
+      ]
+    },
+    "C05": {
+      "id": "study.C05",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.c05",
+      "profile": "lesson.C05",
+      "primary": [
+        "rice",
+        "shrimp",
+        "ham",
+        "pea",
+        "egg"
+      ]
+    },
+    "C06": {
+      "id": "study.C06",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.c06",
+      "profile": "lesson.C06",
+      "primary": [
+        "pork",
+        "bellpepper"
+      ]
+    },
+    "C07": {
+      "id": "study.C07",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.c07",
+      "profile": "lesson.C07",
+      "primary": [
+        "wheat_noodles"
+      ]
+    },
+    "C08": {
+      "id": "study.C08",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.c08",
+      "profile": "lesson.C08",
+      "primary": [
+        "fish"
+      ]
+    },
+    "C09": {
+      "id": "study.C09",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "service.kungpao",
+      "profile": "lesson.C09",
+      "primary": [
+        "chicken",
+        "peanut"
+      ]
+    },
+    "C10": {
+      "id": "study.C10",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.c10",
+      "profile": "lesson.C10",
+      "primary": [
+        "wheat_noodles",
+        "pork",
+        "cucumber"
+      ]
+    },
+    "C11": {
+      "id": "study.C11",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.c11",
+      "profile": "lesson.C11",
+      "primary": [
+        "porkbelly"
+      ]
+    },
+    "C12": {
+      "id": "study.C12",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.c12",
+      "profile": "lesson.C12",
+      "primary": [
+        "dough",
+        "pork",
+        "aspic"
+      ]
+    },
+    "C13": {
+      "id": "study.C13",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.c13",
+      "profile": "lesson.C13",
+      "primary": [
+        "pork",
+        "woodear"
+      ]
+    },
+    "C14": {
+      "id": "study.C14",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "service.mapo_tofu",
+      "profile": "lesson.C14",
+      "primary": [
+        "tofu",
+        "bean_paste"
+      ]
+    },
+    "C15": {
+      "id": "study.C15",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.c15",
+      "profile": "lesson.C15",
+      "primary": [
+        "beef",
+        "wheat_noodles",
+        "stock"
+      ]
+    },
+    "C16": {
+      "id": "study.C16",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.c16",
+      "profile": "lesson.C16",
+      "primary": [
+        "raw_rice",
+        "chinese_sausage"
+      ]
+    },
+    "C17": {
+      "id": "study.C17",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.c17",
+      "profile": "lesson.C17",
+      "primary": [
+        "duck",
+        "flatbread",
+        "cucumber"
+      ]
+    },
+    "C18": {
+      "id": "study.C18",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.c18",
+      "profile": "lesson.C18",
+      "primary": [
+        "pastry",
+        "char_siu"
+      ]
+    },
+    "C19": {
+      "id": "study.C19",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.c19",
+      "profile": "lesson.C19",
+      "primary": [
+        "driedabalone",
+        "driedscallop",
+        "fishmaw",
+        "seacucumber",
+        "chicken",
+        "stock"
+      ]
+    },
+    "C20": {
+      "id": "study.C20",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.c20",
+      "profile": "lesson.C20",
+      "primary": [
+        "duck",
+        "porkbelly",
+        "shrimp",
+        "flour",
+        "egg",
+        "stock"
+      ]
+    },
+    "E01": {
+      "id": "study.E01",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.e01",
+      "profile": "lesson.E01",
+      "primary": [
+        "dough",
+        "malt"
+      ]
+    },
+    "E02": {
+      "id": "study.E02",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.e02",
+      "profile": "lesson.E02",
+      "primary": [
+        "pasta",
+        "tomato"
+      ]
+    },
+    "E03": {
+      "id": "study.E03",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.e03",
+      "profile": "lesson.E03",
+      "primary": [
+        "onion",
+        "stock",
+        "bread"
+      ]
+    },
+    "E04": {
+      "id": "study.E04",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.e04",
+      "profile": "lesson.E04",
+      "primary": [
+        "beef"
+      ]
+    },
+    "E05": {
+      "id": "study.E05",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.e05",
+      "profile": "lesson.E05",
+      "primary": [
+        "dough",
+        "mozzarella"
+      ]
+    },
+    "E06": {
+      "id": "study.E06",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.e06",
+      "profile": "lesson.E06",
+      "primary": [
+        "pasta",
+        "mushroom"
+      ]
+    },
+    "E07": {
+      "id": "study.E07",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.e07",
+      "profile": "lesson.E07",
+      "primary": [
+        "potato",
+        "cheese"
+      ]
+    },
+    "E08": {
+      "id": "study.E08",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.e08",
+      "profile": "lesson.E08",
+      "primary": [
+        "chicken"
+      ]
+    },
+    "E09": {
+      "id": "study.E09",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.e09",
+      "profile": "lesson.E09",
+      "primary": [
+        "raw_rice",
+        "shrimp",
+        "clam",
+        "squid"
+      ]
+    },
+    "E10": {
+      "id": "study.E10",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.e10",
+      "profile": "lesson.E10",
+      "primary": [
+        "raw_rice",
+        "stock",
+        "parmesan"
+      ]
+    },
+    "E11": {
+      "id": "study.E11",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.e11",
+      "profile": "lesson.E11",
+      "primary": [
+        "beef",
+        "carrot",
+        "onion"
+      ]
+    },
+    "E12": {
+      "id": "study.E12",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.e12",
+      "profile": "lesson.E12",
+      "primary": [
+        "pork_knuckle",
+        "sauerkraut",
+        "potato"
+      ]
+    },
+    "E13": {
+      "id": "study.E13",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.e13",
+      "profile": "lesson.E13",
+      "primary": [
+        "lasagna_sheet",
+        "beef",
+        "onion"
+      ]
+    },
+    "E14": {
+      "id": "study.E14",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.e14",
+      "profile": "lesson.E14",
+      "primary": [
+        "duck"
+      ]
+    },
+    "E15": {
+      "id": "study.E15",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.e15",
+      "profile": "lesson.E15",
+      "primary": [
+        "raw_rice",
+        "clam",
+        "shrimp",
+        "seafood_stock"
+      ]
+    },
+    "E16": {
+      "id": "study.E16",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.e16",
+      "profile": "lesson.E16",
+      "primary": [
+        "flour",
+        "egg",
+        "milk",
+        "strawberry"
+      ]
+    },
+    "E17": {
+      "id": "study.E17",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.e17",
+      "profile": "lesson.E17",
+      "primary": [
+        "beefsteak",
+        "pastry",
+        "mushroom"
+      ]
+    },
+    "E18": {
+      "id": "study.E18",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.e18",
+      "profile": "lesson.E18",
+      "primary": [
+        "egg",
+        "milk"
+      ]
+    },
+    "E19": {
+      "id": "study.E19",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.e19",
+      "profile": "lesson.E19",
+      "primary": [
+        "duck",
+        "beef",
+        "carrot"
+      ]
+    },
+    "E20": {
+      "id": "study.E20",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.e20",
+      "profile": "lesson.E20",
+      "primary": [
+        "shrimp",
+        "beef",
+        "potato",
+        "egg",
+        "milk"
+      ]
+    },
+    "J01": {
+      "id": "study.J01",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.j01",
+      "profile": "lesson.J01",
+      "primary": [
+        "rice",
+        "nori"
+      ]
+    },
+    "J02": {
+      "id": "study.J02",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.j02",
+      "profile": "lesson.J02",
+      "primary": [
+        "egg"
+      ]
+    },
+    "J03": {
+      "id": "study.J03",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.j03",
+      "profile": "lesson.J03",
+      "primary": [
+        "udon"
+      ]
+    },
+    "J04": {
+      "id": "study.J04",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.j04",
+      "profile": "lesson.J04",
+      "primary": [
+        "fish",
+        "lemon"
+      ]
+    },
+    "J05": {
+      "id": "study.J05",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.j05",
+      "profile": "lesson.J05",
+      "primary": [
+        "chicken",
+        "rice"
+      ]
+    },
+    "J06": {
+      "id": "study.J06",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.j06",
+      "profile": "lesson.J06",
+      "primary": [
+        "chicken",
+        "egg",
+        "rice"
+      ]
+    },
+    "J07": {
+      "id": "study.J07",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.j07",
+      "profile": "lesson.J07",
+      "primary": [
+        "pork",
+        "flour",
+        "breadcrumbs",
+        "egg"
+      ]
+    },
+    "J08": {
+      "id": "study.J08",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.j08",
+      "profile": "lesson.J08",
+      "primary": [
+        "sushi_rice",
+        "nori",
+        "cucumber"
+      ]
+    },
+    "J09": {
+      "id": "study.J09",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.j09",
+      "profile": "lesson.J09",
+      "primary": [
+        "shrimp",
+        "carrot",
+        "eggplant",
+        "flour",
+        "egg"
+      ]
+    },
+    "J10": {
+      "id": "study.J10",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.j10",
+      "profile": "lesson.J10",
+      "primary": [
+        "ramen",
+        "char_siu",
+        "bone_stock"
+      ]
+    },
+    "J11": {
+      "id": "study.J11",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.j11",
+      "profile": "lesson.J11",
+      "primary": [
+        "pork",
+        "breadcrumbs",
+        "egg",
+        "rice"
+      ]
+    },
+    "J12": {
+      "id": "study.J12",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.j12",
+      "profile": "lesson.J12",
+      "primary": [
+        "sushi_rice",
+        "salmon"
+      ]
+    },
+    "J13": {
+      "id": "study.J13",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.j13",
+      "profile": "lesson.J13",
+      "primary": [
+        "ramen",
+        "corn",
+        "bone_stock"
+      ]
+    },
+    "J14": {
+      "id": "study.J14",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.j14",
+      "profile": "lesson.J14",
+      "primary": [
+        "eel",
+        "rice"
+      ]
+    },
+    "J15": {
+      "id": "study.J15",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.j15",
+      "profile": "lesson.J15",
+      "primary": [
+        "sushi_rice",
+        "salmon",
+        "tuna",
+        "shrimp",
+        "nori"
+      ]
+    },
+    "J16": {
+      "id": "study.J16",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.j16",
+      "profile": "lesson.J16",
+      "primary": [
+        "ramen",
+        "bone_stock",
+        "char_siu"
+      ]
+    },
+    "J17": {
+      "id": "study.J17",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.j17",
+      "profile": "lesson.J17",
+      "primary": [
+        "rice",
+        "shrimp",
+        "eggplant",
+        "flour",
+        "egg"
+      ]
+    },
+    "J18": {
+      "id": "study.J18",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.j18",
+      "profile": "lesson.J18",
+      "primary": [
+        "eel"
+      ]
+    },
+    "J19": {
+      "id": "study.J19",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.j19",
+      "profile": "lesson.J19",
+      "primary": [
+        "sushi_rice",
+        "tuna",
+        "salmon",
+        "scallop"
+      ]
+    },
+    "J20": {
+      "id": "study.J20",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.j20",
+      "profile": "lesson.J20",
+      "primary": [
+        "fish",
+        "shrimp",
+        "sushi_rice",
+        "radish",
+        "mushroom"
       ]
     }
   }

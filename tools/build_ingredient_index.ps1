@@ -6,6 +6,7 @@ $root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $source = Join-Path $root 'doc/source/ingredients.json'
 if (-not $OutputPath) { $OutputPath = Join-Path $root 'content/ingredient_index.json' }
 $raw = Get-Content -LiteralPath $source -Raw | ConvertFrom-Json
+$materials = Get-Content -LiteralPath (Join-Path $root 'content/culinary_materials.json') -Raw | ConvertFrom-Json
 $index = [ordered]@{
   schema_version = 1
   source = 'doc/source/ingredients.json'
@@ -13,7 +14,7 @@ $index = [ordered]@{
   source_sha256 = (Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash.ToLowerInvariant()
   purpose = 'Identity and display index only; no flavor or recipe balancing data.'
   categories = @($raw.categories | ForEach-Object {
-    [ordered]@{ id=$_.id; name=$_.name; items=@($_.items | ForEach-Object {
+    [ordered]@{ id=$_.id; name=$_.name; items=@($_.items | Where-Object { $_.id -notin $materials.retired_ids } | ForEach-Object {
       [ordered]@{ id=$_.id; name=$_.name; sub=[string]$_.sub }
     }) }
   })

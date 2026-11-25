@@ -23,9 +23,7 @@ func art(parent: Control,texture: Texture2D,rect: Rect2) -> void:
 	view.position=rect.position;view.size=rect.size;view.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	view.texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST;parent.add_child(view)
 func surface(town: String,index: int) -> Texture2D:
-	var image:=Image.create(120,120,false,Image.FORMAT_RGBA8)
-	TDTownScenery.paint(image,Rect2i(0,0,120,120),index,town)
-	return ImageTexture.create_from_image(image)
+	return TDTownScenery.surface_texture(index,town)
 func patch(parent: Control,texture: Texture2D,rect: Rect2) -> void:
 	var view:=TextureRect.new();view.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;view.texture=texture
 	view.position=rect.position;view.size=rect.size;view.stretch_mode=TextureRect.STRETCH_TILE
@@ -36,9 +34,10 @@ func run() -> void:
 		for index: int in 4:
 			var tile: Image=TDTownScenery.surface_texture(index,town).get_image()
 			var horizontal: bool=true;var vertical: bool=true
-			for n: int in 120:
-				horizontal=horizontal and tile.get_pixel(0,n)==tile.get_pixel(119,n)
-				vertical=vertical and tile.get_pixel(n,0)==tile.get_pixel(n,119)
+			for y: int in tile.get_height():
+				horizontal=horizontal and tile.get_pixel(0,y)==tile.get_pixel(tile.get_width()-1,y)
+			for x: int in tile.get_width():
+				vertical=vertical and tile.get_pixel(x,0)==tile.get_pixel(x,tile.get_height()-1)
 			check(horizontal,"left/right seamless "+town+":"+str(index))
 			check(vertical,"top/bottom seamless "+town+":"+str(index))
 	var sample:=TDTownMap.new();sample.extent=10
@@ -93,15 +92,15 @@ func run() -> void:
 		shell.town._camera.zoom=Vector2.ONE*.75
 		await capture("chengdu-"+id)
 	shell.town.spawn_at_harbor();await capture("chengdu-harbor")
-	for town: String in ["tokyo","paris","bangkok","mexico_city"]:
+	for town: String in TDRegionalLayout.IDS:
 		check(shell.voyage(town).ok,"travel "+town);await process_frame
 		var visitor: TDTravelWorld=shell.visiting
 		visitor.camera.zoom=Vector2.ONE*.75
 		await capture(town+"-port")
 		var plaza: Dictionary=visitor.map._by_id("plaza")
-		visitor.player.position=(Vector2(plaza.approach_x,plaza.approach_y)+Vector2.ONE*.5)*48
+		visitor.player.position=(Vector2(plaza.approach_x,plaza.approach_y)+Vector2.ONE*.5)*visitor.cell_size
 		await capture(town+"-streets")
-		visitor.player.position=(Vector2(TDTravelCatalog.port(town))+Vector2.ONE*.5)*48
+		visitor.player.position=(Vector2(TDTravelCatalog.port(town))+Vector2.ONE*.5)*visitor.cell_size
 	check(shell.voyage("chengdu").ok,"return home")
 	check(shell.profile.snapshot()==before,"all map views preserve state")
 	shell._dispose_game();app.queue_free();await process_frame;await process_frame

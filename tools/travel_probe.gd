@@ -23,7 +23,7 @@ func run() -> void:
 	shell.guide.dialogue.finish_now();shell.profile.story.beat="done";shell.travel("town");shell.town.spawn_at_harbor()
 	var before:=shell.profile.snapshot()
 	tap("world_map");check(shell._map_open,"real M opens home map");await capture("01-home-map");tap("world_map")
-	for id: String in ["tokyo","paris","bangkok","mexico_city"]:
+	for id: String in TDRegionalLayout.IDS:
 		check(shell.voyage(id).ok,"travel "+id);await process_frame
 		check(shell.visiting.nearby().get("kind")=="harbor","arrival port reachable "+id)
 		tap("world_interact");check(shell._modal!=null,"real E at port "+id);shell._close_dialog()
@@ -34,7 +34,7 @@ func run() -> void:
 		Input.action_release("world_left");await physics_frame
 		check(shell.visiting.player.position.distance_to(start)>20,"held walking from arrival "+id)
 		var plaza: Dictionary=shell.visiting.map._by_id("plaza")
-		shell.visiting.player.position=(Vector2(plaza.approach_x,plaza.approach_y)+Vector2.ONE*.5)*48;shell.visiting.camera.zoom=Vector2.ONE*.75
+		shell.visiting.player.position=(Vector2(plaza.approach_x,plaza.approach_y)+Vector2.ONE*.5)*shell.visiting.cell_size;shell.visiting.camera.zoom=Vector2.ONE*.75
 		await capture(id+"-streets")
 		tap("world_map");check(shell._map_open and paused,"real M pause "+id)
 		var atlas: TDTravelMapView
@@ -47,7 +47,7 @@ func run() -> void:
 		atlas.focus_town(id);await capture(id+"-detail")
 		tap("world_map")
 		check(not paused and shell.visiting.player.controls_enabled,"M restores controls "+id)
-		shell.visiting.player.position=(Vector2(TDTravelCatalog.port(id))+Vector2.ONE*.5)*48
+		shell.visiting.player.position=(Vector2(TDTravelCatalog.port(id))+Vector2.ONE*.5)*shell.visiting.cell_size
 	check(shell.voyage("chengdu").ok,"return home")
 	check(shell.profile.snapshot()==before,"no implicit economic or unlock mutations")
 	shell._dispose_game();app.queue_free();await process_frame;await process_frame

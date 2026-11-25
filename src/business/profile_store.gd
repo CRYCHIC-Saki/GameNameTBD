@@ -5,6 +5,7 @@ const SLOT_COUNT := 6
 var root: String
 var validator: Callable
 var interrupt_at: String = ""
+var _validated_slots: Dictionary = {}
 
 func _init(directory: String, validate: Callable) -> void:
 	root=directory.trim_suffix("/");validator=validate
@@ -22,13 +23,23 @@ func path_for(id: String) -> String:
 
 func backend(id: String) -> TDResearchStore:
 	# Bind identity into validation before any backup recovery or file replacement.
-	var check:=func(raw:Variant)->TDOutcome:
-		var result:TDOutcome=validator.call(raw)
-		if result.ok and raw.slot_id!=id: return TDOutcome.new(false,"SLOT_MISMATCH")
-		return result
-	var store := TDResearchStore.new(path_for(id),check)
+	var store := TDResearchStore.new(path_for(id), _validate_slot.bind(id))
 	store.interrupt_at=interrupt_at
 	return store
+
+func _validate_slot(raw: Variant, id: String) -> TDOutcome:
+	# The backend has already checked the on-disk checksum. Skip domain checks
+	# only for the same validated payload, even if the file was written again.
+	var previous: Dictionary = _validated_slots.get(id, {})
+	if previous.get("validator") == validator and previous.get("payload") == raw:
+		return TDOutcome.new(true, "VALIDATED")
+	var result: TDOutcome = validator.call(raw)
+	if not result.ok:
+		return result
+	if raw.slot_id != id:
+		return TDOutcome.new(false, "SLOT_MISMATCH")
+	_validated_slots[id] = {"validator": validator, "payload": raw.duplicate(true)}
+	return result
 
 func load_slot(id: String) -> TDOutcome:
 	if not valid_id(id): return TDOutcome.new(false,"INVALID_SLOT")
@@ -101,7 +112,7 @@ func archive_slot(id: String) -> TDOutcome:
 
 func _slot_file(id: String, name: String) -> bool:
 	var prefix:=id+".json"
-	return name==prefix or name in [prefix+".bak",prefix+".tmp"] or name.begins_with(prefix+".preserved-") or name.begins_with(prefix+".before-map-v2") or name.begins_with(prefix+".before-region-v2")
+	return name==prefix or name in [prefix+".bak",prefix+".tmp"] or name.begins_with(prefix+".preserved-") or name.begins_with(prefix+".before-map-v2") or name.begins_with(prefix+".before-region-v2") or name.begins_with(prefix+".before-jiangnan-v2") or name.begins_with(prefix+".before-shiomi-v3") or name.begins_with(prefix+".before-egret-v4") or name.begins_with(prefix+".before-egret-v5") or name.begins_with(prefix+".before-egret-v6") or name.begins_with(prefix+".before-egret-v7") or name.begins_with(prefix+".before-egret-v8") or name.begins_with(prefix+".before-egret-v9") or name.begins_with(prefix+".before-egret-v10") or name.begins_with(prefix+".before-egret-v11") or name.begins_with(prefix+".before-three-towns")
 
 func _write_delete_manifest(directory: String, data: Dictionary) -> bool:
 	var path:=directory.path_join("manifest.json")
@@ -141,12 +152,17 @@ func _rollback_delete(archive: String, data: Dictionary) -> TDOutcome:
 	if DirAccess.remove_absolute(archive.path_join("manifest.json"))!=OK: return TDOutcome.new(false,"DELETE_RECOVERY_REQUIRED")
 	return TDOutcome.new(true,"DELETE_ROLLED_BACK")
 
-func backup_map_migration(id: String, regional: bool=false) -> TDOutcome:
+func backup_map_migration(id: String, regional: bool=false, jiangnan: bool=false, regions_retired: bool=false) -> TDOutcome:
 	if not valid_id(id): return TDOutcome.new(false,"INVALID_SLOT")
 	var source:=path_for(id)
 	var checked:=load_slot(id)
 	if not checked.ok: return checked
 	var suffix: String=".before-region-v2" if regional else ".before-map-v2"
+	if regional and checked.data.get("region_layout_version",1)==2: suffix=".before-shiomi-v3"
+	if regional and checked.data.get("region_layout_version",1)==3: suffix=".before-egret-v4"
+	if regional and int(checked.data.get("region_layout_version",1)) in [4,5,6,7,8,9,10]: suffix=".before-egret-v11"
+	if jiangnan and not regional: suffix=".before-jiangnan-v2"
+	if regions_retired: suffix=".before-three-towns"
 	var destination:=source+suffix+".bak"
 	if FileAccess.file_exists(destination):
 		# Never replace the first original. A prior interrupted migration can retry.

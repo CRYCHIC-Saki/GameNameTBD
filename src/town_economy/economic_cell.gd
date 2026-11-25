@@ -40,8 +40,13 @@ static func validate(raw: Variant) -> TDOutcome:
 	if not raw.get("reachable") is bool or not raw.get("travel_minutes") is Dictionary:
 		return TDOutcome.new(false, "INVALID_CELL_ACCESS")
 	if raw.has("terrain_type"):
-		if raw.terrain_type not in ["plain", "hill", "water"] or raw.get("surface_type") not in ["grass", "woodland", "water", "stone", "bridge", "sand"] or not TDServiceCatalog.integer(raw.get("elevation"), 0, 100):
+		if raw.terrain_type not in ["plain", "hill", "water", "outside"] or raw.get("surface_type") not in ["grass", "woodland", "water", "sea", "stone", "bridge", "sand", "lane", "lawn", "square", "quay", "earth", "pier", "raked_gravel", "gravel", "rock", "reef", "cliff", "paddy", "wheat", "outside"] or not TDServiceCatalog.integer(raw.get("elevation"), 0, 100):
 			return TDOutcome.new(false, "INVALID_CELL_TERRAIN")
+		if raw.terrain_type == "outside" or raw.surface_type == "outside":
+			if raw.terrain_type != "outside" or raw.surface_type != "outside" or raw.get("walkable") != false or raw.get("buildable") != false:
+				return TDOutcome.new(false, "INVALID_CELL_TERRAIN")
+		if raw.has("district_id") and (not raw.district_id is String or raw.district_id.is_empty()):
+			return TDOutcome.new(false, "INVALID_CELL_DISTRICT")
 		if not raw.get("buildable") is bool or not raw.get("walkable") is bool:
 			return TDOutcome.new(false, "INVALID_CELL_TERRAIN")
 	for origin: Variant in raw.travel_minutes:

@@ -21,13 +21,13 @@ func branch(p: TDGameProfile) -> String:
 	# The fixture retains the supported pre-roster opening path; delivery itself
 	# exercises the real shared branch inventory, batch and cost implementations.
 	p.branches.managed=false
-	var opened:=p.branches.open_store("chengdu",[6,48,3,4],"cn","manager.steady","supplier-branch")
+	var opened:=p.branches.open_store("chengdu",TDRegionMigration.find_site(p.branches.town_map("chengdu"),[6,48,3,4]),"cn","manager.steady","supplier-branch")
 	assert_true(opened.ok,opened.code)
 	return str(opened.data.get("store_id",""))
 
-func test_five_suppliers_cuisine_filter_and_quote_are_read_only() -> void:
+func test_three_suppliers_cuisine_filter_and_quote_are_read_only() -> void:
 	var p:=make_profile(); var n:=network(p); var before:=p.snapshot()
-	assert_eq(n.config.towns.size(),5)
+	assert_eq(n.config.towns.size(),3)
 	assert_eq(n.item_name("tomato"),"番茄")
 	assert_eq(n.item_name("egg"),"鸡蛋")
 	assert_eq(n.item_name("oil"),"食用油")
@@ -46,8 +46,8 @@ func test_shared_distance_increases_price_and_time_for_equal_market_prices() -> 
 	var p:=make_profile(); var n:=network(p)
 	for town: String in TDSupplierNetwork.TOWNS: p.commerce.state.markets[town].price.salt=100
 	var local:=n.quote("chengdu","player_diner",{"salt":1000})
-	var near:=n.quote("bangkok","player_diner",{"salt":1000})
-	var far:=n.quote("mexico_city","player_diner",{"salt":1000})
+	var near:=n.quote("tokyo","player_diner",{"salt":1000})
+	var far:=n.quote("paris","player_diner",{"salt":1000})
 	assert_eq(float(local.data.distance),0.0)
 	assert_eq(int(local.data.total_cents),100)
 	assert_eq(float(local.data.production_seconds),1800.0)

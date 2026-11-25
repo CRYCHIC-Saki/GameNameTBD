@@ -212,6 +212,7 @@ func actor(who: String, feet: Vector2, height: float, facing: Vector2i=Vector2i.
 	var frame:=int(elapsed*6)%4 if walking else -1
 	var art: Texture2D=TDChefArt.texture(facing,frame) if who=="hero" else TDStoryArt.sprite(who,facing,frame)
 	var width:=height*art.get_width()/art.get_height()
+	if who=="hero": width=TDChefArt.render_size(facing,frame,height).x
 	draw_set_transform_matrix(_camera*Transform2D(0,feet))
 	draw_ellipse_shadow(Vector2.ZERO,width*.42)
 	draw_set_transform_matrix(_camera*Transform2D(bend,feet))
@@ -220,7 +221,9 @@ func actor(who: String, feet: Vector2, height: float, facing: Vector2i=Vector2i.
 		var row:=int({"hero":0,"aling":1,"chen":2}[who])
 		art=TDRedrawArt.cell("res://assets/redraw-v1/cinematic.png",row*6+pose,6,3)
 		width=height*art.get_width()/art.get_height()
-	draw_texture_rect(art,Rect2(-width*.5,-height,width,height),false)
+	var target:=Rect2(-width*.5,-height,width,height)
+	if who=="hero" and (walking or pose<0): target=TDChefArt.facing_rect(target,facing)
+	draw_texture_rect(art,target,false)
 	draw_set_transform_matrix(_camera)
 
 func pose_for(who: String) -> int:

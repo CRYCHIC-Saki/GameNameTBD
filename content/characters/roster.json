@@ -7,7 +7,7 @@
     "bad_meal_score": 40,
     "good_meal_gain": 3,
     "bad_meal_gain": -2,
-    "walk_step_sec": 0.35,
+    "walk_step_sec": 0.347826086956522,
     "friend_at": 20,
     "close_at": 60
   },

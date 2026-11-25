@@ -44,6 +44,11 @@ var _near_prompt: Label
 var simmer_meters: Array=[]
 var station_names: Dictionary={}
 var single_fridge: bool = false
+var cuisine_id: String = "cn":
+	set(value):
+		cuisine_id=value
+		if has_node("Background"): $Background.visible=not TDRegionalInterior.regional(value)
+		queue_redraw()
 var pot_contents: Array=[]
 var crew: TDRestaurantCrew
 const CHEF_SPRITE := preload("res://assets/redraw-v1/chef.png")
@@ -113,9 +118,10 @@ func stations() -> Array[Dictionary]:
 
 
 func _ready() -> void:
-	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_player = $Player as TDKitchenPlayer
 	$Background.z_index = -10
+	$Background.visible=not TDRegionalInterior.regional(cuisine_id)
 	$Background.scale=Vector2(1280.0/$Background.texture.get_width(),800.0/$Background.texture.get_height())
 	_player.z_index = 1
 	_make_hud()
@@ -446,20 +452,17 @@ func _sync_staff() -> void:
 				caption = "厨师 %s 做菜 · %s" % [String(cook["name"]), step]
 			elif work != "":
 				caption = "厨师 %s %s" % [String(cook["name"]), work]
-			wanted.append({"caption": caption, "name": String(cook["name"]), "color": Color("#c46a3a"), "work": work, "step": step, "job_id": str(cook.id)+":"+job_id, "index": index})
+			wanted.append({"caption": caption, "cuisine_id": cook.get("cuisine_id","cn"), "appearance_variant": cook.get("appearance_variant",0), "name": String(cook["name"]), "color": Color("#c46a3a"), "work": work, "step": step, "job_id": str(cook.id)+":"+job_id, "index": index})
 	while _staff_nodes.size() < wanted.size():
 		var root := Node2D.new()
 		var sprite := Sprite2D.new()
 		sprite.name = "Body"
-		sprite.texture = CHEF_SPRITE
-		sprite.centered = true
-		sprite.position = Vector2(0, -47)
-		sprite.scale = Vector2(0.07, 0.07)
+		sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		root.add_child(sprite)
 		var caption := Label.new()
 		caption.name = "Name"
 		caption.theme = TDUI.theme()
-		caption.position = Vector2(-60, -102)
+		caption.position = Vector2(-60, -137)
 		caption.size = Vector2(120, 24)
 		caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		caption.add_theme_font_size_override("font_size", TDUI.FONT_CAPTION)
@@ -483,15 +486,19 @@ func _sync_staff() -> void:
 		if not root.has_meta("placed"):
 			root.position = home
 			root.set_meta("placed", true)
-		var step_x := goal.x - root.position.x
+		var previous := root.position
 		if _staff_delta > 0.0:
 			root.position = root.position.move_toward(goal, COOK_WALK_SPEED * _staff_delta)
 		root.z_index = 1
-		if step_x < -0.4:
-			body.flip_h = true
-		elif step_x > 0.4:
-			body.flip_h = false
-		body.position = Vector2(0, -47)
+		if not root.has_meta("gait"):
+			var new_gait := TDNpcGait.new()
+			new_gait.reset(previous)
+			root.set_meta("gait",new_gait)
+		var gait: TDNpcGait = root.get_meta("gait")
+		gait.sample(root.position,_staff_delta<=0,root.position.is_equal_approx(goal))
+		body.texture=TDEmployeeArt.sprite(info.cuisine_id,"cook",gait.facing,gait.frame,info.appearance_variant)
+		var lift := TDEmployeeArt.breath_lift(_crew_time,index) if gait.frame < 0 and not cooking else 0.0
+		TDEmployeeArt.pose_body(body,TDKitchenStaffActor.FRAME_HEIGHT,lift)
 		var name_label := root.get_node("Name") as Label
 		name_label.text = String(info.caption)
 		if cooking:
@@ -533,13 +540,14 @@ func _station_hint(id: String) -> String:
 
 func _draw_service_door() -> void:
 	var frame := SERVICE_DOOR_RECT
+	var wood := Color(TDRegionalInterior.WOODS.get(TDRegionalInterior.style(cuisine_id),"8b5a34"))
 	var leaf_w := frame.size.x * 0.5 - 2.0
-	draw_rect(Rect2(frame.position, Vector2(leaf_w, frame.size.y)), Color("8b5a34"))
-	draw_rect(Rect2(frame.position + Vector2(frame.size.x - leaf_w, 0), Vector2(leaf_w, frame.size.y)), Color("6d4528"))
+	draw_rect(Rect2(frame.position, Vector2(leaf_w, frame.size.y)), wood)
+	draw_rect(Rect2(frame.position + Vector2(frame.size.x - leaf_w, 0), Vector2(leaf_w, frame.size.y)), wood.darkened(.12))
 	var panel := Vector2(leaf_w - 16.0, frame.size.y * 0.62)
 	var panel_at := frame.position + Vector2(8.0, frame.size.y * 0.16)
-	draw_rect(Rect2(panel_at, panel), Color("5c3a22"))
-	draw_rect(Rect2(frame.position + Vector2(frame.size.x - leaf_w + 8.0, frame.size.y * 0.16), panel), Color("4a2e1b"))
+	draw_rect(Rect2(panel_at, panel), wood.darkened(.24))
+	draw_rect(Rect2(frame.position + Vector2(frame.size.x - leaf_w + 8.0, frame.size.y * 0.16), panel), wood.darkened(.3))
 	var seam := frame.position.x + frame.size.x * 0.5
 	draw_line(Vector2(seam, frame.position.y), Vector2(seam, frame.end.y), Color("3a2416"), 2.0)
 	draw_circle(Vector2(seam - 14.0, frame.position.y + frame.size.y * 0.55), 3.0, Color("e2ba69"))
@@ -548,13 +556,17 @@ func _draw_service_door() -> void:
 		draw_string(_hud.get_theme_default_font(), frame.position + Vector2(frame.size.x * 0.5 - 20.0, -8.0), "餐厅", HORIZONTAL_ALIGNMENT_LEFT, 80, TDUI.FONT_CAPTION, TDUI.ORANGE)
 
 func _draw() -> void:
+	TDRegionalInterior.draw_kitchen(self,cuisine_id)
 	if service_door:
 		_draw_service_door()
 	for station: Dictionary in stations():
 		var feet: Vector2=station.get("visual",station.position-Vector2(0,70))
 		var index: int={"fridge":4,"board":5,"steamer":7,"serve":8,"trash":9,"supply":14}.get(str(station.get("kind","")),6)
 		if station.id=="kitchen.serve": feet=Vector2(1040,615)
-		TDEnvironmentArt.draw_prop(self,index,feet,220 if index in [4,8] else (120 if index==9 else 180))
+		var bay:=TDCuisineKitchen.IDS.find(station.id)
+		if TDRegionalInterior.draw_prop(self,cuisine_id,str(station.get("kind","")),feet): pass
+		elif cuisine_id!="cn" and bay>=0: TDCuisineKitchen.fixture(self,feet,cuisine_id,bay)
+		else: TDEnvironmentArt.draw_prop(self,index,feet,220 if index in [4,8] else (120 if index==9 else 180))
 	for at: Vector2 in [Vector2(135,95),Vector2(1145,95)]: TDDaylight.glow(self,at,float(TDDaylight.sample(day_minute,true).lamps),55)
 	if is_instance_valid(_player) and not _context.get("hand",{}).is_empty():
 		var hand: Dictionary = _context.hand

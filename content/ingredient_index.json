@@ -150,11 +150,6 @@
           "sub": "根茎"
         },
         {
-          "id": "cilantro",
-          "name": "香菜",
-          "sub": "香草"
-        },
-        {
           "id": "fishmint",
           "name": "折耳根",
           "sub": "香草"
@@ -162,16 +157,6 @@
         {
           "id": "basil",
           "name": "罗勒",
-          "sub": "香草"
-        },
-        {
-          "id": "lemongrass",
-          "name": "香茅",
-          "sub": "香草"
-        },
-        {
-          "id": "mint",
-          "name": "薄荷",
           "sub": "香草"
         },
         {
@@ -802,11 +787,6 @@
           "sub": "水果"
         },
         {
-          "id": "lime",
-          "name": "青柠",
-          "sub": "水果"
-        },
-        {
           "id": "pineapple",
           "name": "菠萝",
           "sub": "水果"
@@ -883,11 +863,6 @@
           "sub": "辛香"
         },
         {
-          "id": "cinnamon",
-          "name": "桂皮",
-          "sub": "辛香"
-        },
-        {
           "id": "bayleaf",
           "name": "香叶",
           "sub": "辛香"
@@ -895,11 +870,6 @@
         {
           "id": "clove",
           "name": "丁香",
-          "sub": "辛香"
-        },
-        {
-          "id": "cumin",
-          "name": "孜然",
           "sub": "辛香"
         },
         {
@@ -921,11 +891,6 @@
           "id": "currypowder",
           "name": "咖喱粉",
           "sub": "复合香料"
-        },
-        {
-          "id": "turmeric",
-          "name": "姜黄",
-          "sub": "辛香"
         },
         {
           "id": "saffron",
@@ -1016,11 +981,6 @@
         {
           "id": "oystersauce",
           "name": "蚝油",
-          "sub": "咸鲜"
-        },
-        {
-          "id": "fishsauce",
-          "name": "鱼露",
           "sub": "咸鲜"
         },
         {

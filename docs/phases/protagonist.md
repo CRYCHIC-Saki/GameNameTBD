@@ -1,4 +1,52 @@
-# 主角四向形象与行走动画
+# 主角形象与八向行走动画
+## D076-R1 脚步和朝向修正（2026-11-16，工程就绪／人工待确认）
+用户否定D076脚步与朝向，旧艺术验收未通过。实图可见后斜向靴尖朝镜头、接触步跨幅过大及前斜向身体转角不足。按当前移动轴修正图像，不把索引/像素不同等同于正确动画。
+GRILL_RESULT = NO_BLOCKING_PRODUCT_QUESTIONS：继续已确认的主角八向、短腿比例和现有移动规则。复用实际读取的grilling、godot-gdscript-patterns和imagegen，无新玩法问题；不重新要求开工确认。
+- AC-PHASE-4-D076-R1-001：四斜向头、胸、膝、靴尖同向；后斜向主要见后脑/背部/靴跟，不出现朝镜头踢脚。逐帧实图与移动连播人工核对。
+- AC-PHASE-4-D076-R1-002：步伐有相反接触和过渡姿势，短步、膝不交叉，无连续切回站姿造成顿挫；脚底定位及头身缩放保持稳定。真实渲染序列核验。
+- AC-PHASE-4-D076-R1-003：八向键位映射/原140与224步距、速度、Shift、碰撞和停步保持，NPC四列索引不变；主角及运动回归/导出检查。
+- AC-PHASE-4-D076-R1-004：原图/旧新增v1/34保护资料只读，改用独立v2素材，源与EXE实际加载。人工验收如实标记，不以自动通过替代用户体验。
+
+### R1 结果（覆盖下方旧版观感，保留历史证据）
+- 新素材：`protagonist-diagonal-front-v2.png`、`protagonist-diagonal-back-v2.png`，每张2172×724、5格；站立独立，走动依次取后4格。front绘制右下、back绘制左上，另两方向在Sprite.flip_h和Canvas纹理UV上成对镜像，不改原PNG；原四向不用镜像。源图、完整生成/修订提示及哈希见`assets/characters/protagonist/diagonal-v2-generation.json`，使用内置image_gen，未使用CLI或像素加工脚本。
+- 选帧/渲染：`chef_art.gd`、`kitchen_player.gd`、`restaurant_iso.gd`和CG的原角色绘制共用方向约定。前图584px/后图604px的固定帧窗等比缩放，脚底对齐；短步和独立过渡替代旧三姿踢腿。NPC及原动作速度不改。
+- 回归：`artifacts/check/protagonist-diagonal-r1`23/23、701断言；`pre-export-20261116-144156`23/23、955断言，共46独立用例1656断言，0失败/0跳过，所有命令exit0；导入/158加载通过。检查命令仍用下方protagonist与protagonist-world两组。
+- 图形：源工程和实际EXE Compatibility各107项/16截图，含四斜向真实双键、餐厅同步、松键、原步距和6类场景。证据`artifacts/protagonist-diagonal-r1-20261116/gpu`及`artifacts/export/protagonist-probe/screenshots`。已逐帧查看前后靴尖、左右接触及镜像后的位置；注入输入不等于物理设备试玩。旧EXE截图在`previous-exe-gpu`保留。
+- 导出：1252运行资源；实际EXE启动3×4及无图形94项通过。`build/TownDiner.exe`与PCK于2026-11-16 14:44更新。旧包在R1证据目录`before-build`，包哈希在`delivery.json`。34保护资料仍一致，真实存档未访问；新旧原画均保留，v1不再导出。
+- 初次20格重绘和独立镜像生成未稳定保留左右脚交替，未采用；选用修正后的两个原向图条，由渲染保证对称动作。图像生成候选不能因文件存在就宣称合格。
+- AC-R1-001/002：工程逐帧检查完成，用户对自然度的艺术验收PENDING；003/004工程PASS。全仓/远程CI NOT_RUN，无上传或提交。下一步只处理本轮人工反馈。
+
+试玩：1）启动本地EXE，在厨房空地长按四组斜向键；2）比较前斜向脸/胸/脚掌和后斜向背部/靴跟，观察左右脚交替；3）在餐厅重复并松键、转向、按Shift。仍需用户确认连续动画观感。
+
+
+## D076 原版比例与斜向行走（2026-11-16，工程通过／人工待试玩）
+用户反馈新版角色瘦长后，要求增加斜着走的动作。四向原站姿/迈步素材继续只读，主角恢复指定原版比例；新增四个45度斜向的站姿与交替迈步，不旋转平面图冒充转身。只改主角呈现及方向选帧，不扩展NPC美术、不改速度/碰撞/存档或交互规则。
+GRILL_RESULT = NO_BLOCKING_PRODUCT_QUESTIONS：使用已确认主角与现有WASD八向位移。grilling、godot-gdscript-patterns、imagegen已实际读取（C:/Users/Administrator/.codex/skills/，imagegen在.system/imagegen；均未声明版本），只读diagonal_motion_facts核对共享四向索引与运动链，root唯一写入。八向站/行属于用户请求；斜向步距为可逆AI-086呈现初值。
+- AC-PHASE-4-D076-001：四向主角使用原指定站姿及既有配套迈步；原PNG哈希不变，所有显示等比，不拉长腿；资源与实图核验。
+- AC-PHASE-4-D076-002：真实W+A/W+D/S+A/S+D输入选择对应四个斜向，左右脚交替迈步；松键停在同斜向站姿；不能把NPC四列图集索引改成八列。真实输入与源/导出图形检查。
+- AC-PHASE-4-D076-003：小镇、餐厅、厨房、小屋、外镇及分店巡视复用同一主角选帧，切向保留步态相位；速度、Shift倍率、碰撞、暂停/隐藏/受阻计步保持。既有运动回归与实际场景检查。
+- AC-PHASE-4-D076-004：新增素材进入正式导出白名单，原素材/原资料/玩家档保持；无零测试、必测跳过、解析错误或未标识的图形缺口。人工步态观感仍待试玩。
+
+
+### D076 交付与证据
+- 已实现：原版四向恢复；四个45度斜向各站立/两张相反迈步；四拍循环和停步朝向；运行时复用只读AtlasTexture。斜向使用统一392px高、脚底对齐的窗口，弯膝不会放大头部。没有改变身体碰撞、速度、交互范围或NPC图集。
+- 关键文件：`src/world/chef_art.gd`、`src/world/kitchen_player.gd`、`assets/characters/protagonist/protagonist-diagonal-v1.png`；生成记录`diagonal-generation.json`（前两轮为明确标记的摘要，最终轮为完整提示）。原四向图与34份保护资料的哈希验证见`artifacts/protagonist-diagonal-20261115/preservation.json`。
+- 自动验收：`pre-export-20261116-140507`主角23用例645断言，`protagonist-diagonal-world`移动/旅行/分店/开场23用例955断言，合计46独立用例1600断言，0失败/0跳过/exit0。两组均通过导入及158资源加载。测试均使用artifacts下隔离档。
+- 真实图形：`tools/protagonist_probe.gd`从正式Shell创建隔离档，真实双键移动、原投影度量、松键停步，检查主镇/餐厅/厨房/小屋/东京/分店餐厅及厨房。源工程和实际导出EXE（同版本官方模板的字节相同副本）Compatibility各99项、16张截图、exit0。证据分别为`artifacts/protagonist-diagonal-20261115/gpu`和`artifacts/export/protagonist-probe/screenshots`。正式包不包含测试入口。
+- 导出：1250运行资源白名单通过；真实EXE启动3次各4检查、无图形输入94项通过；`build/TownDiner.exe`及同目录PCK于2026-11-16 14:06更新，旧包完整保留在`artifacts/protagonist-diagonal-20261115/before-build`。包哈希见`delivery.json`。
+- 失败/修复保留：RED 23用例中2失败，确认旧图和四向选帧缺口；新增对角测试逐帧等待改为原生physics_frame，避免等待辅助函数把路线延长撞上柜台。初轮两次导入因Windows证书库读取限制失败，正常本地权限下复验通过。首个EXE图形启动被模板拒绝`--main-pack`参数，按项目既有同名临时PCK方式复验通过。前两张斜向图因左右脚区别不足未采用，第三轮实图可见相反落脚。不能将失败日志删除后当作从未失败。
+- AC-PHASE-4-D076-001至004工程部分通过；人工比例、连续转向和步态观感PENDING，物理键盘操作/设备体验未由注入输入代替。全仓及远程CI本轮NOT_RUN。原VN独立加载警告沿用既有记录，无解析失败。未提交、未推送，停在本轮反馈检查点。
+
+复现（PowerShell，在F:\MyGameTBD）：
+```powershell
+$engine = 'F:/MyGameTBD/artifacts/vn-framework-20261113/engine/godot.exe'
+./tools/check.ps1 -GodotPath $engine -Suite protagonist -ReportName protagonist-review -TimeoutSeconds 600
+./tools/check.ps1 -GodotPath $engine -Suite protagonist-world -ReportName protagonist-world-review -TimeoutSeconds 600
+./tools/export.ps1 -GodotPath $engine -CheckSuite protagonist -CheckTimeoutSeconds 600
+./build/TownDiner.exe
+```
+试玩3步：1）进入餐厅或厨房，按W+A/W+D/S+A/S+D检查四个斜向；2）松键、重新按键、转方向及按住Shift，观察交替迈步与脚底位置；3）切换小镇/小屋，重点确认头身比例与餐厅前后/斜向步频。尚未通过人工验收，不宣布观感已获认可。
+
 
 2026-10-27，用户授权的视觉增量，不启动其他玩法阶段。
 

@@ -2,8 +2,8 @@ class_name TDMaterialCatalog
 extends RefCounted
 ## One runtime material registry. Culture provenance is not procurement geography.
 const PATH := "res://content/culinary_materials.json"
-const REGIONS := ["chengdu","paris","tokyo","bangkok","mexico_city"]
-const CUISINES := ["cn","eu","jp","sea","lat"]
+const REGIONS := ["chengdu","paris","tokyo"]
+const CUISINES := ["cn","eu","jp"]
 static var _cache: Dictionary={}
 static func _raw() -> Dictionary:
 	if _cache.is_empty():
@@ -23,19 +23,22 @@ static func condiment_unlocked(id: String,cuisines: Array) -> bool:
 	return false
 static func cuisine_text(id: String) -> String:
 	var names: Array[String]=[]
-	var labels: Dictionary={"cn":"中式","eu":"欧陆","jp":"日本","sea":"东南亚","lat":"拉美"}
+	var labels: Dictionary={"cn":"中式","eu":"欧陆","jp":"日本"}
 	for cuisine: String in _raw().get("items",{}).get(id,{}).get("unlock_cuisines",[]): names.append(labels.get(cuisine,cuisine))
 	return " / ".join(names)
 static func regions_text(id: String) -> String:
 	var names: Array[String]=[]
-	var labels: Dictionary={"chengdu":"中式镇","paris":"欧陆镇","tokyo":"日本镇","bangkok":"东南亚镇","mexico_city":"拉美镇"}
+	var labels: Dictionary={"chengdu":"中式镇","paris":"欧陆镇","tokyo":"日本镇"}
 	for region: String in _raw().get("items",{}).get(id,{}).get("supply_regions",[]): names.append(labels.get(region,region))
-	return "五镇共有" if names.size()==5 else " / ".join(names)
+	return "三镇共有" if names.size()==REGIONS.size() else " / ".join(names)
 static func recipes() -> Array: return _raw().get("recipes",[]).duplicate(true)
 static func needed_by_unlocked(id: String,unlocked: Array) -> bool:
 	for recipe: Dictionary in _raw().get("recipes",[]):
 		if recipe.id in unlocked and id in recipe.ingredients+recipe.seasonings: return true
 	return false
+static func retired_ids() -> Array:
+	return _raw().retired_ids.duplicate()
+
 static func palette(cuisine: String, required: Array=[]) -> Array[String]:
 	var result: Array[String]=[]
 	for raw_id: Variant in required:

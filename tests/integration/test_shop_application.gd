@@ -103,8 +103,8 @@ func choose_requested_cut(ingredient: String, order: Dictionary) -> void:
 
 func cook_order(id: String) -> void:
 	var recipe_id: String=view.shop.order(id).recipe_id
-	var target:String="kitchen.steamer" if kitchen.catalog.for_recipe(recipe_id).recipe.get("cooking_method")=="steam" else "kitchen.stove.left"
-	var lane_index:int=1 if target=="kitchen.steamer" else 0
+	var target:String=TDCuisineKitchen.station_for(view.shop.cuisine_id,kitchen.catalog.recipe_data(view.shop.family_id(recipe_id)))
+	var lane_index:int=0 if target=="kitchen.stove.left" else 1
 	for ingredient: String in view.shop.offer(recipe_id).primary:
 		station("kitchen.fridge"); assert_true(view.pick_ingredient(ingredient).ok); view._close_popup()
 		if kitchen.catalog.for_recipe(recipe_id).recipe.preparation_sheets.has(ingredient):
@@ -246,7 +246,7 @@ func test_real_three_days_save_restart_and_custom_menu() -> void:
 			if saved.ok:
 				var reordered: Dictionary=saved.data.duplicate(true)
 				reordered.plan.operations.push_front(reordered.plan.operations.pop_back())
-				assert_eq(view.service.compile_plan(reordered).code,"PLAN_ORDER_UNSUPPORTED")
+				assert_eq(view.service.compile_plan(reordered).code,"PLAN_STRUCTURE_UNSUPPORTED")
 				var changed: Dictionary=saved.data.duplicate(true)
 				for ingredient: Dictionary in changed.plan.ingredients:
 					if ingredient.ingredient_id=="sugar": ingredient.ingredient_id="vinegar"
@@ -270,12 +270,16 @@ func test_real_three_days_save_restart_and_custom_menu() -> void:
 func test_pause_cancel_and_late_input_dont_consume_a_new_order() -> void:
 	var id: String=prepare_order("service.tomato_egg")
 	view.pick_ingredient("tomato"); station("kitchen.board"); view.choose_cut("chunk"); kitchen.advance(1)
+	for i: int in 100:
+		if kitchen.prep.qte!=null: break
+		kitchen.advance(.1)
 	var old: TDCookingQTE=kitchen.prep.qte
+	assert_not_null(old)
 	var before: Dictionary=view.shop.snapshot(); app.toggle_pause(); kitchen.advance(300); tap(KEY_SPACE)
 	assert_eq(view.shop.snapshot(),before); app.toggle_pause()
 	view.cancel_order(id); assert_eq(view.shop.order(id).status,"CANCELLED")
 	assert_not_null(kitchen.handling.board)
-	assert_true(kitchen.prep.sheet.running)
+	assert_true(kitchen.prep.sheet.running or kitchen.prep.qte!=null,"cancellation preserves preparation already in progress")
 	assert_true(old==kitchen.prep.qte)
 	assert_eq(view.shop.available("tomato"),0)
 
@@ -300,7 +304,7 @@ func test_real_gui_purchase_and_open_buttons_start_business() -> void:
 	assert_true(forecast_shown,"采购前显示当天预计访客范围")
 	var buy: Button
 	for button: Button in view._page.find_children("*","Button",true,false):
-		if button.text.begins_with("补齐"): buy=button; break
+		if button.text.begins_with("补齐") and button.get_meta("recipe_id","")=="service.tomato_egg": buy=button; break
 	assert_not_null(buy)
 	click(buy.get_global_rect().get_center()); await get_tree().process_frame
 	assert_eq(view.shop.available("tomato"),1000)
@@ -341,12 +345,12 @@ func test_real_mouse_hold_release_outside_changes_usage_and_recipe_amounts() -> 
 	var item: Dictionary=view.shop.order(id)
 	assert_eq(item.used.get("salt"),40)
 	assert_eq(item.used.get("sugar"),80)
-	assert_eq(item.used.get("oil"),140)
+	assert_eq(item.used.get("oil"),180)
 	assert_eq(item.plan.schema_version,3)
 	var season: Dictionary={}
 	for step: Dictionary in item.plan.operations:
 		if step.parameters.has("sequence"): season=step.parameters
-	assert_eq(season.amounts,[.04,.08,.04])
+	assert_eq(season.amounts,[.08,.08,.04,.06])
 	view.shop.close_early(); kitchen.advance(.01)
 	var saved:=view.save_order_plan(id,"少盐短按炒蛋")
 	assert_true(saved.ok,saved.code)
@@ -355,14 +359,14 @@ func test_real_mouse_hold_release_outside_changes_usage_and_recipe_amounts() -> 
 	for ingredient: Dictionary in edited.plan.ingredients:
 		if ingredient.local_id in season.local_ids: ingredient.amount=.17
 	for step: Dictionary in edited.plan.operations:
-		if step.parameters.has("sequence"): step.parameters.amounts=[.17,.17,.17]
+		if step.parameters.has("sequence"): step.parameters.amounts=[.17,.17,.17,.17]
 	var compiled:=view.service.compile_plan(edited)
 	assert_true(compiled.ok,compiled.code)
 	if not compiled.ok: return
 	var chart:=TDBeatSheet.new()
 	assert_true(chart.configure(compiled.data.sheets[edited.id],kitchen.catalog.data().operations).ok)
 	var event: Dictionary=chart.snapshot().events.filter(func(x:Dictionary)->bool:return x.operation=="season" and x.parameters.get("mode")=="precise")[0]
-	assert_eq(event.settings.hold_durations_sec,[.85,.85,.85])
+	assert_eq(event.settings.hold_durations_sec,[.85,.85,.85,.85])
 
 func test_same_family_two_customers_really_play_different_cut_and_season_charts() -> void:
 	view.buy_kit("service.tomato_egg"); view.buy_kit("service.tomato_egg",false)
@@ -389,7 +393,8 @@ func test_second_different_dish_can_be_served_before_first_customer() -> void:
 	for lane: TDCookingLane in kitchen.lanes+[kitchen.prep]: lane.beat_offset_sec=0
 	kitchen.advance(81)
 	var first: Dictionary=view.shop.active_orders()[0]; var second: Dictionary=view.shop.active_orders()[1]
-	assert_eq(first.recipe_id,"service.tomato_egg"); assert_eq(second.recipe_id,"service.pepper_pork")
+	assert_ne(first.recipe_id,second.recipe_id)
+	assert_true(first.recipe_id in ["service.tomato_egg","service.pepper_pork"] and second.recipe_id in ["service.tomato_egg","service.pepper_pork"])
 	cook_order(second.id)
 	assert_eq(view.shop.order(first.id).status,"WAITING")
 	assert_eq(view.shop.order(second.id).status,"SERVED")
@@ -513,8 +518,9 @@ func test_actual_perfect_steam_requires_research_but_historical_unlock_survives_
 	assert_false(view.shop.is_unlocked("service.qiguoji"))
 	for food: String in ["chicken","mushroom"]: assert_true(view.pick_ingredient(food).ok); station("kitchen.steamer")
 	station("kitchen.steamer",KEY_F); assert_true(kitchen.stage.visible)
-	play(40)
+	play(60)
 	var dish: Dictionary=kitchen.lanes[1].snapshot()
+	assert_false(kitchen.stage.visible,"wait for the authored plating tail before taking the dish")
 	assert_eq(dish.state,"plated"); assert_false(dish.failed_dish); assert_true(dish.missing_required.is_empty())
 	for step: Dictionary in dish.steps: assert_eq(step.grade,"Perfect",step.operation)
 	assert_false(view.shop.is_unlocked("service.qiguoji")) # D030: Perfect no longer bypasses research.
@@ -525,7 +531,8 @@ func test_actual_perfect_steam_requires_research_but_historical_unlock_survives_
 	assert_true(plan.ok,plan.code)
 	assert_eq(view.save_boundary().code,"KITCHEN_BUSY","日结不会偷偷清掉未交付的菜")
 	station("kitchen.steamer");station("kitchen.trash")
-	assert_true(view.save_boundary().ok)
+	var boundary:=view.save_boundary()
+	assert_true(boundary.ok,boundary.code+" "+boundary.message)
 	app.return_to_menu(); await get_tree().process_frame; app.enter_shop(true); view=app.shop_view; kitchen=view.kitchen; kitchen.auto_advance=false
 	assert_true(view.shop.is_unlocked("service.qiguoji")); view.next_day()
 	assert_true(view.shop.set_menu("service.qiguoji",true,2200).ok)

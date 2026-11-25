@@ -72,6 +72,7 @@ var restart_allowed: Callable
 var _pc_amount: SpinBox
 var document_rules: bool = false
 var stage_label: String = ""
+var active_technique: String = ""
 var _scheduled_settings: Dictionary = {}
 var active_sheet_id: String = ""
 var _customer_feedback: Array=[]
@@ -87,7 +88,7 @@ func start_automatic() -> TDOutcome:
 	var dish:=snapshot()
 	if dish.get("failed_dish",false) or dish.ingredients.is_empty(): return TDOutcome.new(false,"UNKNOWN_RECIPE")
 	automatic=true;session.set_production_mode("automatic");_automatic_preparation=[]
-	var recipe: Dictionary=catalog.for_recipe(base_recipe_id).recipe
+	var recipe: Dictionary=catalog.recipe_data(base_recipe_id)
 	for food: Dictionary in dish.ingredients.values():
 		if food.history.any(func(h:Dictionary)->bool:return h.get("operation")=="cut"): continue
 		var chart: String=str(recipe.get("preparation_sheets",{}).get(food.ingredient_id,""))
@@ -99,7 +100,7 @@ func _next_automatic_sheet() -> TDOutcome:
 	if not _automatic_preparation.is_empty():
 		var entry: Dictionary=_automatic_preparation.pop_front();_automatic_target=entry.target
 		return start_sheet(entry.sheet)
-	return start_sheet(str(catalog.for_recipe(base_recipe_id).recipe.guided_profile))
+	return start_sheet(str(catalog.recipe_data(base_recipe_id).guided_profile))
 
 func _ready() -> void:
 	_content = catalog.data()
@@ -123,7 +124,7 @@ func new_session(recipe_id: String, entry: Dictionary = {}) -> void:
 	if thermal_qte != null: thermal_qte.cancel()
 	thermal_qte = null; thermal_progress = {}
 	if sheet != null: sheet.cancel()
-	sheet = null; judgement_feedback.clear(); _feedback_token = ""; stage_label = ""
+	sheet = null; judgement_feedback.clear(); _feedback_token = ""; stage_label = ""; active_technique=""
 	qte = null
 	_audio.stop()
 	_plate.cancel_drag()
@@ -465,7 +466,7 @@ func _selected(box: OptionButton) -> String:
 func refresh_recipes() -> void:
 	_recipes.clear()
 	for identity: String in catalog.recipe_ids(_test_enabled):
-		_recipes.add_item(catalog.for_recipe(identity).recipe.name)
+		_recipes.add_item(catalog.recipe_data(identity).name)
 		_recipes.set_item_metadata(_recipes.item_count - 1, identity)
 	_ingredients.clear()
 	for item: Dictionary in _content.ingredients:
@@ -698,7 +699,7 @@ func _capture_feedback(data: Dictionary) -> void:
 	judgement_feedback = event.duplicate(true)
 	judgement_feedback.operation_id = data.operation_id
 	judgement_feedback.shown_at_sec = float(event.at_sec)
-	if feedback_remaining() > 0 and feedback_audible and not automatic: _audio.play_feedback(str(event.grade))
+	if feedback_remaining() > 0 and feedback_audible and not automatic: _audio.play_feedback(str(event.grade),str(data.get("pc_module","")),str(event.reason))
 
 func next_boundary_sec() -> float:
 	var boundary: float = sheet.next_in(clock.qte_sec) if sheet != null else INF
@@ -767,7 +768,8 @@ func _advance_pc(delta: float) -> void:
 				if document_rules and event.operation == "cut":
 					if snapshot().ingredients.is_empty(): sheet.cancel(); break
 					args.instance_id = _automatic_target if not _automatic_target.is_empty() else snapshot().ingredients.keys()[0]; args.beats = _scheduled_settings.beats
-				if event.operation not in ["heat","boil"] or qte==null: stage_label = event.get("label","")
+				if event.operation not in ["heat","boil"] or qte==null:
+					stage_label = event.get("label",""); active_technique=event.get("technique",event.operation)
 				var result := perform(event.operation, args)
 				_scheduled_settings.clear()
 				if not result.ok:

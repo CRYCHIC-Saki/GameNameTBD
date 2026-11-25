@@ -1,4 +1,5 @@
 extends GutTest
+const TEST_SITE := [32,11,3,4]
 var profiles: Array[TDGameProfile]=[]
 func make_profile() -> TDGameProfile:
 	var p:=TDGameProfile.new();profiles.append(p);p.slot_id="slot-01"
@@ -15,21 +16,21 @@ func cross_day(p: TDGameProfile) -> void:
 	var result:=p.next_day();assert_true(result.ok,result.code)
 func test_unpaid_preview_and_failed_payment_leave_no_store_or_land() -> void:
 	var p:=make_profile();var before:=p.snapshot()
-	assert_true(p.branches.quote("chengdu",[6,48,3,4],"cn").ok)
+	assert_true(p.branches.quote("chengdu",TEST_SITE,"cn").ok)
 	assert_eq(p.snapshot(),before)
 	p.shop.world_adjustment(-int(p.shop.snapshot().money_cents),"empty","fixture")
 	before=p.snapshot()
-	assert_false(p.branches.open_store("chengdu",[6,48,3,4],"cn","","payment").ok)
+	assert_false(p.branches.open_store("chengdu",TEST_SITE,"cn","","payment").ok)
 	assert_eq(p.snapshot(),before)
 func test_payment_without_manager_builds_next_day_then_requires_real_staff() -> void:
 	var p:=make_profile();var before: int=int(p.shop.snapshot().money_cents)
-	var result:=p.branches.open_store("chengdu",[6,48,3,4],"cn","","payment")
+	var result:=p.branches.open_store("chengdu",TEST_SITE,"cn","","payment")
 	assert_true(result.ok,result.code)
 	if not result.ok: return
 	var id: String=result.data.store_id
 	assert_eq(int(p.shop.snapshot().money_cents),before-30800)
 	assert_false(p.branches.is_built(id));assert_true(p.branches.plots("chengdu")[0].construction)
-	assert_false(p.branches.open_store("chengdu",[6,48,3,4],"cn","","payment").ok)
+	assert_false(p.branches.open_store("chengdu",TEST_SITE,"cn","","payment").ok)
 	assert_eq(p.branches.state.stores.size(),1)
 	assert_eq(p.branches.set_management(id,true).code,"UNDER_CONSTRUCTION")
 	var saved:=p.snapshot();assert_true(TDGameProfile.validate_save(saved).ok)
@@ -44,7 +45,7 @@ func test_payment_without_manager_builds_next_day_then_requires_real_staff() -> 
 	assert_true(p.employees.assign("manager.steady","").ok)
 	assert_false(p.employees.ready_for(id));assert_true(p.branches.candidates("chengdu",{}).is_empty())
 func test_payment_proof_corruption_and_missing_construction_rejected() -> void:
-	var p:=make_profile();var result:=p.branches.open_store("chengdu",[6,48,3,4],"cn","manager.steady","payment")
+	var p:=make_profile();var result:=p.branches.open_store("chengdu",TEST_SITE,"cn","manager.steady","payment")
 	assert_true(result.ok)
 	var raw:=p.snapshot();var id: String=result.data.store_id
 	assert_true(TDGameProfile.validate_save(raw).ok)
@@ -57,7 +58,7 @@ func test_payment_proof_corruption_and_missing_construction_rejected() -> void:
 	bad=raw.duplicate(true);bad.branches.stores[id].construction.ready_day=1
 	assert_false(TDGameProfile.validate_save(bad).ok)
 func test_old_paid_receipt_is_reused_without_recharging() -> void:
-	var p:=make_profile();var result:=p.branches.open_store("chengdu",[6,48,3,4],"cn","manager.steady","old-paid")
+	var p:=make_profile();var result:=p.branches.open_store("chengdu",TEST_SITE,"cn","manager.steady","old-paid")
 	assert_true(result.ok);var raw:=p.snapshot();var id: String=result.data.store_id
 	raw.branches.schema_version=1;raw.branches.stores[id].erase("construction")
 	var q:=make_profile();assert_true(q.restore(raw).ok)
@@ -86,7 +87,7 @@ func test_unproven_legacy_record_is_preserved_but_cannot_operate_or_occupy_map()
 	assert_eq(again.branches.paid_ids().size(),1);assert_false(again.branches.is_built(id))
 	assert_true(TDGameProfile.validate_save(again.snapshot()).ok)
 func test_construction_charges_no_wage_or_utility_and_closed_staff_charges_only_rent() -> void:
-	var p:=make_profile();var result:=p.branches.open_store("chengdu",[6,48,3,4],"cn","manager.steady","payment")
+	var p:=make_profile();var result:=p.branches.open_store("chengdu",TEST_SITE,"cn","manager.steady","payment")
 	assert_true(result.ok);var id: String=result.data.store_id
 	p.employees.record_duties();assert_eq(p.employees.payroll_for(id,1).total_cents,0)
 	p.branches.settle();assert_true(p.branches.state.stores[id].books.is_empty())

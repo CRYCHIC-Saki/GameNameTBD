@@ -1,7 +1,32 @@
-## D077-R5 发布整合（2026-11-17，VALIDATING）
-用户授权推送并合并main；root唯一集成者，integration/phase-4-wave-vn-canvas独立工作树，仅接入R5编辑器/布局/测试/记录。远端main@5760d10无新提交，74份本地未提交文件备份保留。检查通过再合并，不重建EXE；最终结果以PR及artifacts/upload-vn-canvas-20261117回执为准。
+## D080-R13 确认版江南地图（本地交付）
+地图集成维护地理、场景、世界地图和 Windows 包，港口、地籍迁移与街景贴图按文件分工。已完成专项和区域回归，详见 docs/phases/jiangnan-district-plan.md。
 
-## D077 发布整合（2026-11-16，VALIDATING）
+## D080-R12 江南八区（本地交付，锁释放）
+本轮由地图集成负责入口和 Windows 构建，地籍、地表、街市陈设按文件协同。八区实景与美术交接见 docs/phases/jiangnan-district-plan.md。83 项导出前检查和 282 项 Windows 街区检视通过。玩家反馈待收集。
+
+## D080-R1 住宅草院（本地交付，锁释放）
+五镇居住草坪、地砖、住宅木栏与院门已接入。57 项专项、Windows 独立资源检查及五镇 23 张图已通过。参见 docs/phases/town-polish.md D080-R1。
+
+## D080 五镇和室内美术（2026-11-18，已交付本地，锁释放）
+地图地块、厨房反馈、餐厅装修各自完成定向回归。集成写入地图绘制、导出资源清单及 Windows 包。构建证据和首轮导入/探针失败均保留，见 PROJECT_STATE 与 phases/town-polish.md D080。
+
+## D078-R2 地域装修选项（2026-11-17，ENGINEERING_READY，锁释放）
+五地域家具成为六分类中的独立卡片（含图/占地/用途），支持混搭；新增五地面/五墙纸，仍点击整屋替换。卡片、半透明预览与实际模型同源；选款不改店铺菜系或其他家具，取消恢复默认候选。Layout schema1扩稳定finish ID，原八饰面及已有style_id保留；Profile9/D059主动保存不变。未恢复风格/档次下拉，不新增费用或解锁条件，不扩分店独立装修系统。
+47/47测试、1301断言、零跳过、164资源加载；Compatibility真实输入47项14图、1282资源隔离导出及空目录包61项5图，均exit0。34保护文件一致，初轮解析/测试驱动失败保留。源码F5进入餐厅装修图板体验，EXE仍11月16日14:44版；未重建/提交/推送，人工观感/全仓/远程CI未跑。下一工作单元为玩家混搭与保存体验反馈；详见docs/phases/decoration-ui.md D078-R2及artifacts/decor-options-20261117。root与只读decor_options_facts工作结束。
+
+## D078-R1 地域室内（2026-11-17，ENGINEERING_READY，锁释放）
+按餐馆菜系贯通默认前厅/后厨：cn原中式，eu巴黎french、jp日式、sea泰式thai、lat墨西哥mexican。修复三地区catalog回退中式与餐桌硬编码，默认墙地/桌凳/柜台、冰箱备菜出餐垃圾桶及门饰配套；原玩家finish/style/摆放只读保留，经济菜系ID/经营/碰撞/Profile9/D059不改。36/36用例1390断言、164加载、Compatibility41项15图及1282资源隔离包/空目录51项5图PASS，34保护文件一致；首轮类型/裁切失败保留，人工/全仓/远程CI未跑。源码F5体验，EXE仍11月16日14:44，不重建/推送。root与只读regional_decor_facts已结束；详见cuisine-expansion R1与artifacts/regional-interiors-20261117。
+
+## D078 五菜系做菜扩充（2026-11-17，ENGINEERING_READY，锁释放）
+用户确认100菜独立制作/研习谱面、分档难度、分店实际手动做菜并隔离各店库存订单；同步修复交互BGM和NPC移速/旧版小人。root集成应用/角色/厨房/工序/内容/分店、外镇原客流按时接入及共享测试导出记录；cuisine_qte_facts仅只读。19文件206独立用例分批覆盖、163加载、Compatibility图形及1274资源隔离包/空目录109检查通过；历史失败/超时保留，人工/全仓/远程CI未跑。34保护文件及前轮主角9文件保持；基线main@51c182a，起点备份artifacts/cuisine-expansion-20261117。root锁释放，不提交推送，不覆盖11月16日14:44 EXE；详情见cuisine-expansion阶段报告。
+
+## D077-R5 发布完成（2026-11-17，MERGED，锁释放）
+PR #12已合并main@51c182a，本地main/origin/main与远端一致；候选458d7b0的push/PR全量和ownership均PASS，109文件/863用例/32619断言，零失败/跳过。18文件仅包含R5画外构图及记录；74本地工作文件已逐字节恢复、34保护文件一致。备份及安全stash 8b4a4fd保留，证据artifacts/upload-vn-canvas-20261117/delivery-receipt.json。EXE未重建，人工编排PENDING；root本轮锁释放。
+
+## D077 发布结束（2026-11-17，MERGED，锁释放）
+PR #11已合并main@5760d10；本地main/origin/main同SHA。bcec3fd所有远程检查PASS：109文件/860用例/32561断言、0失败/跳过；ownership通过。原工作目录的D076未提交代码/素材及34保护文件完整保留；安全stash 7c8ac75和155文件备份不删除。独立集成树只包含103个剧情编辑器及必要接入文件，未上传原资料/罗厄/无关主角资源。最终回执artifacts/upload-vn-editor-20261116/delivery-receipt.json，原始全量报告已下载核对。没有重建EXE，人工编排PENDING，root本轮共享锁释放。下方VALIDATING为历史候选。
+
+## D077 发布整合（2026-11-16，历史VALIDATING）
 用户授权推送剧情可视化编辑器并合并main。root唯一集成者，分支integration/phase-4-wave-vn-editor；GitHub API确认main=df2972d，无新主线。使用独立干净工作树，仅提交D077至R4及必要VN运行/触发/导出/测试文档；通过开发起点快照剥离D076主角斜向修改，原目录完整155文件备份，34受保护资料不上传不覆盖。登记共享写入：addons/td_vn_editor、VN插件本地导出入口、src/story、Profile及镇/餐厅交互、project.godot、export_presets.cfg、检查/导出工具和对应记录。当前不是新玩法阶段，不增加原剧本；人工编排PENDING。专项和完整CI通过且main未前进才合并；最终回执见artifacts/upload-vn-editor-20261116。Git HTTPS连接失败时使用官方GitHub Git Data API并验证远端树/提交与本地完全相同，不强推。下方开发时“不推送”记录由本次明确授权覆盖，原日期测试保持历史含义。
 
 发布前独立副本：`tools/check.ps1 -Suite vn-editor -ReportName vn-editor-publish` 59/59、448断言、161加载、0失败/跳过、exit0；所有权103文件PASS。原D077原生编辑器/播放器证据仍有效；本次从干净main验证没有依赖未发布D076。完整远程CI在PR候选运行，未通过不得合并。
@@ -21,7 +46,13 @@ root完成addons/td_vn_editor、本地VN人物层/布局辅助、host场景与�
 ## D077 剧情编辑器（2026-11-16，LOCAL_EDITOR_READY，锁释放）
 root 唯一写入 addons/td_vn_editor、对应测试、project.godot、tools/check.ps1 和项目记录。vn_authoring_facts 仅只读语法/宿主核实。D076-R1 未提交成果及34保护文件保留；基线副本 artifacts/vn-editor-20261116/baseline。真实档/原始资料不动，不提交推送。D077最终21用例133断言、编辑器35项4图/原生草稿16项3图及1252资源隔离导出通过，34保护文件一致；人工编排PENDING，全仓/远程CI未跑。详见docs/phases/vn-editor.md。
 
-## 2026-11-15 D075 发布检查（当前）
+## D076-R1 脚步和朝向修正（2026-11-16，LOCAL_BUILD_READY，锁释放）
+root唯一修改主角图集/选帧、必要测试/导出与记录；既有用户改动及原人物图保留。无新增产品阻塞，沿D076八向范围修正后斜向靴尖和跨步，原运动/碰撞/步频不变。用户拒绝D076动作观感，旧工程通过不作为艺术验收。本轮46独立用例1656断言、源/实际EXE各107项16图、导出通过；14:44本地包已更新。root锁释放，人工观感仍PENDING；未提交推送。
+
+## D076 主角斜向动作（2026-11-16，DELIVERED_LOCAL_PLAYTEST_PENDING，锁释放）
+main@df2972d为基线，已切integration/phase-4-wave-protagonist-diagonal。root唯一修改src/world/chef_art.gd、kitchen_player.gd及必要选帧/导出/检查/文档，新增独立版本化主角斜向图集；diagonal_motion_facts仅只读。原PNG/原资料/罗厄保留，备份artifacts/protagonist-diagonal-20261115。本轮46独立用例1600断言、源/实际EXE各99项16图及导出通过，本地包更新；root共享锁释放，未提交推送。人工步态观感PENDING。
+
+## 2026-11-15 D075 发布检查（历史，PR #10已合并）
 用户现已明确授权推送并合并main，覆盖D075开发交付时的“本轮不推送”。root作为唯一集成者整理20个工程/记录文件，原资料/罗厄素材保持本地。GitHub API核实main仍为2cf048b，无新的主分支提交；Git读取曾连接重置，保留日志并重试。本地83独立用例、源与EXE图形81项及导出验证通过。上传后运行当前提交完整四分片CI与ownership；结果合格且main未发生新变化才合并并同步本地。当前为发布候选，不能据本段声称远程检查已通过；最终回执位于artifacts/upload-quiet-20261115。
 
 ## 2026-11-15 PR #9 集成结束

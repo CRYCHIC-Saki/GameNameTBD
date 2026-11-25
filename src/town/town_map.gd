@@ -4,6 +4,10 @@ extends RefCounted
 const SIZE := 41
 var extent: int = 41
 var layout_version: int = 1
+var jiangnan_layout_revision: int = 2
+var shiomi := false
+var egret := false
+var egret_version := 11
 var region_id: String = ""
 const CENTER := 20
 const FACTORY_SLOTS := 8
@@ -41,6 +45,19 @@ var plots: Array = []
 var housing_names: Array[String] = []
 var roads: Dictionary = {}
 var cottage: Dictionary={}
+var _authored_commercial: Array = []
+var _older_stores: Array[Rect2i] = []
+var _reserved_frontages: Dictionary = {}
+var _prior_frontages: Dictionary = {}
+
+func sync_survey_reservations(stores: Dictionary) -> void:
+	if not TDPlannedTown.approved(self): return
+	_older_stores.clear()
+	for store: Dictionary in stores.values():
+		if store.town_id != "chengdu" or store.get("site_survey",0) != 0 or store.get("construction",{}).get("kind","")=="unverified": continue
+		var r: Array = store.rect
+		_older_stores.append(Rect2i(int(r[0]),int(r[1]),int(r[2]),int(r[3])))
+	_load_commercial_frontages()
 
 static func supply_of_slot(slot: int) -> String:
 	if slot <= 0:
@@ -116,7 +133,11 @@ static func seed_of(town_id: String) -> int:
 
 func build(catalog: TDTownCatalog, seed_value: int, _home_size: String = "small", place_diner: bool = false, reserve: Dictionary = {}, built_factories: Array = [], diner_span: Vector2i = Vector2i.ZERO, home_venue: String = "") -> void:
 	if layout_version==2:
-		TDPlannedTown.populate(self,catalog,place_diner,reserve,built_factories,diner_span,home_venue)
+		if jiangnan_layout_revision==1:
+			TDLegacyJiangnanLayout.populate(self,catalog,place_diner,reserve,built_factories,diner_span,home_venue)
+		else:
+			_load_commercial_frontages()
+			TDPlannedTown.populate(self,catalog,place_diner,reserve,built_factories,diner_span,home_venue)
 		return
 	extent=SIZE
 	var rng := TDBusinessRandom.new(seed_value)
@@ -274,9 +295,15 @@ func is_road(x: int, y: int) -> bool:
 static var _economic_parcel_cache: Dictionary = {}
 
 func build_economic_layout(catalog: TDTownCatalog, seed_value: int, region_version: int = 2) -> TDOutcome:
-	if layout_version==2 and region_version==2:
+	if layout_version==2 and region_version in [4,5,6,7,8,9,10,11] and seed_value==seed_of("paris"):
+		return TDEgretLayout.populate(self,catalog,region_version)
+	if layout_version==2 and region_version in [3,4,5,6,7,8,9,10,11] and seed_value==seed_of("tokyo"):
+		return TDShiomiLayout.populate(self,catalog)
+	if layout_version==2 and region_version in [2,3,4,5,6,7,8,9,10,11]:
 		for id: String in TDRegionalLayout.IDS:
 			if seed_value==seed_of(id): return TDRegionalLayout.populate(self,catalog,id)
+	if layout_version==2 and region_version==1:
+		jiangnan_layout_revision=1
 	region_id=""
 	# Remote economic regions have no owned player geometry. Reject generated layouts
 	# whose commercial frontage is disconnected, instead of selling unreachable land.
@@ -313,7 +340,44 @@ static func economic_parcels(catalog: TDTownCatalog, seed_value: int, layout: in
 	_economic_parcel_cache[key]=definitions
 	return definitions.duplicate(true)
 
+func _load_commercial_frontages() -> void:
+	_authored_commercial.clear()
+	_reserved_frontages.clear()
+	_prior_frontages.clear()
+	var plan := TDPlannedTown.definition()
+	var occupied: Array[Rect2i] = _older_stores.duplicate()
+	var alternates: Array = plan.survey_commercial_sites.slice(plan.commercial_parcels.size())
+	for lease: Dictionary in plan.commercial_parcels:
+		var rect: Array = lease.rect
+		var door: Array = lease.approach
+		for y: int in range(int(rect[1]),int(rect[1]+rect[3])):
+			for x: int in range(int(rect[0]),int(rect[0]+rect[2])):
+				_prior_frontages[Vector2i(x,y)] = true
+		var candidates: Array = [plan.survey_commercial_sites[_authored_commercial.size()]] + alternates
+		for site: Array in candidates:
+			var lot := Rect2i(int(site[0]),int(site[1]),int(rect[2]),int(rect[3]))
+			if occupied.any(func(prior: Rect2i) -> bool: return prior.intersects(lot)): continue
+			rect = [lot.position.x,lot.position.y,lot.size.x,lot.size.y]
+			door = [site[2],site[3]]
+			occupied.append(lot)
+			break
+		var tradable: bool = lease.parent_id=="commercial_street"
+		_authored_commercial.append({"id":lease.id,"parent_id":lease.parent_id,"x":int(rect[0]),"y":int(rect[1]),
+			"w":int(rect[2]),"h":int(rect[3]),"approach_x":int(door[0]),"approach_y":int(door[1]),
+			"tradable":tradable,"initial_store_index":-1 if tradable else int(str(lease.id).get_slice(":",2)),
+			"capacity":12})
+		for y: int in range(int(rect[1]),int(rect[1]+rect[3])):
+			for x: int in range(int(rect[0]),int(rect[0]+rect[2])):
+				_reserved_frontages[Vector2i(x,y)] = true
+func frontage_reserved(at: Vector2i) -> bool:
+	if shiomi or egret: return _reserved_frontages.has(at)
+	return region_id.is_empty() and jiangnan_layout_revision==2 and _reserved_frontages.has(at)
+
 func commercial_parcels() -> Array:
+	if egret: return TDEgretLayout.titles(egret_version)
+	if shiomi: return TDShiomiLayout.titles()
+	if layout_version==2 and region_id.is_empty() and jiangnan_layout_revision==2:
+		return _authored_commercial.duplicate(true)
 	if layout_version==2:
 		var planned: Array=[]
 		for p: Dictionary in plots:
@@ -359,11 +423,19 @@ func apply_commercial_occupancy(ownership: Dictionary) -> TDOutcome:
 		if str(parent.id) in ["competitor","commercial_street"]: parent.economic_courtyard=true
 	for id: String in ownership:
 		var record: Dictionary=ownership[id]
+		if (shiomi or egret) and id.begins_with("competitor:shop:"):
+			var existing := _by_id(id)
+			existing.economic_owner=record.owner_id
+			existing.economic_store=record.store_id
+			existing.construction=bool(record.get("construction",false))
+			continue
 		if str(record.owner_id).is_empty(): continue
 		var value: Dictionary=approved[id].duplicate(true)
 		value.merge({"id":id,"economic_parcel_id":id,"economic_owner":record.owner_id,"economic_store":record.store_id,"kind":"competitor","name":str(record.get("name","街坊餐馆")),"enabled":true,"walkable":false,"pool":0,"budget_shift":0,"foreign_scale":1.0,"construction":bool(record.get("construction",false))},true)
 		plots.push_front(value)
 	plots=plots.filter(func(p:Dictionary)->bool:return not p.has("economic_service_id"))
+	if not _by_id("commercial_street:bank").is_empty():
+		return TDOutcome.new(true,"COMMERCIAL_MAP_UPDATED")
 	for parent: Dictionary in plots.duplicate():
 		if str(parent.id)!="commercial_street" or maxi(int(parent.w),int(parent.h))<11 or mini(int(parent.w),int(parent.h))<2: continue
 		var vertical: bool=int(parent.h)>int(parent.w)
@@ -371,17 +443,21 @@ func apply_commercial_occupancy(ownership: Dictionary) -> TDOutcome:
 		if layout_version==2: at=Vector2i(int(parent.x)+15,int(parent.y)+1)
 		var door:=at+(Vector2i(-1,0) if vertical else Vector2i(0,-1))
 		if layout_version==2: door=at+Vector2i(1,3)
-		plots.push_front({"id":"commercial_street:bank","economic_service_id":"bank","kind":"bank","name":"街坊钱庄","x":at.x,"y":at.y,"w":3 if layout_version==2 else (2 if vertical else 1),"h":3 if layout_version==2 else (1 if vertical else 2),"approach_x":door.x,"approach_y":door.y,"enabled":true,"walkable":false,"pool":0,"budget_shift":0,"foreign_scale":1.0})
+		var local_name:=str({"tokyo":"潮见信用金库","paris":"河岸商业银行"}.get(region_id,"街坊钱庄"))
+		plots.push_front({"id":"commercial_street:bank","economic_service_id":"bank","kind":"bank","name":local_name,"local_name":local_name,"x":at.x,"y":at.y,"w":3 if layout_version==2 else (2 if vertical else 1),"h":3 if layout_version==2 else (1 if vertical else 2),"approach_x":door.x,"approach_y":door.y,"enabled":true,"walkable":false,"pool":0,"budget_shift":0,"foreign_scale":1.0})
 	return TDOutcome.new(true,"COMMERCIAL_MAP_UPDATED")
 
 func is_walkable(x: int, y: int) -> bool:
 	if x < 0 or y < 0 or x >= extent or y >= extent:
 		return false
+	if layout_version==2 and region_id.is_empty() and jiangnan_layout_revision==2:
+		return bool(terrain_at(Vector2i(x,y)).walkable)
 	if is_road(x, y):
 		return true
 	var plot:=plot_at(x,y)
 	if layout_version==2:
-		if plot.is_empty(): return bool(terrain_at(Vector2i(x,y)).walkable)
+		var ground:=terrain_at(Vector2i(x,y))
+		if plot.is_empty() or ground.get("district_id","")=="lotus_inlet": return bool(ground.walkable)
 		return bool(plot.get("economic_courtyard",false)) or plot.get("kind")=="diner_lot"
 	return String(plot.get("id", "")) == "player_diner" or bool(plot.get("economic_courtyard",false))
 
@@ -394,7 +470,7 @@ func plot_at(x: int, y: int) -> Dictionary:
 		if x < int(plot["x"]) or y < int(plot["y"]) or x >= int(plot["x"]) + width or y >= int(plot["y"]) + height:
 			continue
 		var kind := String(plot.get("kind", ""))
-		if kind == "diner_lot" or kind == "factory_lot":
+		if kind == "diner_lot" or kind == "factory_lot" or plot.get("economic_courtyard",false):
 			if lot.is_empty():
 				lot = plot
 			continue
@@ -588,6 +664,13 @@ func _grow_roads(rng: TDBusinessRandom) -> void:
 func diner_lot() -> Dictionary:
 	return _by_kind("diner_lot")
 
+func diner_estate_span() -> Vector2i:
+	var lot := diner_lot()
+	if lot.is_empty(): return Vector2i.ZERO
+	if layout_version==2 and region_id.is_empty() and jiangnan_layout_revision==2:
+		return DINER_LOT_SPAN
+	return Vector2i(int(lot.w),int(lot.h))
+
 func factory_lots() -> Array:
 	var rows: Array = []
 	for item: Variant in plots:
@@ -680,22 +763,29 @@ func mark_factory_built(plot_id: String) -> bool:
 		return true
 	return false
 
-func _place_home_diner(span: Vector2i, used: Dictionary, venue: String) -> void:
+func _place_home_diner(span: Vector2i, used: Dictionary, venue: String, storefront: Rect2i = Rect2i()) -> void:
 	var lot := diner_lot()
 	if lot.is_empty():
 		return
 	var width := span.x
 	var height := span.y
-	if width > int(lot["w"]) or height > int(lot["h"]):
-		if height <= int(lot["w"]) and width <= int(lot["h"]):
+	var limit := diner_estate_span()
+	if width > limit.x or height > limit.y:
+		if height <= limit.x and width <= limit.y:
 			var swapped := width
 			width = height
 			height = swapped
 		else:
 			return
+	var title := "西餐厅" if venue == "western" else "中餐厅"
+	if storefront.has_area():
+		# The recorded expansion entitlement is independent of the street address.
+		_commit_overlap("player_diner", title, storefront.position.x, storefront.position.y, storefront.size.x, storefront.size.y, used, {"id":"player_diner","size":"quarter","venue":venue})
+		plots.back()["estate_w"] = width
+		plots.back()["estate_h"] = height
+		return
 	var spot := _corner_near_center(lot, width, height)
 	if layout_version==2: spot=Vector2i(int(lot.x+lot.w-width),int(lot.y+lot.h-height))
-	var title := "西餐厅" if venue == "western" else "中餐厅"
 	_commit_overlap("player_diner", title, spot.x, spot.y, width, height, used, {"id": "player_diner", "size": "quarter", "venue": venue})
 
 func _corner_near_center(lot: Dictionary, width: int, height: int) -> Vector2i:
@@ -757,6 +847,31 @@ func _touches_road(x: int, y: int, width: int, height: int) -> bool:
 				if is_road(neighbor.x, neighbor.y):
 					return true
 	return false
+
+func branch_touches_road(rect: Rect2i, historical := false) -> bool:
+	if historical or not TDPlannedTown.approved(self):
+		return _touches_road(rect.position.x,rect.position.y,rect.size.x,rect.size.y)
+	for x: int in range(rect.position.x,rect.end.x):
+		if TDPlannedTown.reference_street_in_cell(Vector2i(x,rect.position.y-1)) or TDPlannedTown.reference_street_in_cell(Vector2i(x,rect.end.y)): return true
+	for y: int in range(rect.position.y,rect.end.y):
+		if TDPlannedTown.reference_street_in_cell(Vector2i(rect.position.x-1,y)) or TDPlannedTown.reference_street_in_cell(Vector2i(rect.end.x,y)): return true
+	return false
+
+func branch_ground_available(at: Vector2i, historical := false, issued := false) -> bool:
+	if not plot_at(at.x,at.y).is_empty(): return false
+	var road := is_road(at.x,at.y)
+	if issued and (egret or (shiomi and not historical)):
+		var data := TDEgretLayout.geography(egret_version) if egret else TDShiomiLayout.data
+		var previous: Array=data.get("issued_sites",data.sites)
+		return Rect2i(0,0,extent,extent).has_point(at) and not road and not frontage_reserved(at) and previous[at.y][at.x]=="."
+	if shiomi and historical:
+		return Rect2i(0,0,extent,extent).has_point(at) and not frontage_reserved(at) and TDShiomiLayout.data.cells[at.y][at.x] in [".","v"]
+	if TDPlannedTown.approved(self):
+		if historical:
+			return not _prior_frontages.has(at) and not road and TDPlannedTown.terrain(at,road).buildable
+		if issued: return not frontage_reserved(at) and TDPlannedTown.reference_buildable_cell(at,true)
+		return not frontage_reserved(at) and terrain_at(at).buildable
+	return not frontage_reserved(at) and not road and terrain_at(at).buildable
 
 func _near_hub(x: int, y: int, width: int, height: int, limit: int) -> bool:
 	var distance := absi(x + (width >> 1) - CENTER) + absi(y + (height >> 1) - CENTER)
@@ -924,6 +1039,11 @@ func _house_name(rng: TDBusinessRandom, serial: int) -> String:
 	return "%s住户%d" % [faces[int(rng.unit() * float(faces.size())) % faces.size()], serial]
 
 func terrain_at(at: Vector2i) -> Dictionary:
+	if egret: return TDEgretLayout.terrain(at,egret_version)
+	if shiomi: return TDShiomiLayout.terrain(at)
 	if not region_id.is_empty(): return TDRegionalLayout.terrain(region_id,at)
-	if layout_version==2: return TDPlannedTown.terrain(at,is_road(at.x,at.y))
+	if layout_version==2:
+		var road := is_road(at.x,at.y)
+		if jiangnan_layout_revision==1: return TDLegacyJiangnanLayout.terrain(at,road)
+		return TDPlannedTown.reference_terrain(at)
 	return {"terrain_type":"plain","elevation":1,"surface_type":"stone" if is_road(at.x,at.y) else "grass","walkable":is_walkable(at.x,at.y),"buildable":not is_road(at.x,at.y)}

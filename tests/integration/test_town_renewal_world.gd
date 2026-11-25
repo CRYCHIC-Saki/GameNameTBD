@@ -8,7 +8,7 @@ func test_nearby_town_targets_all_directions_and_distinct_frontages() -> void:
 	for id: String in ["player_diner","player_cottage","market-small","market-mid","market-large","factory-1","factory-2","competitor:shop:0","competitor:shop:1","commercial_street:bank"]:
 		var p:=map._by_id(id);assert_false(p.is_empty(),id)
 		if p.is_empty(): continue
-		town._player.position=town._origin()+(Vector2(p.approach_x,p.approach_y)+Vector2(.5,.5))*town.CELL
+		town._player.position=town._origin()+(Vector2(p.approach_x,p.approach_y)+Vector2(.5,.5))*town.cell_size()
 		for facing: Vector2i in [Vector2i.UP,Vector2i.DOWN,Vector2i.LEFT,Vector2i.RIGHT]:
 			town._player.facing=facing
 			assert_eq(str(town.facing_plot().get("id","")),id,"exclusive entrance "+id)

@@ -16,7 +16,9 @@ func before_each() -> void:
 	view=TDShopView.new();view.service=catalog;view.shop=shop;view.embedded=true
 	add_child(view);view.kitchen.auto_advance=false
 	shop.crew=room.layout.crew
-	assert_true(shop.buy(shop.offer("service.tomato_egg").stock,"stock").ok)
+	var stock: Dictionary=shop.offer("service.tomato_egg").stock.duplicate()
+	for item: String in stock: stock[item]*=2
+	assert_true(shop.buy(stock,"stock").ok)
 	for id: String in shop.snapshot().menu: shop.set_menu(id,id=="service.tomato_egg",1200)
 	assert_true(shop.open_day().ok);assert_true(shop.advance(1).ok)
 	shop._next_arrival=350.0
@@ -160,3 +162,53 @@ func test_pass_snapshot_isolation_and_replacement_waiter_cannot_lose_plate() -> 
 	assert_true(shop.table_service.serve(plate_id,"replacement",ticket).ok)
 	var before:=shop.snapshot()
 	assert_false(shop.deliver(ticket,original[0].dish).ok);assert_eq(shop.snapshot(),before)
+
+
+func test_two_waiters_line_up_then_deliver_two_real_dishes_to_the_correct_tables() -> void:
+	shop._arrive()
+	shop.advance(15)
+	assert_eq(shop.active_orders().size(),2)
+	if shop.active_orders().size()!=2: return
+	assert_true(shop.crew.hire("cook-he").ok)
+	for tick: int in 1600:
+		view.kitchen.advance(.1)
+		if shop.table_service.rows().size()==2: break
+	var plates:=shop.table_service.rows()
+	assert_eq(plates.size(),2)
+	if plates.size()!=2: return
+	assert_true(shop.crew.hire("waiter-ning").ok)
+	assert_true(shop.crew.hire("waiter-tao").ok)
+	var line:=room._crew_points(0)
+	var hatch:=room.service_window_cell()
+	var homes: Dictionary={}
+	for person: Dictionary in line:
+		var cell:=room._cell_at(person.point)
+		assert_eq(cell.x,0)
+		assert_almost_eq(float(person.point.x),room.layout.cell_px*.28,.01)
+		assert_true(room.layout.is_walkable(1,cell.y))
+		assert_false(homes.values().has(person.point))
+		homes[person.actor_id]=person.point
+	var carriers: Dictionary={}
+	var delivered: Dictionary={}
+	for tick: int in 500:
+		shop.advance(shop.next_boundary(.05))
+		for plate: Dictionary in plates:
+			var id: String=plate.id
+			var current:=shop.table_service.get_plate(id)
+			var carrier: String=current.get("carrier","")
+			if carrier!="" and not carriers.has(id):
+				carriers[id]=carrier
+				assert_eq(room._waiters[carrier].feet,room.layout.cell_center(hatch))
+				assert_eq(shop.order(plate.order_id).prepaid_cents,0)
+			if carriers.has(id) and not delivered.has(id) and shop.order(plate.order_id).status=="SERVED":
+				var guest:=room._guest_by_ticket(plate.order_id)
+				assert_eq(room._waiters[carriers[id]].feet,room.layout.cell_center(room._beside_seat(guest.seat_id)))
+				delivered[id]=guest.seat_id
+		if delivered.size()==2: break
+	assert_eq(carriers.size(),2)
+	if carriers.size()==2: assert_ne(carriers.values()[0],carriers.values()[1])
+	assert_eq(delivered.size(),2)
+	if delivered.size()==2: assert_ne(delivered.values()[0],delivered.values()[1])
+	assert_eq(shop.snapshot().ledger.filter(func(e:Dictionary)->bool:return e.kind=="prepayment").size(),2)
+	shop.advance(15)
+	for person: Dictionary in room._crew_points(0): assert_eq(person.point,homes[person.actor_id])

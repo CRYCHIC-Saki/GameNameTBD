@@ -19,26 +19,25 @@ static func install(service: TDServiceCatalog, dishes: Array) -> Array[String]:
 static func _ensure(service: TDServiceCatalog, dish: Dictionary) -> String:
 	var existing := String(dish.get("service_recipe", ""))
 	if existing != "":
-		if service.cooking.for_recipe(existing).is_empty():
+		if service.cooking.recipe_data(existing).is_empty():
 			return ""
 		return existing
 	var recipe_id := "phase3." + String(dish.get("id", ""))
-	if not service.cooking.for_recipe(recipe_id).is_empty():
+	if not service.cooking.recipe_data(recipe_id).is_empty():
 		return recipe_id
 	var kitchen: Dictionary = dish.get("kitchen", {})
 	var chart_id := String(kitchen.get("chart", ""))
-	var template_pack := service.cooking.for_recipe(chart_id)
-	if template_pack.is_empty() or chart_id not in [STIR_CHART, STEAM_CHART]:
+	var template := service.cooking.recipe_data(chart_id)
+	if template.is_empty() or chart_id not in [STIR_CHART, STEAM_CHART]:
 		return ""
-	var template: Dictionary = template_pack.recipe
-	var sheets: Dictionary = service.cooking.data().pc_operations.document_sheets
-	if not sheets.has(chart_id):
+	var sheet := service.cooking.sheet_data(chart_id)
+	if sheet.is_empty():
 		return ""
 	var primary: Array = kitchen.get("primary", [])
 	var cut := String(kitchen.get("cut", ""))
-	if not sheets.has(cut) or primary.size() != 2:
+	if service.cooking.sheet_data(cut).is_empty() or primary.size() != 2:
 		return ""
-	var recipe := template.duplicate(true)
+	var recipe := template
 	recipe["id"] = recipe_id
 	recipe["name"] = String(dish.get("name", recipe_id))
 	recipe["initially_unlocked"] = false
@@ -62,7 +61,6 @@ static func _ensure(service: TDServiceCatalog, dish: Dictionary) -> String:
 			recipe.allowed_ingredients.append(ingredient)
 		if recipe.cooking_method == "steam" or index == 0:
 			recipe.preparation_sheets[ingredient] = cut
-	var sheet: Dictionary = (sheets[chart_id] as Dictionary).duplicate(true)
 	sheet["id"] = recipe_id
 	sheet["dish"] = recipe["name"]
 	service.cooking.adopt_recipe(recipe, sheet)

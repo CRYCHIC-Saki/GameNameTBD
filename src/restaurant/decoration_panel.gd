@@ -7,7 +7,7 @@ signal done
 
 const CATEGORIES: Array[String]=["地面","墙壁","陈设","餐桌","座椅","服务台"]
 const PANEL_HEIGHT: float=320.0
-const GROUPS: Dictionary={"陈设":["screen","kiosk"],"餐桌":["dining_table","hotpot_table"],"座椅":["waiting_seat","booth","sofa","stool","child_seat"],"服务台":["welcome_desk","cashier","order_counter"]}
+const GROUPS: Dictionary={"陈设":["screen","kiosk"],"餐桌":["dining_table"],"座椅":["waiting_seat","booth","sofa","stool","child_seat"],"服务台":["welcome_desk","cashier","order_counter"]}
 var catalog: TDRestaurantCatalog
 var category: String="餐桌"
 var culture: String="chinese"
@@ -29,10 +29,7 @@ class Card extends Button:
 			TDFurnitureModel.draw_model(self,piece)
 			draw_set_transform_matrix(Transform2D.IDENTITY)
 		else:
-			var c:=TDRestaurantArt.finish_color(finish)
-			draw_rect(Rect2(25,14,size.x-50,70),c)
-			for x in range(4): draw_line(Vector2(25+x*28,14),Vector2(25+x*28,84),c.darkened(.24),2)
-			for y in range(3): draw_line(Vector2(25,14+y*23),Vector2(size.x-25,14+y*23),c.darkened(.24),2)
+			TDRegionalInterior.draw_finish_sample(self,finish,Rect2(25,14,size.x-50,70))
 		var font:=get_theme_font("font")
 		var lines:=details.split("\n")
 		for index in lines.size(): draw_string(font,Vector2(10,118+index*24),lines[index],HORIZONTAL_ALIGNMENT_LEFT,size.x-20,TDUI.FONT_CAPTION,TDUI.INK)
@@ -74,17 +71,39 @@ func refresh_cards() -> void:
 	if category=="地面": ids=TDRestaurantLayout.FLOOR_FINISHES.duplicate()
 	elif category=="墙壁": ids=TDRestaurantLayout.WALL_FINISHES.duplicate();ids.append("storefront")
 	else: ids=GROUPS.get(category,[])
+	# Keep original cards first and append individually selectable regional models.
+	# No global style selector: each card carries its own placement style.
+	ids=ids.duplicate()
+	for base: String in ids.duplicate():
+		if catalog.furniture(base).is_empty() or TDRestaurantLayout.shared_accent(base): continue
+		for theme_id: String in TDRegionalInterior.DECOR_STYLES:
+			if theme_id!=culture: ids.append(base+"__"+theme_id+"_"+tier)
 	for value: String in ids:
 		var card:=Card.new();card.name="Item_"+value;card.custom_minimum_size=Vector2(224,188);card.toggle_mode=true;card.button_pressed=selected==value;card.focus_mode=Control.FOCUS_NONE
-		var definition:=catalog.furniture(value)
+		var choice:=furniture_choice(value)
+		var definition:=catalog.furniture(str(choice.get("kind",value)))
 		var finish: bool=definition.is_empty()
 		if finish:
 			card.finish=value;card.details=TDRestaurantLayout.finish_name(value)+"\n整屋"+category+" · 点击替换\n仅改变外观"
 		else:
-			card.piece={"kind":value,"w":definition.width,"h":definition.height,"rotation":0,"style_id":culture+"_"+tier}
-			card.details="%s\n%d×%d · %s · %s\n%s"%[definition.name,int(definition.width),int(definition.height),catalog.culture_name(culture),"精制" if tier=="high" else "朴素",purpose(definition)]
+			var picked_style: String=choice.style_id
+			var theme_id:=picked_style.get_slice("_",0)
+			card.piece={"kind":definition.id,"w":definition.width,"h":definition.height,"rotation":0,"style_id":picked_style}
+			var region_label := "通用" if TDRestaurantLayout.shared_accent(definition.id) else str(TDRegionalInterior.STYLE_NAMES.get(theme_id,catalog.culture_name(theme_id)))
+			card.details="%s · %s\n%d×%d · %s\n%s"%[region_label,definition.name,int(definition.width),int(definition.height),"精制" if tier=="high" else "标准",purpose(definition)]
 		card.tooltip_text=card.details+("" if finish else "\n参与全店风格统一/档次评价；放置时显示实际效果变化")
 		card.pressed.connect(_choose.bind(value,finish));_cards.add_child(card)
+
+func furniture_choice(id: String) -> Dictionary:
+	var parts:=id.split("__")
+	if parts.size()>2 or catalog.furniture(parts[0]).is_empty(): return {}
+	var style_id:=culture+"_"+tier if parts.size()==1 else str(parts[1])
+	if TDRestaurantLayout.shared_accent(parts[0]):
+		if parts.size()!=1: return {}
+		style_id="plain_"+tier
+	var style_parts:=style_id.split("_")
+	if style_parts.size()!=2 or not catalog.has_style(style_parts[0],style_parts[1]): return {}
+	return {"kind":str(parts[0]),"style_id":style_id}
 
 func _choose(id: String, finish: bool) -> void:
 	selected=id

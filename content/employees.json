@@ -39,7 +39,7 @@
     {
       "id": "cook-zhou",
       "role": "cook",
-      "name": "老周",
+      "name": "周芹",
       "description": "经验丰富，能让后厨安排更从容。",
       "wages_cents": [
         2800,
@@ -90,7 +90,7 @@
     {
       "id": "cook-song",
       "role": "cook",
-      "name": "阿松",
+      "name": "阿芙",
       "description": "动作利落，擅长安排出餐节奏。",
       "wages_cents": [
         2500,
@@ -107,7 +107,7 @@
     {
       "id": "cook-qiao",
       "role": "cook",
-      "name": "乔师傅",
+      "name": "乔巧",
       "description": "注重成菜温度与最后一次试味。",
       "wages_cents": [
         2700,
@@ -235,7 +235,7 @@
           "utility_discount": 0.08
         }
       ],
-      "name": "踏实掌柜",
+      "name": "孟婉",
       "description": "一步一个脚印地照看店铺与收支。",
       "wages_cents": [
         1800,
@@ -261,7 +261,7 @@
           "service_bonus": 0.09
         }
       ],
-      "name": "街坊掌柜",
+      "name": "顾迎春",
       "description": "宾至如归：二星后服务额外加成。",
       "wages_cents": [
         1900,
@@ -288,7 +288,7 @@
           "utility_discount": 0.15
         }
       ],
-      "name": "金牌掌柜",
+      "name": "章蕙",
       "description": "金牌标准：二星后提升品质，三星另节约水电。",
       "wages_cents": [
         2000,
@@ -314,7 +314,7 @@
           "utility_discount": 0.12
         }
       ],
-      "name": "兰掌柜",
+      "name": "兰清仪",
       "description": "擅长精打细算与安排采购。",
       "wages_cents": [
         2000,
@@ -340,7 +340,7 @@
           "service_bonus": 0.08
         }
       ],
-      "name": "方掌柜",
+      "name": "方如月",
       "description": "善于调度前厅与后厨，让团队配合顺畅。",
       "wages_cents": [
         2100,
@@ -367,7 +367,7 @@
           "service_bonus": 0.03
         }
       ],
-      "name": "朱掌柜",
+      "name": "朱锦娘",
       "description": "熟悉邻里人情，也重视菜品口碑。",
       "wages_cents": [
         2200,
@@ -1536,15 +1536,13 @@
     "towns": [
       "chengdu",
       "tokyo",
-      "paris",
-      "bangkok",
-      "mexico_city"
+      "paris"
     ]
   },
   "fixed_employees": [
     {
       "id": "staff.cn.001",
-      "name": "沈知远",
+      "name": "沈知瑶",
       "role": "manager",
       "town": "chengdu",
       "stars": 1,
@@ -1566,7 +1564,8 @@
         {},
         {}
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.cn.002",
@@ -1592,11 +1591,12 @@
         {},
         {}
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.cn.003",
-      "name": "林书言",
+      "name": "林书妍",
       "role": "manager",
       "town": "chengdu",
       "stars": 1,
@@ -1618,11 +1618,12 @@
         {},
         {}
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.cn.004",
-      "name": "许明川",
+      "name": "许明珠",
       "role": "manager",
       "town": "chengdu",
       "stars": 1,
@@ -1644,11 +1645,12 @@
         {},
         {}
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.cn.005",
-      "name": "陈景安",
+      "name": "陈景芸",
       "role": "manager",
       "town": "chengdu",
       "stars": 1,
@@ -1670,7 +1672,8 @@
         {},
         {}
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.cn.006",
@@ -1696,11 +1699,12 @@
         {},
         {}
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.cn.007",
-      "name": "宋嘉树",
+      "name": "宋嘉禾",
       "role": "manager",
       "town": "chengdu",
       "stars": 1,
@@ -1722,7 +1726,8 @@
         {},
         {}
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.cn.008",
@@ -1748,7 +1753,8 @@
         {},
         {}
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.cn.009",
@@ -1780,7 +1786,8 @@
           "utility_discount": 0.04
         }
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.cn.010",
@@ -1812,7 +1819,8 @@
           "service_bonus": 0.04
         }
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.cn.011",
@@ -1844,7 +1852,8 @@
           "quality_bonus": 0.04
         }
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.cn.012",
@@ -1876,11 +1885,12 @@
           "utility_discount": 0.08
         }
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.cn.013",
-      "name": "徐见山",
+      "name": "徐见月",
       "role": "cook",
       "town": "chengdu",
       "stars": 1,
@@ -1898,7 +1908,8 @@
       ],
       "sign_fee_cents": 4800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.cn.014",
@@ -1920,7 +1931,8 @@
       ],
       "sign_fee_cents": 5000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.cn.015",
@@ -1942,11 +1954,12 @@
       ],
       "sign_fee_cents": 5800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.cn.016",
-      "name": "孟初阳",
+      "name": "孟初晴",
       "role": "cook",
       "town": "chengdu",
       "stars": 1,
@@ -1964,7 +1977,8 @@
       ],
       "sign_fee_cents": 5600,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.cn.017",
@@ -1986,7 +2000,8 @@
       ],
       "sign_fee_cents": 4000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.cn.018",
@@ -2008,11 +2023,12 @@
       ],
       "sign_fee_cents": 5000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.cn.019",
-      "name": "夏星河",
+      "name": "夏星遥",
       "role": "cook",
       "town": "chengdu",
       "stars": 1,
@@ -2030,7 +2046,8 @@
       ],
       "sign_fee_cents": 6000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.cn.020",
@@ -2052,11 +2069,12 @@
       ],
       "sign_fee_cents": 4400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.cn.021",
-      "name": "唐景行",
+      "name": "唐景棠",
       "role": "cook",
       "town": "chengdu",
       "stars": 1,
@@ -2074,7 +2092,8 @@
       ],
       "sign_fee_cents": 5200,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.cn.022",
@@ -2096,7 +2115,8 @@
       ],
       "sign_fee_cents": 5800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.cn.023",
@@ -2118,11 +2138,12 @@
       ],
       "sign_fee_cents": 5400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.cn.024",
-      "name": "赵牧之",
+      "name": "赵芷兰",
       "role": "cook",
       "town": "chengdu",
       "stars": 1,
@@ -2140,7 +2161,8 @@
       ],
       "sign_fee_cents": 5400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.cn.025",
@@ -2162,11 +2184,12 @@
       ],
       "sign_fee_cents": 3800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.cn.026",
-      "name": "李秋实",
+      "name": "李秋蕊",
       "role": "cook",
       "town": "chengdu",
       "stars": 1,
@@ -2184,11 +2207,12 @@
       ],
       "sign_fee_cents": 4400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.cn.027",
-      "name": "王春生",
+      "name": "王春晓",
       "role": "cook",
       "town": "chengdu",
       "stars": 1,
@@ -2206,7 +2230,8 @@
       ],
       "sign_fee_cents": 3800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.cn.028",
@@ -2228,11 +2253,12 @@
       ],
       "sign_fee_cents": 3800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.cn.029",
-      "name": "郑思源",
+      "name": "郑思莹",
       "role": "cook",
       "town": "chengdu",
       "stars": 1,
@@ -2250,7 +2276,8 @@
       ],
       "sign_fee_cents": 5000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.cn.030",
@@ -2272,7 +2299,8 @@
       ],
       "sign_fee_cents": 4600,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.cn.031",
@@ -2294,7 +2322,8 @@
       ],
       "sign_fee_cents": 4000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.cn.032",
@@ -2316,11 +2345,12 @@
       ],
       "sign_fee_cents": 5600,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.cn.033",
-      "name": "卢北辰",
+      "name": "卢星妤",
       "role": "cook",
       "town": "chengdu",
       "stars": 2,
@@ -2338,7 +2368,8 @@
       ],
       "sign_fee_cents": 6600,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.cn.034",
@@ -2360,11 +2391,12 @@
       ],
       "sign_fee_cents": 8000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.cn.035",
-      "name": "蔡云帆",
+      "name": "蔡云锦",
       "role": "cook",
       "town": "chengdu",
       "stars": 2,
@@ -2382,7 +2414,8 @@
       ],
       "sign_fee_cents": 8200,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.cn.036",
@@ -2404,11 +2437,12 @@
       ],
       "sign_fee_cents": 7400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.cn.037",
-      "name": "彭远航",
+      "name": "彭采莲",
       "role": "cook",
       "town": "chengdu",
       "stars": 2,
@@ -2426,11 +2460,12 @@
       ],
       "sign_fee_cents": 6600,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.cn.038",
-      "name": "丁雪松",
+      "name": "丁雪莹",
       "role": "cook",
       "town": "chengdu",
       "stars": 2,
@@ -2448,7 +2483,8 @@
       ],
       "sign_fee_cents": 7400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.cn.039",
@@ -2470,7 +2506,8 @@
       ],
       "sign_fee_cents": 6400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.cn.040",
@@ -2492,7 +2529,8 @@
       ],
       "sign_fee_cents": 10000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.cn.041",
@@ -2514,7 +2552,8 @@
       ],
       "sign_fee_cents": 14800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.cn.042",
@@ -2536,11 +2575,12 @@
       ],
       "sign_fee_cents": 11400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.cn.043",
-      "name": "薛怀远",
+      "name": "薛怀玉",
       "role": "waiter",
       "town": "chengdu",
       "stars": 1,
@@ -2558,7 +2598,8 @@
       ],
       "sign_fee_cents": 4200,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.cn.044",
@@ -2580,11 +2621,12 @@
       ],
       "sign_fee_cents": 4600,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.cn.045",
-      "name": "杜锦程",
+      "name": "杜锦绣",
       "role": "waiter",
       "town": "chengdu",
       "stars": 1,
@@ -2602,7 +2644,8 @@
       ],
       "sign_fee_cents": 4600,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.cn.046",
@@ -2624,11 +2667,12 @@
       ],
       "sign_fee_cents": 3600,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.cn.047",
-      "name": "傅长青",
+      "name": "傅青萝",
       "role": "waiter",
       "town": "chengdu",
       "stars": 1,
@@ -2646,11 +2690,12 @@
       ],
       "sign_fee_cents": 6000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.cn.048",
-      "name": "范晓阳",
+      "name": "范晓莺",
       "role": "waiter",
       "town": "chengdu",
       "stars": 1,
@@ -2668,7 +2713,8 @@
       ],
       "sign_fee_cents": 5400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.cn.049",
@@ -2690,11 +2736,12 @@
       ],
       "sign_fee_cents": 5200,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.cn.050",
-      "name": "熊知礼",
+      "name": "熊知夏",
       "role": "waiter",
       "town": "chengdu",
       "stars": 1,
@@ -2712,11 +2759,12 @@
       ],
       "sign_fee_cents": 4000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.cn.051",
-      "name": "汪如松",
+      "name": "汪如茵",
       "role": "waiter",
       "town": "chengdu",
       "stars": 1,
@@ -2734,7 +2782,8 @@
       ],
       "sign_fee_cents": 3800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.cn.052",
@@ -2756,7 +2805,8 @@
       ],
       "sign_fee_cents": 5000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.cn.053",
@@ -2778,11 +2828,12 @@
       ],
       "sign_fee_cents": 4800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.cn.054",
-      "name": "邵平川",
+      "name": "邵平芜",
       "role": "waiter",
       "town": "chengdu",
       "stars": 1,
@@ -2800,7 +2851,8 @@
       ],
       "sign_fee_cents": 5800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.cn.055",
@@ -2822,7 +2874,8 @@
       ],
       "sign_fee_cents": 4800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.cn.056",
@@ -2844,7 +2897,8 @@
       ],
       "sign_fee_cents": 4000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.cn.057",
@@ -2866,7 +2920,8 @@
       ],
       "sign_fee_cents": 4400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.cn.058",
@@ -2888,7 +2943,8 @@
       ],
       "sign_fee_cents": 4800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.cn.059",
@@ -2910,7 +2966,8 @@
       ],
       "sign_fee_cents": 4600,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.cn.060",
@@ -2932,7 +2989,8 @@
       ],
       "sign_fee_cents": 3800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.cn.061",
@@ -2954,7 +3012,8 @@
       ],
       "sign_fee_cents": 5000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.cn.062",
@@ -2976,11 +3035,12 @@
       ],
       "sign_fee_cents": 4400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.cn.063",
-      "name": "于润生",
+      "name": "于润玉",
       "role": "waiter",
       "town": "chengdu",
       "stars": 2,
@@ -2998,11 +3058,12 @@
       ],
       "sign_fee_cents": 9600,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.cn.064",
-      "name": "龙安和",
+      "name": "龙安荷",
       "role": "waiter",
       "town": "chengdu",
       "stars": 2,
@@ -3020,7 +3081,8 @@
       ],
       "sign_fee_cents": 9400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.cn.065",
@@ -3042,11 +3104,12 @@
       ],
       "sign_fee_cents": 9400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.cn.066",
-      "name": "侯云起",
+      "name": "侯云笙",
       "role": "waiter",
       "town": "chengdu",
       "stars": 2,
@@ -3064,7 +3127,8 @@
       ],
       "sign_fee_cents": 9800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.cn.067",
@@ -3086,7 +3150,8 @@
       ],
       "sign_fee_cents": 9400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.cn.068",
@@ -3108,11 +3173,12 @@
       ],
       "sign_fee_cents": 8800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.cn.069",
-      "name": "尹墨白",
+      "name": "尹墨兰",
       "role": "waiter",
       "town": "chengdu",
       "stars": 2,
@@ -3130,7 +3196,8 @@
       ],
       "sign_fee_cents": 6600,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.cn.070",
@@ -3152,11 +3219,12 @@
       ],
       "sign_fee_cents": 14200,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.cn.071",
-      "name": "马星野",
+      "name": "马星苒",
       "role": "waiter",
       "town": "chengdu",
       "stars": 3,
@@ -3174,11 +3242,12 @@
       ],
       "sign_fee_cents": 12200,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.cn.072",
-      "name": "田若谷",
+      "name": "田若兰",
       "role": "waiter",
       "town": "chengdu",
       "stars": 3,
@@ -3196,11 +3265,12 @@
       ],
       "sign_fee_cents": 14800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.jp.001",
-      "name": "佐藤晴人",
+      "name": "佐藤晴香",
       "role": "manager",
       "town": "tokyo",
       "stars": 1,
@@ -3222,7 +3292,8 @@
         {},
         {}
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.jp.002",
@@ -3248,11 +3319,12 @@
         {},
         {}
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.jp.003",
-      "name": "高桥悠真",
+      "name": "高桥悠子",
       "role": "manager",
       "town": "tokyo",
       "stars": 1,
@@ -3274,7 +3346,8 @@
         {},
         {}
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.jp.004",
@@ -3300,11 +3373,12 @@
         {},
         {}
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.jp.005",
-      "name": "伊藤莲",
+      "name": "伊藤莲奈",
       "role": "manager",
       "town": "tokyo",
       "stars": 1,
@@ -3326,7 +3400,8 @@
         {},
         {}
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.jp.006",
@@ -3352,7 +3427,8 @@
         {},
         {}
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.jp.007",
@@ -3378,7 +3454,8 @@
         {},
         {}
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.jp.008",
@@ -3404,11 +3481,12 @@
         {},
         {}
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.jp.009",
-      "name": "小林隼人",
+      "name": "小林早纪",
       "role": "manager",
       "town": "tokyo",
       "stars": 2,
@@ -3436,7 +3514,8 @@
           "utility_discount": 0.04
         }
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.jp.010",
@@ -3468,11 +3547,12 @@
           "service_bonus": 0.04
         }
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.jp.011",
-      "name": "吉田和树",
+      "name": "吉田和叶",
       "role": "manager",
       "town": "tokyo",
       "stars": 2,
@@ -3500,7 +3580,8 @@
           "quality_bonus": 0.04
         }
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.jp.012",
@@ -3532,11 +3613,12 @@
           "utility_discount": 0.08
         }
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.jp.013",
-      "name": "佐佐木翔",
+      "name": "佐佐木绫乃",
       "role": "cook",
       "town": "tokyo",
       "stars": 1,
@@ -3554,7 +3636,8 @@
       ],
       "sign_fee_cents": 5400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.jp.014",
@@ -3576,11 +3659,12 @@
       ],
       "sign_fee_cents": 5400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.jp.015",
-      "name": "松本直树",
+      "name": "松本直美",
       "role": "cook",
       "town": "tokyo",
       "stars": 1,
@@ -3598,7 +3682,8 @@
       ],
       "sign_fee_cents": 4800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.jp.016",
@@ -3620,7 +3705,8 @@
       ],
       "sign_fee_cents": 4000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.jp.017",
@@ -3642,11 +3728,12 @@
       ],
       "sign_fee_cents": 4600,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.jp.018",
-      "name": "林大和",
+      "name": "林日和",
       "role": "cook",
       "town": "tokyo",
       "stars": 1,
@@ -3664,7 +3751,8 @@
       ],
       "sign_fee_cents": 5000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.jp.019",
@@ -3686,7 +3774,8 @@
       ],
       "sign_fee_cents": 4600,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.jp.020",
@@ -3708,11 +3797,12 @@
       ],
       "sign_fee_cents": 4800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.jp.021",
-      "name": "中岛拓海",
+      "name": "中岛海音",
       "role": "cook",
       "town": "tokyo",
       "stars": 1,
@@ -3730,7 +3820,8 @@
       ],
       "sign_fee_cents": 5400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.jp.022",
@@ -3752,7 +3843,8 @@
       ],
       "sign_fee_cents": 5000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.jp.023",
@@ -3774,11 +3866,12 @@
       ],
       "sign_fee_cents": 5400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.jp.024",
-      "name": "桥本一树",
+      "name": "桥本一花",
       "role": "cook",
       "town": "tokyo",
       "stars": 1,
@@ -3796,7 +3889,8 @@
       ],
       "sign_fee_cents": 4200,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.jp.025",
@@ -3818,11 +3912,12 @@
       ],
       "sign_fee_cents": 5000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.jp.026",
-      "name": "阿部春树",
+      "name": "阿部春菜",
       "role": "cook",
       "town": "tokyo",
       "stars": 1,
@@ -3840,7 +3935,8 @@
       ],
       "sign_fee_cents": 3800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.jp.027",
@@ -3862,7 +3958,8 @@
       ],
       "sign_fee_cents": 5400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.jp.028",
@@ -3884,11 +3981,12 @@
       ],
       "sign_fee_cents": 4400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.jp.029",
-      "name": "前田诚",
+      "name": "前田真由",
       "role": "cook",
       "town": "tokyo",
       "stars": 1,
@@ -3906,7 +4004,8 @@
       ],
       "sign_fee_cents": 6000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.jp.030",
@@ -3928,11 +4027,12 @@
       ],
       "sign_fee_cents": 3600,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.jp.031",
-      "name": "冈田陆",
+      "name": "冈田陆花",
       "role": "cook",
       "town": "tokyo",
       "stars": 1,
@@ -3950,7 +4050,8 @@
       ],
       "sign_fee_cents": 5600,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.jp.032",
@@ -3972,7 +4073,8 @@
       ],
       "sign_fee_cents": 3800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.jp.033",
@@ -3994,7 +4096,8 @@
       ],
       "sign_fee_cents": 6800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.jp.034",
@@ -4016,11 +4119,12 @@
       ],
       "sign_fee_cents": 9200,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.jp.035",
-      "name": "近藤仁",
+      "name": "近藤仁美",
       "role": "cook",
       "town": "tokyo",
       "stars": 2,
@@ -4038,7 +4142,8 @@
       ],
       "sign_fee_cents": 9000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.jp.036",
@@ -4060,11 +4165,12 @@
       ],
       "sign_fee_cents": 8200,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.jp.037",
-      "name": "斋藤航",
+      "name": "斋藤美帆",
       "role": "cook",
       "town": "tokyo",
       "stars": 2,
@@ -4082,7 +4188,8 @@
       ],
       "sign_fee_cents": 9600,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.jp.038",
@@ -4104,11 +4211,12 @@
       ],
       "sign_fee_cents": 8200,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.jp.039",
-      "name": "小野健太",
+      "name": "小野佳奈",
       "role": "cook",
       "town": "tokyo",
       "stars": 2,
@@ -4126,7 +4234,8 @@
       ],
       "sign_fee_cents": 8800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.jp.040",
@@ -4148,11 +4257,12 @@
       ],
       "sign_fee_cents": 10400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.jp.041",
-      "name": "三浦律",
+      "name": "三浦律子",
       "role": "cook",
       "town": "tokyo",
       "stars": 3,
@@ -4170,7 +4280,8 @@
       ],
       "sign_fee_cents": 11600,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.jp.042",
@@ -4192,11 +4303,12 @@
       ],
       "sign_fee_cents": 15600,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.jp.043",
-      "name": "西村哲也",
+      "name": "西村千佳",
       "role": "waiter",
       "town": "tokyo",
       "stars": 1,
@@ -4214,7 +4326,8 @@
       ],
       "sign_fee_cents": 5000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.jp.044",
@@ -4236,11 +4349,12 @@
       ],
       "sign_fee_cents": 3600,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.jp.045",
-      "name": "杉山苍",
+      "name": "杉山苍叶",
       "role": "waiter",
       "town": "tokyo",
       "stars": 1,
@@ -4258,7 +4372,8 @@
       ],
       "sign_fee_cents": 4800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.jp.046",
@@ -4280,7 +4395,8 @@
       ],
       "sign_fee_cents": 4200,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.jp.047",
@@ -4302,11 +4418,12 @@
       ],
       "sign_fee_cents": 4400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.jp.048",
-      "name": "安藤亮",
+      "name": "安藤凉子",
       "role": "waiter",
       "town": "tokyo",
       "stars": 1,
@@ -4324,7 +4441,8 @@
       ],
       "sign_fee_cents": 6000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.jp.049",
@@ -4346,7 +4464,8 @@
       ],
       "sign_fee_cents": 4000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.jp.050",
@@ -4368,11 +4487,12 @@
       ],
       "sign_fee_cents": 4400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.jp.051",
-      "name": "高木健",
+      "name": "高木佳穗",
       "role": "waiter",
       "town": "tokyo",
       "stars": 1,
@@ -4390,7 +4510,8 @@
       ],
       "sign_fee_cents": 4000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.jp.052",
@@ -4412,11 +4533,12 @@
       ],
       "sign_fee_cents": 4000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.jp.053",
-      "name": "原田智",
+      "name": "原田智惠",
       "role": "waiter",
       "town": "tokyo",
       "stars": 1,
@@ -4434,7 +4556,8 @@
       ],
       "sign_fee_cents": 3600,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.jp.054",
@@ -4456,7 +4579,8 @@
       ],
       "sign_fee_cents": 6000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.jp.055",
@@ -4478,11 +4602,12 @@
       ],
       "sign_fee_cents": 4800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.jp.056",
-      "name": "上田纯",
+      "name": "上田纯子",
       "role": "waiter",
       "town": "tokyo",
       "stars": 1,
@@ -4500,7 +4625,8 @@
       ],
       "sign_fee_cents": 5200,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.jp.057",
@@ -4522,11 +4648,12 @@
       ],
       "sign_fee_cents": 5200,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.jp.058",
-      "name": "武田海斗",
+      "name": "武田海菜",
       "role": "waiter",
       "town": "tokyo",
       "stars": 1,
@@ -4544,7 +4671,8 @@
       ],
       "sign_fee_cents": 5800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.jp.059",
@@ -4566,11 +4694,12 @@
       ],
       "sign_fee_cents": 3800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.jp.060",
-      "name": "岛田优",
+      "name": "岛田优衣",
       "role": "waiter",
       "town": "tokyo",
       "stars": 1,
@@ -4588,11 +4717,12 @@
       ],
       "sign_fee_cents": 4000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.jp.061",
-      "name": "原和也",
+      "name": "原和香",
       "role": "waiter",
       "town": "tokyo",
       "stars": 1,
@@ -4610,7 +4740,8 @@
       ],
       "sign_fee_cents": 3800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.jp.062",
@@ -4632,11 +4763,12 @@
       ],
       "sign_fee_cents": 6000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.jp.063",
-      "name": "久保真",
+      "name": "久保真奈",
       "role": "waiter",
       "town": "tokyo",
       "stars": 2,
@@ -4654,7 +4786,8 @@
       ],
       "sign_fee_cents": 10000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.jp.064",
@@ -4676,11 +4809,12 @@
       ],
       "sign_fee_cents": 6000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.jp.065",
-      "name": "中川悟",
+      "name": "中川里穗",
       "role": "waiter",
       "town": "tokyo",
       "stars": 2,
@@ -4698,11 +4832,12 @@
       ],
       "sign_fee_cents": 7800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.jp.066",
-      "name": "岩田步",
+      "name": "岩田步美",
       "role": "waiter",
       "town": "tokyo",
       "stars": 2,
@@ -4720,11 +4855,12 @@
       ],
       "sign_fee_cents": 6000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.jp.067",
-      "name": "松井启介",
+      "name": "松井清香",
       "role": "waiter",
       "town": "tokyo",
       "stars": 2,
@@ -4742,7 +4878,8 @@
       ],
       "sign_fee_cents": 6000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.jp.068",
@@ -4764,11 +4901,12 @@
       ],
       "sign_fee_cents": 9600,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.jp.069",
-      "name": "柴田遥斗",
+      "name": "柴田遥香",
       "role": "waiter",
       "town": "tokyo",
       "stars": 2,
@@ -4786,7 +4924,8 @@
       ],
       "sign_fee_cents": 6000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.jp.070",
@@ -4808,11 +4947,12 @@
       ],
       "sign_fee_cents": 13200,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.jp.071",
-      "name": "菅原奏太",
+      "name": "菅原奏音",
       "role": "waiter",
       "town": "tokyo",
       "stars": 3,
@@ -4830,7 +4970,8 @@
       ],
       "sign_fee_cents": 10400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.jp.072",
@@ -4852,7 +4993,8 @@
       ],
       "sign_fee_cents": 15800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.eu.001",
@@ -4878,11 +5020,12 @@
         {},
         {}
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.eu.002",
-      "name": "卢卡·马丁",
+      "name": "露琪亚·马丁",
       "role": "manager",
       "town": "paris",
       "stars": 1,
@@ -4904,11 +5047,12 @@
         {},
         {}
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.eu.003",
-      "name": "路易·贝尔",
+      "name": "路易莎·贝尔",
       "role": "manager",
       "town": "paris",
       "stars": 1,
@@ -4930,7 +5074,8 @@
         {},
         {}
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.eu.004",
@@ -4956,11 +5101,12 @@
         {},
         {}
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.eu.005",
-      "name": "雨果·罗贝尔",
+      "name": "于盖特·罗贝尔",
       "role": "manager",
       "town": "paris",
       "stars": 1,
@@ -4982,7 +5128,8 @@
         {},
         {}
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.eu.006",
@@ -5008,11 +5155,12 @@
         {},
         {}
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.eu.007",
-      "name": "亚瑟·洛朗",
+      "name": "阿涅丝·洛朗",
       "role": "manager",
       "town": "paris",
       "stars": 1,
@@ -5034,7 +5182,8 @@
         {},
         {}
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.eu.008",
@@ -5060,11 +5209,12 @@
         {},
         {}
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.eu.009",
-      "name": "朱尔·西蒙",
+      "name": "朱莉娅·西蒙",
       "role": "manager",
       "town": "paris",
       "stars": 2,
@@ -5092,7 +5242,8 @@
           "utility_discount": 0.04
         }
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.eu.010",
@@ -5124,11 +5275,12 @@
           "service_bonus": 0.04
         }
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.eu.011",
-      "name": "加布里埃尔·加西亚",
+      "name": "加布里埃拉·加西亚",
       "role": "manager",
       "town": "paris",
       "stars": 2,
@@ -5156,7 +5308,8 @@
           "quality_bonus": 0.04
         }
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.eu.012",
@@ -5188,11 +5341,12 @@
           "utility_discount": 0.08
         }
       ],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.eu.013",
-      "name": "奥斯卡·文森特",
+      "name": "克莱芒丝·文森特",
       "role": "cook",
       "town": "paris",
       "stars": 1,
@@ -5210,7 +5364,8 @@
       ],
       "sign_fee_cents": 5200,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.eu.014",
@@ -5232,11 +5387,12 @@
       ],
       "sign_fee_cents": 4600,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.eu.015",
-      "name": "拉斐尔·莫雷",
+      "name": "拉斐拉·莫雷",
       "role": "cook",
       "town": "paris",
       "stars": 1,
@@ -5254,7 +5410,8 @@
       ],
       "sign_fee_cents": 5000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.eu.016",
@@ -5276,11 +5433,12 @@
       ],
       "sign_fee_cents": 4000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.eu.017",
-      "name": "亚当·安德烈",
+      "name": "阿黛莱德·安德烈",
       "role": "cook",
       "town": "paris",
       "stars": 1,
@@ -5298,7 +5456,8 @@
       ],
       "sign_fee_cents": 4200,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.eu.018",
@@ -5320,11 +5479,12 @@
       ],
       "sign_fee_cents": 4400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.eu.019",
-      "name": "保罗·加尼耶",
+      "name": "波琳·加尼耶",
       "role": "cook",
       "town": "paris",
       "stars": 1,
@@ -5342,7 +5502,8 @@
       ],
       "sign_fee_cents": 5400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.eu.020",
@@ -5364,11 +5525,12 @@
       ],
       "sign_fee_cents": 5800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.eu.021",
-      "name": "弗朗索瓦·卢梭",
+      "name": "弗朗索瓦丝·卢梭",
       "role": "cook",
       "town": "paris",
       "stars": 1,
@@ -5386,7 +5548,8 @@
       ],
       "sign_fee_cents": 5000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.eu.022",
@@ -5408,11 +5571,12 @@
       ],
       "sign_fee_cents": 4400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.eu.023",
-      "name": "尼古拉·布朗",
+      "name": "妮可·布朗",
       "role": "cook",
       "town": "paris",
       "stars": 1,
@@ -5430,7 +5594,8 @@
       ],
       "sign_fee_cents": 5200,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.eu.024",
@@ -5452,11 +5617,12 @@
       ],
       "sign_fee_cents": 3800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.eu.025",
-      "name": "托马·佩兰",
+      "name": "玛蒂尔德·佩兰",
       "role": "cook",
       "town": "paris",
       "stars": 1,
@@ -5474,7 +5640,8 @@
       ],
       "sign_fee_cents": 4000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.eu.026",
@@ -5496,11 +5663,12 @@
       ],
       "sign_fee_cents": 4400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.eu.027",
-      "name": "皮埃尔·谢瓦利耶",
+      "name": "佩里娜·谢瓦利耶",
       "role": "cook",
       "town": "paris",
       "stars": 1,
@@ -5518,7 +5686,8 @@
       ],
       "sign_fee_cents": 4800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.eu.028",
@@ -5540,11 +5709,12 @@
       ],
       "sign_fee_cents": 5800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.eu.029",
-      "name": "贝尔纳·弗朗克",
+      "name": "贝尔纳黛特·弗朗克",
       "role": "cook",
       "town": "paris",
       "stars": 1,
@@ -5562,7 +5732,8 @@
       ],
       "sign_fee_cents": 4800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.eu.030",
@@ -5584,11 +5755,12 @@
       ],
       "sign_fee_cents": 3800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.eu.031",
-      "name": "里奥·热拉尔",
+      "name": "莉奥妮·热拉尔",
       "role": "cook",
       "town": "paris",
       "stars": 1,
@@ -5606,7 +5778,8 @@
       ],
       "sign_fee_cents": 4000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.eu.032",
@@ -5628,11 +5801,12 @@
       ],
       "sign_fee_cents": 5800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.eu.033",
-      "name": "诺埃·克莱尔",
+      "name": "诺埃米·克莱尔",
       "role": "cook",
       "town": "paris",
       "stars": 2,
@@ -5650,7 +5824,8 @@
       ],
       "sign_fee_cents": 9800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.eu.034",
@@ -5672,11 +5847,12 @@
       ],
       "sign_fee_cents": 6600,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.eu.035",
-      "name": "马克·德尼",
+      "name": "玛塞拉·德尼",
       "role": "cook",
       "town": "paris",
       "stars": 2,
@@ -5694,7 +5870,8 @@
       ],
       "sign_fee_cents": 7400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.eu.036",
@@ -5716,11 +5893,12 @@
       ],
       "sign_fee_cents": 9200,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.eu.037",
-      "name": "安托万·马修",
+      "name": "安托瓦内特·马修",
       "role": "cook",
       "town": "paris",
       "stars": 2,
@@ -5738,7 +5916,8 @@
       ],
       "sign_fee_cents": 9400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.eu.038",
@@ -5760,11 +5939,12 @@
       ],
       "sign_fee_cents": 6000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.eu.039",
-      "name": "维克多·罗兰",
+      "name": "维多利亚·罗兰",
       "role": "cook",
       "town": "paris",
       "stars": 2,
@@ -5782,7 +5962,8 @@
       ],
       "sign_fee_cents": 9200,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.eu.040",
@@ -5804,11 +5985,12 @@
       ],
       "sign_fee_cents": 13000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.eu.041",
-      "name": "费利克斯·帕斯卡",
+      "name": "费莉西亚·帕斯卡",
       "role": "cook",
       "town": "paris",
       "stars": 3,
@@ -5826,7 +6008,8 @@
       ],
       "sign_fee_cents": 10200,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.eu.042",
@@ -5848,11 +6031,12 @@
       ],
       "sign_fee_cents": 13800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.eu.043",
-      "name": "亚历山大·雷蒙",
+      "name": "亚历山德拉·雷蒙",
       "role": "waiter",
       "town": "paris",
       "stars": 1,
@@ -5870,7 +6054,8 @@
       ],
       "sign_fee_cents": 6000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.eu.044",
@@ -5892,11 +6077,12 @@
       ],
       "sign_fee_cents": 4200,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.eu.045",
-      "name": "塞缪尔·雷诺",
+      "name": "西蒙娜·雷诺",
       "role": "waiter",
       "town": "paris",
       "stars": 1,
@@ -5914,7 +6100,8 @@
       ],
       "sign_fee_cents": 4200,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.eu.046",
@@ -5936,11 +6123,12 @@
       ],
       "sign_fee_cents": 4200,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.eu.047",
-      "name": "西奥·普蒂",
+      "name": "泰蕾丝·普蒂",
       "role": "waiter",
       "town": "paris",
       "stars": 1,
@@ -5958,7 +6146,8 @@
       ],
       "sign_fee_cents": 4600,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.eu.048",
@@ -5980,11 +6169,12 @@
       ],
       "sign_fee_cents": 6000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.eu.049",
-      "name": "加斯帕·诺埃尔",
+      "name": "卡特琳娜·诺埃尔",
       "role": "waiter",
       "town": "paris",
       "stars": 1,
@@ -6002,7 +6192,8 @@
       ],
       "sign_fee_cents": 4200,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.eu.050",
@@ -6024,11 +6215,12 @@
       ],
       "sign_fee_cents": 3600,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.eu.051",
-      "name": "艾蒂安·梅纳尔",
+      "name": "艾蒂安娜·梅纳尔",
       "role": "waiter",
       "town": "paris",
       "stars": 1,
@@ -6046,7 +6238,8 @@
       ],
       "sign_fee_cents": 5400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.eu.052",
@@ -6068,11 +6261,12 @@
       ],
       "sign_fee_cents": 4400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.eu.053",
-      "name": "罗曼·皮卡尔",
+      "name": "罗曼娜·皮卡尔",
       "role": "waiter",
       "town": "paris",
       "stars": 1,
@@ -6090,7 +6284,8 @@
       ],
       "sign_fee_cents": 4600,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.eu.054",
@@ -6112,11 +6307,12 @@
       ],
       "sign_fee_cents": 4800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.eu.055",
-      "name": "莱昂·布朗谢",
+      "name": "莱奥妮·布朗谢",
       "role": "waiter",
       "town": "paris",
       "stars": 1,
@@ -6134,7 +6330,8 @@
       ],
       "sign_fee_cents": 4200,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.eu.056",
@@ -6156,7 +6353,8 @@
       ],
       "sign_fee_cents": 4800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.eu.057",
@@ -6178,7 +6376,8 @@
       ],
       "sign_fee_cents": 5800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.eu.058",
@@ -6200,11 +6399,12 @@
       ],
       "sign_fee_cents": 6000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.eu.059",
-      "name": "埃米尔·迪布瓦",
+      "name": "埃米莉·迪布瓦",
       "role": "waiter",
       "town": "paris",
       "stars": 1,
@@ -6222,7 +6422,8 @@
       ],
       "sign_fee_cents": 3600,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.eu.060",
@@ -6244,11 +6445,12 @@
       ],
       "sign_fee_cents": 5000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.eu.061",
-      "name": "达米安·科林",
+      "name": "达芙妮·科林",
       "role": "waiter",
       "town": "paris",
       "stars": 1,
@@ -6266,7 +6468,8 @@
       ],
       "sign_fee_cents": 5400,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.eu.062",
@@ -6288,11 +6491,12 @@
       ],
       "sign_fee_cents": 5800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.eu.063",
-      "name": "洛朗·巴雷",
+      "name": "洛蕾娜·巴雷",
       "role": "waiter",
       "town": "paris",
       "stars": 2,
@@ -6310,7 +6514,8 @@
       ],
       "sign_fee_cents": 8000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.eu.064",
@@ -6332,11 +6537,12 @@
       ],
       "sign_fee_cents": 8200,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.eu.065",
-      "name": "弗洛里安·米勒",
+      "name": "弗洛里安娜·米勒",
       "role": "waiter",
       "town": "paris",
       "stars": 2,
@@ -6354,7 +6560,8 @@
       ],
       "sign_fee_cents": 8000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.eu.066",
@@ -6376,11 +6583,12 @@
       ],
       "sign_fee_cents": 6600,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.eu.067",
-      "name": "马克西姆·特里耶",
+      "name": "玛克辛·特里耶",
       "role": "waiter",
       "town": "paris",
       "stars": 2,
@@ -6398,7 +6606,8 @@
       ],
       "sign_fee_cents": 7200,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.eu.068",
@@ -6420,11 +6629,12 @@
       ],
       "sign_fee_cents": 9600,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.eu.069",
-      "name": "罗兰·卡隆",
+      "name": "罗兰德·卡隆",
       "role": "waiter",
       "town": "paris",
       "stars": 2,
@@ -6442,7 +6652,8 @@
       ],
       "sign_fee_cents": 7800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     },
     {
       "id": "staff.eu.070",
@@ -6464,11 +6675,12 @@
       ],
       "sign_fee_cents": 16000,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 0
     },
     {
       "id": "staff.eu.071",
-      "name": "马蒂厄·波尼耶",
+      "name": "玛蒂娜·波尼耶",
       "role": "waiter",
       "town": "paris",
       "stars": 3,
@@ -6486,7 +6698,8 @@
       ],
       "sign_fee_cents": 10600,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 1
     },
     {
       "id": "staff.eu.072",
@@ -6508,3319 +6721,8 @@
       ],
       "sign_fee_cents": 10800,
       "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.001",
-      "name": "阿南·素旺",
-      "role": "manager",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。分店特长：基础经营。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 38,
-      "operations": 29,
-      "quality": 31,
-      "economy": 55,
-      "wages_cents": [
-        1900,
-        1900,
-        1900
-      ],
-      "sign_fee_cents": 3800,
-      "special_bonuses": [
-        {},
-        {},
-        {}
-      ],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.002",
-      "name": "玛丽·占塔",
-      "role": "manager",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。分店特长：基础经营。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 49,
-      "operations": 41,
-      "quality": 27,
-      "economy": 33,
-      "wages_cents": [
-        3000,
-        3000,
-        3000
-      ],
-      "sign_fee_cents": 6000,
-      "special_bonuses": [
-        {},
-        {},
-        {}
-      ],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.003",
-      "name": "颂猜·西里",
-      "role": "manager",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。分店特长：基础经营。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 34,
-      "operations": 36,
-      "quality": 40,
-      "economy": 36,
-      "wages_cents": [
-        1800,
-        1800,
-        1800
-      ],
-      "sign_fee_cents": 3600,
-      "special_bonuses": [
-        {},
-        {},
-        {}
-      ],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.004",
-      "name": "娜丽·通颂",
-      "role": "manager",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。分店特长：基础经营。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 28,
-      "operations": 42,
-      "quality": 43,
-      "economy": 41,
-      "wages_cents": [
-        2400,
-        2400,
-        2400
-      ],
-      "sign_fee_cents": 4800,
-      "special_bonuses": [
-        {},
-        {},
-        {}
-      ],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.005",
-      "name": "帕猜·素帕",
-      "role": "manager",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。分店特长：基础经营。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 33,
-      "operations": 45,
-      "quality": 48,
-      "economy": 56,
-      "wages_cents": [
-        2600,
-        2600,
-        2600
-      ],
-      "sign_fee_cents": 5200,
-      "special_bonuses": [
-        {},
-        {},
-        {}
-      ],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.006",
-      "name": "苏达·翁沙",
-      "role": "manager",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。分店特长：基础经营。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 39,
-      "operations": 32,
-      "quality": 43,
-      "economy": 44,
-      "wages_cents": [
-        2700,
-        2700,
-        2700
-      ],
-      "sign_fee_cents": 5400,
-      "special_bonuses": [
-        {},
-        {},
-        {}
-      ],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.007",
-      "name": "查侬·帕功",
-      "role": "manager",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。分店特长：基础经营。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 45,
-      "operations": 35,
-      "quality": 38,
-      "economy": 27,
-      "wages_cents": [
-        2900,
-        2900,
-        2900
-      ],
-      "sign_fee_cents": 5800,
-      "special_bonuses": [
-        {},
-        {},
-        {}
-      ],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.008",
-      "name": "达拉·颂蓬",
-      "role": "manager",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。分店特长：基础经营。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 31,
-      "operations": 30,
-      "quality": 54,
-      "economy": 42,
-      "wages_cents": [
-        2800,
-        2800,
-        2800
-      ],
-      "sign_fee_cents": 5600,
-      "special_bonuses": [
-        {},
-        {},
-        {}
-      ],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.009",
-      "name": "披拉·纳瓦",
-      "role": "manager",
-      "town": "bangkok",
-      "stars": 2,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。分店特长：减少水电开支。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 55,
-      "operations": 53,
-      "quality": 61,
-      "economy": 57,
-      "wages_cents": [
-        3600,
-        3600,
-        3600
-      ],
-      "sign_fee_cents": 7200,
-      "special_bonuses": [
-        {
-          "utility_discount": 0.04
-        },
-        {
-          "utility_discount": 0.04
-        },
-        {
-          "utility_discount": 0.04
-        }
-      ],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.010",
-      "name": "莉莎·阿伦",
-      "role": "manager",
-      "town": "bangkok",
-      "stars": 2,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。分店特长：提升接待服务。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 66,
-      "operations": 52,
-      "quality": 58,
-      "economy": 50,
-      "wages_cents": [
-        3700,
-        3700,
-        3700
-      ],
-      "sign_fee_cents": 7400,
-      "special_bonuses": [
-        {
-          "service_bonus": 0.04
-        },
-        {
-          "service_bonus": 0.04
-        },
-        {
-          "service_bonus": 0.04
-        }
-      ],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.011",
-      "name": "纳林·猜雅",
-      "role": "manager",
-      "town": "bangkok",
-      "stars": 2,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。分店特长：提升成菜品质。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 65,
-      "operations": 74,
-      "quality": 48,
-      "economy": 69,
-      "wages_cents": [
-        4900,
-        4900,
-        4900
-      ],
-      "sign_fee_cents": 9800,
-      "special_bonuses": [
-        {
-          "quality_bonus": 0.04
-        },
-        {
-          "quality_bonus": 0.04
-        },
-        {
-          "quality_bonus": 0.04
-        }
-      ],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.012",
-      "name": "玛妮·汶米",
-      "role": "manager",
-      "town": "bangkok",
-      "stars": 3,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。分店特长：减少水电开支。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 84,
-      "operations": 75,
-      "quality": 90,
-      "economy": 79,
-      "wages_cents": [
-        6500,
-        6500,
-        6500
-      ],
-      "sign_fee_cents": 13000,
-      "special_bonuses": [
-        {
-          "utility_discount": 0.08
-        },
-        {
-          "utility_discount": 0.08
-        },
-        {
-          "utility_discount": 0.08
-        }
-      ],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.013",
-      "name": "帕文·素克",
-      "role": "cook",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。以基础能力见长。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 29,
-      "operations": 32,
-      "quality": 25,
-      "economy": 47,
-      "wages_cents": [
-        2800,
-        2800,
-        2800
-      ],
-      "sign_fee_cents": 5600,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.014",
-      "name": "坎雅·通猜",
-      "role": "cook",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 41,
-      "operations": 26,
-      "quality": 41,
-      "economy": 29,
-      "wages_cents": [
-        2200,
-        2200,
-        2200
-      ],
-      "sign_fee_cents": 4400,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.015",
-      "name": "查伦·维拉",
-      "role": "cook",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。上岗后协助照顾客人口味。",
-      "buff": "secondary",
-      "weight": 1,
-      "attraction": 46,
-      "operations": 47,
-      "quality": 46,
-      "economy": 30,
-      "wages_cents": [
-        2000,
-        2000,
-        2000
-      ],
-      "sign_fee_cents": 4000,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.016",
-      "name": "蒂达·帕娜",
-      "role": "cook",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。以基础能力见长。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 48,
-      "operations": 27,
-      "quality": 56,
-      "economy": 31,
-      "wages_cents": [
-        2300,
-        2300,
-        2300
-      ],
-      "sign_fee_cents": 4600,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.017",
-      "name": "宋吉·翁功",
-      "role": "cook",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 26,
-      "operations": 35,
-      "quality": 44,
-      "economy": 57,
-      "wages_cents": [
-        2200,
-        2200,
-        2200
-      ],
-      "sign_fee_cents": 4400,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.018",
-      "name": "娜帕·素丽",
-      "role": "cook",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。上岗后协助照顾客人口味。",
-      "buff": "secondary",
-      "weight": 1,
-      "attraction": 47,
-      "operations": 31,
-      "quality": 47,
-      "economy": 49,
-      "wages_cents": [
-        2400,
-        2400,
-        2400
-      ],
-      "sign_fee_cents": 4800,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.019",
-      "name": "阿披·汶颂",
-      "role": "cook",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。以基础能力见长。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 46,
-      "operations": 56,
-      "quality": 46,
-      "economy": 46,
-      "wages_cents": [
-        2700,
-        2700,
-        2700
-      ],
-      "sign_fee_cents": 5400,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.020",
-      "name": "莲达·西旺",
-      "role": "cook",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 33,
-      "operations": 26,
-      "quality": 53,
-      "economy": 34,
-      "wages_cents": [
-        2600,
-        2600,
-        2600
-      ],
-      "sign_fee_cents": 5200,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.021",
-      "name": "邦·吉拉",
-      "role": "cook",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。上岗后协助照顾客人口味。",
-      "buff": "secondary",
-      "weight": 1,
-      "attraction": 35,
-      "operations": 29,
-      "quality": 33,
-      "economy": 45,
-      "wages_cents": [
-        2300,
-        2300,
-        2300
-      ],
-      "sign_fee_cents": 4600,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.022",
-      "name": "莉拉·帕颂",
-      "role": "cook",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。以基础能力见长。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 56,
-      "operations": 26,
-      "quality": 42,
-      "economy": 34,
-      "wages_cents": [
-        2400,
-        2400,
-        2400
-      ],
-      "sign_fee_cents": 4800,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.023",
-      "name": "普米·素瓦",
-      "role": "cook",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 48,
-      "operations": 40,
-      "quality": 37,
-      "economy": 27,
-      "wages_cents": [
-        2100,
-        2100,
-        2100
-      ],
-      "sign_fee_cents": 4200,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.024",
-      "name": "西丽·桑通",
-      "role": "cook",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。上岗后协助照顾客人口味。",
-      "buff": "secondary",
-      "weight": 1,
-      "attraction": 37,
-      "operations": 36,
-      "quality": 52,
-      "economy": 48,
-      "wages_cents": [
-        2700,
-        2700,
-        2700
-      ],
-      "sign_fee_cents": 5400,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.025",
-      "name": "纳塔·米猜",
-      "role": "cook",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。以基础能力见长。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 31,
-      "operations": 36,
-      "quality": 37,
-      "economy": 54,
-      "wages_cents": [
-        2000,
-        2000,
-        2000
-      ],
-      "sign_fee_cents": 4000,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.026",
-      "name": "娜米·维颂",
-      "role": "cook",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 40,
-      "operations": 25,
-      "quality": 34,
-      "economy": 46,
-      "wages_cents": [
-        2600,
-        2600,
-        2600
-      ],
-      "sign_fee_cents": 5200,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.027",
-      "name": "沙南·蓬猜",
-      "role": "cook",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。上岗后协助照顾客人口味。",
-      "buff": "secondary",
-      "weight": 1,
-      "attraction": 30,
-      "operations": 38,
-      "quality": 37,
-      "economy": 29,
-      "wages_cents": [
-        2600,
-        2600,
-        2600
-      ],
-      "sign_fee_cents": 5200,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.028",
-      "name": "阿丽·颂沙",
-      "role": "cook",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。以基础能力见长。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 36,
-      "operations": 45,
-      "quality": 47,
-      "economy": 39,
-      "wages_cents": [
-        2400,
-        2400,
-        2400
-      ],
-      "sign_fee_cents": 4800,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.029",
-      "name": "颂蓬·纳功",
-      "role": "cook",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 47,
-      "operations": 40,
-      "quality": 43,
-      "economy": 52,
-      "wages_cents": [
-        2900,
-        2900,
-        2900
-      ],
-      "sign_fee_cents": 5800,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.030",
-      "name": "莫莉·帕兰",
-      "role": "cook",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。上岗后协助照顾客人口味。",
-      "buff": "secondary",
-      "weight": 1,
-      "attraction": 40,
-      "operations": 48,
-      "quality": 34,
-      "economy": 37,
-      "wages_cents": [
-        2600,
-        2600,
-        2600
-      ],
-      "sign_fee_cents": 5200,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.031",
-      "name": "威差·拉达",
-      "role": "cook",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。以基础能力见长。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 30,
-      "operations": 45,
-      "quality": 39,
-      "economy": 43,
-      "wages_cents": [
-        2300,
-        2300,
-        2300
-      ],
-      "sign_fee_cents": 4600,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.032",
-      "name": "瓦妮·通蓬",
-      "role": "cook",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 44,
-      "operations": 40,
-      "quality": 48,
-      "economy": 31,
-      "wages_cents": [
-        2100,
-        2100,
-        2100
-      ],
-      "sign_fee_cents": 4200,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.033",
-      "name": "迪拉·昌旺",
-      "role": "cook",
-      "town": "bangkok",
-      "stars": 2,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。上岗后协助照顾客人口味。",
-      "buff": "secondary",
-      "weight": 1,
-      "attraction": 62,
-      "operations": 45,
-      "quality": 54,
-      "economy": 66,
-      "wages_cents": [
-        3700,
-        3700,
-        3700
-      ],
-      "sign_fee_cents": 7400,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.034",
-      "name": "苏丽·翁拉",
-      "role": "cook",
-      "town": "bangkok",
-      "stars": 2,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。以基础能力见长。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 73,
-      "operations": 47,
-      "quality": 51,
-      "economy": 56,
-      "wages_cents": [
-        4400,
-        4400,
-        4400
-      ],
-      "sign_fee_cents": 8800,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.035",
-      "name": "沙功·帕通",
-      "role": "cook",
-      "town": "bangkok",
-      "stars": 2,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 59,
-      "operations": 68,
-      "quality": 48,
-      "economy": 48,
-      "wages_cents": [
-        4200,
-        4200,
-        4200
-      ],
-      "sign_fee_cents": 8400,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.036",
-      "name": "莲娜·猜颂",
-      "role": "cook",
-      "town": "bangkok",
-      "stars": 2,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。上岗后协助照顾客人口味。",
-      "buff": "secondary",
-      "weight": 1,
-      "attraction": 60,
-      "operations": 60,
-      "quality": 64,
-      "economy": 55,
-      "wages_cents": [
-        3100,
-        3100,
-        3100
-      ],
-      "sign_fee_cents": 6200,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.037",
-      "name": "巴育·汶达",
-      "role": "cook",
-      "town": "bangkok",
-      "stars": 2,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。以基础能力见长。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 58,
-      "operations": 66,
-      "quality": 62,
-      "economy": 64,
-      "wages_cents": [
-        3800,
-        3800,
-        3800
-      ],
-      "sign_fee_cents": 7600,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.038",
-      "name": "帕妮·西颂",
-      "role": "cook",
-      "town": "bangkok",
-      "stars": 2,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 68,
-      "operations": 68,
-      "quality": 52,
-      "economy": 48,
-      "wages_cents": [
-        4700,
-        4700,
-        4700
-      ],
-      "sign_fee_cents": 9400,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.039",
-      "name": "沙林·颂纳",
-      "role": "cook",
-      "town": "bangkok",
-      "stars": 2,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。上岗后协助照顾客人口味。",
-      "buff": "secondary",
-      "weight": 1,
-      "attraction": 66,
-      "operations": 70,
-      "quality": 67,
-      "economy": 49,
-      "wages_cents": [
-        3100,
-        3100,
-        3100
-      ],
-      "sign_fee_cents": 6200,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.040",
-      "name": "美娜·阿迪",
-      "role": "cook",
-      "town": "bangkok",
-      "stars": 3,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。以基础能力见长。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 83,
-      "operations": 87,
-      "quality": 91,
-      "economy": 81,
-      "wages_cents": [
-        6500,
-        6500,
-        6500
-      ],
-      "sign_fee_cents": 13000,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.041",
-      "name": "查纳·帕旺",
-      "role": "cook",
-      "town": "bangkok",
-      "stars": 3,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 77,
-      "operations": 68,
-      "quality": 76,
-      "economy": 84,
-      "wages_cents": [
-        7200,
-        7200,
-        7200
-      ],
-      "sign_fee_cents": 14400,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.042",
-      "name": "蒂帕·颂丽",
-      "role": "cook",
-      "town": "bangkok",
-      "stars": 3,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。上岗后协助照顾客人口味。",
-      "buff": "secondary",
-      "weight": 1,
-      "attraction": 90,
-      "operations": 76,
-      "quality": 79,
-      "economy": 76,
-      "wages_cents": [
-        5600,
-        5600,
-        5600
-      ],
-      "sign_fee_cents": 11200,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.043",
-      "name": "素帕·通达",
-      "role": "waiter",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 38,
-      "operations": 35,
-      "quality": 40,
-      "economy": 45,
-      "wages_cents": [
-        2800,
-        2800,
-        2800
-      ],
-      "sign_fee_cents": 5600,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.044",
-      "name": "纳丽·沙功",
-      "role": "waiter",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。上岗后有助于增加小费。",
-      "buff": "tip",
-      "weight": 1,
-      "attraction": 40,
-      "operations": 36,
-      "quality": 50,
-      "economy": 47,
-      "wages_cents": [
-        2300,
-        2300,
-        2300
-      ],
-      "sign_fee_cents": 4600,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.045",
-      "name": "吉达·翁猜",
-      "role": "waiter",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 48,
-      "operations": 29,
-      "quality": 26,
-      "economy": 42,
-      "wages_cents": [
-        2700,
-        2700,
-        2700
-      ],
-      "sign_fee_cents": 5400,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.046",
-      "name": "莉娜·素兰",
-      "role": "waiter",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。上岗后有助于增加小费。",
-      "buff": "tip",
-      "weight": 1,
-      "attraction": 45,
-      "operations": 26,
-      "quality": 34,
-      "economy": 43,
-      "wages_cents": [
-        1800,
-        1800,
-        1800
-      ],
-      "sign_fee_cents": 3600,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.047",
-      "name": "阿迪·拉旺",
-      "role": "waiter",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 26,
-      "operations": 38,
-      "quality": 39,
-      "economy": 32,
-      "wages_cents": [
-        2700,
-        2700,
-        2700
-      ],
-      "sign_fee_cents": 5400,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.048",
-      "name": "娜达·昌颂",
-      "role": "waiter",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。上岗后有助于增加小费。",
-      "buff": "tip",
-      "weight": 1,
-      "attraction": 32,
-      "operations": 33,
-      "quality": 51,
-      "economy": 33,
-      "wages_cents": [
-        2000,
-        2000,
-        2000
-      ],
-      "sign_fee_cents": 4000,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.049",
-      "name": "普拉·汶功",
-      "role": "waiter",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 32,
-      "operations": 31,
-      "quality": 48,
-      "economy": 49,
-      "wages_cents": [
-        2500,
-        2500,
-        2500
-      ],
-      "sign_fee_cents": 5000,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.050",
-      "name": "坎妮·颂帕",
-      "role": "waiter",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。上岗后有助于增加小费。",
-      "buff": "tip",
-      "weight": 1,
-      "attraction": 50,
-      "operations": 39,
-      "quality": 47,
-      "economy": 48,
-      "wages_cents": [
-        1900,
-        1900,
-        1900
-      ],
-      "sign_fee_cents": 3800,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.051",
-      "name": "宋纳·猜通",
-      "role": "waiter",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 35,
-      "operations": 43,
-      "quality": 37,
-      "economy": 48,
-      "wages_cents": [
-        2400,
-        2400,
-        2400
-      ],
-      "sign_fee_cents": 4800,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.052",
-      "name": "维娜·翁达",
-      "role": "waiter",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。上岗后有助于增加小费。",
-      "buff": "tip",
-      "weight": 1,
-      "attraction": 42,
-      "operations": 25,
-      "quality": 42,
-      "economy": 41,
-      "wages_cents": [
-        2200,
-        2200,
-        2200
-      ],
-      "sign_fee_cents": 4400,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.053",
-      "name": "巴功·西猜",
-      "role": "waiter",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 27,
-      "operations": 47,
-      "quality": 26,
-      "economy": 43,
-      "wages_cents": [
-        2000,
-        2000,
-        2000
-      ],
-      "sign_fee_cents": 4000,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.054",
-      "name": "达妮·素颂",
-      "role": "waiter",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。上岗后有助于增加小费。",
-      "buff": "tip",
-      "weight": 1,
-      "attraction": 51,
-      "operations": 46,
-      "quality": 44,
-      "economy": 47,
-      "wages_cents": [
-        3000,
-        3000,
-        3000
-      ],
-      "sign_fee_cents": 6000,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.055",
-      "name": "纳维·帕拉",
-      "role": "waiter",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 40,
-      "operations": 37,
-      "quality": 48,
-      "economy": 32,
-      "wages_cents": [
-        2800,
-        2800,
-        2800
-      ],
-      "sign_fee_cents": 5600,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.056",
-      "name": "莫娜·颂功",
-      "role": "waiter",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。上岗后有助于增加小费。",
-      "buff": "tip",
-      "weight": 1,
-      "attraction": 39,
-      "operations": 29,
-      "quality": 42,
-      "economy": 32,
-      "wages_cents": [
-        2100,
-        2100,
-        2100
-      ],
-      "sign_fee_cents": 4200,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.057",
-      "name": "昆·拉猜",
-      "role": "waiter",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 29,
-      "operations": 29,
-      "quality": 29,
-      "economy": 54,
-      "wages_cents": [
-        2300,
-        2300,
-        2300
-      ],
-      "sign_fee_cents": 4600,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.058",
-      "name": "莲妮·汶纳",
-      "role": "waiter",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。上岗后有助于增加小费。",
-      "buff": "tip",
-      "weight": 1,
-      "attraction": 46,
-      "operations": 44,
-      "quality": 36,
-      "economy": 31,
-      "wages_cents": [
-        2000,
-        2000,
-        2000
-      ],
-      "sign_fee_cents": 4000,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.059",
-      "name": "马纳·通旺",
-      "role": "waiter",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 26,
-      "operations": 45,
-      "quality": 31,
-      "economy": 26,
-      "wages_cents": [
-        1800,
-        1800,
-        1800
-      ],
-      "sign_fee_cents": 3600,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.060",
-      "name": "颂丽·帕迪",
-      "role": "waiter",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。上岗后有助于增加小费。",
-      "buff": "tip",
-      "weight": 1,
-      "attraction": 31,
-      "operations": 36,
-      "quality": 36,
-      "economy": 34,
-      "wages_cents": [
-        2900,
-        2900,
-        2900
-      ],
-      "sign_fee_cents": 5800,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.061",
-      "name": "提拉·昌纳",
-      "role": "waiter",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 32,
-      "operations": 46,
-      "quality": 35,
-      "economy": 49,
-      "wages_cents": [
-        2900,
-        2900,
-        2900
-      ],
-      "sign_fee_cents": 5800,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.062",
-      "name": "丽达·翁米",
-      "role": "waiter",
-      "town": "bangkok",
-      "stars": 1,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。上岗后有助于增加小费。",
-      "buff": "tip",
-      "weight": 1,
-      "attraction": 35,
-      "operations": 27,
-      "quality": 29,
-      "economy": 31,
-      "wages_cents": [
-        2000,
-        2000,
-        2000
-      ],
-      "sign_fee_cents": 4000,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.063",
-      "name": "纳颂·素猜",
-      "role": "waiter",
-      "town": "bangkok",
-      "stars": 2,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 64,
-      "operations": 61,
-      "quality": 55,
-      "economy": 52,
-      "wages_cents": [
-        4900,
-        4900,
-        4900
-      ],
-      "sign_fee_cents": 9800,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.064",
-      "name": "瓦娜·拉功",
-      "role": "waiter",
-      "town": "bangkok",
-      "stars": 2,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。上岗后有助于增加小费。",
-      "buff": "tip",
-      "weight": 1,
-      "attraction": 59,
-      "operations": 52,
-      "quality": 58,
-      "economy": 60,
-      "wages_cents": [
-        4800,
-        4800,
-        4800
-      ],
-      "sign_fee_cents": 9600,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.065",
-      "name": "查迪·汶通",
-      "role": "waiter",
-      "town": "bangkok",
-      "stars": 2,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 58,
-      "operations": 56,
-      "quality": 56,
-      "economy": 77,
-      "wages_cents": [
-        5000,
-        5000,
-        5000
-      ],
-      "sign_fee_cents": 10000,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.066",
-      "name": "帕拉·翁丽",
-      "role": "waiter",
-      "town": "bangkok",
-      "stars": 2,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。上岗后有助于增加小费。",
-      "buff": "tip",
-      "weight": 1,
-      "attraction": 55,
-      "operations": 64,
-      "quality": 64,
-      "economy": 49,
-      "wages_cents": [
-        3800,
-        3800,
-        3800
-      ],
-      "sign_fee_cents": 7600,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.067",
-      "name": "阿功·西帕",
-      "role": "waiter",
-      "town": "bangkok",
-      "stars": 2,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 56,
-      "operations": 73,
-      "quality": 48,
-      "economy": 62,
-      "wages_cents": [
-        4400,
-        4400,
-        4400
-      ],
-      "sign_fee_cents": 8800,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.068",
-      "name": "蒂娜·猜旺",
-      "role": "waiter",
-      "town": "bangkok",
-      "stars": 2,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。上岗后有助于增加小费。",
-      "buff": "tip",
-      "weight": 1,
-      "attraction": 53,
-      "operations": 46,
-      "quality": 68,
-      "economy": 66,
-      "wages_cents": [
-        4100,
-        4100,
-        4100
-      ],
-      "sign_fee_cents": 8200,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.069",
-      "name": "巴通·素达",
-      "role": "waiter",
-      "town": "bangkok",
-      "stars": 2,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 55,
-      "operations": 60,
-      "quality": 54,
-      "economy": 64,
-      "wages_cents": [
-        3100,
-        3100,
-        3100
-      ],
-      "sign_fee_cents": 6200,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.070",
-      "name": "阿妮·汶拉",
-      "role": "waiter",
-      "town": "bangkok",
-      "stars": 3,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。上岗后有助于增加小费。",
-      "buff": "tip",
-      "weight": 1,
-      "attraction": 88,
-      "operations": 64,
-      "quality": 80,
-      "economy": 76,
-      "wages_cents": [
-        7900,
-        7900,
-        7900
-      ],
-      "sign_fee_cents": 15800,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.071",
-      "name": "吉拉·颂达",
-      "role": "waiter",
-      "town": "bangkok",
-      "stars": 3,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 83,
-      "operations": 86,
-      "quality": 71,
-      "economy": 84,
-      "wages_cents": [
-        6800,
-        6800,
-        6800
-      ],
-      "sign_fee_cents": 13600,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.sea.072",
-      "name": "米娜·通兰",
-      "role": "waiter",
-      "town": "bangkok",
-      "stars": 3,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。上岗后有助于增加小费。",
-      "buff": "tip",
-      "weight": 1,
-      "attraction": 80,
-      "operations": 80,
-      "quality": 90,
-      "economy": 80,
-      "wages_cents": [
-        7800,
-        7800,
-        7800
-      ],
-      "sign_fee_cents": 15600,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.001",
-      "name": "马特奥·加西亚",
-      "role": "manager",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。分店特长：基础经营。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 37,
-      "operations": 47,
-      "quality": 44,
-      "economy": 37,
-      "wages_cents": [
-        2500,
-        2500,
-        2500
-      ],
-      "sign_fee_cents": 5000,
-      "special_bonuses": [
-        {},
-        {},
-        {}
-      ],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.002",
-      "name": "索菲娅·洛佩斯",
-      "role": "manager",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。分店特长：基础经营。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 29,
-      "operations": 51,
-      "quality": 46,
-      "economy": 37,
-      "wages_cents": [
-        2200,
-        2200,
-        2200
-      ],
-      "sign_fee_cents": 4400,
-      "special_bonuses": [
-        {},
-        {},
-        {}
-      ],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.003",
-      "name": "圣地亚哥·马丁内斯",
-      "role": "manager",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。分店特长：基础经营。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 49,
-      "operations": 32,
-      "quality": 41,
-      "economy": 25,
-      "wages_cents": [
-        1900,
-        1900,
-        1900
-      ],
-      "sign_fee_cents": 3800,
-      "special_bonuses": [
-        {},
-        {},
-        {}
-      ],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.004",
-      "name": "瓦莱里娅·埃尔南德斯",
-      "role": "manager",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。分店特长：基础经营。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 41,
-      "operations": 47,
-      "quality": 43,
-      "economy": 53,
-      "wages_cents": [
-        2000,
-        2000,
-        2000
-      ],
-      "sign_fee_cents": 4000,
-      "special_bonuses": [
-        {},
-        {},
-        {}
-      ],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.005",
-      "name": "塞巴斯蒂安·冈萨雷斯",
-      "role": "manager",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。分店特长：基础经营。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 44,
-      "operations": 47,
-      "quality": 38,
-      "economy": 49,
-      "wages_cents": [
-        2200,
-        2200,
-        2200
-      ],
-      "sign_fee_cents": 4400,
-      "special_bonuses": [
-        {},
-        {},
-        {}
-      ],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.006",
-      "name": "卡米拉·佩雷斯",
-      "role": "manager",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。分店特长：基础经营。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 27,
-      "operations": 54,
-      "quality": 38,
-      "economy": 39,
-      "wages_cents": [
-        2000,
-        2000,
-        2000
-      ],
-      "sign_fee_cents": 4000,
-      "special_bonuses": [
-        {},
-        {},
-        {}
-      ],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.007",
-      "name": "迭戈·罗德里格斯",
-      "role": "manager",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。分店特长：基础经营。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 28,
-      "operations": 28,
-      "quality": 46,
-      "economy": 30,
-      "wages_cents": [
-        2800,
-        2800,
-        2800
-      ],
-      "sign_fee_cents": 5600,
-      "special_bonuses": [
-        {},
-        {},
-        {}
-      ],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.008",
-      "name": "伊莎贝拉·桑切斯",
-      "role": "manager",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。分店特长：基础经营。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 34,
-      "operations": 44,
-      "quality": 47,
-      "economy": 39,
-      "wages_cents": [
-        1800,
-        1800,
-        1800
-      ],
-      "sign_fee_cents": 3600,
-      "special_bonuses": [
-        {},
-        {},
-        {}
-      ],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.009",
-      "name": "莱昂纳多·拉米雷斯",
-      "role": "manager",
-      "town": "mexico_city",
-      "stars": 2,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。分店特长：减少水电开支。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 65,
-      "operations": 59,
-      "quality": 48,
-      "economy": 60,
-      "wages_cents": [
-        4100,
-        4100,
-        4100
-      ],
-      "sign_fee_cents": 8200,
-      "special_bonuses": [
-        {
-          "utility_discount": 0.04
-        },
-        {
-          "utility_discount": 0.04
-        },
-        {
-          "utility_discount": 0.04
-        }
-      ],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.010",
-      "name": "卢西亚·克鲁斯",
-      "role": "manager",
-      "town": "mexico_city",
-      "stars": 2,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。分店特长：提升接待服务。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 49,
-      "operations": 53,
-      "quality": 60,
-      "economy": 54,
-      "wages_cents": [
-        3200,
-        3200,
-        3200
-      ],
-      "sign_fee_cents": 6400,
-      "special_bonuses": [
-        {
-          "service_bonus": 0.04
-        },
-        {
-          "service_bonus": 0.04
-        },
-        {
-          "service_bonus": 0.04
-        }
-      ],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.011",
-      "name": "丹尼尔·弗洛雷斯",
-      "role": "manager",
-      "town": "mexico_city",
-      "stars": 2,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。分店特长：提升成菜品质。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 46,
-      "operations": 51,
-      "quality": 64,
-      "economy": 68,
-      "wages_cents": [
-        3900,
-        3900,
-        3900
-      ],
-      "sign_fee_cents": 7800,
-      "special_bonuses": [
-        {
-          "quality_bonus": 0.04
-        },
-        {
-          "quality_bonus": 0.04
-        },
-        {
-          "quality_bonus": 0.04
-        }
-      ],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.012",
-      "name": "玛丽亚·戈麦斯",
-      "role": "manager",
-      "town": "mexico_city",
-      "stars": 3,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。分店特长：减少水电开支。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 79,
-      "operations": 85,
-      "quality": 66,
-      "economy": 94,
-      "wages_cents": [
-        8000,
-        8000,
-        8000
-      ],
-      "sign_fee_cents": 16000,
-      "special_bonuses": [
-        {
-          "utility_discount": 0.08
-        },
-        {
-          "utility_discount": 0.08
-        },
-        {
-          "utility_discount": 0.08
-        }
-      ],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.013",
-      "name": "埃米利奥·托雷斯",
-      "role": "cook",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。以基础能力见长。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 42,
-      "operations": 35,
-      "quality": 42,
-      "economy": 48,
-      "wages_cents": [
-        2100,
-        2100,
-        2100
-      ],
-      "sign_fee_cents": 4200,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.014",
-      "name": "雷吉娜·迪亚斯",
-      "role": "cook",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 48,
-      "operations": 40,
-      "quality": 47,
-      "economy": 30,
-      "wages_cents": [
-        2700,
-        2700,
-        2700
-      ],
-      "sign_fee_cents": 5400,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.015",
-      "name": "尼古拉斯·巴斯克斯",
-      "role": "cook",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。上岗后协助照顾客人口味。",
-      "buff": "secondary",
-      "weight": 1,
-      "attraction": 26,
-      "operations": 33,
-      "quality": 57,
-      "economy": 42,
-      "wages_cents": [
-        2700,
-        2700,
-        2700
-      ],
-      "sign_fee_cents": 5400,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.016",
-      "name": "安娜·莫拉莱斯",
-      "role": "cook",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。以基础能力见长。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 38,
-      "operations": 31,
-      "quality": 48,
-      "economy": 48,
-      "wages_cents": [
-        2800,
-        2800,
-        2800
-      ],
-      "sign_fee_cents": 5600,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.017",
-      "name": "亚历杭德罗·雷耶斯",
-      "role": "cook",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 42,
-      "operations": 44,
-      "quality": 27,
-      "economy": 30,
-      "wages_cents": [
-        2400,
-        2400,
-        2400
-      ],
-      "sign_fee_cents": 4800,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.018",
-      "name": "雷娜塔·古铁雷斯",
-      "role": "cook",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。上岗后协助照顾客人口味。",
-      "buff": "secondary",
-      "weight": 1,
-      "attraction": 31,
-      "operations": 33,
-      "quality": 40,
-      "economy": 39,
-      "wages_cents": [
-        2300,
-        2300,
-        2300
-      ],
-      "sign_fee_cents": 4600,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.019",
-      "name": "安德烈斯·奥尔蒂斯",
-      "role": "cook",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。以基础能力见长。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 49,
-      "operations": 30,
-      "quality": 44,
-      "economy": 49,
-      "wages_cents": [
-        2200,
-        2200,
-        2200
-      ],
-      "sign_fee_cents": 4400,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.020",
-      "name": "达娜·查韦斯",
-      "role": "cook",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 25,
-      "operations": 45,
-      "quality": 42,
-      "economy": 35,
-      "wages_cents": [
-        3000,
-        3000,
-        3000
-      ],
-      "sign_fee_cents": 6000,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.021",
-      "name": "帕布罗·拉莫斯",
-      "role": "cook",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。上岗后协助照顾客人口味。",
-      "buff": "secondary",
-      "weight": 1,
-      "attraction": 34,
-      "operations": 48,
-      "quality": 27,
-      "economy": 42,
-      "wages_cents": [
-        1900,
-        1900,
-        1900
-      ],
-      "sign_fee_cents": 3800,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.022",
-      "name": "希梅娜·门多萨",
-      "role": "cook",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。以基础能力见长。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 32,
-      "operations": 56,
-      "quality": 33,
-      "economy": 45,
-      "wages_cents": [
-        2600,
-        2600,
-        2600
-      ],
-      "sign_fee_cents": 5200,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.023",
-      "name": "加布里埃尔·鲁伊斯",
-      "role": "cook",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 43,
-      "operations": 42,
-      "quality": 54,
-      "economy": 36,
-      "wages_cents": [
-        2500,
-        2500,
-        2500
-      ],
-      "sign_fee_cents": 5000,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.024",
-      "name": "娜塔莉娅·阿吉拉尔",
-      "role": "cook",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。上岗后协助照顾客人口味。",
-      "buff": "secondary",
-      "weight": 1,
-      "attraction": 28,
-      "operations": 47,
-      "quality": 47,
-      "economy": 38,
-      "wages_cents": [
-        2700,
-        2700,
-        2700
-      ],
-      "sign_fee_cents": 5400,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.025",
-      "name": "伊克尔·卡斯蒂略",
-      "role": "cook",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。以基础能力见长。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 35,
-      "operations": 32,
-      "quality": 38,
-      "economy": 31,
-      "wages_cents": [
-        2100,
-        2100,
-        2100
-      ],
-      "sign_fee_cents": 4200,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.026",
-      "name": "费尔南达·希门尼斯",
-      "role": "cook",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 30,
-      "operations": 40,
-      "quality": 49,
-      "economy": 34,
-      "wages_cents": [
-        2600,
-        2600,
-        2600
-      ],
-      "sign_fee_cents": 5200,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.027",
-      "name": "拉斐尔·莫雷诺",
-      "role": "cook",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。上岗后协助照顾客人口味。",
-      "buff": "secondary",
-      "weight": 1,
-      "attraction": 32,
-      "operations": 34,
-      "quality": 52,
-      "economy": 49,
-      "wages_cents": [
-        2700,
-        2700,
-        2700
-      ],
-      "sign_fee_cents": 5400,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.028",
-      "name": "瓦伦蒂娜·罗梅罗",
-      "role": "cook",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。以基础能力见长。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 35,
-      "operations": 36,
-      "quality": 28,
-      "economy": 41,
-      "wages_cents": [
-        1800,
-        1800,
-        1800
-      ],
-      "sign_fee_cents": 3600,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.029",
-      "name": "曼努埃尔·里维拉",
-      "role": "cook",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 46,
-      "operations": 46,
-      "quality": 31,
-      "economy": 44,
-      "wages_cents": [
-        2900,
-        2900,
-        2900
-      ],
-      "sign_fee_cents": 5800,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.030",
-      "name": "加布里埃拉·马丁",
-      "role": "cook",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。上岗后协助照顾客人口味。",
-      "buff": "secondary",
-      "weight": 1,
-      "attraction": 36,
-      "operations": 34,
-      "quality": 29,
-      "economy": 31,
-      "wages_cents": [
-        2300,
-        2300,
-        2300
-      ],
-      "sign_fee_cents": 4600,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.031",
-      "name": "何塞·桑托斯",
-      "role": "cook",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。以基础能力见长。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 47,
-      "operations": 32,
-      "quality": 52,
-      "economy": 38,
-      "wages_cents": [
-        2400,
-        2400,
-        2400
-      ],
-      "sign_fee_cents": 4800,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.032",
-      "name": "保利娜·德尔加多",
-      "role": "cook",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 32,
-      "operations": 33,
-      "quality": 28,
-      "economy": 52,
-      "wages_cents": [
-        1900,
-        1900,
-        1900
-      ],
-      "sign_fee_cents": 3800,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.033",
-      "name": "阿德里安·科尔特斯",
-      "role": "cook",
-      "town": "mexico_city",
-      "stars": 2,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。上岗后协助照顾客人口味。",
-      "buff": "secondary",
-      "weight": 1,
-      "attraction": 66,
-      "operations": 63,
-      "quality": 69,
-      "economy": 46,
-      "wages_cents": [
-        4500,
-        4500,
-        4500
-      ],
-      "sign_fee_cents": 9000,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.034",
-      "name": "安东内拉·卡斯特罗",
-      "role": "cook",
-      "town": "mexico_city",
-      "stars": 2,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。以基础能力见长。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 62,
-      "operations": 60,
-      "quality": 54,
-      "economy": 58,
-      "wages_cents": [
-        4000,
-        4000,
-        4000
-      ],
-      "sign_fee_cents": 8000,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.035",
-      "name": "奥斯卡·巴尔加斯",
-      "role": "cook",
-      "town": "mexico_city",
-      "stars": 2,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 68,
-      "operations": 48,
-      "quality": 77,
-      "economy": 48,
-      "wages_cents": [
-        3600,
-        3600,
-        3600
-      ],
-      "sign_fee_cents": 7200,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.036",
-      "name": "艾琳娜·梅迪纳",
-      "role": "cook",
-      "town": "mexico_city",
-      "stars": 2,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。上岗后协助照顾客人口味。",
-      "buff": "secondary",
-      "weight": 1,
-      "attraction": 49,
-      "operations": 59,
-      "quality": 53,
-      "economy": 70,
-      "wages_cents": [
-        4900,
-        4900,
-        4900
-      ],
-      "sign_fee_cents": 9800,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.037",
-      "name": "路易斯·纳瓦罗",
-      "role": "cook",
-      "town": "mexico_city",
-      "stars": 2,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。以基础能力见长。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 53,
-      "operations": 67,
-      "quality": 58,
-      "economy": 47,
-      "wages_cents": [
-        4000,
-        4000,
-        4000
-      ],
-      "sign_fee_cents": 8000,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.038",
-      "name": "罗米娜·索托",
-      "role": "cook",
-      "town": "mexico_city",
-      "stars": 2,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 68,
-      "operations": 77,
-      "quality": 58,
-      "economy": 48,
-      "wages_cents": [
-        4300,
-        4300,
-        4300
-      ],
-      "sign_fee_cents": 8600,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.039",
-      "name": "阿隆索·席尔瓦",
-      "role": "cook",
-      "town": "mexico_city",
-      "stars": 2,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。上岗后协助照顾客人口味。",
-      "buff": "secondary",
-      "weight": 1,
-      "attraction": 58,
-      "operations": 69,
-      "quality": 54,
-      "economy": 62,
-      "wages_cents": [
-        3500,
-        3500,
-        3500
-      ],
-      "sign_fee_cents": 7000,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.040",
-      "name": "阿布里尔·马尔克斯",
-      "role": "cook",
-      "town": "mexico_city",
-      "stars": 3,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。以基础能力见长。",
-      "buff": "",
-      "weight": 1,
-      "attraction": 72,
-      "operations": 66,
-      "quality": 66,
-      "economy": 93,
-      "wages_cents": [
-        5500,
-        5500,
-        5500
-      ],
-      "sign_fee_cents": 11000,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.041",
-      "name": "马里奥·桑多瓦尔",
-      "role": "cook",
-      "town": "mexico_city",
-      "stars": 3,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 74,
-      "operations": 74,
-      "quality": 67,
-      "economy": 85,
-      "wages_cents": [
-        7800,
-        7800,
-        7800
-      ],
-      "sign_fee_cents": 15600,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.042",
-      "name": "塞西莉亚·罗哈斯",
-      "role": "cook",
-      "town": "mexico_city",
-      "stars": 3,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。上岗后协助照顾客人口味。",
-      "buff": "secondary",
-      "weight": 1,
-      "attraction": 67,
-      "operations": 88,
-      "quality": 71,
-      "economy": 64,
-      "wages_cents": [
-        6700,
-        6700,
-        6700
-      ],
-      "sign_fee_cents": 13400,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.043",
-      "name": "费尔南多·莱昂",
-      "role": "waiter",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 42,
-      "operations": 42,
-      "quality": 57,
-      "economy": 28,
-      "wages_cents": [
-        1800,
-        1800,
-        1800
-      ],
-      "sign_fee_cents": 3600,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.044",
-      "name": "埃斯特雷拉·维加",
-      "role": "waiter",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。上岗后有助于增加小费。",
-      "buff": "tip",
-      "weight": 1,
-      "attraction": 28,
-      "operations": 28,
-      "quality": 37,
-      "economy": 44,
-      "wages_cents": [
-        3000,
-        3000,
-        3000
-      ],
-      "sign_fee_cents": 6000,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.045",
-      "name": "弗朗西斯科·里奥斯",
-      "role": "waiter",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 40,
-      "operations": 33,
-      "quality": 34,
-      "economy": 25,
-      "wages_cents": [
-        2000,
-        2000,
-        2000
-      ],
-      "sign_fee_cents": 4000,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.046",
-      "name": "比安卡·萨拉萨尔",
-      "role": "waiter",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。上岗后有助于增加小费。",
-      "buff": "tip",
-      "weight": 1,
-      "attraction": 35,
-      "operations": 47,
-      "quality": 36,
-      "economy": 30,
-      "wages_cents": [
-        2600,
-        2600,
-        2600
-      ],
-      "sign_fee_cents": 5200,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.047",
-      "name": "胡安·康特雷拉斯",
-      "role": "waiter",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 38,
-      "operations": 25,
-      "quality": 55,
-      "economy": 28,
-      "wages_cents": [
-        1900,
-        1900,
-        1900
-      ],
-      "sign_fee_cents": 3800,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.048",
-      "name": "维多利亚·卢纳",
-      "role": "waiter",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。上岗后有助于增加小费。",
-      "buff": "tip",
-      "weight": 1,
-      "attraction": 27,
-      "operations": 49,
-      "quality": 29,
-      "economy": 49,
-      "wages_cents": [
-        2900,
-        2900,
-        2900
-      ],
-      "sign_fee_cents": 5800,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.049",
-      "name": "豪尔赫·埃斯皮诺萨",
-      "role": "waiter",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 49,
-      "operations": 28,
-      "quality": 31,
-      "economy": 36,
-      "wages_cents": [
-        2900,
-        2900,
-        2900
-      ],
-      "sign_fee_cents": 5800,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.050",
-      "name": "朱莉娅·帕切科",
-      "role": "waiter",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。上岗后有助于增加小费。",
-      "buff": "tip",
-      "weight": 1,
-      "attraction": 48,
-      "operations": 45,
-      "quality": 37,
-      "economy": 28,
-      "wages_cents": [
-        1900,
-        1900,
-        1900
-      ],
-      "sign_fee_cents": 3800,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.051",
-      "name": "罗德里戈·梅希亚",
-      "role": "waiter",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 43,
-      "operations": 42,
-      "quality": 49,
-      "economy": 32,
-      "wages_cents": [
-        2700,
-        2700,
-        2700
-      ],
-      "sign_fee_cents": 5400,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.052",
-      "name": "埃娃·巴尔德斯",
-      "role": "waiter",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。上岗后有助于增加小费。",
-      "buff": "tip",
-      "weight": 1,
-      "attraction": 26,
-      "operations": 49,
-      "quality": 49,
-      "economy": 46,
-      "wages_cents": [
-        2900,
-        2900,
-        2900
-      ],
-      "sign_fee_cents": 5800,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.053",
-      "name": "埃克托·阿维拉",
-      "role": "waiter",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 36,
-      "operations": 33,
-      "quality": 37,
-      "economy": 45,
-      "wages_cents": [
-        2200,
-        2200,
-        2200
-      ],
-      "sign_fee_cents": 4400,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.054",
-      "name": "艾米莉亚·萨莫拉",
-      "role": "waiter",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。上岗后有助于增加小费。",
-      "buff": "tip",
-      "weight": 1,
-      "attraction": 27,
-      "operations": 51,
-      "quality": 48,
-      "economy": 48,
-      "wages_cents": [
-        1800,
-        1800,
-        1800
-      ],
-      "sign_fee_cents": 3600,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.055",
-      "name": "塞萨尔·阿拉尔孔",
-      "role": "waiter",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 38,
-      "operations": 36,
-      "quality": 51,
-      "economy": 35,
-      "wages_cents": [
-        1800,
-        1800,
-        1800
-      ],
-      "sign_fee_cents": 3600,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.056",
-      "name": "罗莎·索利斯",
-      "role": "waiter",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。上岗后有助于增加小费。",
-      "buff": "tip",
-      "weight": 1,
-      "attraction": 44,
-      "operations": 26,
-      "quality": 47,
-      "economy": 43,
-      "wages_cents": [
-        2300,
-        2300,
-        2300
-      ],
-      "sign_fee_cents": 4600,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.057",
-      "name": "佩德罗·卡拉斯科",
-      "role": "waiter",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 33,
-      "operations": 25,
-      "quality": 32,
-      "economy": 45,
-      "wages_cents": [
-        2000,
-        2000,
-        2000
-      ],
-      "sign_fee_cents": 4000,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.058",
-      "name": "洛蕾娜·阿科斯塔",
-      "role": "waiter",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。上岗后有助于增加小费。",
-      "buff": "tip",
-      "weight": 1,
-      "attraction": 43,
-      "operations": 41,
-      "quality": 33,
-      "economy": 30,
-      "wages_cents": [
-        2200,
-        2200,
-        2200
-      ],
-      "sign_fee_cents": 4400,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.059",
-      "name": "埃德加·米兰达",
-      "role": "waiter",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 26,
-      "operations": 40,
-      "quality": 54,
-      "economy": 49,
-      "wages_cents": [
-        2600,
-        2600,
-        2600
-      ],
-      "sign_fee_cents": 5200,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.060",
-      "name": "玛尔塔·特雷霍",
-      "role": "waiter",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。上岗后有助于增加小费。",
-      "buff": "tip",
-      "weight": 1,
-      "attraction": 42,
-      "operations": 41,
-      "quality": 30,
-      "economy": 37,
-      "wages_cents": [
-        2900,
-        2900,
-        2900
-      ],
-      "sign_fee_cents": 5800,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.061",
-      "name": "卢西亚诺·帕迪利亚",
-      "role": "waiter",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 37,
-      "operations": 47,
-      "quality": 40,
-      "economy": 39,
-      "wages_cents": [
-        2700,
-        2700,
-        2700
-      ],
-      "sign_fee_cents": 5400,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.062",
-      "name": "卡拉·埃斯科瓦尔",
-      "role": "waiter",
-      "town": "mexico_city",
-      "stars": 1,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。上岗后有助于增加小费。",
-      "buff": "tip",
-      "weight": 1,
-      "attraction": 30,
-      "operations": 33,
-      "quality": 44,
-      "economy": 28,
-      "wages_cents": [
-        2300,
-        2300,
-        2300
-      ],
-      "sign_fee_cents": 4600,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.063",
-      "name": "维森特·加尔萨",
-      "role": "waiter",
-      "town": "mexico_city",
-      "stars": 2,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 49,
-      "operations": 56,
-      "quality": 77,
-      "economy": 69,
-      "wages_cents": [
-        4700,
-        4700,
-        4700
-      ],
-      "sign_fee_cents": 9400,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.064",
-      "name": "艾尔莎·阿雷亚诺",
-      "role": "waiter",
-      "town": "mexico_city",
-      "stars": 2,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。上岗后有助于增加小费。",
-      "buff": "tip",
-      "weight": 1,
-      "attraction": 47,
-      "operations": 65,
-      "quality": 58,
-      "economy": 66,
-      "wages_cents": [
-        3100,
-        3100,
-        3100
-      ],
-      "sign_fee_cents": 6200,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.065",
-      "name": "乌戈·佩尼亚",
-      "role": "waiter",
-      "town": "mexico_city",
-      "stars": 2,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 72,
-      "operations": 57,
-      "quality": 63,
-      "economy": 60,
-      "wages_cents": [
-        3300,
-        3300,
-        3300
-      ],
-      "sign_fee_cents": 6600,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.066",
-      "name": "蒙塞拉特·坎波斯",
-      "role": "waiter",
-      "town": "mexico_city",
-      "stars": 2,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。上岗后有助于增加小费。",
-      "buff": "tip",
-      "weight": 1,
-      "attraction": 63,
-      "operations": 68,
-      "quality": 58,
-      "economy": 53,
-      "wages_cents": [
-        3200,
-        3200,
-        3200
-      ],
-      "sign_fee_cents": 6400,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.067",
-      "name": "埃斯特班·莫利纳",
-      "role": "waiter",
-      "town": "mexico_city",
-      "stars": 2,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 46,
-      "operations": 65,
-      "quality": 68,
-      "economy": 59,
-      "wages_cents": [
-        4200,
-        4200,
-        4200
-      ],
-      "sign_fee_cents": 8400,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.068",
-      "name": "罗西奥·桑塔纳",
-      "role": "waiter",
-      "town": "mexico_city",
-      "stars": 2,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。上岗后有助于增加小费。",
-      "buff": "tip",
-      "weight": 1,
-      "attraction": 46,
-      "operations": 52,
-      "quality": 54,
-      "economy": 68,
-      "wages_cents": [
-        4900,
-        4900,
-        4900
-      ],
-      "sign_fee_cents": 9800,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.069",
-      "name": "伊万·蒙特斯",
-      "role": "waiter",
-      "town": "mexico_city",
-      "stars": 2,
-      "description": "擅长招徕街坊，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 54,
-      "operations": 67,
-      "quality": 45,
-      "economy": 68,
-      "wages_cents": [
-        3900,
-        3900,
-        3900
-      ],
-      "sign_fee_cents": 7800,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.070",
-      "name": "阿尔玛·萨利纳斯",
-      "role": "waiter",
-      "town": "mexico_city",
-      "stars": 3,
-      "description": "讲究出餐安排，希望在新店找到合适的岗位。上岗后有助于增加小费。",
-      "buff": "tip",
-      "weight": 1,
-      "attraction": 79,
-      "operations": 83,
-      "quality": 87,
-      "economy": 78,
-      "wages_cents": [
-        6100,
-        6100,
-        6100
-      ],
-      "sign_fee_cents": 12200,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.071",
-      "name": "罗伯托·塞拉诺",
-      "role": "waiter",
-      "town": "mexico_city",
-      "stars": 3,
-      "description": "注重菜品品质，希望在新店找到合适的岗位。上岗后协助加快出餐安排。",
-      "buff": "faster_service",
-      "weight": 1,
-      "attraction": 66,
-      "operations": 81,
-      "quality": 86,
-      "economy": 66,
-      "wages_cents": [
-        7900,
-        7900,
-        7900
-      ],
-      "sign_fee_cents": 15800,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
-    },
-    {
-      "id": "staff.lat.072",
-      "name": "帕洛玛·塞万提斯",
-      "role": "waiter",
-      "town": "mexico_city",
-      "stars": 3,
-      "description": "仔细控制损耗，希望在新店找到合适的岗位。上岗后有助于增加小费。",
-      "buff": "tip",
-      "weight": 1,
-      "attraction": 71,
-      "operations": 83,
-      "quality": 82,
-      "economy": 80,
-      "wages_cents": [
-        6000,
-        6000,
-        6000
-      ],
-      "sign_fee_cents": 12000,
-      "special_bonuses": [],
-      "parameter_status": "PROPOSED_AI_074"
+      "parameter_status": "PROPOSED_AI_074",
+      "appearance_variant": 2
     }
   ]
 }

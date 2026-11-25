@@ -72,6 +72,23 @@ func test_tomato_egg_physical_sequence_real_cut_and_once_only_food() -> void:
 		var station: String="kitchen.fridge" if event.action=="picked" else ("kitchen.board" if event.action.begins_with("cut_") else ("kitchen.serve" if event.action=="dish_deposited" else "kitchen.stove.left"))
 		assert_lt(event.position.distance_to(view.kitchen.world.staff_approach(station)),1.0)
 
+func test_foreign_cook_leaves_order_and_ingredients_for_qualified_colleague() -> void:
+	var foreign:=shop.crew.person("cook-zhou").duplicate()
+	foreign.cuisine_id="jp"
+	shop.crew.use_external([foreign],Callable())
+	open_recipe()
+	var stock_before: Dictionary=shop.snapshot().inventory.duplicate(true)
+	view.kitchen.advance(2.0)
+	assert_true(view.staff.job_for("cook-zhou").is_empty())
+	assert_eq(shop.snapshot().inventory,stock_before)
+	assert_false(shop.active_orders().is_empty())
+	var local:=TDRestaurantCrew.ROSTER[0].duplicate()
+	local.cuisine_id="cn"
+	shop.crew.use_external([foreign,local],Callable())
+	view.tick_staff()
+	assert_true(view.staff.job_for("cook-zhou").is_empty())
+	assert_false(view.staff.job_for("cook-he").is_empty())
+
 func test_world_stations_routes_gait_and_both_pause_paths() -> void:
 	open_recipe();view.kitchen.advance(.2)
 	view.kitchen.world._sync_staff()

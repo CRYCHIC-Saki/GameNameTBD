@@ -3,6 +3,7 @@ extends Control
 ## Player presentation only. Every symbol reads the real lane/controller.
 signal spice_clicked(lane: int, ingredient: String)
 signal spice_input(lane: int, ingredient: String, pressed: bool)
+const CLOSEUP := preload("res://src/kitchen/cooking_closeup.gd")
 const INK := Color("f6e8c6")
 const GOLD := Color("eabe79")
 const GREEN := Color("9fc48f")
@@ -10,6 +11,7 @@ const RED := Color("de755d")
 const BG := Color("202c29")
 const SPICES := ["salt","sugar","vinegar","soy_sauce","oil","wine","ginger","garlic","pepper","scallion"]
 const SPICE_NAMES := ["盐","糖","醋","酱油","油","料酒","姜","蒜","花椒","葱"]
+var cuisine_id := "cn"
 var lanes: Array = []
 var beat_sec: float = 0
 var bpm: float = 120
@@ -33,6 +35,7 @@ func _input(event: InputEvent) -> void:
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	font = SystemFont.new(); font.font_names = PackedStringArray(["SimHei"])
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 func _gui_input(event: InputEvent) -> void:
@@ -63,7 +66,7 @@ func _spice_box(area: Rect2,slot: int,count: int=10) -> Rect2:
 	var center: Vector2=area.position+Vector2(area.size.x*.5,232)
 	var angle: float=-PI*.5+slot*TAU/maxi(1,count)
 	var dimensions:=Vector2(112,52)
-	return Rect2(center+Vector2(cos(angle)*area.size.x*.36,sin(angle)*144)-dimensions*.5,dimensions)
+	return Rect2(center+Vector2(cos(angle)*area.size.x*.36,sin(angle)*132)-dimensions*.5,dimensions)
 
 func thermal_rect(index: int) -> Rect2:
 	var slot: int = 0
@@ -141,11 +144,13 @@ func _draw_lane(lane: TDCookingLane, area: Rect2, slot: int) -> void:
 	var p: Dictionary = lane.progress if lane.qte != null else (lane.thermal_progress if lane.thermal_qte != null else (lane.progress if lane.feedback_remaining()>0 else {}))
 	var module: String = str(p.get("pc_module",""))
 	var top_x: float = 32+slot*620 if lanes.size()>1 else 32
-	_text(("左锅 · " if lane.lane_index==0 else ("右锅 · " if lane.lane_index==1 else "砧板 · "))+str(dish.recipe_name),Vector2(top_x,71),TDUI.FONT_SECTION,INK)
+	var equipment: String={"board":"砧板","wok":"炒锅","stockpot":"汤锅","steamer":"蒸锅","claypot":"砂锅","oven":"烤箱","skillet":"煎锅","sushi":"寿司台","tamago":"玉子锅","grill":"炭烤台","fryer":"炸锅","cold":"冷菜台","comal":"烙饼板"}.get(lane.station_role,"左锅" if lane.lane_index==0 else "右锅")
+	_text(equipment+" · "+str(dish.recipe_name),Vector2(top_x,71),TDUI.FONT_SECTION,INK)
 	_text("要求："+_requirements(lane),Vector2(top_x,99),TDUI.FONT_CAPTION,Color("c0c8b0"))
 	_panel(area,Color("283a31"))
+	CLOSEUP.backdrop(self,area,cuisine_id)
 	var label: String = lane.stage_label
-	if lane.qte==null and lane.thermal_qte!=null: label="炖煮控温" if p.get("kind")=="boil" else "炒制控温"
+	if lane.qte==null and lane.thermal_qte!=null and label.is_empty(): label="控温"
 	if module=="M1" and not dish.ingredients.is_empty(): label="切配 · "+str(dish.ingredients.values()[0].name)
 	if lane.qte != null and lane.thermal_qte != null: label += "  /  控温"
 	if p.is_empty(): label = "准备 · " + _next_label(lane)
@@ -156,6 +161,7 @@ func _draw_lane(lane: TDCookingLane, area: Rect2, slot: int) -> void:
 	for item: Dictionary in dish.ingredients.values(): fine=maxf(fine,float(item.fine))
 	if module=="M1" and lane.qte != null: fine=minf(1,fine+float(p.get("cut_hits",0))/8)
 	var stats: Vector2 = area.position+Vector2(area.size.x-150,64)
+	draw_rect(Rect2(stats-Vector2(12,25),Vector2(132,94)),Color("17251ee6"))
 	_text("%.0f ℃"%float(attrs.temperature_c),stats,TDUI.FONT_BODY,INK)
 	draw_rect(Rect2(stats+Vector2(100,-18),Vector2(7,66)),Color("455b4c"))
 	var h: float=clampf(float(attrs.temperature_c)/200,0,1)*62
@@ -187,7 +193,7 @@ func _draw_lane(lane: TDCookingLane, area: Rect2, slot: int) -> void:
 		if lanes.size()==1: _thermal(area,lane.thermal_progress)
 	elif not p.is_empty() and module!="M6":
 		var instruction: String={"M1":"按菜谱打谱  ·  空格落刀 / A、D 转向","M2":"游标到绿区中心时按空格","M3":"按谱按键  ·  最后一拍空格收势","M6":"左键按住调料 → 到量松开 · 无需控温","M7":"看提示按住空格  →  绿区中心松开"}.get(module,"跟随拍点")
-		if p.get("qte_kind")=="charge" and module=="M3": instruction="长按空格 · 上笼八拍后松开"
+		if p.get("qte_kind")=="charge" and module=="M3": instruction="按住空格 · 上笼 %d 拍后松开"%roundi(float(p.perfect_center_sec)*bpm/60.0)
 		_text(instruction,area.position+Vector2(26,area.size.y-23),TDUI.FONT_BODY,Color("c7cfb5"))
 	_draw_judgement(lane,area)
 
@@ -207,74 +213,9 @@ func _next_label(lane: TDCookingLane) -> String:
 	return "完成"
 
 func _draw_food_action(c: Vector2,s: float,lane: TDCookingLane,p: Dictionary,module: String) -> void:
-	var elapsed: float=float(p.get("elapsed_sec",0))
-	var beat: float=fposmod(elapsed*2,1)
-	if module=="M1" or lane.station_role=="board":
-		_rect(c+Vector2(-155,-80)*s,Vector2(310,174)*s,Color("674630"))
-		_rect(c+Vector2(-150,-85)*s,Vector2(300,161)*s,Color("bf985e"))
-		for y: int in range(0,150,12): draw_line(c+Vector2(-140,-77+y)*s,c+Vector2(137,-77+y)*s,Color("ae8451"),2)
-		var hits: int=int(p.get("cut_hits",0))
-		var count: int=maxi(1,hits+1)
-		if hits==0:
-			_ellipse(c+Vector2(-32,5)*s,Vector2(43,37)*s,Color("a64031")); _ellipse(c+Vector2(-34,-1)*s,Vector2(39,33)*s,RED)
-			_rect(c+Vector2(-54,-19)*s,Vector2(10,7)*s,Color("f2a072"))
-			for i: int in 5: draw_line(c+Vector2(-32,-25)*s,c+(Vector2(-32,-25)+Vector2(13,0).rotated(i*TAU/5))*s,Color("6e8c4c"),5*s)
-		for i: int in (mini(count,8) if hits>0 else 0):
-			var v: Vector2=c+Vector2(-65+(i%4)*37,-20+floori(float(i)/4)*29)*s
-			_rect(v,Vector2(29,26)*s,Color("ad4232")); _rect(v+Vector2(2,-3)*s,Vector2(25,20)*s,RED)
-		var angle: float=[0.0,PI*.5,PI*.25][int(p.get("cut_direction",0))]
-		var dir:=Vector2.RIGHT.rotated(angle)
-		var hit: Dictionary=lane.judgement_feedback
-		var age: float=lane.clock.qte_sec-float(hit.get("shown_at_sec",-10))
-		var strike: float=sin(clampf(age/.24,0,1)*PI) if hit.get("action")=="primary" and hit.get("grade") in ["perfect","good"] and age<.24 else 0.0
-		var knife: Vector2=c+Vector2(10,-64+strike*30)*s
-		draw_line(knife-dir*38*s,knife+dir*40*s,Color("8b9c95"),22*s)
-		draw_line(knife-dir*36*s-Vector2(0,3),knife+dir*36*s-Vector2(0,3),Color("d8ded1"),17*s)
-		draw_line(knife+dir*42*s,knife+dir*84*s,Color("664133"),15*s)
-		return
-	if lane.station_role=="steamer" or p.get("kind")=="steam":
-		_ellipse(c+Vector2(0,25)*s,Vector2(124,61)*s,Color("59432e"))
-		_rect(c+Vector2(-120,-45)*s,Vector2(240,75)*s,Color("aa814c"))
-		for y: int in 5: _rect(c+Vector2(-120,-40+y*14)*s,Vector2(240,4)*s,Color("705332"))
-		_ellipse(c-Vector2(0,47)*s,Vector2(121,57)*s,Color("d0ac6f"))
-		for x: int in range(-90,100,18): draw_line(c+Vector2(x,-83)*s,c+Vector2(x,-13)*s,Color("aa8048"),3)
-		_steam(c,s,elapsed); return
-	if module=="M7":
-		var progress: float=clampf(float(p.get("held_sec",0))/maxf(.001,float(p.get("target_max_sec",1))),0,1)
-		_ellipse(c+Vector2(65,34)*s,Vector2(130,54)*s,Color("48594d"))
-		_ellipse(c+Vector2(65,26)*s,Vector2(124,51)*s,Color("d7d7b8"))
-		_ellipse(c+Vector2(65,23)*s,Vector2(102,38)*s,Color("b6c5a6"))
-		_ellipse(c+Vector2(-107,-38)*s,Vector2(81,48)*s,Color("17251f"))
-		draw_line(c+Vector2(-168,-51)*s,c+Vector2(-206,-96)*s,Color("956f48"),15*s)
-		for i: int in 10:
-			var at: Vector2=Vector2(-97+sin(i*2.7)*35,-41+cos(i)*18).lerp(Vector2(48+sin(i*2.7)*59,12+cos(i)*22),progress)
-			_rect(c+at*s,Vector2(23,16)*s,GOLD if i%2==0 else RED)
-		_steam(c,s,elapsed); return
-	var toss: float=sin(elapsed*8)*9 if module=="M3" else 0
-	_ellipse(c+Vector2(0,64)*s,Vector2(142,37)*s,Color("15231e"))
-	for i: int in 7:
-		var flame: float=14+sin(elapsed*12+i)*6
-		_rect(c+Vector2(-75+i*24,92-flame)*s,Vector2(12,flame)*s,Color("e6a754"))
-	_rect(c+Vector2(111,-5)*s,Vector2(88,18)*s,Color("684537"))
-	_ellipse(c,Vector2(138,75)*s,Color("131e1b")); _ellipse(c-Vector2(0,4)*s,Vector2(128,67)*s,Color("52615a")); _ellipse(c-Vector2(0,8)*s,Vector2(116,57)*s,Color("27342d"))
-	for i: int in 12:
-		var x: float=sin(i*2.7)*82
-		var y: float=cos(i*1.9)*35+toss
-		_rect(c+Vector2(x,y-11)*s,Vector2(22+(i%3)*3,16)*s,Color("dfbb6b") if i%2==0 else RED)
-	if module=="M3" and p.get("kind")!="season":
-		var tip: Vector2=c+Vector2(sin(elapsed*6)*45,-25+cos(elapsed*6)*14)*s
-		draw_line(tip,tip+Vector2(67,-79)*s,Color("b29165"),10*s)
-		_rect(tip-Vector2(16,4)*s,Vector2(42,13)*s,Color("d3b27b"))
-	if module=="M6" or (module=="M3" and p.get("kind") in ["season","starch"]):
-		_rect(c+Vector2(88,-117)*s,Vector2(28,41)*s,INK if p.get("kind")=="starch" else Color("b9c295"))
-		_rect(c+Vector2(83,-83)*s,Vector2(31,8)*s,GOLD)
-		for i: int in 4: _rect(c+Vector2(75-i*13,-65+fposmod(elapsed*60+i*13,45))*s,Vector2(3,4)*s,GOLD if module=="M3" and p.get("kind")=="season" else INK)
-	_steam(c,s,elapsed)
-
-func _steam(c: Vector2,s: float,t: float) -> void:
-	for i: int in 4:
-		var y: float=fposmod(t*27+i*18,68)
-		_rect(c+Vector2(-55+i*31+sin(t*3+i)*5,-66-y)*s,Vector2(6,18)*s,Color(.84,.87,.76,(1-y/75)*.35))
+	var beats := beat_sec*bpm/60.0
+	CLOSEUP.action(self,lane,p,module,c,s,beats)
+	CLOSEUP.impact(self,lane,c-Vector2(19,16)*s,s)
 
 func _symbols(lane: TDCookingLane,area: Rect2,p: Dictionary) -> void:
 	var c: Vector2=area.position+Vector2(area.size.x*.5,area.size.y-122)
@@ -452,12 +393,11 @@ func _draw_judgement(lane: TDCookingLane,area: Rect2) -> void:
 	var grade: String=str(event.get("grade","miss"))
 	var color: Color=GREEN if grade=="perfect" else (GOLD if grade=="good" else RED)
 	var reason: String=str(event.get("reason",""))
+	if reason=="HOLD_STARTED": return # The live pour meter already acknowledges the press.
 	var anchor: Vector2=area.position+Vector2(25,100)
 	if lane.progress.get("pc_module")=="M6": anchor=area.position+Vector2(area.size.x*.5-125,310)
-	if reason=="HOLD_STARTED":
-		_text("保持按住",anchor,TDUI.FONT_TITLE,GOLD)
-		_text("到目标用量再松开",anchor+Vector2(2,25),TDUI.FONT_CAPTION,GOLD)
-		return
+	draw_rect(Rect2(anchor-Vector2(8,26),Vector2(206,60)),Color("15251deb"))
+	draw_rect(Rect2(anchor-Vector2(8,26),Vector2(3,60)),color)
 	var detail: String={"WRONG_KEY":"按键不对","WRONG_DIRECTION":"漏了转向，切面不对","MISSED_NOTE":"漏拍","OUTSIDE_WINDOW":"没有到落点","TIMEOUT":"未完成操作","EARLY_RELEASE":"松手早了","OVERCHARGED":"松手晚了"}.get(reason,"")
 	if reason=="THERMAL_RESULT": detail="控温阶段完成"
 	if reason=="SPICE_EMPTY": detail="这份调料已用完，已自动停止添加"
@@ -491,7 +431,3 @@ func _panel(rect: Rect2,color: Color) -> void:
 	draw_style_box(box,rect)
 func _text(value: String,at: Vector2,font_size: int=TDUI.FONT_BODY,color: Color=INK) -> void: draw_string(font,at,value,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size,color)
 func _rect(at: Vector2,dimensions: Vector2,color: Color) -> void: draw_rect(Rect2(at.round(),dimensions.round()),color)
-func _ellipse(at: Vector2,radius: Vector2,color: Color) -> void:
-	var points:=PackedVector2Array()
-	for i: int in 48: points.append(at+Vector2(cos(i*TAU/48)*radius.x,sin(i*TAU/48)*radius.y))
-	draw_colored_polygon(points,color)

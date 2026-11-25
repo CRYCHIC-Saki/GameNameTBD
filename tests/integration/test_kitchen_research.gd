@@ -58,7 +58,7 @@ func test_story_interface_does_not_gift_recipe_or_charge_for_pending_chart() -> 
 	app.atlas.select_recipe("E20");assert_eq(app.atlas.selected_id,"C02");assert_false(app.atlas.canvas.positions.has("E20"))
 	assert_true(app.research.recommend_cuisine("story.test.europe","eu").ok)
 	app.atlas.switch_cuisine("eu");assert_eq(app.atlas.active_cuisine,"eu");assert_false(app.atlas._tabs.eu.disabled)
-	assert_eq(app.research.status("E01"),"CHART_PENDING");assert_false(app.research.has("E01"));assert_eq(app.research.snapshot().points,3)
+	assert_eq(app.research.status("E01"),"AVAILABLE");assert_false(app.research.has("E01"));assert_eq(app.research.snapshot().points,3)
 	app.atlas.set_zoom(1.3);app.atlas.select_recipe("E20");app.atlas.reveal_selection();assert_gt(app.atlas._tree_scroll.scroll_vertical,0)
 
 func test_runtime_data_valid_legacy_save_preserved_and_no_perfect_bypass() -> void:
@@ -99,7 +99,7 @@ func test_tree_selection_highlights_exact_prerequisites_without_granting_mastery
 func test_all_cuisine_edges_avoid_cards_and_labels_and_scale_with_input() -> void:
 	app.enter_research();var canvas:=app.atlas.canvas
 	var source:=app.research.catalog.data.duplicate(true)
-	for cuisine:String in ["cn","eu","jp","sea","lat"]:
+	for cuisine:String in ["cn","eu","jp"]:
 		if cuisine!="cn": app.research.recommend_cuisine("test.layout."+cuisine,cuisine)
 		app.atlas.switch_cuisine(cuisine)
 		var collisions:Array[String]=[]

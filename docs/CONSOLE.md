@@ -36,7 +36,7 @@ check
 | `inspiration add 50` | 增加1–10000灵感，带独立debug事件；不改变等级。 |
 | `recipes 面` | 查询菜谱ID/状态/运行时对应。 |
 | `recipe unlock C03` | 调试掌握该菜及其前置节点、开放其菜系。目标必须有运行时内容；前置节点可仅有树定义。记录debug_unlock，不伪造研习分数/Perfect/历史迁移；不表示尚未制作的玩法已实现。 |
-| `cuisine open jp` | 开放一个菜系页，菜谱仍逐个掌握。可用cn/eu/jp/sea/lat。 |
+| `cuisine open jp` | 开放一个菜系页，菜谱仍逐个掌握。可用cn/eu/jp。 |
 | `san 50` | 设置0–100，后续工序生效；进行中的QTE不能改。 |
 | `time` / `time set 18:00` | 查看/调整当天钟表，只允许筹备或日结。范围08:00–次日01:59；00:30等同24:30。仅预览时间及NPC日程，不快进顾客、生产或跨日，不触发02:00安全保存。 |
 | `employee market chengdu manager` | 查当前小镇/岗位的候选人、ID、星级、签约费和日薪。 |
@@ -47,14 +47,14 @@ check
 | `shop info main` | 查看该店经理、人员、菜单及托管信息。 |
 | `shop auto main on` | 开启经营托管，off关闭。主店须先有经理；供货托管独立。 |
 | `orders [关键词]` | 订单、菜品、状态、等待剩余秒数；不生成假顾客或假成品。 |
-| `supply [关键词]` | 查询供货目标、数量、剩余真实活动秒和收货状态。 |
+| `supply [关键词]` | 查询品牌供货开关、信用额度、欠款、上一笔货款和各店明日菜单。旧档已付款的生产任务也可在此查询。 |
 | `quest` / `quest track on` | 查当前任务节点和引导目标；on/off切追踪，不强制完成剧情或发奖励。 |
 | `open shops` | 打开正式管理界面；也可用employees/suppliers/recipes/quests/map/relationships。 |
 | `goto harbor` | 回主镇港口；可用town/restaurant/kitchen/cottage。仍需整理工位，小屋须已解锁；不改变跨镇旅行规则。 |
 | `save` | 明确主动保存当前槽，完整校验和原子保存规则不变。 |
 | `tools` | 旧独立试验入口，使用独立调试文件；不把试验结果回写当前槽。 |
 
-小镇ID：`chengdu`、`tokyo`、`paris`、`bangkok`、`mexico_city`。岗位：`manager`店长、`cook`厨师、`waiter`服务员。主店可用`main`或`player_diner`，分店使用`shop list`列出的ID。
+小镇ID：`chengdu`、`tokyo`、`paris`。岗位：`manager`店长、`cook`厨师、`waiter`服务员。主店可用`main`或`player_diner`，分店使用`shop list`列出的ID。
 
 中文完整名称可代替食材/菜谱/员工ID；名称含空格时用单或双引号，如 `give "番茄" 2`。同名歧义时请使用稳定ID。列表先显示40项，追加关键词筛选；不会按数组序号识别人或菜。
 

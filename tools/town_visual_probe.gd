@@ -26,7 +26,7 @@ func run() -> void:
 	shell.town.set_process(false);shell.town.set_physics_process(false)
 	shell.town._camera.position_smoothing_enabled=false
 	shell.town._camera.zoom=Vector2.ONE*.20
-	shell.town._camera.position=shell.town._origin()+Vector2.ONE*map.extent*24
+	shell.town._camera.position=shell.town._origin()+Vector2.ONE*map.extent*TDTownScenery.SCALE
 	shell.town._player.position=shell.town._camera.position
 	shell.profile.characters.clock.minute=720
 	await capture("town-overview")

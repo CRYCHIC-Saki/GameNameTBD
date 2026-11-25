@@ -19,7 +19,8 @@ func run() -> void:
 	shell.guide.dialogue.finish_now() # This legacy probe covers later chapter beats.
 	await capture("town-quest")
 	shell.guide.show_journal();await capture("journal");shell._close_dialog()
-	shell.town._player.position=shell.town._origin()+Vector2(70.5,33.5)*shell.town.CELL;shell.town._follow_camera()
+	var port := TDInteractionRange.plot_bounds(TDHarbor.facility(shell.town.session.town_map),shell.town.CELL,shell.town._origin())
+	shell.town._player.position=Vector2(port.get_center().x,port.end.y+30.0);shell.town._follow_camera()
 	await capture("harbor");shell.town._interact();await capture("journal-harbor");shell._close_dialog();shell.town.spawn_at_home()
 	for who: String in ["hero","aling","chen"]:
 		for mood: String in TDStoryArt.EMOTIONS:

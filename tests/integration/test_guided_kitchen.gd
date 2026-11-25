@@ -163,6 +163,11 @@ func test_real_recipe_notes_make_chunks_and_feedback_survives_release_pause_and_
 	var life: float=lane.feedback_remaining()
 	app.toggle_pause(); kitchen.advance(15); assert_eq(lane.feedback_remaining(),life); app.toggle_pause()
 	kitchen.advance(.1); assert_eq(lane.judgement_feedback,event)
+	var impulse: float = TDGuidedCookingView.CLOSEUP.impulse(lane)
+	assert_gt(impulse,.6,"Accepted note drives the utensil rebound")
+	app.toggle_pause(); kitchen.advance(2)
+	assert_eq(TDGuidedCookingView.CLOSEUP.impulse(lane),impulse,"Paused artwork stays on the accepted note")
+	app.toggle_pause()
 	kitchen.advance(.9); tap(KEY_D); assert_eq(int(lane.progress.cut_hits),1)
 	kitchen.advance(1); tap(KEY_SPACE); kitchen.advance(.25) # Production Good window is now inclusive through +200ms.
 	assert_null(lane.qte); assert_gt(lane.feedback_remaining(),.6)
@@ -170,6 +175,17 @@ func test_real_recipe_notes_make_chunks_and_feedback_survives_release_pause_and_
 	assert_eq(ingredient.shape,"chunk"); assert_eq(float(ingredient.fine),.25)
 	assert_eq(float(lane.snapshot().steps[0].quality),1.0)
 	lane.cancel_operation(); assert_true(lane.judgement_feedback.is_empty())
+	assert_eq(TDGuidedCookingView.CLOSEUP.impulse(lane),0.0,"No previous strike on restarting")
+
+func test_musical_bar_loop_crosses_zero_without_discontinuity_in_chart_phase() -> void:
+	assert_almost_eq(TDBeatAudio.phase_error(.008,95.992),.016,.000001)
+	assert_almost_eq(TDBeatAudio.phase_error(95.970,.010),-.040,.000001)
+	assert_almost_eq(TDBeatAudio.phase_error(.500,192.5),0.0,.000001)
+	var audio:=kitchen.beat_audio
+	audio.prepare_cooking_music(90.0)
+	var wav:=audio.stream as AudioStreamWAV
+	assert_eq(wav.loop_end,roundi(wav.mix_rate*96.0))
+	assert_almost_eq(float(wav.loop_end)/wav.mix_rate/audio.pitch_scale,128.0,.00001,"48 four-beat bars at 90 BPM")
 
 func test_dual_seasoning_reserves_mouse_and_keeps_other_heat_unscored() -> void:
 	prepared_to("kitchen.stove.left"); prepared_to("kitchen.stove.right")
