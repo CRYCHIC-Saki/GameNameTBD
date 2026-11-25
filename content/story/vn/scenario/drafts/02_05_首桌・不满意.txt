@@ -1,0 +1,47 @@
+// td_handoff_begin v1
+// {
+// 	"schema_version": 1,
+// 	"purpose": "author_handoff",
+// 	"id": "handoff_dialogue_p2_05",
+// 	"title": "首桌・不满意",
+// 	"section": "02 · 第一场 第一桌，出征",
+// 	"placement": "地点：小炒摊，承接首次开门营业。",
+// 	"notes": "【若客人不满意】 / 【操作】客人吃完后，按提示到桌旁 E 招呼送客。",
+// 	"source_script": "",
+// 	"source_sha256": ""
+// }
+// td_handoff_end
+
+// 【若客人不满意】
+# line_021
+// td_canvas_begin v1
+@bg dining-table-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_calm outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+guest: 这份军粮尚有破绽。下回远征，望汝再进一式。
+
+# line_022
+// td_canvas_begin v1
+@bg dining-table-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_calm outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 记住他说的，下回改一处。下一桌还在等。
+
+// 【操作】客人吃完后，按提示到桌旁 E 招呼送客。
+// 完成第一桌服务后，继续自由营业。
+# finish
+@end

@@ -1,0 +1,9 @@
+[gd_resource type="AtlasTexture" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/story/imported/dialogue/hero_angry.png" id="1"]
+
+[resource]
+atlas = ExtResource("1")
+region = Rect2(480, 205, 1650, 1650)
+filter_clip = true
+metadata/td_display_name = "生气"

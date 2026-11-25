@@ -1,0 +1,46 @@
+// td_handoff_begin v1
+// {
+// 	"schema_version": 1,
+// 	"purpose": "author_handoff",
+// 	"id": "handoff_dialogue_p2_10",
+// 	"title": "清淡订单・未满足",
+// 	"section": "02 · 第四场 收住这一勺",
+// 	"placement": "地点：当天营业中的第一份清淡口味订单。",
+// 	"notes": "【未满足口味要求】 / 【操作】继续营业，也可收摊后练菜。准备完成后，整理厨房，回小屋休息。",
+// 	"source_script": "",
+// 	"source_sha256": ""
+// }
+// td_handoff_end
+
+// 【未满足口味要求】
+# line_076
+// td_canvas_begin v1
+@bg dining-table-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_calm outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+guest: 吾说的是少盐，这一口却像提前出海了。
+
+# line_077
+// td_canvas_begin v1
+@bg dining-table-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_calm outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 看评价。咸了就早点松手，凉了就早点送。还能再练。
+
+// 【操作】继续营业，也可收摊后练菜。准备完成后，整理厨房，回小屋休息。
+# finish
+@end

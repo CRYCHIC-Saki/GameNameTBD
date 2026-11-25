@@ -1,0 +1,55 @@
+// td_handoff_begin v1
+// {
+// 	"id": "handoff_dialogue_p3_06",
+// 	"notes": "【若玩家落败】 / 【操作】按既定失败流程结算，返回准备，可再次挑战。",
+// 	"placement": "地点：河口广场，领域战落败后。",
+// 	"purpose": "author_handoff",
+// 	"schema_version": 1,
+// 	"section": "03 · 第四场 公主亲自应战",
+// 	"source_script": "",
+// 	"source_sha256": "",
+// 	"title": "至味卿挑战・落败"
+// }
+// td_handoff_end
+
+// 【若玩家落败】
+# line_049
+// td_canvas_begin v1
+@bg river-square-v1 with instant 0
+@hide hero with instant
+@hide aling with instant
+@hide yanzi with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@hide residents with instant
+@hide guest with instant
+@hide guest_two with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show hertz troubled outfit=base pose=base shot=mid at td:0.746729:1.424085:2.100000 with instant
+// td_canvas_end
+hertz: 本轮挑战结束。赤焰之手，好好准备一下，我们再来！
+
+# line_050
+// td_canvas_begin v1
+@bg river-square-v1 with instant 0
+@hide hero with instant
+@hide aling with instant
+@hide yanzi with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@hide residents with instant
+@hide guest with instant
+@hide guest_two with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show loue calm outfit=base pose=base shot=mid at td:0.714457:1.339748:2.100000 with instant
+// td_canvas_end
+loue: 见习的厨师，你还需要历练！
+
+// 【操作】按既定失败流程结算，返回准备，可再次挑战。
+// 下段仅在玩家获胜后触发。
+# finish
+@end

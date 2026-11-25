@@ -170,9 +170,9 @@ func _process(delta: float) -> void:
 		_selected=facing_plot()
 		if _target_hint!=null:
 			var person:=_story_faced() if _selected.is_empty() else ""
-			_target_hint.text="E "+str(_selected.name) if not _selected.is_empty() else ("E "+("阿铃" if person=="aling" else "老陈") if person!="" else "")
+			_target_hint.text="E "+str(_selected.name) if not _selected.is_empty() else ("E "+("阿铃" if person=="aling" else "罗金娜") if person!="" else "")
 	elif _target_hint!=null: _target_hint.text=""
-	if _target_hint!=null and _player.controls_enabled and at_chen_door(): _target_hint.text="E 尝汤" if story.beat=="bowl" else "E 老陈"
+	if _target_hint!=null and _player.controls_enabled and at_chen_door(): _target_hint.text="E 尝汤" if story.beat=="bowl" else "E 罗金娜"
 	if player_mode and _status_panel!=null:
 		_status.visible=_status_left>0 and not _status.text.is_empty()
 		_status_panel.visible=visible and (_status.visible or (_target_hint!=null and not _target_hint.text.is_empty()) or _pack_button.visible)
@@ -1412,7 +1412,7 @@ func _story_positions() -> Array:
 	if homecoming.get("stage","")=="door": aling=Vector2i(homecoming.plot.approach_x,homecoming.plot.approach_y)+Vector2i.RIGHT
 	if characters!=null:
 		if homecoming.get("stage","") not in ["following","door"] and story.beat not in ["arrive","follow","return","soup","bowl"]: aling=characters.safe_stop_near(aling,"aling",[chen])
-	people.append({"id": "chen", "name": "老陈", "cell": chen, "color": Color("#8a6238")})
+	people.append({"id": "chen", "name": "罗金娜", "cell": chen, "color": Color("#8a6238")})
 	people.append({"id": "aling", "name": "阿铃", "cell": aling, "color": Color("#24344a")})
 	return people
 
@@ -1431,7 +1431,7 @@ func _draw_story() -> void:
 	_draw_stall_sign()
 	if story!=null and story.beat in ["soup","bowl"]:
 		var point:=chen_door_point()
-		draw_string(TDUI.font(),point+Vector2(-36,-103),"老陈家",HORIZONTAL_ALIGNMENT_LEFT,-1,TDUI.FONT_CAPTION,Color("ffdfa2"))
+		draw_string(TDUI.font(),point+Vector2(-36,-103),"食材铺",HORIZONTAL_ALIGNMENT_LEFT,-1,TDUI.FONT_CAPTION,Color("ffdfa2"))
 	for person: Variant in _story_people():
 		var item: Dictionary = person
 		var cell: Vector2i = item.cell

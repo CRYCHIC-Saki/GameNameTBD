@@ -1,0 +1,61 @@
+// td_handoff_begin v1
+// {
+// 	"schema_version": 1,
+// 	"purpose": "author_handoff",
+// 	"id": "handoff_dialogue_p2_01",
+// 	"title": "营业・迎客",
+// 	"section": "02 · 第一场 第一桌，出征",
+// 	"placement": "第一场 第一桌，出征",
+// 	"notes": "【操作】到门口按 E 迎客，查看这一桌的实际订单。",
+// 	"source_script": "",
+// 	"source_sha256": ""
+// }
+// td_handoff_end
+
+// 第一场 第一桌，出征
+// 地点：小炒摊，承接首次开门营业。
+# line_007
+// td_canvas_begin v1
+@bg restaurant-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_calm outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 赤焰之手，门前出现了一名饥饿的灵魂。
+
+# line_008
+// td_canvas_begin v1
+@bg restaurant-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show aling dialogue_calm outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+@show yanzi happy outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 终于来了！吾之料理霸业的第一位见证者！
+
+# line_009
+// td_canvas_begin v1
+@bg restaurant-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi happy outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_proud outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 夜鸦令：开门迎客！首战，先夺下他的胃。
+
+// 【操作】到门口按 E 迎客，查看这一桌的实际订单。
+# finish
+@end

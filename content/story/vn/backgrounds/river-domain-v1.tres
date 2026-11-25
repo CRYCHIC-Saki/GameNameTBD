@@ -1,0 +1,8 @@
+[gd_resource type="AtlasTexture" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/story/cg/river_domain_empty.webp" id="1"]
+
+[resource]
+atlas = ExtResource("1")
+filter_clip = true
+metadata/td_display_name = "至味卿的领域"

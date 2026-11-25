@@ -103,7 +103,7 @@ func request_person(who: String) -> void:
 		if shell.profile.residence.stage=="door": present_home("home_door");return
 	var story:=shell.profile.story
 	if who=="bowl" and story.beat=="bowl":
-		var box:=shell._dialog("老陈屋内 · 黎明圣羹",true)
+		var box:=shell._dialog("食材铺内 · 黎明圣羹",true)
 		box.add_child(TDUI.label("浓黑汤面上浮着焦蛋，碗边结着盐。",TDUI.FONT_SECTION))
 		box.add_child(TDUI.button("尝一口",func()->void:shell._close_dialog();present("after_taste")))
 		return
@@ -195,7 +195,7 @@ func objective() -> Dictionary:
 	match story.beat:
 		"arrive": result.text="与阿铃交谈"
 		"follow","return": result.target="escort";result.text="跟随阿铃"
-		"soup": result.target="bowl";result.text="到老陈家门前交谈"
+		"soup": result.target="bowl";result.text="到罗金娜的食材铺门前交谈"
 		"bowl": result.target="bowl";result.text="E 进屋尝汤"
 		"awaken","verdict": result.room="restaurant";result.target="table"
 		"cook":
@@ -353,7 +353,7 @@ func cooking_barks() -> void:
 
 func say_bark(who: String, mood: String, line: String, seconds: float) -> void:
 	_bark_portrait.texture=TDStoryArt.portrait(who,mood)
-	_bark.text={"hero":hero_name(),"aling":"阿铃","chen":"老陈"}.get(who,who)+"："+line
+	_bark.text={"hero":hero_name(),"aling":"阿铃","chen":"罗金娜"}.get(who,who)+"："+line
 	_bark_until=_pulse+seconds
 
 func update_route(goal: Dictionary) -> void:

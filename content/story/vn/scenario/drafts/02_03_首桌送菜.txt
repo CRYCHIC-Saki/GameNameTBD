@@ -1,0 +1,44 @@
+// td_handoff_begin v1
+// {
+// 	"schema_version": 1,
+// 	"purpose": "author_handoff",
+// 	"id": "handoff_dialogue_p2_03",
+// 	"title": "首桌送菜",
+// 	"section": "02 · 第一场 第一桌，出征",
+// 	"placement": "地点：小炒摊，承接首次开门营业。",
+// 	"notes": "",
+// 	"source_script": "",
+// 	"source_sha256": ""
+// }
+// td_handoff_end
+
+# line_016
+// td_canvas_begin v1
+@bg dining-table-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show aling dialogue_calm outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 赤焰降临！接下这盘……（食物名）
+
+# line_017
+// td_canvas_begin v1
+@bg dining-table-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_proud outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 夜鸦见证，供物已抵达第一座祭坛！
+
+# finish
+@end

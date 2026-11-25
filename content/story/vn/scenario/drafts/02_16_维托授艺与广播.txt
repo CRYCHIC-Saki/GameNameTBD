@@ -1,0 +1,162 @@
+// td_handoff_begin v1
+// {
+// 	"schema_version": 1,
+// 	"purpose": "author_handoff",
+// 	"id": "handoff_dialogue_p2_16",
+// 	"title": "维托授艺与广播",
+// 	"section": "02 · 第六场 菜单，多一行",
+// 	"placement": "地点：再下一日午后，小炒摊。",
+// 	"notes": "【界面】维托的认知诅咒解除。已学会欧式基础菜“番茄意面”；开放欧式后续研习与对应原料采购。高级菜可继续自行研习。 / 【操作】玩家恢复控制，可查看新菜谱、与维托简短交谈，随后回小屋休息。新任务：次日开门前采购新材料、上架番茄意面，再完成它的第一次营业出餐。",
+// 	"source_script": "",
+// 	"source_sha256": ""
+// }
+// td_handoff_end
+
+// 第六场 菜单，多一行
+// 地点：比赛结束后，小炒摊厨房。
+# line_116
+// td_canvas_begin v1
+@bg restaurant-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show vito calm outfit=base pose=base shot=mid at td:0.746729:1.408000:2.100000 with instant
+// td_canvas_end
+vito: 吾先教你番茄意面。煮面与番茄酱，是这条路上的第一课。
+
+# line_117
+// td_canvas_begin v1
+@bg restaurant-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show vito calm outfit=base pose=base shot=mid at td:0.746729:1.408000:2.100000 with instant
+@show yanzi puzzled outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 异乡的秘传，就这样交给吾？
+
+# line_118
+// td_canvas_begin v1
+@bg restaurant-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi puzzled outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show vito proud outfit=base pose=base shot=mid at td:0.746729:1.408000:2.100000 with instant
+// td_canvas_end
+vito: 教会对手，下一次胜过他，才配称为骑士。
+
+# line_119
+// td_canvas_begin v1
+@bg restaurant-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi puzzled outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_happy outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 很好。讨伐军的菜单，终于要长大了。
+
+// 【场景内动作】维托借菜谱向玩家讲解基础做法，留下用料与步骤。
+// 【界面】维托的认知诅咒解除。已学会欧式基础菜“番茄意面”；开放欧式后续研习与对应原料采购。高级菜可继续自行研习。
+# line_122
+// td_canvas_begin v1
+@bg restaurant-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi puzzled outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show hertz happy outfit=base pose=base shot=mid at td:0.746729:1.424085:2.100000 with instant
+// td_canvas_end
+hertz: 今日，一位骑士重拾味觉，一位见习厨师扩充食谱！沸点宣告者，预订明日第一份番茄意面！
+
+# line_123
+// td_canvas_begin v1
+@bg restaurant-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi puzzled outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_proud outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 夜鸦记下了。明日第一位食客，嗓门大，要收费。
+
+# line_124
+// td_canvas_begin v1
+@bg restaurant-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show vito proud outfit=base pose=base shot=mid at td:0.746729:1.408000:2.100000 with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 吾的新招式，已有第一位见证者！
+
+// 【广播，普通对话呈现】
+# line_126
+// td_canvas_begin v1
+@bg restaurant-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show vito proud outfit=base pose=base shot=mid at td:0.746729:1.408000:2.100000 with instant
+// td_canvas_end
+loue: 河口的眷属们，今日的圣餐，已为诸位备妥。愿诸位的舌头，始终记得吾赐予的味道。
+
+# line_127
+// td_canvas_begin v1
+@bg restaurant-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_calm outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 赤焰之手，明日的菜单还等着你写。
+
+# line_128
+// td_canvas_begin v1
+@bg restaurant-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show vito proud outfit=base pose=base shot=mid at td:0.746729:1.408000:2.100000 with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 好。让至味卿听着，吾这里，明日照常开火！
+
+// 【操作】玩家恢复控制，可查看新菜谱、与维托简短交谈，随后回小屋休息。新任务：次日开门前采购新材料、上架番茄意面，再完成它的第一次营业出餐。
+# finish
+@end

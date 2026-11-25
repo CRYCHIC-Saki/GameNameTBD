@@ -1,0 +1,115 @@
+// td_handoff_begin v1
+// {
+// 	"schema_version": 1,
+// 	"purpose": "author_handoff",
+// 	"id": "handoff_dialogue_p1_01",
+// 	"title": "港口开篇",
+// 	"section": "01 · 第一场：赤焰之手，空腹降临",
+// 	"placement": "第一场：赤焰之手，空腹降临",
+// 	"notes": "【操作】玩家移动并跟随阿铃，途中可观察港口商船与各国菜馆招牌。 / 【界面】任务：寻找传说中的美味。前往罗金娜的食材铺，与罗金娜交谈。",
+// 	"source_script": "",
+// 	"source_sha256": ""
+// }
+// td_handoff_end
+
+// 第一场：赤焰之手，空腹降临
+// 地点：河口镇车站外，午后。
+// 【演出】长途车驶走。玩家背着锅，展开一张边角磨白的美食地图。
+// 地图上的河口镇被圈了三遍，旁边写着：“百国商船汇聚，天下千味之港。”
+// 郑重地踏过镇口的白线。
+# cg_arrival
+@td_cg arrival
+
+# line_013
+// td_canvas_begin v1
+@bg arrival-coast-v1 with instant 0
+@hide hero with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show hero dialogue_happy outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+hero: 终于到了。吾之舌啊，准备迎接万国料理的洗礼！
+
+// 【演出】肚子响了一声。他把手按在胃上。
+# line_015
+// td_canvas_begin v1
+@bg arrival-coast-v1 with instant 0
+@hide hero with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show hero dialogue_troubled outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+hero: ……封印已经撑不住了。
+
+# line_016
+// td_canvas_begin v1
+@bg arrival-coast-v1 with instant 0
+@hide hero with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show hero dialogue_troubled outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+aling: 背锅的旅人，止步！
+
+// 【演出】少女站在一只木箱上，披风被海风吹得猎猎作响。她翻开账本。
+# cg_messenger
+@td_cg messenger
+
+# line_018
+// td_canvas_begin v1
+@bg arrival-coast-v1 with instant 0
+@hide hero with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show hero dialogue_troubled outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_proud outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 夜鸦密使阿铃，奉命截获一名携带黑铁重器的异乡人。报上你的真名与来意！
+
+# name_input
+@td_name hero
+
+# line_019
+// td_canvas_begin v1
+@bg arrival-coast-v1 with instant 0
+@hide hero with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show aling dialogue_proud outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+@show hero dialogue_happy outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+hero: 见习厨师，{$hero}。为尝遍此地美食而来！
+
+# line_020
+// td_canvas_begin v1
+@bg arrival-coast-v1 with instant 0
+@hide hero with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show hero dialogue_happy outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_calm outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 原来是巡礼者。命运的指针恰好指向灰烬司祭的食材铺，她今日正在分赐圣餐。随我来，趁你的封印还没彻底破裂。
+
+// 【操作】玩家移动并跟随阿铃，途中可观察港口商船与各国菜馆招牌。
+// 【界面】任务：寻找传说中的美味。前往罗金娜的食材铺，与罗金娜交谈。
+# finish
+@end

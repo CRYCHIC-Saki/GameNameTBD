@@ -25,6 +25,94 @@ sprite_scale = 0.64
 side_image = false
 blip = "off"
 
+[sub_resource type="Resource" id="Dialogue_yanzi"]
+script = ExtResource("1_ler6f")
+id = "yanzi"
+display_name = "玩家"
+default_outfit = "base"
+default_pose = "base"
+default_expression = "calm"
+sprite_scale = 0.64
+side_image = false
+blip = "off"
+
+[sub_resource type="Resource" id="Dialogue_chen"]
+script = ExtResource("1_ler6f")
+id = "chen"
+display_name = "罗金娜"
+default_outfit = "base"
+default_pose = "base"
+default_expression = "calm"
+sprite_scale = 0.64
+side_image = false
+blip = "off"
+
+[sub_resource type="Resource" id="Dialogue_vito"]
+script = ExtResource("1_ler6f")
+id = "vito"
+display_name = "维托"
+default_outfit = "base"
+default_pose = "base"
+default_expression = "calm"
+sprite_scale = 0.64
+side_image = false
+blip = "off"
+
+[sub_resource type="Resource" id="Dialogue_hertz"]
+script = ExtResource("1_ler6f")
+id = "hertz"
+display_name = "赫兹"
+default_outfit = "base"
+default_pose = "base"
+default_expression = "calm"
+sprite_scale = 0.64
+side_image = false
+blip = "off"
+
+[sub_resource type="Resource" id="Dialogue_loue"]
+script = ExtResource("1_ler6f")
+id = "loue"
+display_name = "至味卿"
+default_outfit = "base"
+default_pose = "base"
+default_expression = "calm"
+sprite_scale = 0.64
+side_image = false
+blip = "off"
+
+[sub_resource type="Resource" id="Dialogue_residents"]
+script = ExtResource("1_ler6f")
+id = "residents"
+display_name = "众居民"
+default_outfit = "base"
+default_pose = "base"
+default_expression = "calm"
+sprite_scale = 0.64
+side_image = false
+blip = "off"
+
+[sub_resource type="Resource" id="Dialogue_guest"]
+script = ExtResource("1_ler6f")
+id = "guest"
+display_name = "食客"
+default_outfit = "base"
+default_pose = "base"
+default_expression = "calm"
+sprite_scale = 0.64
+side_image = false
+blip = "off"
+
+[sub_resource type="Resource" id="Dialogue_guest_two"]
+script = ExtResource("1_ler6f")
+id = "guest_two"
+display_name = "另一位食客"
+default_outfit = "base"
+default_pose = "base"
+default_expression = "calm"
+sprite_scale = 0.64
+side_image = false
+blip = "off"
+
 [resource]
 script = ExtResource("2_3bajk")
-characters = Array[ExtResource("1_ler6f")]([SubResource("Resource_enigh"), SubResource("Resource_b4t32")])
+characters = Array[ExtResource("1_ler6f")]([SubResource("Resource_enigh"), SubResource("Resource_b4t32"), SubResource("Dialogue_yanzi"), SubResource("Dialogue_chen"), SubResource("Dialogue_vito"), SubResource("Dialogue_hertz"), SubResource("Dialogue_loue"), SubResource("Dialogue_residents"), SubResource("Dialogue_guest"), SubResource("Dialogue_guest_two")])

@@ -322,7 +322,7 @@ func _fill_fields() -> void:
 		"choice":
 			_entry("text","选项文字",item.text)
 			_choice("target","跳转节点",_targets(),item.target)
-		"td_cg": _choice("value","CG 片段",{"arrival":"到达港口","hungry":"饥饿","messenger":"阿铃登场"},item.value)
+		"td_cg": _choice("value","CG 片段",Document.Illustrated.TITLES,item.value)
 		"td_name": _label("主角姓名输入 · 游戏宿主处理")
 		"end": _label("结束当前章节")
 		"wait": _entry("value","等待秒数",item.value)

@@ -1,6 +1,6 @@
 class_name TDOpening
 extends RefCounted
-## First day of 无敌厨神：阿铃、老陈、画像里的罗厄。
+## First day of 无敌厨神：阿铃、罗金娜、画像里的罗厄。
 ## Choices change the next lines. They do not create a second shop order.
 
 const TRIAL_RECIPES := ["service.tomato_egg","recipe.tomato_egg","tomato_egg"]
@@ -66,9 +66,9 @@ func note_plate(completion: float) -> void:
 func quest(_ready: bool, board: Dictionary = {}) -> String:
 	match beat:
 		"arrive": return "寻找传说中的美味 · 靠近阿铃按 E，听她介绍这座小镇。"
-		"follow": return "跟随阿铃前往老陈的食材铺；落后时她会等你。"
-		"soup": return "与老陈交谈，了解黎明圣羹。"
-		"bowl": return "靠近老陈旁边的汤碗，按 E 尝一口。"
+		"follow": return "跟随阿铃前往罗金娜的食材铺；落后时她会等你。"
+		"soup": return "与罗金娜交谈，了解黎明圣羹。"
+		"bowl": return "靠近罗金娜旁边的汤碗，按 E 尝一口。"
 		"return": return "跟随阿铃回食堂，唤醒沉睡的灶火。"
 		"awaken": return "走进食堂，和阿铃一起揭开旧摊的罩布。"
 		"cook": return "按 B 打开菜谱，查看番茄炒蛋的做法。" if not recipe_viewed else "大块番茄、嫩鸡蛋、略甜。完成制作后端菜送到出餐台。"
@@ -124,7 +124,7 @@ func talk(who: String, hero: String, ready: bool, san: int, board: Dictionary = 
 	if scene_id!="": return TDOpeningScript.conversation(scene_id,hero,san)
 	var lines:=TDDialogue.new();lines.story_layout(hero,who)
 	lines.context={"kind":"story_hint"}
-	lines.add_line("阿铃" if who=="aling" else "老陈",who,quest(ready,board))
+	lines.add_line("阿铃" if who=="aling" else "罗金娜",who,quest(ready,board))
 	return lines
 
 func resolve(picks: Array, ready: bool = false) -> Dictionary:

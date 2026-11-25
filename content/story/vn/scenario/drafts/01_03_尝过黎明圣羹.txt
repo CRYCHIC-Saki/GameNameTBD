@@ -1,0 +1,210 @@
+// td_handoff_begin v1
+// {
+// 	"id": "handoff_dialogue_p1_03",
+// 	"notes": "【界面】SAN：100 → 95。 / 【界面】你察觉了异常。SAN 会影响感知与后续料理表现；本次变化不改变操作难度。",
+// 	"placement": "地点：食材铺门口，与车站相邻。",
+// 	"purpose": "author_handoff",
+// 	"schema_version": 1,
+// 	"section": "01 · 第二场：众口称颂的圣餐",
+// 	"source_script": "",
+// 	"source_sha256": "",
+// 	"title": "尝过黎明圣羹"
+// }
+// td_handoff_end
+
+// 【演出】
+# cg_soup_reflection
+@td_cg soup_reflection
+
+// 玩家僵住。周围的海风声骤然消失。
+// 碗里的倒影仍在微笑，尽管他没有笑。
+// 一个贴着耳朵的声音说：“好吃。”
+// 下一瞬，摊前所有居民同时开口。
+# line_041
+// td_canvas_begin v1
+@bg soup-stall-v1 with instant 0
+@hide hero with instant
+@hide aling with instant
+@hide yanzi with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@hide residents with instant
+@hide guest with instant
+@hide guest_two with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show chen calm outfit=base pose=base shot=mid at td:0.756435:1.401371:2.100000 with instant
+// td_canvas_end
+residents: 至味降临，吾舌无憾！
+
+// 【界面】SAN：100 → 95。
+// 【界面】你察觉了异常。SAN 会影响感知与后续料理表现；本次变化不改变操作难度。
+// 动作 · 把碗放下
+# line_044
+// td_canvas_begin v1
+@bg soup-stall-v1 with instant 0
+@hide hero with instant
+@hide aling with instant
+@hide yanzi with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@hide residents with instant
+@hide guest with instant
+@hide guest_two with instant
+@show chen calm outfit=base pose=base shot=mid at td:0.756435:1.401371:2.100000 with instant
+@show yanzi troubled outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 诸位的舌头，正在遭受某种灭绝性的攻击。
+
+# line_045
+// td_canvas_begin v1
+@bg soup-stall-v1 with instant 0
+@hide hero with instant
+@hide aling with instant
+@hide yanzi with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@hide residents with instant
+@hide guest with instant
+@hide guest_two with instant
+@show yanzi troubled outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show chen happy outfit=base pose=base shot=mid at td:0.756435:1.401371:2.100000 with instant
+// td_canvas_end
+chen: 何等精确！圣典将此称作“味蕾的涅槃”！再来一碗？
+
+# line_046
+// td_canvas_begin v1
+@bg soup-stall-v1 with instant 0
+@hide hero with instant
+@hide aling with instant
+@hide yanzi with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@hide residents with instant
+@hide guest with instant
+@hide guest_two with instant
+@show chen happy outfit=base pose=base shot=mid at td:0.756435:1.401371:2.100000 with instant
+@show yanzi angry outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 别加了！这根本……难吃得足以毁灭一个纪元！
+
+// 【演出】居民纷纷看向他。阿铃伸手拦在两人之间。
+# line_048
+// td_canvas_begin v1
+@bg soup-stall-v1 with instant 0
+@hide hero with instant
+@hide aling with instant
+@hide yanzi with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@hide residents with instant
+@hide guest with instant
+@hide guest_two with instant
+@show yanzi angry outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_calm outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 异乡人，你向圣餐提出了决斗。依照夜鸦的规矩，挑战者必须拿出自己的供物。
+
+# line_049
+// td_canvas_begin v1
+@bg soup-stall-v1 with instant 0
+@hide hero with instant
+@hide aling with instant
+@hide yanzi with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@hide residents with instant
+@hide guest with instant
+@hide guest_two with instant
+@show chen happy outfit=base pose=base shot=mid at td:0.756435:1.401371:2.100000 with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 我会的菜还不多。不过，番茄炒蛋，我练了整整一个冬天。
+
+// 动作 · 忽然停顿
+# line_050
+// td_canvas_begin v1
+@bg soup-stall-v1 with instant 0
+@hide hero with instant
+@hide aling with instant
+@hide yanzi with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@hide residents with instant
+@hide guest with instant
+@hide guest_two with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_puzzled outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 番茄……炒蛋？
+
+# line_051
+// td_canvas_begin v1
+@bg soup-stall-v1 with instant 0
+@hide hero with instant
+@hide aling with instant
+@hide yanzi with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@hide residents with instant
+@hide guest with instant
+@hide guest_two with instant
+@show chen happy outfit=base pose=base shot=mid at td:0.756435:1.401371:2.100000 with instant
+@show yanzi puzzled outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 你吃过？
+
+# line_052
+// td_canvas_begin v1
+@bg soup-stall-v1 with instant 0
+@hide hero with instant
+@hide aling with instant
+@hide yanzi with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@hide residents with instant
+@hide guest with instant
+@hide guest_two with instant
+@show yanzi puzzled outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_troubled outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 儿时的记忆里似乎有这么一道。鸡蛋要嫩，番茄有一点甜。后来……那段记录遗失了。
+
+// 【演出】她用力合上账本。
+# line_054
+// td_canvas_begin v1
+@bg soup-stall-v1 with instant 0
+@hide hero with instant
+@hide aling with instant
+@hide yanzi with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@hide residents with instant
+@hide guest with instant
+@hide guest_two with instant
+@show yanzi puzzled outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_proud outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 跟我来！夜鸦尚有一座沉睡的祭坛，今日准许你将其唤醒！
+
+# finish
+@end

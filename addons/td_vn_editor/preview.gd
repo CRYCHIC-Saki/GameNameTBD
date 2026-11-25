@@ -15,7 +15,7 @@ func _ready() -> void:
 	for arg: String in OS.get_cmdline_user_args():
 		if arg.begins_with("--vn-draft="): draft = arg.trim_prefix("--vn-draft=")
 	stage = Stage.new(); add_child(stage)
-	cg = TDCutsceneView.new(); add_child(cg)
+	cg = TDCutsceneView.new(); cg.top_gutter = 54.0; add_child(cg)
 	cg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); cg.hide()
 	stage.block_started.connect(_block)
 	stage.completed.connect(func() -> void: status.text = "播放结束 · 可重新播放或关闭窗口")
@@ -51,7 +51,7 @@ func replay() -> void:
 
 func _block(kind: String, args: String) -> void:
 	if kind == "td_cg":
-		shot_elapsed = 0; shot_duration = float({"arrival":14,"hungry":6,"messenger":10}.get(args,1))
+		shot_elapsed = 0; shot_duration = Document.Illustrated.duration_for(args)
 		cg.show_shot(args,0,shot_duration)
 	else:
 		name_panel.show(); input.text = ""; input.grab_focus()
@@ -67,7 +67,7 @@ func _process(delta: float) -> void:
 
 func _finish_cg() -> void:
 	if stage.blocked != "td_cg": return
-	cg.hide(); cg.stop_audio(); stage.resume_cg()
+	cg.show_shot("", 0, 1); stage.resume_cg()
 
 func _exit_tree() -> void:
 	if is_instance_valid(stage): stage.reset()

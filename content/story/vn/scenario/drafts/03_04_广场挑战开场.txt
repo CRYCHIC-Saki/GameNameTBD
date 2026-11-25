@@ -1,0 +1,89 @@
+// td_handoff_begin v1
+// {
+// 	"schema_version": 1,
+// 	"purpose": "author_handoff",
+// 	"id": "handoff_dialogue_p3_04",
+// 	"title": "广场挑战开场",
+// 	"section": "03 · 第四场 公主亲自应战",
+// 	"placement": "地点：次日午后，河口广场。",
+// 	"notes": "【操作】进入既定料理对决。按实际结果完成本阶段结算。",
+// 	"source_script": "",
+// 	"source_sha256": ""
+// }
+// td_handoff_end
+
+// 第四场 公主亲自应战
+// 地点：次日午后，河口广场。
+# line_036
+// td_canvas_begin v1
+@bg river-square-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show hertz happy outfit=base pose=base shot=mid at td:0.746729:1.424085:2.100000 with instant
+// td_canvas_end
+hertz: 诸位观众！一边是至味卿，一边是打败白银卷面骑士的赤焰之手！今天谁能赢？让他们拿出真本事！
+
+# line_037
+// td_canvas_begin v1
+@bg river-square-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show loue calm outfit=base pose=base shot=mid at td:0.714457:1.339748:2.100000 with instant
+// td_canvas_end
+loue: 见习厨师，能让本公主亲自出手，你该感到荣幸。
+
+# line_038
+// td_canvas_begin v1
+@bg river-square-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show loue calm outfit=base pose=base shot=mid at td:0.714457:1.339748:2.100000 with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 荣幸我收下了。胜利，我也要！
+
+# line_039
+// td_canvas_begin v1
+@bg river-square-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show loue calm outfit=base pose=base shot=mid at td:0.714457:1.339748:2.100000 with instant
+// td_canvas_end
+loue: 嘴倒是不笨。希望你的手艺，也配得上这份胆量。
+
+# line_040
+// td_canvas_begin v1
+@bg river-square-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show hertz happy outfit=base pose=base shot=mid at td:0.746729:1.424085:2.100000 with instant
+// td_canvas_end
+hertz: 双方就位，挑战开始！
+
+// 【操作】进入既定料理对决。按实际结果完成本阶段结算。
+# finish
+@end

@@ -488,7 +488,7 @@ func _story_supplies() -> void:
 		if sent.ok:
 			var rows: Array[String]=[]
 			for id: String in pack: rows.append("%s × %.3f"%[_ingredient_name(id),float(pack[id])/1000.0])
-			_message("老陈赠料已入库（免费）："+"、".join(rows)+"。不开门也能进厨房试做。")
+			_message("罗金娜赠料已入库（免费）："+"、".join(rows)+"。不开门也能进厨房试做。")
 	elif sent.code!="NOT_AT_BOUNDARY" and _story_pay_note!=sent.code:
 		_story_pay_note=sent.code
 		_message("试做食材还没入库："+sent.code)

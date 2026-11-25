@@ -1,0 +1,53 @@
+// td_handoff_begin v1
+// {
+// 	"schema_version": 1,
+// 	"purpose": "author_handoff",
+// 	"id": "handoff_dialogue_p1_11",
+// 	"title": "首次开摊",
+// 	"section": "01 · 第四场：第一位异端",
+// 	"placement": "地点：旧摊第一张桌旁。",
+// 	"notes": "【操作：第一次开摊】 / 【界面】将“番茄炒蛋”加入菜单，保留参考售价；查看所需材料，按菜补齐下一份库存。完成后可为小摊命名。 / 【界面】下一任务：点燃第一日。开门营业，完成一轮经营；打烊后，与阿铃商议拜访港口厨师。",
+// 	"source_script": "",
+// 	"source_sha256": ""
+// }
+// td_handoff_end
+
+// 【操作：第一次开摊】
+// 【界面】将“番茄炒蛋”加入菜单，保留参考售价；查看所需材料，按菜补齐下一份库存。完成后可为小摊命名。
+# line_108
+// td_canvas_begin v1
+@bg restaurant-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_calm outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 明日有外海商船入港。那些漂泊的厨师，每个人都声称自己握着改变世界的食谱。
+
+# line_109
+// td_canvas_begin v1
+@bg restaurant-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show aling dialogue_calm outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 那就让他们来。我会端着盘子，逐一发起挑战！
+
+// 【界面】下一任务：点燃第一日。开门营业，完成一轮经营；打烊后，与阿铃商议拜访港口厨师。
+// 【收尾演出】
+# cg_first_hearth
+@td_cg first_hearth
+
+// 阿铃将写着“讨伐军本部”的纸贴上摊位。海风吹过，纸的一角卷起，露出底下旧招牌的三个字：“家常菜”。
+// 镜头停在灶火上。
+# finish
+@end

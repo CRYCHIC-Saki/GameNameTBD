@@ -1,0 +1,91 @@
+// td_handoff_begin v1
+// {
+// 	"schema_version": 1,
+// 	"purpose": "author_handoff",
+// 	"id": "handoff_dialogue_p2_11",
+// 	"title": "维托挑战开赛",
+// 	"section": "02 · 第五场 白银卷面骑士的裁决",
+// 	"placement": "地点：当天营业中的第一份清淡口味订单。",
+// 	"notes": "【操作】先查看赛题、确认材料齐备，再在营业牌收摊，完成已有订单并送客。普通营业结束后，与赫兹交谈开始比赛。 / 【界面】赛题：清淡、热乎的料理。选择一道已掌握的菜参赛。 / 【操作】玩家用日常厨房操作完成所选菜，端至比赛出餐位。维托在旁制作番茄意面。",
+// 	"source_script": "",
+// 	"source_sha256": ""
+// }
+// td_handoff_end
+
+// 第五场 白银卷面骑士的裁决
+// 地点：再下一日午后，小炒摊。
+// 【操作】先查看赛题、确认材料齐备，再在营业牌收摊，完成已有订单并送客。普通营业结束后，与赫兹交谈开始比赛。
+// 【界面】赛题：清淡、热乎的料理。选择一道已掌握的菜参赛。
+# line_083
+// td_canvas_begin v1
+@bg restaurant-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show hertz happy outfit=base pose=base shot=mid at td:0.746729:1.424085:2.100000 with instant
+// td_canvas_end
+hertz: 锅已就位，强敌已至！吾的声音，将穿透今日的蒸汽！
+
+# line_084
+// td_canvas_begin v1
+@bg restaurant-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show vito troubled outfit=base pose=base shot=mid at td:0.746729:1.408000:2.100000 with instant
+// td_canvas_end
+vito: 宣告者，请退半步。汝的麦克风在吾锅上。
+
+# line_085
+// td_canvas_begin v1
+@bg restaurant-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show hertz calm outfit=base pose=base shot=mid at td:0.746729:1.424085:2.100000 with instant
+// td_canvas_end
+hertz: 裁味之约已经立下。今日评判，先看成品本身，再看是否清淡、热乎。菜端到裁决席，才算交卷。
+
+# line_086
+// td_canvas_begin v1
+@bg restaurant-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show vito proud outfit=base pose=base shot=mid at td:0.746729:1.408000:2.100000 with instant
+// td_canvas_end
+vito: 吾以骑士之名应约。番茄意面，足以终结今日的争论。
+
+# line_087
+// td_canvas_begin v1
+@bg restaurant-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show vito proud outfit=base pose=base shot=mid at td:0.746729:1.408000:2.100000 with instant
+@show yanzi happy outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 吾也有自己的拿手菜。开火吧！
+
+// 【操作】玩家用日常厨房操作完成所选菜，端至比赛出餐位。维托在旁制作番茄意面。
+# finish
+@end

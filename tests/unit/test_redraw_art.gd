@@ -18,13 +18,14 @@ func test_expression_changes_keep_one_canvas_and_pose_while_actions_do_not_repla
 	for who: String in ["hero","aling","chen","luo"]:
 		var seen: Dictionary={}
 		var neutral:=TDStoryArt.portrait(who) as AtlasTexture
-		for mood: String in TDRedrawArt.EMOTIONS:
+		var moods := TDStoryArt.DIALOGUE_EMOTIONS if who in ["aling", "chen"] else TDRedrawArt.EMOTIONS
+		for mood: String in moods:
 			var art:=TDStoryArt.portrait(who,mood) as AtlasTexture
 			assert_eq(art.get_size(),neutral.get_size(),who+" stationary canvas")
 			assert_same(art,TDStoryArt.portrait(who,mood,"握住锅柄"))
 			assert_true(Rect2(Vector2.ZERO,art.atlas.get_size()).encloses(art.region))
-			seen[art.region.position]=true
-		assert_eq(seen.size(),6)
+			seen["%s:%s" % [art.atlas.resource_path, art.region.position]] = true
+		assert_eq(seen.size(), moods.size())
 
 func test_vn_portraits_are_behind_the_full_width_text_panel_and_expression_refreshes() -> void:
 	var view:=TDDialogueView.new();add_child_autofree(view)

@@ -1,0 +1,60 @@
+// td_handoff_begin v1
+// {
+// 	"schema_version": 1,
+// 	"purpose": "author_handoff",
+// 	"id": "handoff_dialogue_p2_13",
+// 	"title": "出锅与评定",
+// 	"section": "02 · 第五场 白银卷面骑士的裁决",
+// 	"placement": "地点：小炒摊内的裁决桌旁，两份成品正在送来。",
+// 	"notes": "【界面】两份成品按真实制作结果与赛题要求评定，展示结果及主要差距。",
+// 	"source_script": "",
+// 	"source_sha256": ""
+// }
+// td_handoff_end
+
+// 【玩家出锅后】
+# line_094
+// td_canvas_begin v1
+@bg dining-table-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show hertz happy outfit=base pose=base shot=mid at td:0.746729:1.424085:2.100000 with instant
+// td_canvas_end
+hertz: 胜负即将……
+
+# line_095
+// td_canvas_begin v1
+@bg dining-table-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_speechless outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 还没端过来。
+
+# line_096
+// td_canvas_begin v1
+@bg dining-table-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show hertz troubled outfit=base pose=base shot=mid at td:0.746729:1.424085:2.100000 with instant
+// td_canvas_end
+hertz: ……抵达裁决席。
+
+// 【界面】两份成品按真实制作结果与赛题要求评定，展示结果及主要差距。
+# finish
+@end

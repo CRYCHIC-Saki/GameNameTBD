@@ -3,14 +3,14 @@
 
 # hero_arrival
 @bg arrival-coast-v1 with instant 0
-@show hero happy at left with instant
+@show hero happy at td:0.262528:1.470987:2.120000 with instant
 hero: 终于到了。吾之舌啊，准备迎接万国料理的洗礼！
 
 # hungry_film
 @td_cg hungry
 
 # hero_hungry
-@show hero calm at left with instant
+@show hero calm at td:0.262528:1.470987:2.120000 with instant
 hero: ……封印已经撑不住了。
 
 # offscreen_call
@@ -20,18 +20,19 @@ aling: 背锅的旅人，止步！
 @td_cg messenger
 
 # messenger_intro
-@show aling calm at right with fade
+@show aling dialogue_proud at td:0.751032:1.423797:2.100000 with fade
 aling: 夜鸦密使阿铃，奉命截获一名携带黑铁重器的异乡人。报上你的真名与来意！
 
 # name_input
 @td_name hero
 
 # hero_name
-@show hero happy at left with instant
+@show hero happy at td:0.262528:1.470987:2.120000 with instant
 hero: 见习厨师，{$hero}。为尝遍此地美食而来！
 
 # invitation
-aling: 原来是巡礼者。命运的指针恰好指向陈司祭的食材铺，他今日正在分赐圣餐。随我来，趁你的封印还没彻底破裂。
+@show aling dialogue_calm with instant
+aling: 原来是巡礼者。命运的指针恰好指向灰烬司祭的食材铺，她今日正在分赐圣餐。随我来，趁你的封印还没彻底破裂。
 
 # finish
 @end

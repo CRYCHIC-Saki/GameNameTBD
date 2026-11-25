@@ -1,0 +1,109 @@
+// td_handoff_begin v1
+// {
+// 	"schema_version": 1,
+// 	"purpose": "author_handoff",
+// 	"id": "handoff_dialogue_p2_15",
+// 	"title": "维托挑战・获胜解咒",
+// 	"section": "02 · 第五场 白银卷面骑士的裁决",
+// 	"placement": "地点：小炒摊内的裁决桌旁，赫兹宣布玩家获胜。",
+// 	"notes": "【玩家获胜，进入下段】",
+// 	"source_script": "",
+// 	"source_sha256": ""
+// }
+// td_handoff_end
+
+// 【玩家获胜，进入下段】
+# line_103
+// td_canvas_begin v1
+@bg dining-table-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show hertz happy outfit=base pose=base shot=mid at td:0.746729:1.424085:2.100000 with instant
+// td_canvas_end
+hertz: 裁决落定！赤焰之手，胜！
+
+# cg_vito_awakening
+@td_cg vito_awakening
+
+// 【CG 01 解咒，约 8 秒，连续三镜】
+// 近景：裁决台上两盘料理，维托的叉尖停在玩家的食物上。此时背景是灰暗的。
+// 面部特写：维托瞳孔上掠过的灰色薄影碎开，眼神重新聚焦，维托开始笑。
+// 中近景：背景由暗变为亮色，背后开始燃烧烈火，维托眼睛也开始冒火。
+# line_108
+// td_canvas_begin v1
+@bg dining-table-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show vito happy outfit=base pose=base shot=mid at td:0.746729:1.408000:2.100000 with instant
+// td_canvas_end
+vito: 这菜……为何如此美味？
+
+# line_109
+// td_canvas_begin v1
+@bg dining-table-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show vito troubled outfit=base pose=base shot=mid at td:0.746729:1.408000:2.100000 with instant
+// td_canvas_end
+vito: 我的这股苦味，吾竟一直将它奉为骑士的骄傲？
+
+# line_110
+// td_canvas_begin v1
+@bg dining-table-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show vito troubled outfit=base pose=base shot=mid at td:0.746729:1.408000:2.100000 with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 先喝点水。下一锅，咱们重新做。
+
+# line_111
+// td_canvas_begin v1
+@bg dining-table-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_calm outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 至少现在，你尝得出来了。
+
+// 【场景内动作】维托放下料理叉，郑重向玩家低头。
+# line_113
+// td_canvas_begin v1
+@bg dining-table-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show vito calm outfit=base pose=base shot=mid at td:0.746729:1.408000:2.100000 with instant
+// td_canvas_end
+vito: 这场败北，吾认。阁下替吾斩断了舌上的枷锁，白银卷面骑士当以手艺回礼。
+
+# finish
+@end

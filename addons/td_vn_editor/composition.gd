@@ -5,6 +5,8 @@ signal actor_selected(who: String)
 signal actor_moved(who: String, token: String)
 var state: Dictionary = {}
 var textures: Dictionary = {}
+static var cg_thumbs: Dictionary = {}
+var cg_image: Texture2D
 var thumbnail: bool = false
 var editable: bool = false
 var selected_actor: String = ""
@@ -21,6 +23,7 @@ func set_view_zoom(value: float) -> void:
 
 func assign_state(value: Dictionary) -> void:
 	cancel_drag()
+	if value.get("cg", "") != state.get("cg", ""): cg_image = null
 	state = value.duplicate(true)
 	if not state.get("actors",{}).has(selected_actor): selected_actor = ""
 	queue_redraw()
@@ -44,7 +47,7 @@ func actor_order() -> Array:
 	return result
 
 func _gui_input(event: InputEvent) -> void:
-	if not editable or thumbnail: return
+	if not editable or thumbnail or not str(state.get("cg", "")).is_empty(): return
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_RIGHT: cancel_drag(); accept_event(); return
 		if event.button_index != MOUSE_BUTTON_LEFT: return
@@ -97,9 +100,31 @@ func _ready() -> void:
 	clip_contents = true
 	resized.connect(queue_redraw)
 
+func cg_texture(id: String) -> Texture2D:
+	if not thumbnail:
+		if cg_image == null: cg_image = Document.Illustrated.load_still(id)
+		return cg_image
+	if not cg_thumbs.has(id):
+		var art := Document.Illustrated.load_still(id)
+		if art == null: return null
+		var small := art.get_image()
+		if small == null: return null
+		var height := maxi(1, roundi(320.0 * small.get_height() / small.get_width()))
+		if small.is_compressed(): small.decompress()
+		small.resize(320, height, Image.INTERPOLATE_BILINEAR)
+		cg_thumbs[id] = ImageTexture.create_from_image(small)
+	return cg_thumbs[id]
+
 func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, size), Color("161e29"))
 	draw_set_transform_matrix(canvas_transform())
+	var cg_id := str(state.get("cg", ""))
+	if Document.Illustrated.DURATIONS.has(cg_id):
+		var art := cg_texture(cg_id)
+		var frame := Rect2(Vector2.ZERO, TDVNLayout.DESIGN)
+		draw_rect(frame, Color("090e13"))
+		if art != null: draw_texture_rect(art, TDVNLayout.fit(art, frame), false)
+		return
 	var bg_path := Document.BG_ROOT + str(state.get("background", "")) + ".tres"
 	if ResourceLoader.exists(bg_path): draw_texture_rect(texture_at(bg_path), Rect2(0,0,1280,800), false)
 	for who: String in actor_order():

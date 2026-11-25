@@ -1,0 +1,60 @@
+// td_handoff_begin v1
+// {
+// 	"schema_version": 1,
+// 	"purpose": "author_handoff",
+// 	"id": "handoff_dialogue_p2_02",
+// 	"title": "营业・查看订单",
+// 	"section": "02 · 第一场 第一桌，出征",
+// 	"placement": "地点：小炒摊，承接首次开门营业。",
+// 	"notes": "【操作】按订单制作。成品送到厨房出餐台后，回餐厅传菜口按 E 端起，再到对应桌旁按 E 上菜。",
+// 	"source_script": "",
+// 	"source_sha256": ""
+// }
+// td_handoff_end
+
+# line_011
+// td_canvas_begin v1
+@bg dining-table-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_calm outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+guest: 吾尚有远征在身。来份热饭，口味清淡些。
+
+# line_012
+// td_canvas_begin v1
+@bg dining-table-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show aling dialogue_calm outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 汝的腹中空城，由吾收复！
+
+# line_013
+// td_canvas_begin v1
+@bg dining-table-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_calm outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 先看清他点了什么，再进厨房。
+
+// 【操作】按订单制作。成品送到厨房出餐台后，回餐厅传菜口按 E 端起，再到对应桌旁按 E 上菜。
+// 【短提示】食物出锅后开始降温。先把这一盘送到客人面前。
+# finish
+@end

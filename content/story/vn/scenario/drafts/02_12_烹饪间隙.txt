@@ -1,0 +1,46 @@
+// td_handoff_begin v1
+// {
+// 	"schema_version": 1,
+// 	"purpose": "author_handoff",
+// 	"id": "handoff_dialogue_p2_12",
+// 	"title": "烹饪间隙",
+// 	"section": "02 · 第五场 白银卷面骑士的裁决",
+// 	"placement": "地点：再下一日午后，小炒摊。",
+// 	"notes": "",
+// 	"source_script": "",
+// 	"source_sha256": ""
+// }
+// td_handoff_end
+
+// 【场景内动作】维托几下将番茄切匀，起锅动作干净利落，随后却继续收汁，直到酱色发暗。
+// 【短对白，在对应操作的空隙出现】
+# line_091
+// td_canvas_begin v1
+@bg restaurant-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show vito proud outfit=base pose=base shot=mid at td:0.746729:1.408000:2.100000 with instant
+// td_canvas_end
+vito: 白色粉芯必须保留，酱汁须烧出焦苦。此乃不可动摇的铁律！
+
+# line_092
+// td_canvas_begin v1
+@bg restaurant-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_speechless outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 赶船的旅人，还得先赶得上嚼完。
+
+# finish
+@end

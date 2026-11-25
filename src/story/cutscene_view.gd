@@ -2,18 +2,26 @@ class_name TDCutsceneView
 extends Control
 ## A full-screen deterministic stage. The owning dialogue supplies presentation seconds.
 ## Full-body action keyframes, walking frames, props and timed scene cuts; no dialogue busts.
+const Illustrated := preload("res://src/story/illustrated_cg.gd")
 const ACTORS: Texture2D = preload("res://assets/redraw-v1/cinematic.png")
 const ARRIVAL_SCENE: PackedScene=preload("res://src/story/arrival_cutscene.tscn")
 var arrival_stage: TDArrivalCutscene
 var shot: String = ""
 var elapsed: float = 0
 var duration: float = 1
+var top_gutter: float = 0.0
+var _illustration := Illustrated.new()
 var _camera := Transform2D.IDENTITY
 var _sound: AudioStreamPlayer
 var _last_seconds: float = -1
 var _paused: bool = false
 static var _sounds: Dictionary = {}
 const CUES := {
+	"soup_reflection": [[0.34, "clink"], [2.8, "unease"]],
+	"first_hearth": [[0.8, "paper"], [3.65, "fire"]],
+	"vito_awakening": [[0.50, "clink"], [4.1, "fire"]],
+	"royal_letter": [[0.38, "wind"], [0.87, "thud"], [2.7, "paper"]],
+	"royal_domain": [[0.62, "unease"], [2.45, "wind"]],
 	"arrival":[[1.0,"engine"],[5.4,"paper"],[12.3,"step"],[12.8,"step"]],
 	"hungry":[[0.8,"stomach"]],"messenger":[[4.8,"paper"]],
 	"soup_stall":[[3.0,"clink"]],"black_soup":[[2.2,"pour"],[4.6,"clink"]],
@@ -32,6 +40,7 @@ func _ready() -> void:
 	_sound=AudioStreamPlayer.new();_sound.volume_db=-15;add_child(_sound)
 
 func show_shot(id: String, seconds: float, span: float, silent_seek: bool=false) -> void:
+	if id != shot: _illustration.select(id)
 	if id!=shot or seconds<elapsed:
 		stop_audio();_last_seconds=-1
 	shot=id;elapsed=seconds;duration=maxf(.01,span);visible=id!=""
@@ -57,6 +66,23 @@ func _draw() -> void:
 	if TDArrivalCutscene.SEGMENTS.has(shot): return
 	# Fit the stage without stretching characters. Letterbox both gameplay and dialogue chrome.
 	draw_rect(Rect2(Vector2.ZERO,size),Color("090e13"))
+	if Illustrated.DURATIONS.has(shot):
+		# Keep the host controls in the matte above the illustration.
+		var top := minf(top_gutter, maxf(0, size.y - 1))
+		var area := Vector2(size.x, size.y - top)
+		var fit := minf(area.x / 1280.0, area.y / 720.0)
+		var offset := Vector2(0, top) + (area - Illustrated.FRAME.size * fit) * 0.5
+		draw_set_transform_matrix(Transform2D(0.0, Vector2.ONE * fit, 0.0, offset))
+		_illustration.paint(self, shot, clampf(elapsed / duration, 0.0, 1.0))
+		draw_set_transform_matrix(Transform2D.IDENTITY)
+		if shot == "royal_domain":
+			var frame := Rect2(offset, Illustrated.FRAME.size * fit)
+			var matte := Color("090e13")
+			draw_rect(Rect2(0, 0, size.x, frame.position.y), matte)
+			draw_rect(Rect2(0, frame.end.y, size.x, maxf(0, size.y - frame.end.y)), matte)
+			draw_rect(Rect2(0, frame.position.y, frame.position.x, frame.size.y), matte)
+			draw_rect(Rect2(frame.end.x, frame.position.y, maxf(0, size.x - frame.end.x), frame.size.y), matte)
+		return
 	var scale_factor:=minf(size.x/1280.0,size.y/720.0)
 	var origin:=(size-Vector2(1280,720)*scale_factor)*.5
 	_camera=Transform2D(0,Vector2.ONE*scale_factor,0,origin)

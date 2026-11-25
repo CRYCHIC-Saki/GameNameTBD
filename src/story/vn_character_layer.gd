@@ -50,8 +50,23 @@ func move_character(id: String, position_str: String, duration: float) -> void:
 		tween.tween_property(actor,"size",after.size,duration)
 		layout_tweens[id] = tween
 
+func _on_dialog_started(node: VNEngineStoryNode) -> void:
+	if active_sprites.has(node.speaker_id.to_lower()):
+		super._on_dialog_started(node)
+		return
+	# A narrator or an offscreen voice has no foreground portrait.
+	for actor: VNEngineCharacterSprite in active_sprites.values():
+		if node.speaker_id.is_empty():
+			actor.focus()
+			actor.z_index = 0
+		else:
+			actor.unfocus()
+
 func hide_character(id: String, transition: String) -> void:
 	_clear_layout(id)
+	var actor: VNEngineCharacterSprite = active_sprites.get(id.to_lower())
+	if actor != null:
+		actor.z_index = 0
 	super.hide_character(id,transition)
 
 func _clear_layout(id: String) -> void:

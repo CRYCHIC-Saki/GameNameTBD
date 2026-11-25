@@ -1,0 +1,47 @@
+// td_handoff_begin v1
+// {
+// 	"schema_version": 1,
+// 	"purpose": "author_handoff",
+// 	"id": "handoff_dialogue_p1_06",
+// 	"title": "灶台与调味",
+// 	"section": "01 · 第三场：唤醒灶火",
+// 	"placement": "地点：食材铺旁的旧小炒摊。",
+// 	"notes": "【操作：烹饪】 / 【界面】在灶台按 F 开始。按提示完成热锅、翻炒、控温、调味与出锅；工序自动推进。第一次出现新操作时，提示对应按键与判定方式。 / 【界面】调味时按提示按住对应调料，到目标用量松开。按住越久，加入越多。",
+// 	"source_script": "",
+// 	"source_sha256": ""
+// }
+// td_handoff_end
+
+// 【操作：烹饪】
+// 【界面】在灶台按 F 开始。按提示完成热锅、翻炒、控温、调味与出锅；工序自动推进。第一次出现新操作时，提示对应按键与判定方式。
+# line_073
+// td_canvas_begin v1
+@bg restaurant-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_calm outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 别让赤焰冲出标记，鸡蛋承受不了你的野心！
+
+// 【界面】调味时按提示按住对应调料，到目标用量松开。按住越久，加入越多。
+# line_075
+// td_canvas_begin v1
+@bg restaurant-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show chen puzzled outfit=base pose=base shot=mid at td:0.756435:1.401371:2.100000 with instant
+// td_canvas_end
+chen: 竟然在第九勺之前停手……你果然踏上了禁忌之路！
+
+# finish
+@end

@@ -1,0 +1,162 @@
+// td_handoff_begin v1
+// {
+// 	"schema_version": 1,
+// 	"purpose": "author_handoff",
+// 	"id": "handoff_dialogue_p3_07",
+// 	"title": "至味卿挑战・获胜离场",
+// 	"section": "03 · 第五场 食谱留下，公主离场",
+// 	"placement": "地点：战斗结束，广场恢复原貌。",
+// 	"notes": "【界面】获得至味卿原初食谱（传说级料理佛跳墙）。本阶段挑战完成，居民支持度提升。 / 【操作】返回饭店，查看新食谱，继续经营。",
+// 	"source_script": "",
+// 	"source_sha256": ""
+// }
+// td_handoff_end
+
+// 第五场 食谱留下，公主离场
+// 地点：战斗结束，广场恢复原貌。
+# line_055
+// td_canvas_begin v1
+@bg river-square-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show hertz happy outfit=base pose=base shot=mid at td:0.746729:1.424085:2.100000 with instant
+// td_canvas_end
+hertz: 胜负已定！本次挑战的胜者，是赤焰之手！
+
+# line_056
+// td_canvas_begin v1
+@bg river-square-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show loue calm outfit=base pose=base shot=mid at td:0.714457:1.339748:2.100000 with instant
+@show yanzi happy outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 赢了！至味卿，这回你总该……
+
+# line_057
+// td_canvas_begin v1
+@bg river-square-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi happy outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show loue calm outfit=base pose=base shot=mid at td:0.714457:1.339748:2.100000 with instant
+// td_canvas_end
+loue: 这一局，是你赢了。食谱拿去，可别做坏了本公主的名声。
+
+// 【场景内动作】至味卿抚平袖口，随手抛下一本镶金食谱，稳稳落在料理台上。她微微颔首，身影随光影淡去。
+# line_059
+// td_canvas_begin v1
+@bg river-square-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show aling dialogue_calm outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+@show yanzi puzzled outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 就这么走了？
+
+# line_060
+// td_canvas_begin v1
+@bg river-square-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi puzzled outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_troubled outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 还是那副高高在上的样子。看来她还没清醒。
+
+# line_061
+// td_canvas_begin v1
+@bg river-square-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi puzzled outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show hertz happy outfit=base pose=base shot=mid at td:0.746729:1.424085:2.100000 with instant
+// td_canvas_end
+hertz: 公主退场，食谱留下！诸位，这一场的胜负可是谁都看见了！
+
+// 【场景内动作】玩家拿起食谱。周围居民以阴影呈现，传来欢呼。
+# line_063
+// td_canvas_begin v1
+@bg river-square-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi puzzled outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_troubled outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+guest: 你真赢了！明天我还去你店里吃！
+
+# line_064
+// td_canvas_begin v1
+@bg river-square-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi puzzled outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_troubled outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+guest_two: 我叫上街坊一起去。赤焰之手，我们支持你！
+
+// 【界面】获得至味卿原初食谱（传说级料理佛跳墙）。本阶段挑战完成，居民支持度提升。
+# line_066
+// td_canvas_begin v1
+@bg river-square-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show aling dialogue_troubled outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 好！赤焰之手，明日继续开火！
+
+# line_067
+// td_canvas_begin v1
+@bg river-square-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_happy outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 夜鸦先预订一份。我要坐第一桌！
+
+// 【操作】返回饭店，查看新食谱，继续经营。
+# finish
+@end

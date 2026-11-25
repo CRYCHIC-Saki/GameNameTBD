@@ -8,10 +8,16 @@ func test_source_lines_emotions_cg_and_branch_coverage() -> void:
 		for row: Dictionary in scenes[id]:
 			assert_false(row.paragraphs.is_empty())
 			if row.kind=="line":
-				spoken[int(row.paragraphs[0])]=true;assert_has(TDStoryArt.EMOTIONS,str(row.emotion))
+				spoken[int(row.paragraphs[0])] = true
+				var mood := str(row.emotion)
+				var authored_mood: bool = row.portrait in ["aling", "chen"] and mood in TDStoryArt.DIALOGUE_EMOTIONS
+				assert_true(mood in TDStoryArt.EMOTIONS or authored_mood, "%s: %s" % [row.portrait, mood])
 			elif row.kind=="cg": shots[str(row.cg)]=true;assert_gt(float(row.duration),0.0)
 	for paragraph: int in [14,16,17,19,20,21,30,32,33,34,35,42,45,46,47,49,50,51,52,53,55,61,62,63,65,67,87,88,89,91,92,95,97,99,100,101,103,104,105,106,109,110]: assert_has(spoken,paragraph)
-	assert_eq(shots.size(),17)
+	assert_eq(shots.size(),16)
+	assert_eq(scenes.after_taste.front().cg,"soup_reflection")
+	assert_eq(scenes.setup.back().cg,"first_hearth")
+	assert_eq(PackedInt32Array(scenes.setup.back().paragraphs),PackedInt32Array([113,114]))
 	data.scenes.clear();assert_false(TDOpeningScript.data().scenes.is_empty(),"Config is immutable to callers")
 	var talk:=TDOpeningScript.conversation("intro","小焰",100);talk.begin()
 	assert_eq(talk.display_kind,"cg");assert_eq(talk.cg_id,"arrival")

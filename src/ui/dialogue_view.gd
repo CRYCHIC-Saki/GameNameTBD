@@ -61,7 +61,7 @@ func _ready() -> void:
 	_dim.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_dim.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(_dim)
-	_cg=TDCutsceneView.new();_cg.position=Vector2.ZERO;_cg.size=Vector2(1280,550);add_child(_cg);_cg.hide()
+	_cg=TDCutsceneView.new();_cg.top_gutter=54.0;_cg.position=Vector2.ZERO;_cg.size=Vector2(1280,550);add_child(_cg);_cg.hide()
 	_vn_stage=TDVisualNovelStage.new();_vn_stage.name="VisualNovelStage";add_child(_vn_stage)
 	_vn_stage.block_started.connect(_native_block)
 	_vn_stage.line_started.connect(_native_line)
@@ -310,6 +310,8 @@ func _refresh() -> void:
 	_body.text = talk.visible_text()
 	if talk.presentation=="story":
 		_portrait.who=talk.left_portrait;_right_portrait.who=talk.right_portrait
+		_portrait.z_index = int(talk.active_side == "left")
+		_right_portrait.z_index = int(talk.active_side == "right")
 		_portrait.modulate=Color.WHITE if talk.active_side=="left" else Color(0.42,0.42,0.48)
 		_right_portrait.modulate=Color.WHITE if talk.active_side=="right" else Color(0.42,0.42,0.48)
 		_portrait.queue_redraw();_right_portrait.queue_redraw()
@@ -408,7 +410,7 @@ func _native_block(kind: String, args: String) -> void:
 	talk.action = "enter_name" if kind == "td_name" else ""
 	if kind == "td_cg":
 		talk.cg_id = args; talk.cg_elapsed = 0.0
-		talk.cg_duration = float({"arrival":14.0,"hungry":6.0,"messenger":10.0}.get(args,0.0))
+		talk.cg_duration = TDCutsceneView.Illustrated.duration_for(args)
 	_refresh_native()
 
 func _native_line(speaker: String, text: String) -> void:

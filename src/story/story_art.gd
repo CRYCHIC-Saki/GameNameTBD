@@ -13,6 +13,9 @@ const REGIONS: Dictionary = {
 	"chen": [Rect2(183,17,407,609),Rect2(669,17,404,609),Rect2(212,633,380,608),Rect2(698,633,359,608)],
 }
 const EMOTIONS := ["calm","happy","surprised","puzzled","angry","sad"]
+const DIALOGUE_EMOTIONS: Array[String] = [
+	"calm", "happy", "proud", "troubled", "angry", "crying", "speechless", "puzzled",
+]
 const MOODS: Dictionary = {
 	"hero":preload("res://assets/story/hero-emotions-v1.png"),
 	"aling":preload("res://assets/story/aling-emotions-v1.png"),
@@ -40,6 +43,14 @@ static func _walk_bounds(image: Image) -> Rect2i:
 	return Rect2i(low,high-low+Vector2i.ONE) if high.x>=0 else Rect2i(Vector2i.ZERO,image.get_size())
 
 static func portrait(who: String, emotion: String="", action: String="") -> Texture2D:
+	var actor: String = {"阿铃": "aling", "罗金娜": "chen", "灰烬司祭": "chen"}.get(who, who)
+	if actor in ["aling", "chen"]:
+		var mood: String = {"": "calm", "surprised": "puzzled", "sad": "crying"}.get(emotion, emotion)
+		if mood in DIALOGUE_EMOTIONS:
+			var variant := "dialogue_" + mood if actor == "aling" else mood
+			var path := "res://content/story/vn/portraits/%s/%s_base_base_%s_mid.tres" % [actor, actor, variant]
+			if ResourceLoader.exists(path):
+				return load(path) as Texture2D
 	var reference: Texture2D=TDRedrawArt.portrait(who,emotion)
 	if reference!=null: return reference
 	if who=="hero" and action.contains("碗"): return _view("action:put-bowl",EXTRA_ACTIONS,Rect2(0,0,840,887))

@@ -1,0 +1,46 @@
+// td_handoff_begin v1
+// {
+// 	"schema_version": 1,
+// 	"purpose": "author_handoff",
+// 	"id": "handoff_dialogue_p2_14",
+// 	"title": "维托挑战・落败",
+// 	"section": "02 · 第五场 白银卷面骑士的裁决",
+// 	"placement": "地点：小炒摊内的裁决桌旁，玩家本轮落败。",
+// 	"notes": "【玩家落败】 / 【操作】查看差距，可练习后再战；缺材料时次日开门前补货。再次挑战直接确认赛题开赛。",
+// 	"source_script": "",
+// 	"source_sha256": ""
+// }
+// td_handoff_end
+
+// 【玩家落败】
+# line_099
+// td_canvas_begin v1
+@bg dining-table-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show vito calm outfit=base pose=base shot=mid at td:0.746729:1.408000:2.100000 with instant
+// td_canvas_end
+vito: 骑士接受下一封战书。把你的破绽修好，再来！
+
+# line_100
+// td_canvas_begin v1
+@bg dining-table-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_calm outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 战书吾替你留着。练稳这一式，再叫他回来。
+
+// 【操作】查看差距，可练习后再战；缺材料时次日开门前补货。再次挑战直接确认赛题开赛。
+# finish
+@end

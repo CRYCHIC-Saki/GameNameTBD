@@ -1,0 +1,76 @@
+// td_handoff_begin v1
+// {
+// 	"id": "handoff_dialogue_p3_05",
+// 	"notes": "【操作】进入既定领域战。",
+// 	"placement": "地点：河口广场，至味卿展开领域，场上只剩她和玩家。",
+// 	"purpose": "author_handoff",
+// 	"schema_version": 1,
+// 	"section": "03 · 第四场 公主亲自应战",
+// 	"source_script": "",
+// 	"source_sha256": "",
+// 	"title": "领域展开"
+// }
+// td_handoff_end
+
+# line_042
+// td_canvas_begin v1
+@bg river-square-v1 with instant 0
+@hide hero with instant
+@hide aling with instant
+@hide yanzi with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@hide residents with instant
+@hide guest with instant
+@hide guest_two with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show loue calm outfit=base pose=base shot=mid at td:0.714457:1.339748:2.100000 with instant
+// td_canvas_end
+loue: 热身结束。接下来，请看好本公主的绝招！
+
+# cg_royal_domain
+@td_cg royal_domain
+
+// 【CG 02 领域展开】
+// 远景：从至味卿开始一片圆形区域不断扩大，占满整个屏幕，其他人都消失了，只剩玩家和至味卿。
+# line_045
+// td_canvas_begin v1
+@bg river-domain-v1 with instant 0
+@hide hero with instant
+@hide aling with instant
+@hide yanzi with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@hide residents with instant
+@hide guest with instant
+@hide guest_two with instant
+@show loue calm outfit=base pose=base shot=mid at td:0.714457:1.339748:2.100000 with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 换个地方也一样。赤焰之手，奉陪到底！
+
+# line_046
+// td_canvas_begin v1
+@bg river-domain-v1 with instant 0
+@hide hero with instant
+@hide aling with instant
+@hide yanzi with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@hide residents with instant
+@hide guest with instant
+@hide guest_two with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show loue calm outfit=base pose=base shot=mid at td:0.714457:1.339748:2.100000 with instant
+// td_canvas_end
+hertz: 场地变了！诸位看清，挑战还没结束！
+
+// 【操作】进入既定领域战。
+# finish
+@end

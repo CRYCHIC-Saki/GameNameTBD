@@ -1,0 +1,124 @@
+// td_handoff_begin v1
+// {
+// 	"schema_version": 1,
+// 	"purpose": "author_handoff",
+// 	"id": "handoff_dialogue_p3_02",
+// 	"title": "飞箭传书",
+// 	"section": "03 · 第二场 战书先到了",
+// 	"placement": "地点：饭店门口，紧接打烊。",
+// 	"notes": "",
+// 	"source_script": "",
+// 	"source_sha256": ""
+// }
+// td_handoff_end
+
+// 第二场 战书先到了
+// 地点：饭店门口，紧接上场。
+# line_014
+// td_canvas_begin v1
+@bg restaurant-street-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show aling dialogue_calm outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 至味卿，赤焰之手这就来……
+
+# cg_royal_letter
+@td_cg royal_letter
+
+// 【CG 01 飞箭传书】
+// 中景：玩家刚跨出门，一道银光从街道上方掠来。
+// 近景：一支细箭钉在门柱上，箭尾轻颤，绑着一封镶金边的信。
+// 特写：信封上是王冠形封蜡，写着“至味卿亲笔”。切回普通对话。
+# line_019
+// td_canvas_begin v1
+@bg restaurant-street-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_puzzled outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 我还没替你递消息呢！
+
+// 【场景内动作】玩家取下信，展开。
+# line_021
+// td_canvas_begin v1
+@bg restaurant-street-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_puzzled outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+loue: 致那位刚放下锅铲，就打算来挑战本公主的见习厨师：你的心思，本公主早已知晓。让你上门叫阵，再由我应战，未免太抬举你了。听好了，这次，由本公主向你发起挑战。明日午后，河口广场，带上你最拿手的料理，准时赴约。本公主会亲自教你，何为配得上臣民的美味。
+
+# line_022
+// td_canvas_begin v1
+@bg restaurant-street-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show aling dialogue_puzzled outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+@show yanzi speechless outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 连谁先下战书，她都要赢？
+
+# line_023
+// td_canvas_begin v1
+@bg restaurant-street-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi speechless outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show hertz happy outfit=base pose=base shot=mid at td:0.746729:1.424085:2.100000 with instant
+// td_canvas_end
+hertz: 紧急预告！至味卿亲自下书，赤焰之手是否应战？
+
+# line_024
+// td_canvas_begin v1
+@bg restaurant-street-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show aling dialogue_puzzled outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+@show yanzi puzzled outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 你从哪冒出来的？--我接了！明天让她尝尝，我这见习厨师的手艺！
+
+# line_025
+// td_canvas_begin v1
+@bg restaurant-street-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi puzzled outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_calm outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 夜鸦记好了，明日午后。你负责打赢，我负责给你撑场面。
+
+# finish
+@end

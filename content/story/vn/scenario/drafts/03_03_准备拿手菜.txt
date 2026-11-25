@@ -1,0 +1,76 @@
+// td_handoff_begin v1
+// {
+// 	"schema_version": 1,
+// 	"purpose": "author_handoff",
+// 	"id": "handoff_dialogue_p3_03",
+// 	"title": "准备拿手菜",
+// 	"section": "03 · 第三场 带上最拿手的菜",
+// 	"placement": "地点：饭店门口，紧接上场。",
+// 	"notes": "【操作】查看已掌握的菜谱，练习拿手菜。整理厨房后回小屋休息，次日采购所需材料，再前往河口广场赴约。 / 【界面】任务：应战至味卿。明日午后，河口广场。",
+// 	"source_script": "",
+// 	"source_sha256": ""
+// }
+// td_handoff_end
+
+// 第三场 带上最拿手的菜
+// 地点：饭店厨房，至次日开门前。
+# line_028
+// td_canvas_begin v1
+@bg restaurant-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show vito troubled outfit=base pose=base shot=mid at td:0.746729:1.408000:2.100000 with instant
+// td_canvas_end
+vito: 她可不好对付。选你最熟的菜，别临时炫技。
+
+# line_029
+// td_canvas_begin v1
+@bg restaurant-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show vito troubled outfit=base pose=base shot=mid at td:0.746729:1.408000:2.100000 with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 放心。赤焰之手的绝招，都是一锅一锅练出来的！
+
+# line_030
+// td_canvas_begin v1
+@bg restaurant-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_calm outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 先看看材料够不够。明早补齐，别到了广场才找鸡蛋。
+
+# line_031
+// td_canvas_begin v1
+@bg restaurant-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show vito troubled outfit=base pose=base shot=mid at td:0.746729:1.408000:2.100000 with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 没问题。今晚练手，明早补货。
+
+// 【操作】查看已掌握的菜谱，练习拿手菜。整理厨房后回小屋休息，次日采购所需材料，再前往河口广场赴约。
+// 【界面】任务：应战至味卿。明日午后，河口广场。
+# finish
+@end

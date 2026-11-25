@@ -1,0 +1,33 @@
+// td_handoff_begin v1
+// {
+// 	"schema_version": 1,
+// 	"purpose": "author_handoff",
+// 	"id": "handoff_dialogue_p1_05",
+// 	"title": "开始切配",
+// 	"section": "01 · 第三场：唤醒灶火",
+// 	"placement": "地点：食材铺旁的旧小炒摊。",
+// 	"notes": "【操作：取料与备菜】 / 【界面】到冰箱按 E 取出番茄，到砧板按 E 放下。选择“大块”，跟随节拍提示完成切配，再把番茄和鸡蛋依次放入同一口锅。",
+// 	"source_script": "",
+// 	"source_sha256": ""
+// }
+// td_handoff_end
+
+// 【操作：取料与备菜】
+// 【界面】到冰箱按 E 取出番茄，到砧板按 E 放下。选择“大块”，跟随节拍提示完成切配，再把番茄和鸡蛋依次放入同一口锅。
+# line_069
+// td_canvas_begin v1
+@bg restaurant-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show aling dialogue_calm outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 赤焰流，断界！
+
+// 【演出】落刀时只切开番茄，配一个过分隆重的招式字幕。操作表现依玩家实际结果反馈。
+# finish
+@end

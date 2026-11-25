@@ -37,7 +37,7 @@ func test_blackface_family_is_used_by_native_controls_and_dialogue_paper_is_in_f
 func test_expression_regions_keep_full_square_compositions_including_original_decorations() -> void:
 	for who: String in ["hero","aling","chen","luo"]:
 		for i: int in TDRedrawArt.EMOTIONS.size():
-			var art:=TDStoryArt.portrait(who,TDRedrawArt.EMOTIONS[i]) as AtlasTexture
+			var art := TDRedrawArt.portrait(who, TDRedrawArt.EMOTIONS[i]) as AtlasTexture
 			assert_true(art.atlas.resource_path.begins_with("res://assets/ui-wood-v1/portrait-"))
 			var dimensions:=Vector2(art.atlas.get_width()/3,art.atlas.get_height()/2)
 			assert_eq(art.region,Rect2(Vector2(i%3,i/3)*dimensions,dimensions),"no cutout or alpha trim")

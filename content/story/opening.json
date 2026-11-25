@@ -74,7 +74,7 @@
         ],
         "speaker": "阿铃",
         "portrait": "aling",
-        "emotion": "calm",
+        "emotion": "proud",
         "action": "",
         "text": "夜鸦密使阿铃，奉命截获一名携带黑铁重器的异乡人。报上你的真名与来意！"
       },
@@ -98,7 +98,7 @@
         "portrait": "aling",
         "emotion": "calm",
         "action": "",
-        "text": "原来是巡礼者。命运的指针恰好指向陈司祭的食材铺，他今日正在分赐圣餐。随我来，趁你的封印还没彻底破裂。"
+        "text": "原来是巡礼者。命运的指针恰好指向灰烬司祭的食材铺，她今日正在分赐圣餐。随我来，趁你的封印还没彻底破裂。"
       }
     ],
     "soup": [
@@ -110,14 +110,14 @@
           29
         ],
         "duration": 6.0,
-        "text": "老陈戴着围裙，双手举起汤勺。身后的金边画像上，至味卿罗厄以双刀交叉于胸前。\n摊前的居民端着碗，神情庄严。"
+        "text": "罗金娜戴着围裙，双手举起汤勺。身后的金边画像上，至味卿罗厄以双刀交叉于胸前。\n摊前的居民端着碗，神情庄严。"
       },
       {
         "kind": "line",
         "paragraphs": [
           30
         ],
-        "speaker": "老陈",
+        "speaker": "罗金娜",
         "portrait": "chen",
         "emotion": "happy",
         "action": "",
@@ -148,9 +148,9 @@
         "paragraphs": [
           33
         ],
-        "speaker": "老陈",
+        "speaker": "罗金娜",
         "portrait": "chen",
-        "emotion": "happy",
+        "emotion": "proud",
         "action": "",
         "text": "九勺盐，九勺糖！烈火煎至漆黑，再以冰水封存！九重苦难，方得一口升华！"
       },
@@ -172,7 +172,7 @@
         ],
         "speaker": "阿铃",
         "portrait": "aling",
-        "emotion": "calm",
+        "emotion": "proud",
         "action": "",
         "text": "莫被外表迷惑。夜鸦已连续七日接受此羹的试炼。"
       }
@@ -180,14 +180,14 @@
     "after_taste": [
       {
         "kind": "cg",
-        "cg": "reflection",
+        "cg": "soup_reflection",
         "paragraphs": [
           38,
           39,
           40,
           41
         ],
-        "duration": 9.0,
+        "duration": 5.6,
         "text": "玩家僵住。周围的海风声骤然消失。\n碗里的倒影仍在微笑，尽管他没有笑。\n一个贴着耳朵的声音说：“好吃。”\n下一瞬，摊前所有居民同时开口。"
       },
       {
@@ -225,7 +225,7 @@
         "paragraphs": [
           46
         ],
-        "speaker": "老陈",
+        "speaker": "罗金娜",
         "portrait": "chen",
         "emotion": "happy",
         "action": "",
@@ -280,7 +280,7 @@
         ],
         "speaker": "阿铃",
         "portrait": "aling",
-        "emotion": "surprised",
+        "emotion": "puzzled",
         "action": "忽然停顿",
         "text": "番茄……炒蛋？"
       },
@@ -302,7 +302,7 @@
         ],
         "speaker": "阿铃",
         "portrait": "aling",
-        "emotion": "puzzled",
+        "emotion": "troubled",
         "action": "",
         "text": "儿时的记忆里似乎有这么一道。鸡蛋要嫩，番茄有一点甜。后来……那段记录遗失了。"
       },
@@ -322,7 +322,7 @@
         ],
         "speaker": "阿铃",
         "portrait": "aling",
-        "emotion": "happy",
+        "emotion": "proud",
         "action": "",
         "text": "跟我来！夜鸦尚有一座沉睡的祭坛，今日准许你将其唤醒！"
       }
@@ -366,7 +366,7 @@
         ],
         "speaker": "阿铃",
         "portrait": "aling",
-        "emotion": "calm",
+        "emotion": "proud",
         "action": "拉开排风开关",
         "text": "排烟结界，展开！夜鸦拒绝被油烟吞噬！"
       },
@@ -377,14 +377,14 @@
           64
         ],
         "duration": 6.0,
-        "text": "老陈跟来，将番茄、鸡蛋和调料放上桌。"
+        "text": "罗金娜跟来，将番茄、鸡蛋和调料放上桌。"
       },
       {
         "kind": "line",
         "paragraphs": [
           65
         ],
-        "speaker": "老陈",
+        "speaker": "罗金娜",
         "portrait": "chen",
         "emotion": "happy",
         "action": "",
@@ -417,7 +417,7 @@
           85
         ],
         "duration": 6.0,
-        "text": "阿铃端坐，双手握筷。老陈抱臂，等待裁决。"
+        "text": "阿铃端坐，双手握筷。罗金娜抱臂，等待裁决。"
       },
       {
         "kind": "line",
@@ -426,7 +426,7 @@
         ],
         "speaker": "阿铃",
         "portrait": "aling",
-        "emotion": "surprised",
+        "emotion": "puzzled",
         "action": "吃下一口",
         "text": "封存的记录……回来了。"
       },
@@ -461,7 +461,7 @@
           85
         ],
         "duration": 6.0,
-        "text": "阿铃端坐，双手握筷。老陈抱臂，等待裁决。"
+        "text": "阿铃端坐，双手握筷。罗金娜抱臂，等待裁决。"
       },
       {
         "kind": "line",
@@ -523,7 +523,7 @@
         ],
         "speaker": "阿铃",
         "portrait": "aling",
-        "emotion": "calm",
+        "emotion": "troubled",
         "action": "",
         "text": "……这道菜，缺少圣餐的恩典。"
       },
@@ -541,9 +541,9 @@
         "paragraphs": [
           99
         ],
-        "speaker": "老陈",
+        "speaker": "罗金娜",
         "portrait": "chen",
-        "emotion": "calm",
+        "emotion": "speechless",
         "action": "望着已经见底的盘子",
         "text": "夜鸦，你的筷子似乎背叛了你的誓言。"
       },
@@ -554,7 +554,7 @@
         ],
         "speaker": "阿铃",
         "portrait": "aling",
-        "emotion": "happy",
+        "emotion": "proud",
         "action": "把钱拍在桌上",
         "text": "吾决定继续审判。下一次，备足一整盘！"
       },
@@ -607,7 +607,7 @@
         ],
         "speaker": "阿铃",
         "portrait": "aling",
-        "emotion": "happy",
+        "emotion": "proud",
         "action": "翻开账本，郑重记下",
         "text": "见习厨师一名，旧灶一口，同盟者一人。夜鸦见证，讨伐军于此成立！"
       },
@@ -616,7 +616,7 @@
         "paragraphs": [
           106
         ],
-        "speaker": "老陈",
+        "speaker": "罗金娜",
         "portrait": "chen",
         "emotion": "happy",
         "action": "",
@@ -662,21 +662,13 @@
       },
       {
         "kind": "cg",
-        "cg": "sign",
+        "cg": "first_hearth",
         "paragraphs": [
-          113
-        ],
-        "duration": 7.0,
-        "text": "阿铃将写着“讨伐军本部”的纸贴上摊位。海风吹过，纸的一角卷起，露出底下旧招牌的三个字：“家常菜”。"
-      },
-      {
-        "kind": "cg",
-        "cg": "fire",
-        "paragraphs": [
+          113,
           114
         ],
-        "duration": 4.0,
-        "text": "镜头停在灶火上。"
+        "duration": 6.4,
+        "text": "阿铃将写着“讨伐军本部”的纸贴上摊位。海风吹过，纸的一角卷起，露出底下旧招牌的三个字：“家常菜”。\n镜头停在灶火上。"
       }
     ]
   },

@@ -1,0 +1,113 @@
+// td_handoff_begin v1
+// {
+// 	"id": "handoff_dialogue_p1_02",
+// 	"notes": "【操作】玩家与汤碗互动，选择“尝一口”。",
+// 	"placement": "地点：河口镇车站外，午后。",
+// 	"purpose": "author_handoff",
+// 	"schema_version": 1,
+// 	"section": "01 · 第二场：众口称颂的圣餐",
+// 	"source_script": "",
+// 	"source_sha256": "",
+// 	"title": "食材铺初见"
+// }
+// td_handoff_end
+
+// 第二场：众口称颂的圣餐
+// 地点：食材铺门口，与车站相邻。
+// 【演出】
+// 罗金娜戴着围裙，双手举起汤勺。身后的金边画像上，至味卿罗厄以双刀交叉于胸前。
+// 摊前的居民端着碗，神情庄严。
+# line_029
+// td_canvas_begin v1
+@bg soup-stall-v1 with instant 0
+@hide hero with instant
+@hide aling with instant
+@hide yanzi with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@hide residents with instant
+@hide guest with instant
+@hide guest_two with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show chen happy outfit=base pose=base shot=mid at td:0.756435:1.401371:2.100000 with instant
+// td_canvas_end
+chen: 欢迎，饥饿的灵魂！此乃遵照至味卿圣典烹成的“黎明圣羹”！
+
+// 【演出】他盛出一碗浓黑的汤。焦硬的蛋块浮在糖浆般的汤面上，碗边结着一圈盐。
+# line_031
+// td_canvas_begin v1
+@bg soup-stall-v1 with instant 0
+@hide hero with instant
+@hide aling with instant
+@hide yanzi with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@hide residents with instant
+@hide guest with instant
+@hide guest_two with instant
+@show chen happy outfit=base pose=base shot=mid at td:0.756435:1.401371:2.100000 with instant
+@show yanzi puzzled outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 请教司祭，这里面……
+
+# line_032
+// td_canvas_begin v1
+@bg soup-stall-v1 with instant 0
+@hide hero with instant
+@hide aling with instant
+@hide yanzi with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@hide residents with instant
+@hide guest with instant
+@hide guest_two with instant
+@show yanzi puzzled outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show chen proud outfit=base pose=base shot=mid at td:0.756435:1.401371:2.100000 with instant
+// td_canvas_end
+chen: 九勺盐，九勺糖！烈火煎至漆黑，再以冰水封存！九重苦难，方得一口升华！
+
+# line_033
+// td_canvas_begin v1
+@bg soup-stall-v1 with instant 0
+@hide hero with instant
+@hide aling with instant
+@hide yanzi with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@hide residents with instant
+@hide guest with instant
+@hide guest_two with instant
+@show chen proud outfit=base pose=base shot=mid at td:0.756435:1.401371:2.100000 with instant
+@show yanzi speechless outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 这套咒式，真的有必要施加在鸡蛋身上吗？
+
+# line_034
+// td_canvas_begin v1
+@bg soup-stall-v1 with instant 0
+@hide hero with instant
+@hide aling with instant
+@hide yanzi with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@hide residents with instant
+@hide guest with instant
+@hide guest_two with instant
+@show yanzi speechless outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_proud outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 莫被外表迷惑。夜鸦已连续七日接受此羹的试炼。
+
+// 【操作】玩家与汤碗互动，选择“尝一口”。
+# finish
+@end

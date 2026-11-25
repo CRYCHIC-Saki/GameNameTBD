@@ -1,0 +1,317 @@
+// td_handoff_begin v1
+// {
+// 	"schema_version": 1,
+// 	"purpose": "author_handoff",
+// 	"id": "handoff_dialogue_p2_07",
+// 	"title": "维托上门预告",
+// 	"section": "02 · 第三场 门口站着一位骑士",
+// 	"placement": "地点：次日开门营业时，小炒摊门前。",
+// 	"notes": "【操作】查看菜单与库存，到街口菜摊补齐材料，返回饭店。 / 【界面】已记录：欧式厨师维托，明日午后正式踢馆。",
+// 	"source_script": "",
+// 	"source_sha256": ""
+// }
+// td_handoff_end
+
+// 第三场 门口站着一位骑士
+// 地点：次日，小炒摊门前。开门营业时触发。
+// 【操作】查看菜单与库存，到街口菜摊补齐材料，返回饭店。
+// 【场景内动作】一名白衣厨师站在招牌下，把长柄料理叉竖在胸前。旁边的赫兹举着麦克风，对准门口。
+# line_042
+// td_canvas_begin v1
+@bg restaurant-street-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show hertz happy outfit=base pose=base shot=mid at td:0.746729:1.424085:2.100000 with instant
+// td_canvas_end
+hertz: 诸位观众！欢迎收看《锅边决战》！今日，我们终于找到了传闻中的讨伐军本部！
+
+# line_043
+// td_canvas_begin v1
+@bg restaurant-street-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show vito calm outfit=base pose=base shot=mid at td:0.746729:1.408000:2.100000 with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 吾之威名，已经传到了电视里？
+
+# line_044
+// td_canvas_begin v1
+@bg restaurant-street-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_proud outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 实则是吾刚在港口提了一句“这里有人不服圣餐”，他们就跟来了。
+
+# line_045
+// td_canvas_begin v1
+@bg restaurant-street-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show vito proud outfit=base pose=base shot=mid at td:0.746729:1.408000:2.100000 with instant
+// td_canvas_end
+vito: 吾乃欧式小镇最强之厨，白银卷面骑士，维托。你便是向至味卿宣战之人？
+
+# line_046
+// td_canvas_begin v1
+@bg restaurant-street-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show vito proud outfit=base pose=base shot=mid at td:0.746729:1.408000:2.100000 with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 正是赤焰之手！
+
+# line_047
+// td_canvas_begin v1
+@bg restaurant-street-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show vito puzzled outfit=base pose=base shot=mid at td:0.746729:1.408000:2.100000 with instant
+// td_canvas_end
+vito: 菜单上，只有这些？
+
+# line_048
+// td_canvas_begin v1
+@bg restaurant-street-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show vito puzzled outfit=base pose=base shot=mid at td:0.746729:1.408000:2.100000 with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 吾之招式，贵精。
+
+# line_049
+// td_canvas_begin v1
+@bg restaurant-street-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_speechless outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 其他的还不会。
+
+# line_050
+// td_canvas_begin v1
+@bg restaurant-street-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show vito angry outfit=base pose=base shot=mid at td:0.746729:1.408000:2.100000 with instant
+// td_canvas_end
+vito: 如此浅薄的食谱，也敢妄议圣餐！灰烬司祭那锅羹汤，盐霜凝若冠冕，焦苦深如长夜。你可知其中境界？
+
+# line_051
+// td_canvas_begin v1
+@bg restaurant-street-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show vito angry outfit=base pose=base shot=mid at td:0.746729:1.408000:2.100000 with instant
+@show yanzi puzzled outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 你才下船，就喝了那个？
+
+# line_052
+// td_canvas_begin v1
+@bg restaurant-street-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi puzzled outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show vito calm outfit=base pose=base shot=mid at td:0.746729:1.408000:2.100000 with instant
+// td_canvas_end
+vito: 两碗。
+
+# line_053
+// td_canvas_begin v1
+@bg restaurant-street-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show vito calm outfit=base pose=base shot=mid at td:0.746729:1.408000:2.100000 with instant
+@show yanzi speechless outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 来晚了。
+
+# line_054
+// td_canvas_begin v1
+@bg restaurant-street-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi speechless outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show vito angry outfit=base pose=base shot=mid at td:0.746729:1.408000:2.100000 with instant
+// td_canvas_end
+vito: 明日午后，吾在此与你厨斗！让你亲眼见识，何为值得端上桌的料理！
+
+# line_055
+// td_canvas_begin v1
+@bg restaurant-street-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi speechless outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show hertz happy outfit=base pose=base shot=mid at td:0.746729:1.424085:2.100000 with instant
+// td_canvas_end
+hertz: 战书落下！主题由本台公布：给赶船的旅人，做一道清淡、热乎的料理！双方各做一道，使用各自会做的菜！
+
+# line_056
+// td_canvas_begin v1
+@bg restaurant-street-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi speechless outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_puzzled outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 你怎么连题目都带来了？
+
+# line_057
+// td_canvas_begin v1
+@bg restaurant-street-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi speechless outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show hertz proud outfit=base pose=base shot=mid at td:0.746729:1.424085:2.100000 with instant
+// td_canvas_end
+hertz: 麦克风、战书、赛题。远征三件套，缺一不可。
+
+# line_058
+// td_canvas_begin v1
+@bg restaurant-street-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi speechless outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show hertz calm outfit=base pose=base shot=mid at td:0.746729:1.424085:2.100000 with instant
+// td_canvas_end
+hertz: 依厨斗裁味之约，试吃只认真实滋味；败者若受认知诅咒，裁决也会为其解咒。双方可认？
+
+# line_059
+// td_canvas_begin v1
+@bg restaurant-street-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi speechless outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show vito proud outfit=base pose=base shot=mid at td:0.746729:1.408000:2.100000 with instant
+// td_canvas_end
+vito: 骑士无惧裁决。吾应约！
+
+# line_060
+// td_canvas_begin v1
+@bg restaurant-street-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show vito proud outfit=base pose=base shot=mid at td:0.746729:1.408000:2.100000 with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 吾接下了！明日，让你的料理叉见证败北！
+
+// 【场景内动作】维托在挑战书上签名，赫兹将镜头转向菜单。
+# line_062
+// td_canvas_begin v1
+@bg restaurant-street-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show hertz happy outfit=base pose=base shot=mid at td:0.746729:1.424085:2.100000 with instant
+// td_canvas_end
+hertz: 而今天，这位挑战者将如何备战？
+
+# line_063
+// td_canvas_begin v1
+@bg restaurant-street-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi proud outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_speechless outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 先把摄像机从门口挪开。讨伐军要做生意了。
+
+// 【界面】已记录：欧式厨师维托，明日午后正式踢馆。
+// 【任务】准备清淡、热乎的午餐。营业时练熟已有菜，留好比赛材料。可按 J 查看约定，按 B 查阅菜谱。
+# finish
+@end

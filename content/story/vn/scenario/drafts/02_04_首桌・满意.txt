@@ -1,0 +1,31 @@
+// td_handoff_begin v1
+// {
+// 	"schema_version": 1,
+// 	"purpose": "author_handoff",
+// 	"id": "handoff_dialogue_p2_04",
+// 	"title": "首桌・满意",
+// 	"section": "02 · 第一场 第一桌，出征",
+// 	"placement": "地点：小炒摊，承接首次开门营业。",
+// 	"notes": "【若客人满意】",
+// 	"source_script": "",
+// 	"source_sha256": ""
+// }
+// td_handoff_end
+
+// 【若客人满意】
+# line_019
+// td_canvas_begin v1
+@bg dining-table-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_calm outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+guest: 军粮竟有这等滋味。吾的远征，可再延长一条街！
+
+# finish
+@end

@@ -1,0 +1,151 @@
+// td_handoff_begin v1
+// {
+// 	"schema_version": 1,
+// 	"purpose": "author_handoff",
+// 	"id": "handoff_dialogue_p1_10",
+// 	"title": "广播与开店宣言",
+// 	"section": "01 · 第四场：第一位异端",
+// 	"placement": "地点：旧摊第一张桌旁。",
+// 	"notes": "【两分支汇合】",
+// 	"source_script": "",
+// 	"source_sha256": ""
+// }
+// td_handoff_end
+
+// 【两分支汇合】
+// 【演出】街口广播响起。画像旁的喇叭传出低沉而温柔的男声。
+# line_094
+// td_canvas_begin v1
+@bg dining-table-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_calm outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+loue: 河口的眷属们，午间圣宴已启。吾乃至味卿罗厄，统御万味之人。谨记，唯有吾赐之味，值得渴求。
+
+// 【演出】阿铃的筷子停在半空。
+# line_096
+// td_canvas_begin v1
+@bg dining-table-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_troubled outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: ……这道菜，缺少圣餐的恩典。
+
+// 【演出】她看向盘子，却又夹起一块鸡蛋。广播继续，她的手仍没有停。
+// 动作 · 望着已经见底的盘子
+# line_098
+// td_canvas_begin v1
+@bg dining-table-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show chen speechless outfit=base pose=base shot=mid at td:0.756435:1.401371:2.100000 with instant
+// td_canvas_end
+chen: 夜鸦，你的筷子似乎背叛了你的誓言。
+
+// 动作 · 把钱拍在桌上
+# line_099
+// td_canvas_begin v1
+@bg dining-table-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_proud outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 吾决定继续审判。下一次，备足一整盘！
+
+// 动作 · 看着钱，又看向画像
+# line_100
+// td_canvas_begin v1
+@bg dining-table-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show aling dialogue_proud outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+@show yanzi angry outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 你们天天吃那种东西，却连这一口都觉得有罪？
+
+// 【演出】他把自己的见习厨师证压在桌上，抹平卷起的边角。
+# line_102
+// td_canvas_begin v1
+@bg dining-table-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show aling dialogue_proud outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+@show yanzi calm outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 那我就留在这里。先从这口锅开始，让这条街重新闻到饭香。
+
+# line_103
+// td_canvas_begin v1
+@bg dining-table-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show aling dialogue_proud outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+@show yanzi angry outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+// td_canvas_end
+yanzi: 至味卿，记住今日！向你宣战的，是尚未毕业的赤焰之手！
+
+// 动作 · 翻开账本，郑重记下
+# line_104
+// td_canvas_begin v1
+@bg dining-table-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi angry outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show aling dialogue_proud outfit=base pose=base shot=mid at td:0.751032:1.423797:2.100000 with instant
+// td_canvas_end
+aling: 见习厨师一名，旧灶一口，同盟者一人。夜鸦见证，讨伐军于此成立！
+
+# line_105
+// td_canvas_begin v1
+@bg dining-table-v1 with instant 0
+@hide yanzi with instant
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide loue with instant
+@show yanzi angry outfit=base pose=base shot=mid at td:0.290394:1.316172:2.000000 with instant
+@show chen happy outfit=base pose=base shot=mid at td:0.756435:1.401371:2.100000 with instant
+// td_canvas_end
+chen: 好！灰烬司祭愿为双方供给粮秣。无论谁赢，食材绝不可赊账！
+
+# finish
+@end

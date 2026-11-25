@@ -1,6 +1,7 @@
 @tool
 extends RefCounted
 ## A lossless line document; the native parser, never this model, owns playback.
+const Illustrated := preload("res://src/story/illustrated_cg.gd")
 const INTRO := "res://content/story/vn/scenario/intro/script.txt"
 const ROOT := "res://content/story/vn/scenario/"
 const BG_ROOT := "res://content/story/vn/backgrounds/"
@@ -157,7 +158,7 @@ func validate() -> PackedStringArray:
 				if not args.is_valid_float() or float(args) < 0: error = "等待时间必须是非负秒数。"
 			"td_cg":
 				handoffs.append("td_cg " + args)
-				if args not in ["arrival", "hungry", "messenger"]: error = "本原生宿主只接入三段开篇 CG。"
+				if not Illustrated.TITLES.has(args): error = "CG 片段不存在：" + args
 			"td_name":
 				handoffs.append("td_name " + args)
 				if args != "hero": error = "当前姓名输入仅支持主角 hero。"
