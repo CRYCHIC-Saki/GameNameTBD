@@ -73,7 +73,7 @@ func test_employee_real_hiring_assignment_automation_and_cash_integrity() -> voi
 func test_branch_supply_is_isolated_and_preserves_save_contract() -> void:
 	await start();command("debug");var p:=shell.profile;command("money add 10000")
 	var row: Dictionary=p.employees.market_rows("chengdu","manager")[0];command("employee hire "+row.id)
-	var result:=p.branches.open_store("chengdu",[6,48,3,4],"cn",row.id,"console-test-branch");assert_true(result.ok)
+	var result:=p.branches.open_store("chengdu",TDRegionMigration.find_site(p.world.town_map,[6,48,3,4]),"cn",row.id,"console-test-branch");assert_true(result.ok)
 	var id: String=result.data.store_id;var before: Dictionary=p.shop.snapshot().inventory
 	assert_true(command("give tomato 2.5 "+id).contains("成功"));assert_eq(int(p.branches.state.stores[id].inventory.tomato),2500);assert_eq(p.shop.snapshot().inventory,before)
 	assert_true(command("shop list").contains(id));assert_true(command("stock "+id).contains("2.500"));assert_true(TDGameProfile.validate_save(p.snapshot()).ok)

@@ -82,9 +82,8 @@ func test_actual_neighbourhood_notice_and_player_cottage_keep_separate_actions()
 	var before: Dictionary=shell.profile.snapshot()
 	var driver:=DRIVER.new();driver.viewport=get_tree().root
 	for id: String in ["urban_village","rich_district"]:
-		var door_pixel := Vector2(219,197) if id == "urban_village" else Vector2(1230,217)
-		var near := door_pixel / TDPlannedTown.REFERENCE_PIXELS_PER_CELL
-		shell.town._player.position=shell.town._origin()+near*shell.town.cell_size()
+		var foot := Vector2(219,197) if id == "urban_village" else Vector2(1180,215)
+		shell.town._player.position = shell.town._origin() + foot / TDPlannedTown.REFERENCE_PIXELS_PER_CELL * shell.town.cell_size()
 		assert_true(shell.town._can_stand(shell.town._player.position), id + " has an open doorstep")
 		assert_eq(str(shell.town.facing_plot().get("id","")),id)
 		driver.tap(KEY_E);assert_not_null(shell._modal_box)
