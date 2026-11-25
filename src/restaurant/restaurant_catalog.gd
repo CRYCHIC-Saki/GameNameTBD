@@ -4,7 +4,7 @@ extends RefCounted
 const SOURCE := "res://content/restaurant.json"
 const ZONES: Array[String] = ["facade", "reception", "ordering", "dining"]
 const SEAT_USES: Array[String] = ["", "waiting", "dining"]
-const SURFACES: Array[String] = ["", "induction"]
+const SURFACES: Array[String] = [""]
 
 var _furniture: Dictionary = {}
 var _cultures: Array[String] = []

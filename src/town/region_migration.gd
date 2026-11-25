@@ -46,14 +46,14 @@ static func convert(raw: Dictionary) -> TDOutcome:
 		store.place=geo.cell(Vector2i(int(next[0]+next[2]/2),int(next[1]+next[3]/2)))
 		map.plots.append({"id":key,"kind":"player_diner","x":next[0],"y":next[1],"w":next[2],"h":next[3]})
 	data.region_layout_version=2;data.region_migration=archive
-	return TDOutcome.new(true,"REGIONS_MIGRATED","四镇地形已更新，分店面积、产权与经营进度已保留。",data)
+	return TDOutcome.new(true,"REGIONS_MIGRATED","外镇地形已更新，分店面积、产权与经营进度已保留。",data)
 
 static func find_site(map: TDTownMap, old: Array) -> Array:
 	var blocked: Dictionary={}
 	for y: int in map.extent:
 		for x: int in map.extent:
 			var at:=Vector2i(x,y)
-			if map.is_road(x,y) or not map.terrain_at(at).buildable: blocked[at]=true
+			if (not TDPlannedTown.approved(map) and map.is_road(x,y)) or map.frontage_reserved(at) or not map.terrain_at(at).buildable: blocked[at]=true
 	for p: Dictionary in map.plots:
 		for y: int in range(int(p.y),int(p.y+p.h)):
 			for x: int in range(int(p.x),int(p.x+p.w)): blocked[Vector2i(x,y)]=true
@@ -62,7 +62,7 @@ static func find_site(map: TDTownMap, old: Array) -> Array:
 		for dy: int in int(old[3]):
 			for dx: int in int(old[2]):
 				if blocked.has(Vector2i(x+dx,y+dy)): return false
-		return map._touches_road(x,y,int(old[2]),int(old[3]))
+		return map.branch_touches_road(Rect2i(x,y,int(old[2]),int(old[3])))
 	if valid.call(int(old[0]),int(old[1])): return old.duplicate()
 	var best: Array=[];var distance: int=2147483647
 	for y: int in range(1,map.extent-int(old[3])):
@@ -82,3 +82,43 @@ static func validate_archive(raw: Variant) -> TDOutcome:
 		for n: Variant in value.rect:
 			if not TDServiceCatalog.integer(n,0,73): return TDOutcome.new(false,"REGION_ARCHIVED_RECT")
 	return TDOutcome.new(true,"VALID_REGION_ARCHIVE")
+
+static func migrate_native(raw: Dictionary,town: String,version: int) -> TDOutcome:
+	var data := raw.duplicate(true)
+	var map := TDTownMap.new()
+	var catalog := TDTownCatalog.new()
+	var loaded := catalog.load_file()
+	if not loaded.ok: return loaded
+	map.layout_version=2
+	loaded=map.build_economic_layout(catalog,TDTownMap.seed_of(town),version)
+	if not loaded.ok: return loaded
+	var economy: Dictionary=data.get("economy",{})
+	var cells: Dictionary=economy.get("cells",{})
+	for key: String in cells.keys():
+		if cells[key].town_id==town: cells.erase(key)
+	var geo := TDEconomicGeography.new()
+	geo.configure(town,map.plots,cells,2)
+	var result := TDJiangnanMigration._update_properties(data,town,map,geo)
+	if not result.ok: return result
+	var moved := {}
+	var stores: Dictionary=data.get("branches",{}).get("stores",{})
+	var ids := stores.keys()
+	ids.sort()
+	for id: String in ids:
+		var store: Dictionary=stores[id]
+		if store.town_id!=town or store.get("construction",{}).get("kind")=="unverified": continue
+		var rect := TDRegionMigration.find_site(map,store.rect)
+		if rect.is_empty(): return TDOutcome.new(false,"REGION_NO_SITE",store.name)
+		moved[str(store.rect)]=rect
+		store.rect=rect
+		store.site_survey=1
+		store.place=geo.cell(Vector2i(rect[0]+int(rect[2])/2,rect[1]+int(rect[3])/2))
+		map.plots.append({"id":id,"kind":"player_diner","x":rect[0],"y":rect[1],"w":rect[2],"h":rect[3]})
+	if data.world.branch_open and data.world.branch_town==town:
+		var old := [data.world.branch_x,data.world.branch_y,data.world.branch_w,data.world.branch_h]
+		var next: Array=moved.get(str(old),[])
+		if next.is_empty(): next=TDRegionMigration.find_site(map,old)
+		if next.is_empty(): return TDOutcome.new(false,"REGION_NO_LEGACY_SITE")
+		data.world.branch_x=next[0];data.world.branch_y=next[1]
+	data.region_layout_version=version
+	return TDOutcome.new(true,"REGION_MIGRATED","城镇地籍已更新。",data)

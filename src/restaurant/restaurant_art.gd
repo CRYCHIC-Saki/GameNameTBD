@@ -38,10 +38,13 @@ static func floor_texture(layout: TDRestaurantLayout) -> ImageTexture:
 			var shown := "facade" if zone == "facade" else "movement"
 			var color := _floor_color(layout.culture, layout.tier, shown, layout.is_entrance(x, y))
 			var finish := layout.finish_at(x, y)
+			var finish_theme := TDRegionalInterior.finish_style(finish)
 			if finish != "":
 				color = finish_color(finish).lerp(color, 0.22)
+			if not finish_theme.is_empty():
+				color=Color(TDRegionalInterior.WALLS[finish_theme]) if zone=="facade" else TDRegionalInterior.floor_color(finish_theme,Vector2i(x,y))
 			image.fill_rect(Rect2i(x * cell, y * cell, cell, cell), color)
-			_pattern(image, Rect2i(x * cell, y * cell, cell, cell), layout.culture, layout.tier)
+			_pattern(image, Rect2i(x * cell, y * cell, cell, cell), finish_theme if not finish_theme.is_empty() else layout.culture, layout.tier)
 	var texture := ImageTexture.create_from_image(image)
 	_cache[key] = texture
 	return texture
@@ -63,7 +66,7 @@ static func piece_texture(kind: String, surface: String, culture: String, tier: 
 	image.fill_rect(Rect2i(width_px - 3, 0, 3, height_px), accent)
 	if tier == "high":
 		image.fill_rect(Rect2i(6, 6, maxi(width_px - 12, 1), 2), Color(palette["metal"]))
-	_icon(image, kind, surface, accent, cloth, metal)
+	_icon(image, kind, accent, cloth, metal)
 	var texture := ImageTexture.create_from_image(image)
 	_cache[key] = texture
 	return texture
@@ -123,7 +126,7 @@ static func _pattern(image: Image, rect: Rect2i, culture: String, tier: String) 
 	if tier == "high":
 		image.fill_rect(Rect2i(rect.position.x + 2, rect.position.y + 2, rect.size.x - 4, 1), Color("#e7c56a"))
 
-static func _icon(image: Image, kind: String, surface: String, accent: Color, cloth: Color, metal: Color) -> void:
+static func _icon(image: Image, kind: String, accent: Color, cloth: Color, metal: Color) -> void:
 	var size := image.get_size()
 	var center := Vector2i(int(size.x / 2), int(size.y / 2))
 	match kind:
@@ -131,7 +134,7 @@ static func _icon(image: Image, kind: String, surface: String, accent: Color, cl
 			_disc(image, center, 8 if kind != "child_seat" else 5, cloth)
 		"sofa", "booth":
 			image.fill_rect(Rect2i(8, 8, int(size.x) - 16, int(size.y) - 16), cloth)
-		"dining_table", "hotpot_table":
+		"dining_table":
 			image.fill_rect(Rect2i(10, 10, int(size.x) - 20, int(size.y) - 20), cloth.darkened(0.15))
 		"screen":
 			image.fill_rect(Rect2i(center.x - 2, 6, 4, int(size.y) - 12), accent)
@@ -141,9 +144,6 @@ static func _icon(image: Image, kind: String, surface: String, accent: Color, cl
 			image.fill_rect(Rect2i(8, int(size.y / 2), int(size.x) - 16, maxi(int(size.y / 3), 4)), metal)
 		_:
 			pass
-	if surface == "induction":
-		_disc(image, center, 10, Color("#d23a32"))
-		_disc(image, center, 4, Color("#2a2e30"))
 
 static func _disc(image: Image, center: Vector2i, radius: int, color: Color) -> void:
 	for y in range(center.y - radius, center.y + radius + 1):
@@ -160,6 +160,9 @@ static func zone_color(culture: String, tier: String, zone: String, entrance: bo
 	return _floor_color(culture, tier, zone, entrance)
 
 static func finish_color(finish_id: String) -> Color:
+	var theme := TDRegionalInterior.finish_style(finish_id)
+	if not theme.is_empty():
+		return Color(TDRegionalInterior.WALLS[theme]) if finish_id.begins_with("wall_") else TDRegionalInterior.floor_color(theme,Vector2i.ZERO)
 	match finish_id:
 		"wood":
 			return Color("#c4a574")

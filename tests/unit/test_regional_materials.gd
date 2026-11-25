@@ -29,7 +29,7 @@ func test_every_atlas_recipe_has_explicit_foods_regions_stock_and_preserved_iden
 	var atlas: Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://content/research/recipe_atlas.json"))
 	var manifest: Dictionary={}
 	for row: Dictionary in data.recipes: manifest[row.id]=row
-	assert_eq(manifest.size(),100);assert_eq(data.items.size(),148)
+	assert_eq(manifest.size(),60);assert_eq(data.items.size(),113)
 	for recipe: Dictionary in atlas.recipes:
 		assert_has(manifest,recipe.id)
 		assert_eq(manifest[recipe.id].cuisine_id,recipe.cuisine_id)
@@ -64,14 +64,14 @@ func test_registry_rejects_duplicates_unknown_regions_references_and_bad_stock()
 func test_supplier_regions_apply_to_catalogue_quote_and_new_lines_atomically() -> void:
 	var p:=profile();var n:=p.suppliers
 	assert_true(p.research.recommend_cuisine("materials-jp","jp").ok)
-	assert_true(p.research.recommend_cuisine("materials-sea","sea").ok)
+	assert_false(p.research.recommend_cuisine("materials-sea","sea").ok)
 	for town: String in TDSupplierNetwork.TOWNS:
 		var rows:=n.catalogue(town)
 		assert_true(rows.any(func(row:Dictionary)->bool:return row.id=="salt"))
 		for row: Dictionary in rows: assert_true(TDMaterialCatalog.supplies(town,row.id))
 	assert_true(n.catalogue("tokyo").any(func(row:Dictionary)->bool:return row.id=="miso"))
 	assert_false(n.catalogue("chengdu").any(func(row:Dictionary)->bool:return row.id=="miso"))
-	assert_true(n.quote("bangkok","player_diner",{"fishsauce":1000}).ok)
+	assert_false(n.quote("bangkok","player_diner",{"fishsauce":1000}).ok)
 	var before:=p.snapshot()
 	assert_false(n.order("chengdu","player_diner",{"salt":1000,"fishsauce":1000},"wrong-origin").ok)
 	assert_false(n.create_line("chengdu","player_diner","miso",1000).ok)
@@ -139,10 +139,10 @@ func test_old_profile_extends_only_new_materials_and_saves_roundtrip_in_isolated
 func test_cuisine_cabinets_cover_required_spices_and_preferences_use_local_shelf() -> void:
 	var jp:=TDMaterialCatalog.palette("jp",["spice:ginger"])
 	assert_has(jp,"ginger");assert_has(jp,"miso");assert_does_not_have(jp,"wine")
-	var sea:=TDMaterialCatalog.palette("sea",["spice:massaman"])
-	assert_has(sea,"massaman");assert_has(sea,"fishsauce");assert_ne(sea,jp)
+	var eu:=TDMaterialCatalog.palette("eu",["spice:rosemary"])
+	assert_has(eu,"rosemary");assert_has(eu,"oliveoil");assert_ne(eu,jp)
 	assert_eq(jp.count("ginger"),1)
-	for cuisine: String in ["eu","jp","sea","lat"]:
+	for cuisine: String in ["eu","jp"]:
 		for taste: int in 7:
 			var id:=TDMaterialCatalog.preference_spice(cuisine,taste,"wine")
 			if not id.is_empty(): assert_has(TDMaterialCatalog.palette(cuisine),id)
@@ -156,7 +156,7 @@ func test_every_material_is_in_runtime_catalogue_with_stock_metadata_and_no_test
 		assert_ne(definitions[id].scope,"TEST_ONLY")
 		assert_has(p.shop.stock_rules,id);assert_gt(int(p.shop.stock_info(id).shelf_days),0)
 		if p.shop.stock_info(id).condiment: assert_eq(definitions[id].category,"seasoning")
-	assert_eq(p.service.config.offers.size(),9,"Materials do not pretend to add 100 playable recipes.")
+	assert_eq(p.service.config.offers.size(),63,"Sixty authored recipes plus three service recipes.")
 
 func test_runtime_cuisine_and_optional_palette_reject_bad_metadata() -> void:
 	var service:=TDServiceCatalog.new();assert_true(service.load_file().ok)
@@ -186,8 +186,8 @@ func test_locked_condiments_reject_every_purchase_entry_without_side_effects() -
 func test_cuisine_unlock_updates_shared_spices_immediately_without_unlocking_recipes() -> void:
 	var p:=profile();var original: Array=p.research.snapshot().unlocked.duplicate()
 	assert_false(p.shop.purchasable("coconut_milk"))
-	assert_true(p.research.recommend_cuisine("story-sea","sea").ok)
-	assert_true(p.shop.purchasable("coconut_milk"));assert_true(p.shop.purchasable("fishsauce"))
+	assert_true(p.research.recommend_cuisine("story-eu","eu").ok)
+	assert_true(p.shop.purchasable("oliveoil"));assert_false(p.shop.purchasable("fishsauce"))
 	assert_false(p.shop.purchasable("mole"));assert_false(p.shop.purchasable("miso"))
 	assert_true(p.research.recommend_cuisine("story-jp","jp").ok)
 	assert_true(p.shop.purchasable("miso"));assert_false(p.shop.purchasable("udon"))

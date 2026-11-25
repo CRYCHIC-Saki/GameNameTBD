@@ -43,6 +43,19 @@ var material_sink: Callable
 var material_available: Callable
 var production_mode: String = "manual"
 var _pours: Dictionary = {}
+var _recommended_counts: Dictionary={}
+
+func _cache_recommended_counts() -> void:
+	_recommended_counts.clear()
+	for kind: String in _recipe.recommended_steps: _recommended_counts[kind]=int(_recommended_counts.get(kind,0))+1
+	if not _document_rules: return
+	_recommended_counts={"cut":maxi(1,_recipe.get("preparation_sheets",{}).size())}
+	var sheets: Dictionary=_config.pc_operations.document_sheets
+	var definitions: Array=[sheets[_recipe.guided_profile]] if int(_recipe.get("version",1))>=2 and sheets.has(_recipe.get("guided_profile","")) else sheets.values()
+	for definition: Dictionary in definitions:
+		var counts: Dictionary={}
+		for group: Dictionary in definition.groups.values(): counts[group.operation]=int(counts.get(group.operation,0))+1
+		for kind: String in counts: _recommended_counts[kind]=maxi(int(_recommended_counts.get(kind,0)),int(counts[kind]))
 
 func inflight_materials() -> Dictionary:
 	var totals: Dictionary={}
@@ -71,6 +84,7 @@ func select_recipe(config: Dictionary) -> TDOutcome:
 		return _error("RECIPE_LOCKED")
 	if not config.has("recipe") or config.get("ingredients") != _config.ingredients: return _error("INCOMPATIBLE_CONTENT")
 	_config = config.duplicate(true); _recipe = _config.recipe.duplicate(true)
+	_cache_recommended_counts()
 	return TDOutcome.new(true,"RECIPE_SELECTED")
 
 func _take_materials(token: String, amounts: Dictionary) -> TDOutcome:
@@ -112,6 +126,7 @@ func _init(sid: String, generation: int, config: Dictionary, options: Dictionary
 	for definition: Dictionary in _config.ingredients:
 		_definitions[definition.id] = definition.duplicate(true)
 	_batches.main.temperature_c = float(_config.rules.room_temperature_c)
+	_cache_recommended_counts()
 
 func begin(request: TDRequest) -> TDOutcome:
 	if not _initial_error.is_empty():
@@ -476,6 +491,7 @@ func _cut(id: String, shape: String, quality: float) -> void:
 
 func _heat(batch: String, kind: String, dose: float, elapsed: float) -> void:
 	var rules: Dictionary = _config.rules
+	dose*=float(_recipe.get("thermal_scale",1.0))
 	for item: Dictionary in _members(batch):
 		var previous: float = item.heat_dose
 		item.heat_dose += dose
@@ -670,14 +686,7 @@ func _derive() -> Dictionary:
 		quality = minf(100, quality + ingredient_quality * float(rules.quality_bonus_max))
 	var extra_steps: int = 0
 	for kind: String in counts:
-		var recommended_count: int = _recipe.recommended_steps.count(kind)
-		if _document_rules:
-			recommended_count = 1 if kind == "cut" else 0
-			for definition: Dictionary in _config.pc_operations.document_sheets.values():
-				var count: int = 0
-				for group: Dictionary in definition.groups.values():
-					if group.operation == kind: count += 1
-				recommended_count = maxi(recommended_count,count)
+		var recommended_count: int = int(_recommended_counts.get(kind,0))
 		extra_steps += maxi(0, int(counts[kind]) - recommended_count)
 	var extras: int = 0
 	for item: Dictionary in _ingredients.values():

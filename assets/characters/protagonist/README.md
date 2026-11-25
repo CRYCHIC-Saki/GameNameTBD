@@ -1,5 +1,13 @@
 # 主角美术素材 v1
 
+## D076-R1 斜向修正版（2026-11-16）
+用户否定旧斜向脚步/朝向后，正式运行改为`protagonist-diagonal-front-v2.png`和`protagonist-diagonal-back-v2.png`。每张2172×724、5格：站立、接触A、过渡A、接触B、过渡B。front原向右下、back原向左上，另一侧由Sprite2D.flip_h/绘制UV镜像；不会翻转原始PNG。四向原图照旧。旧v1保留归档、不进入正式导出。完整生成/修订提示、选定输出和哈希见`diagonal-v2-generation.json`。工程验证不能代替用户对连续步态的验收。
+
+
+## D076 八向地图动作（2026-11-16）
+
+四向地图角色恢复使用原始 idle/walk-four-directions-v1，解决远端 walker-hero 重绘后比例瘦长的反馈。新增 protagonist-diagonal-v1.png：4列为右下、左下、左上、右上；3行为站立、迈步A、迈步B，运行循环 A/站立/B/站立。斜向使用等高392px的脚底对齐窗口，避免弯膝时放大整个人。全程等比缩放，原站姿、迈步及半身原图未修改。生成来源/三轮修订见 diagonal-generation.json；原料及玩家存档不动，人工观感待确认。
+
 当前选定半身立绘：`protagonist-dialogue-halfbody-pose-pixel-v7.png`。用户于2026-10-28确认保留此版；文件与哈希记录在 `asset-manifest.json` 的 `selected_dialogue_portrait` 中，后续半身立绘工作以此为基准。原图字节保留，历史版本继续留档。
 
 ## 2026-10-28 高光、刀鞘与脸长微调 v7

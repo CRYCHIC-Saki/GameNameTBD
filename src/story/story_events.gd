@@ -4,10 +4,10 @@ extends RefCounted
 const PATH := "res://content/story/events.json"
 const ROOT := "res://content/story/vn/scenario/"
 const PEOPLE := {"aling":"阿铃", "chen":"老陈"}
-const PLACES := {"restaurant":"主店餐厅", "kitchen":"主店厨房", "cottage":"小屋", "town:chengdu":"河口镇", "town:tokyo":"潮见町", "town:paris":"白鹭河镇", "town:bangkok":"莲湾镇", "town:mexico_city":"日轮镇"}
+const PLACES := {"restaurant":"主店餐厅", "kitchen":"主店厨房", "cottage":"小屋", "town:chengdu":"河口镇", "town:tokyo":"潮见町", "town:paris":"白鹭河镇"}
 const MILESTONES := {"intro":"港口介绍完成", "soup":"老陈介绍完成", "after_taste":"尝汤剧情完成", "awaken":"进入食堂教学完成", "trial_served":"首次番茄炒蛋送到阿铃", "verdict":"阿铃试吃评价完成", "business_opened":"首次开门营业", "day_settled":"首次营业日结", "home_unlocked":"小屋已解锁", "chapter_finished":"第一章完成"}
-const CUISINES := {"cn":"中式", "eu":"欧洲", "jp":"日本", "sea":"东南亚", "lat":"拉丁美洲"}
-const TOWNS := {"chengdu":"河口镇", "tokyo":"潮见町", "paris":"白鹭河镇", "bangkok":"莲湾镇", "mexico_city":"日轮镇"}
+const CUISINES := {"cn":"中式", "eu":"欧洲", "jp":"日本"}
+const TOWNS := {"chengdu":"河口镇", "tokyo":"潮见町", "paris":"白鹭河镇"}
 var definitions: Array = []
 var error: String = ""
 var counts: Dictionary = {}

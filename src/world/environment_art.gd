@@ -1,5 +1,9 @@
 class_name TDEnvironmentArt
 extends RefCounted
+
+# Centre and perimeter samples shared by the swept outdoor foot circle.
+const FOOT_SAMPLES := [Vector2.ZERO,Vector2.LEFT,Vector2.RIGHT,Vector2.UP,Vector2.DOWN,
+ Vector2(-.707107,-.707107),Vector2(.707107,-.707107),Vector2(-.707107,.707107),Vector2(.707107,.707107)]
 ## Read-only generated atlases. No mutable image state is shared with a game session.
 const TOWN := preload("res://assets/town/town-sprites-v4.png")
 const PROPS := preload("res://assets/redraw-v1/diner-props.png")
@@ -102,6 +106,42 @@ static func fit_in_plot(texture: Texture2D,rect: Rect2,_label_space: float=0.0) 
 	var area:=rect.grow(-4.0)
 	var size:=texture.get_size()*minf(area.size.x/texture.get_width(),area.size.y/texture.get_height())
 	return Rect2(Vector2(area.get_center().x-size.x*.5,area.end.y-size.y),size)
+
+static func facade_rect(texture: Texture2D, feet: Vector2, max_width: float, height: float) -> Rect2:
+	var size := texture.get_size()
+	size *= minf(max_width / size.x, height / size.y)
+	return Rect2(feet - Vector2(size.x * 0.5, size.y), size)
+
+static func facade_bases(rect: Rect2, depth: float, open_gate: bool = false) -> Array[Rect2]:
+	var start := rect.position + rect.size * Vector2(0.09, 1.0 - depth)
+	var size := rect.size * Vector2(0.82, depth - 0.015)
+	if open_gate:
+		var pillar := Vector2(rect.size.x * 0.17, size.y)
+		return [Rect2(start, pillar), Rect2(start + Vector2(size.x - pillar.x, 0), pillar)]
+	return [Rect2(start, size)]
+
+## The outdoor hero is 108 px tall. Feet already contribute 9-10 px of radius.
+## Add the remaining half-width only at walls, keeping door and bridge depth exact.
+static func wall_clearance(bounds: Rect2) -> Rect2:
+	return bounds.grow_individual(16.0,0.0,16.0,0.0)
+
+## Keep service reach at the doorway; the enclosed shop extends back to its rear wall.
+static func shop_walls(rect: Rect2, front: Rect2) -> Array[Rect2]:
+	var rear := Rect2(front.position.x+front.size.x*.055,rect.position.y+rect.size.y*.46,front.size.x*.89,rect.size.y*.15)
+	var middle := Rect2(front.position.x, rear.end.y, front.size.x, maxf(0,front.end.y-rear.end.y))
+	return [wall_clearance(rear),wall_clearance(middle)]
+
+static func facade_sprite(texture: Texture2D, rect: Rect2, tint: Color = Color.WHITE) -> Sprite2D:
+	var sprite := Sprite2D.new()
+	sprite.texture = texture
+	sprite.position = Vector2(rect.get_center().x, rect.end.y)
+	sprite.offset.y = -texture.get_height() * 0.5
+	sprite.scale = rect.size / texture.get_size()
+	sprite.self_modulate = tint
+	return sprite
+
+static func overlaps_base(feet: Vector2, rect: Rect2, radius: float) -> bool:
+	return feet.distance_squared_to(feet.clamp(rect.position, rect.end)) < radius * radius
 
 static func draw_residential(canvas: CanvasItem,index: int,rect: Rect2,_display_scale: float=1.0) -> void:
 	var texture:=residential(index)

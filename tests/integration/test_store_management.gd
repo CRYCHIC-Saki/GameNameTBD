@@ -10,7 +10,7 @@ func own(p: TDGameProfile,id: String,store: String="") -> void:
 	if not store.is_empty(): assert_true(p.employees.assign(id,store).ok)
 func open_branch(p: TDGameProfile) -> String:
 	own(p,"manager.host")
-	var result:=p.branches.open_store("chengdu",[6,48,3,4],"cn","manager.host","test-branch");assert_true(result.ok,result.code)
+	var result:=p.branches.open_store("chengdu",[30,10,3,4],"cn","manager.host","test-branch");assert_true(result.ok,result.code)
 	return str(result.data.store_id)
 func after_each() -> void:
 	if is_instance_valid(app): app.game_shell.go_title();app.queue_free();app=null

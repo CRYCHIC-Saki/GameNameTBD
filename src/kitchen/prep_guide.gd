@@ -28,9 +28,8 @@ static func ensure() -> void:
 	_ready = true
 	_rules = TDFoodStock.load_rules()
 	var service := TDServiceCatalog.new()
-	if not service.load_file().ok:
+	if not TDResearchRuntime.load_default(service).ok:
 		return
-	TDResearchRuntime.install(service)
 	_cooking = service.cooking.data()
 	for food: Dictionary in _cooking.ingredients:
 		_by_id[String(food.id)] = food
@@ -82,7 +81,7 @@ static func unlock_text(status: String, starter: bool) -> String:
 static func obtain_text(food: Dictionary, status: String) -> String:
 	var id := String(food.get("id", ""))
 	if bool(_rules.get(id, {}).get("condiment", false)) or String(food.get("category", "")) == "seasoning":
-		return "食材铺一直卖，不跟菜谱解锁。"
+		return "所属菜系开放后可购买；供应商还按地区供应。"
 	if status == "UNLOCKED":
 		return "这道菜已经掌握，作为主料可以买。库里原有的也不会被清掉。"
 	return "要等这道菜掌握之后，食材铺才把它当主料卖。"
@@ -201,6 +200,11 @@ static func _category_text(food: Dictionary) -> String:
 	return "上砧板。家常用大块，要入味用条，爆香才切丁。两刀同向是条，中途转向是块，三刀起是丁。"
 
 static func _step_text(recipe: Dictionary) -> String:
+	if recipe.has("technique_plan"):
+		var steps: Array=recipe.technique_plan.map(func(step:Dictionary)->String:return step.label)
+		steps.append("出锅装盘")
+		var station:=TDCuisineKitchen.station_for(str(recipe.get("cuisine_id","cn")),recipe)
+		return "工位：%s。%s。"%[TDCuisineKitchen.names(str(recipe.get("cuisine_id","cn"))).get(station,"料理台")," → ".join(steps)]
 	var source: Array = recipe.get("required_steps", [])
 	if source.is_empty():
 		source = recipe.get("recommended_steps", [])

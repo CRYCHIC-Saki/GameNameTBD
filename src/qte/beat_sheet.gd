@@ -115,6 +115,13 @@ func _configure_beats(sheet: Dictionary, operations: Dictionary) -> TDOutcome:
 			if g.first <= busy_until[g.track]: return TDOutcome.new(false,"OVERLAPPING_GROUP")
 			busy_until[g.track] = g.last
 		var settings: Dictionary = {"document_rules":true}
+		if definition.has("control"):
+			var control: Variant=definition.control
+			if operation not in ["heat","boil"] or not control is Dictionary: return TDOutcome.new(false,"INVALID_CONTROL")
+			for key: String in ["target_min","target_max","initial_value"]:
+				if not _number(control.get(key)) or float(control[key])>1: return TDOutcome.new(false,"INVALID_CONTROL")
+			if control.target_min>=control.target_max: return TDOutcome.new(false,"INVALID_CONTROL")
+			settings.merge(control,true)
 		var origin_beat: float = float(g.first)-1-preview
 		var relative: Array = []
 		for at: float in g.times: relative.append((at-1-origin_beat)*_interval)
@@ -149,7 +156,7 @@ func _configure_beats(sheet: Dictionary, operations: Dictionary) -> TDOutcome:
 				settings.free_seasoning=true
 				settings.free_duration_sec=definition.free_duration_sec
 				settings.pour_rate_per_sec=definition.get("pour_rate_per_sec",.2)
-		_events.append({"beat":origin_beat,"operation":definition.operation,"parameters":definition.parameters.duplicate(true),"settings":settings,"group":id,"label":definition.get("label",id)})
+		_events.append({"beat":origin_beat,"operation":definition.operation,"parameters":definition.parameters.duplicate(true),"settings":settings,"group":id,"label":definition.get("label",id),"technique":definition.get("technique",definition.operation)})
 	_events.sort_custom(func(a: Dictionary,b: Dictionary) -> bool: return a.beat < b.beat)
 	# Beat 1 may need an approach/ignition cue. Add whole-bar count-in only
 	# when needed; target coordinates and strong-beat phases stay unchanged.

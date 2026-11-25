@@ -13,13 +13,13 @@ const HELP: Dictionary={
 	"inspiration":"inspiration add <1..10000>：增加灵感；不制造经营等级或研习分数。",
 	"recipes":"recipes [ID或名称片段]：查菜谱ID、掌握状态与运行时映射。",
 	"recipe":"recipe unlock <菜谱ID或完整名称>：调试掌握该菜及前置、开放所属菜系。明确记录调试来源，不伪造挑战分数。例 recipe unlock C03。",
-	"cuisine":"cuisine open <cn|eu|jp|sea|lat>：开放菜系，菜谱仍独立掌握。",
+	"cuisine":"cuisine open <cn|eu|jp>：开放菜系，菜谱仍独立掌握。",
 	"san":"san <0..100>：设置SAN，后续工序生效。",
 	"time":"time / time set <HH:MM>：查看/设置08:00–次日01:59钟表（跨午夜用00:30或24:30）。仅筹备/日结，不推进订单、生产或日期。",
 	"employee":"employee market <镇ID> <manager|cook|waiter>；employee owned [关键词]；employee hire <ID或完整姓名>（当前候选，真实付签约费）；employee assign <ID或姓名> <main|分店ID|idle>。",
 	"shop":"shop list [关键词] / shop info <ID> / shop auto <ID> <on|off>：主店用main，任免沿员工仓库；不自动开店。",
 	"orders":"orders [关键词]：只读查看当前订单、顾客、菜品、状态与耐心。",
-	"supply":"supply [关键词]：查看五镇供应商生产任务。调整供货请用 open suppliers。",
+	"supply":"supply [关键词]：查看供货开关、信用、欠款与明日菜单。调整供货请用 open suppliers。",
 	"quest":"quest：当前剧情节点和目标；quest track on/off：切换任务追踪，不跳过任务或发奖。",
 	"open":"open <employees|shops|suppliers|recipes|quests|map|relationships>：打开现有管理界面。",
 	"goto":"goto <town|restaurant|kitchen|cottage|harbor>：到主镇对应场景；不解锁小屋，不带着食物跨场景。",
@@ -151,7 +151,10 @@ static func execute(shell: TDGameShell, raw: String) -> String:
 		if w.size()==2: lines=lines.filter(func(line:String)->bool:return line.to_lower().contains(w[1].to_lower()))
 		return limited(lines)
 	if cmd=="supply" and w.size()<=2:
-		var lines: Array[String]=[]
+		var account := p.menu_supply.state
+		var lines: Array[String]=["配送 %s · 信用 %.2f · 欠款 %.2f · 上笔货款 %.2f"%["停供" if account.suspended else ("开启" if account.enabled else "关闭"),p.menu_supply.credit()/100.0,float(account.debt)/100,float(account.last_invoice)/100]]
+		for store: String in p.menu_supply.store_ids():
+			lines.append("%s · 明日菜单 %s"%[store,JSON.stringify(p.menu_supply.quantities(store,p.menu_supply.dishes(store)))])
 		for order: Dictionary in p.suppliers.snapshot().orders:
 			for job: Dictionary in order.jobs:
 				lines.append("%s · %s → %s · %s %.3f份 · %s"%[order.id,order.town_id,order.store_id,job.item_id,float(job.units)/1000,"已收货" if job.delivered else "剩余 %.1f 秒"%maxf(0.0,float(job.seconds)-float(job.elapsed))])
@@ -165,7 +168,7 @@ static func execute(shell: TDGameShell, raw: String) -> String:
 			for row: Dictionary in select_rows(p.employees.roster_rows(),w[2] if w.size()==3 else ""): lines.append("%s · %s · %s %d星 · %s · 日薪%.2f"%[row.id,row.name,row.role,row.stars,row.assigned if not str(row.assigned).is_empty() else "idle",float(row.wage_cents)/100])
 			return limited(lines)
 		if w[1]=="market" and w.size()==4:
-			if w[2] not in TDTravelCatalog.IDS or w[3] not in ["manager","cook","waiter"]: return "镇ID：chengdu/paris/tokyo/bangkok/mexico_city；岗位：manager/cook/waiter。"
+			if w[2] not in TDTravelCatalog.IDS or w[3] not in ["manager","cook","waiter"]: return "镇ID：chengdu/paris/tokyo；岗位：manager/cook/waiter。"
 			var lines: Array[String]=[]
 			for row: Dictionary in p.employees.market_rows(w[2],w[3]): lines.append("%s · %s · %d星 · 签约%.2f · 日薪%.2f"%[row.id,row.name,row.stars,float(row.sign_fee_cents)/100,float(row.wage_cents)/100])
 			return limited(lines)
@@ -178,7 +181,7 @@ static func execute(shell: TDGameShell, raw: String) -> String:
 		if w[1]=="info" and w.size()==3:
 			var id:=store_id(p,w[2])
 			if id.is_empty(): return "未知店铺；用 shop list 查询。"
-			return JSON.stringify({"id":id,"manager":p.employees.manager_for(id),"staff":p.employees.assigned(id),"management_auto":p.main_management_auto if id=="player_diner" else p.branches.state.stores[id].management_auto,"menu":s.menu if id=="player_diner" else p.branches.state.stores[id].menu,"supply":p.suppliers.state.automation.get(id,{})},"  ")
+			return JSON.stringify({"id":id,"manager":p.employees.manager_for(id),"staff":p.employees.assigned(id),"management_auto":p.main_management_auto if id=="player_diner" else p.branches.state.stores[id].management_auto,"menu":s.menu if id=="player_diner" else p.branches.state.stores[id].menu,"supply":p.menu_supply.quantities(id,p.menu_supply.dishes(id))},"  ")
 	var reason:=blocked(shell,cmd not in ["open","quest","san"])
 	if not reason.is_empty(): return reason
 	if cmd=="money" and w.size()==3 and w[1]=="add":
@@ -252,7 +255,7 @@ static func complete(raw: String, p: TDGameProfile) -> PackedStringArray:
 	for key: String in HELP: suggestions.append(key)
 	suggestions.append_array(["debug off","money add ","inspiration add ","cuisine open ","time set ","employee market ","employee owned","employee hire ","employee assign ","shop list","shop info ","shop auto ","quest track on","quest track off"])
 	for key: String in OPEN: suggestions.append("open "+key)
-	for id: String in ["cn","eu","jp","sea","lat"]: suggestions.append("cuisine open "+id)
+	for id: String in ["cn","eu","jp"]: suggestions.append("cuisine open "+id)
 	for id: String in ["town","restaurant","kitchen","cottage","harbor"]: suggestions.append("goto "+id)
 	for town: String in TDTravelCatalog.IDS:
 		for role: String in ["manager","cook","waiter"]: suggestions.append("employee market %s %s"%[town,role])

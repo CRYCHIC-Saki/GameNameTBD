@@ -5,14 +5,18 @@ func test_nearby_town_targets_all_directions_and_distinct_frontages() -> void:
 	var town:=TDTownWorld.new();town.session=profile.world;town.player_mode=true
 	add_child_autofree(town);await get_tree().process_frame
 	var map:=profile.world.town_map
-	for id: String in ["player_diner","player_cottage","market-small","market-mid","market-large","factory-1","factory-2","competitor:shop:0","competitor:shop:1","commercial_street:bank"]:
+	for id: String in ["player_diner","player_cottage","market-small","market-mid","market-large","competitor:shop:0","competitor:shop:1","commercial_street:bank"]:
 		var p:=map._by_id(id);assert_false(p.is_empty(),id)
 		if p.is_empty(): continue
-		town._player.position=town._origin()+(Vector2(p.approach_x,p.approach_y)+Vector2(.5,.5))*town.CELL
+		town._player.position=town._origin()+(Vector2(p.approach_x,p.approach_y)+Vector2(.5,.5))*town.cell_size()
 		for facing: Vector2i in [Vector2i.UP,Vector2i.DOWN,Vector2i.LEFT,Vector2i.RIGHT]:
 			town._player.facing=facing
 			assert_eq(str(town.facing_plot().get("id","")),id,"exclusive entrance "+id)
-	assert_lt(town._blockers.get_child_count(),1000,"merged collision spans")
+	for id: String in ["factory-1","factory-2"]:
+		var plot:=map._by_id(id)
+		town._player.position=town._origin()+(Vector2(plot.approach_x,plot.approach_y)+Vector2.ONE*.5)*town.cell_size()
+		assert_ne(town.facing_plot().get("id",""),id,"Supplier management is accessed from the HUD")
+	assert_lt(town._blockers.get_child_count(), map.extent * map.extent / 2,"solid terrain is merged into spans")
 	town.set_day_minute(1320);assert_ne(town.self_modulate,Color.WHITE)
 	profile.close()
 

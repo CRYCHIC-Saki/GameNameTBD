@@ -54,6 +54,60 @@ func test_title_new_slot_real_doors_and_repeated_entry_keep_same_session() -> vo
 	shell._close_dialog();assert_true(shell.restaurant.is_processing_input())
 	shell.restaurant._toggle_edit()
 
+func test_market_shelves_open_at_stall_and_keep_local_and_remote_stock_separate() -> void:
+	start()
+	shell.profile.story.beat="done"
+	var stall:=shell.profile.world.town_map._by_id("market-large")
+	shell.town._player.position=shell.town._origin()+(Vector2(stall.approach_x,stall.approach_y)+Vector2.ONE*.5)*shell.town.cell_size()
+	driver.tap(KEY_E)
+	assert_not_null(shell._modal_box,"城南大市入口")
+	var expected:=shell.profile.shop.market_ids("chengdu")
+	var shelf: Array[String]=[]
+	var tomato_row: HBoxContainer
+	for icon: TDIngredientIcon in shell._modal_box.find_children("*","TDIngredientIcon",true,false):
+		shelf.append(icon.item_id)
+		if icon.item_id=="tomato": tomato_row=icon.get_parent()
+	assert_eq(shelf,expected,"完整保留当前档位可买的商品与顺序")
+	assert_has(shelf,"aspic")
+	assert_has(shelf,"salt")
+	assert_does_not_have(shelf,"pasta")
+	assert_does_not_have(shelf,"udon")
+	assert_not_null(tomato_row)
+	var buy:=button("购买",tomato_row)
+	var amount:=tomato_row.find_children("*","SpinBox",true,false).front() as SpinBox
+	var caption:=tomato_row.find_children("*","Label",true,false).front() as Label
+	var shop:=shell.profile.shop
+	var held:=shop.available("tomato")
+	var cash:=int(shop.snapshot().money_cents)
+	var unit_price:=int(shell.profile.commerce.state.markets.chengdu.price.tomato)
+	amount.value=2
+	buy.pressed.emit()
+	assert_eq(shop.available("tomato"),held+2000)
+	assert_eq(int(shop.snapshot().money_cents),cash-2*unit_price)
+	assert_string_contains(caption.text,shell._ingredient_name("tomato"))
+	assert_string_contains(caption.text,"家中 %.2f"%(float(held+2000)/1000.0))
+	assert_true(shell.profile.recommend_route("paris","test:market-shelf").ok)
+	shell.show_remote_market("paris")
+	var remote_buy: Button
+	var remote_items: Array[String]=[]
+	for icon: TDIngredientIcon in shell._modal_box.find_children("*","TDIngredientIcon",true,false):
+		remote_items.append(icon.item_id)
+		if icon.item_id=="tomato": remote_buy=button("预订",icon.get_parent())
+	assert_has(remote_items,"pasta")
+	assert_does_not_have(remote_items,"udon")
+	var before_rejection:=shell.profile.snapshot()
+	assert_eq(shell.profile.order_remote("udon","paris").code,"NOT_SUPPLIED")
+	assert_eq(shell.profile.snapshot(),before_rejection)
+	assert_not_null(remote_buy)
+	var source: Dictionary=shell.profile.commerce.state.markets.paris
+	var supply:=int(source.stock.tomato)
+	var booked: int=shell.profile.commerce.state.shipments.size()
+	remote_buy.pressed.emit()
+	remote_buy.pressed.emit()
+	assert_eq(int(source.stock.tomato),supply-1000)
+	assert_eq(shell.profile.commerce.state.shipments.size(),booked+1,"重发同一按钮的预订单只生效一次")
+	assert_eq(shop.available("tomato"),held+2000,"跨镇预订尚未到货")
+
 func test_market_inventory_menu_open_and_real_kitchen_delivery_three_day_save_loop() -> void:
 	start()
 	for day: int in range(1,4):
@@ -140,7 +194,7 @@ func test_bank_world_interaction_and_buttons_use_the_profile_wallet() -> void:
 	assert_eq(banks.size(),1)
 	if banks.is_empty(): return
 	var bank: Dictionary=banks[0]
-	shell.town._player.position=shell.town._origin()+Vector2(int(bank.approach_x)+.5,int(bank.approach_y)+.5)*TDTownWorld.CELL
+	shell.town._player.position=shell.town._origin()+Vector2(int(bank.approach_x)+.5,int(bank.approach_y)+.5)*shell.town.cell_size()
 	shell.town._player.face(Vector2(bank.x+bank.w*.5-bank.approach_x-.5,bank.y+bank.h*.5-bank.approach_y-.5))
 	driver.tap(KEY_E)
 	assert_not_null(shell._modal)

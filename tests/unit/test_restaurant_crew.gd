@@ -16,7 +16,7 @@ func test_roles_cap_pace_and_tip_without_stacking() -> void:
 	assert_eq(crew.record_served_order().size(), 0)
 	assert_eq(crew.record_served_order().size(), 0)
 	var promoted := crew.record_served_order()
-	assert_true(promoted.has("老周升到2级"))
+	assert_true(promoted.has("周芹升到2级"))
 	assert_true(promoted.has("小桃升到2级"))
 	assert_eq(crew.level_of("cook-he"), 2)
 	assert_almost_eq(crew.cook_pace(), 1.10, 0.001)

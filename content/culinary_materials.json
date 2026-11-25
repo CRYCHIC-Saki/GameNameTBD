@@ -6,9 +6,7 @@
   "towns": {
     "cn": "chengdu",
     "eu": "paris",
-    "jp": "tokyo",
-    "sea": "bangkok",
-    "lat": "mexico_city"
+    "jp": "tokyo"
   },
   "legacy_ids": [
     "tomato",
@@ -38,65 +36,6 @@
     "water"
   ],
   "items": {
-    "aji_amarillo": {
-      "definition": {
-        "id": "aji_amarillo",
-        "name": "秘鲁黄辣椒酱",
-        "scope": "PROTOTYPE",
-        "category": "seasoning",
-        "subcategory": "aji_amarillo",
-        "quality": 0.8,
-        "base_tastes": [
-          0,
-          0,
-          0,
-          45,
-          25,
-          20,
-          0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0.2,
-          "B": 0.1,
-          "C": 0
-        },
-        "aroma": {},
-        "region": [],
-        "special": [],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; recipe_atlas material extension"
-      },
-      "source_id": "",
-      "culture_tags": [],
-      "supply_regions": [
-        "mexico_city"
-      ],
-      "category": "seasoning",
-      "cost_cents": 200,
-      "stock": {
-        "group": "seasoning",
-        "shelf_days": 90,
-        "pack_units": 1000,
-        "unit": "瓶",
-        "condiment": true
-      },
-      "icon": {
-        "shape": "bottle",
-        "color": "d76f49"
-      },
-      "source_status": "PROPOSED_AI_079",
-      "unlock_cuisines": [
-        "lat"
-      ]
-    },
     "aspic": {
       "definition": {
         "id": "aspic",
@@ -185,8 +124,7 @@
           "罗勒香": 2
         },
         "region": [
-          "意",
-          "东南亚"
+          "意"
         ],
         "special": [],
         "temperature_c": 22,
@@ -196,12 +134,10 @@
       },
       "source_id": "basil",
       "culture_tags": [
-        "意",
-        "东南亚"
+        "意"
       ],
       "supply_regions": [
-        "paris",
-        "bangkok"
+        "paris"
       ],
       "category": "vegetable",
       "cost_cents": 200,
@@ -218,8 +154,7 @@
       },
       "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE",
       "unlock_cuisines": [
-        "eu",
-        "sea"
+        "eu"
       ]
     },
     "bean_paste": {
@@ -329,9 +264,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "vegetable",
       "cost_cents": 180,
@@ -397,9 +330,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "meat",
       "cost_cents": 700,
@@ -463,9 +394,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "meat",
       "cost_cents": 600,
@@ -525,9 +454,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "vegetable",
       "cost_cents": 180,
@@ -543,64 +470,6 @@
         "color": "be884d"
       },
       "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE"
-    },
-    "black_bean": {
-      "definition": {
-        "id": "black_bean",
-        "name": "黑豆",
-        "scope": "PROTOTYPE",
-        "category": "soy",
-        "subcategory": "black_bean",
-        "quality": 0.8,
-        "base_tastes": [
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0.2,
-          "B": 0.1,
-          "C": 0
-        },
-        "aroma": {},
-        "region": [],
-        "special": [
-          "starch"
-        ],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; recipe_atlas material extension"
-      },
-      "source_id": "",
-      "culture_tags": [],
-      "supply_regions": [
-        "mexico_city"
-      ],
-      "category": "soy",
-      "cost_cents": 180,
-      "stock": {
-        "group": "vegetable",
-        "shelf_days": 9,
-        "pack_units": 1000,
-        "unit": "份",
-        "condiment": false
-      },
-      "icon": {
-        "shape": "grain",
-        "color": "d76f49"
-      },
-      "source_status": "PROPOSED_AI_079"
     },
     "blackpepper": {
       "definition": {
@@ -645,9 +514,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "spice",
       "cost_cents": 200,
@@ -767,9 +634,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "liquid",
       "cost_cents": 180,
@@ -836,9 +701,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "grain",
       "cost_cents": 180,
@@ -905,9 +768,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "grain",
       "cost_cents": 180,
@@ -974,9 +835,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "egg_dairy",
       "cost_cents": 200,
@@ -1041,9 +900,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "vegetable",
       "cost_cents": 180,
@@ -1174,9 +1031,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "egg_dairy",
       "cost_cents": 600,
@@ -1307,9 +1162,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "meat",
       "cost_cents": 500,
@@ -1325,71 +1178,6 @@
         "color": "be884d"
       },
       "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE"
-    },
-    "chicken_fat": {
-      "definition": {
-        "id": "chicken_fat",
-        "name": "鸡油",
-        "scope": "PROTOTYPE",
-        "category": "seasoning",
-        "subcategory": "chicken_fat",
-        "quality": 0.8,
-        "base_tastes": [
-          0,
-          0,
-          0,
-          0,
-          25,
-          20,
-          0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0.2,
-          "B": 0.1,
-          "C": 0
-        },
-        "aroma": {},
-        "region": [],
-        "special": [
-          "fat"
-        ],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; recipe_atlas material extension"
-      },
-      "source_id": "",
-      "culture_tags": [],
-      "supply_regions": [
-        "chengdu",
-        "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
-      ],
-      "category": "fat",
-      "cost_cents": 200,
-      "stock": {
-        "group": "seasoning",
-        "shelf_days": 90,
-        "pack_units": 1000,
-        "unit": "瓶",
-        "condiment": true
-      },
-      "icon": {
-        "shape": "bottle",
-        "color": "be884d"
-      },
-      "source_status": "PROPOSED_AI_079",
-      "unlock_cuisines": [
-        "sea"
-      ]
     },
     "chili": {
       "definition": {
@@ -1440,9 +1228,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "vegetable",
       "cost_cents": 200,
@@ -1458,65 +1244,6 @@
         "color": "be884d"
       },
       "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE"
-    },
-    "chimichurri": {
-      "definition": {
-        "id": "chimichurri",
-        "name": "阿根廷香草酱",
-        "scope": "PROTOTYPE",
-        "category": "seasoning",
-        "subcategory": "chimichurri",
-        "quality": 0.8,
-        "base_tastes": [
-          0,
-          0,
-          0,
-          0,
-          25,
-          20,
-          0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0.2,
-          "B": 0.1,
-          "C": 0
-        },
-        "aroma": {},
-        "region": [],
-        "special": [],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; recipe_atlas material extension"
-      },
-      "source_id": "",
-      "culture_tags": [],
-      "supply_regions": [
-        "mexico_city"
-      ],
-      "category": "seasoning",
-      "cost_cents": 200,
-      "stock": {
-        "group": "seasoning",
-        "shelf_days": 90,
-        "pack_units": 1000,
-        "unit": "瓶",
-        "condiment": true
-      },
-      "icon": {
-        "shape": "bottle",
-        "color": "d76f49"
-      },
-      "source_status": "PROPOSED_AI_079",
-      "unlock_cuisines": [
-        "lat"
-      ]
     },
     "chinese_sausage": {
       "definition": {
@@ -1581,139 +1308,6 @@
       },
       "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE"
     },
-    "cilantro": {
-      "definition": {
-        "id": "cilantro",
-        "name": "香菜",
-        "scope": "PROTOTYPE",
-        "category": "seasoning",
-        "subcategory": "cilantro",
-        "quality": 0.8,
-        "base_tastes": [
-          0.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0.7,
-          "B": 0.2,
-          "C": 0.0
-        },
-        "aroma": {
-          "特殊青气": 2
-        },
-        "region": [],
-        "special": [],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; doc/source/ingredients.json#cilantro"
-      },
-      "source_id": "cilantro",
-      "culture_tags": [],
-      "supply_regions": [
-        "chengdu",
-        "bangkok",
-        "mexico_city"
-      ],
-      "category": "vegetable",
-      "cost_cents": 200,
-      "stock": {
-        "group": "seasoning",
-        "shelf_days": 90,
-        "pack_units": 1000,
-        "unit": "瓶",
-        "condiment": true
-      },
-      "icon": {
-        "shape": "bottle",
-        "color": "be884d"
-      },
-      "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE",
-      "unlock_cuisines": [
-        "sea",
-        "lat"
-      ]
-    },
-    "cinnamon": {
-      "definition": {
-        "id": "cinnamon",
-        "name": "桂皮",
-        "scope": "PROTOTYPE",
-        "category": "seasoning",
-        "subcategory": "cinnamon",
-        "quality": 0.8,
-        "base_tastes": [
-          0.0,
-          20.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0.0,
-          "B": 0.0,
-          "C": 0.0
-        },
-        "aroma": {
-          "桂皮香": 2
-        },
-        "region": [
-          "中式"
-        ],
-        "special": [],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; doc/source/ingredients.json#cinnamon"
-      },
-      "source_id": "cinnamon",
-      "culture_tags": [
-        "中式"
-      ],
-      "supply_regions": [
-        "chengdu",
-        "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
-      ],
-      "category": "spice",
-      "cost_cents": 200,
-      "stock": {
-        "group": "seasoning",
-        "shelf_days": 90,
-        "pack_units": 1000,
-        "unit": "瓶",
-        "condiment": true
-      },
-      "icon": {
-        "shape": "bottle",
-        "color": "be884d"
-      },
-      "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE",
-      "unlock_cuisines": [
-        "lat"
-      ]
-    },
     "clam": {
       "definition": {
         "id": "clam",
@@ -1761,9 +1355,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "seafood",
       "cost_cents": 650,
@@ -1821,9 +1413,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "seasoning",
       "cost_cents": 200,
@@ -1840,134 +1430,7 @@
       },
       "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE",
       "unlock_cuisines": [
-        "eu",
-        "lat"
-      ]
-    },
-    "cocoa": {
-      "definition": {
-        "id": "cocoa",
-        "name": "可可粉",
-        "scope": "PROTOTYPE",
-        "category": "seasoning",
-        "subcategory": "cocoa",
-        "quality": 0.8,
-        "base_tastes": [
-          0,
-          0,
-          0,
-          0,
-          25,
-          20,
-          0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0.2,
-          "B": 0.1,
-          "C": 0
-        },
-        "aroma": {},
-        "region": [],
-        "special": [],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; recipe_atlas material extension"
-      },
-      "source_id": "",
-      "culture_tags": [],
-      "supply_regions": [
-        "mexico_city"
-      ],
-      "category": "spice",
-      "cost_cents": 200,
-      "stock": {
-        "group": "seasoning",
-        "shelf_days": 90,
-        "pack_units": 1000,
-        "unit": "瓶",
-        "condiment": true
-      },
-      "icon": {
-        "shape": "bottle",
-        "color": "d76f49"
-      },
-      "source_status": "PROPOSED_AI_079",
-      "unlock_cuisines": [
-        "lat"
-      ]
-    },
-    "coconut_milk": {
-      "definition": {
-        "id": "coconut_milk",
-        "name": "椰浆",
-        "scope": "PROTOTYPE",
-        "category": "seasoning",
-        "subcategory": "coconut_milk",
-        "quality": 0.8,
-        "base_tastes": [
-          0.0,
-          35.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0.4,
-          "B": 0.0,
-          "C": 0.2
-        },
-        "aroma": {
-          "椰香": 2
-        },
-        "region": [
-          "东南亚"
-        ],
-        "special": [],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; doc/source/ingredients.json#coconut"
-      },
-      "source_id": "coconut",
-      "culture_tags": [
-        "东南亚"
-      ],
-      "supply_regions": [
-        "bangkok",
-        "mexico_city"
-      ],
-      "category": "seasoning",
-      "cost_cents": 200,
-      "stock": {
-        "group": "seasoning",
-        "shelf_days": 90,
-        "pack_units": 1000,
-        "unit": "瓶",
-        "condiment": true
-      },
-      "icon": {
-        "shape": "bottle",
-        "color": "94b45f"
-      },
-      "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE",
-      "unlock_cuisines": [
-        "sea",
-        "lat"
+        "eu"
       ]
     },
     "corn": {
@@ -2015,9 +1478,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "grain",
       "cost_cents": 180,
@@ -2033,124 +1494,6 @@
         "color": "be884d"
       },
       "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE"
-    },
-    "corn_flour": {
-      "definition": {
-        "id": "corn_flour",
-        "name": "玉米面",
-        "scope": "PROTOTYPE",
-        "category": "grain",
-        "subcategory": "corn_flour",
-        "quality": 0.8,
-        "base_tastes": [
-          0.0,
-          40.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0.4,
-          "B": 0.2,
-          "C": 0.0
-        },
-        "aroma": {
-          "玉米香": 2
-        },
-        "region": [],
-        "special": [
-          "starch"
-        ],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; doc/source/ingredients.json#corn"
-      },
-      "source_id": "corn",
-      "culture_tags": [],
-      "supply_regions": [
-        "mexico_city"
-      ],
-      "category": "grain",
-      "cost_cents": 180,
-      "stock": {
-        "group": "vegetable",
-        "shelf_days": 30,
-        "pack_units": 1000,
-        "unit": "份",
-        "condiment": false
-      },
-      "icon": {
-        "shape": "grain",
-        "color": "d76f49"
-      },
-      "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE"
-    },
-    "corn_husk": {
-      "definition": {
-        "id": "corn_husk",
-        "name": "玉米叶",
-        "scope": "PROTOTYPE",
-        "category": "vegetable",
-        "subcategory": "corn_husk",
-        "quality": 0.8,
-        "base_tastes": [
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0.2,
-          "B": 0.1,
-          "C": 0
-        },
-        "aroma": {},
-        "region": [],
-        "special": [
-          "cuttable"
-        ],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; recipe_atlas material extension"
-      },
-      "source_id": "",
-      "culture_tags": [],
-      "supply_regions": [
-        "mexico_city"
-      ],
-      "category": "vegetable",
-      "cost_cents": 180,
-      "stock": {
-        "group": "vegetable",
-        "shelf_days": 9,
-        "pack_units": 1000,
-        "unit": "份",
-        "condiment": false
-      },
-      "icon": {
-        "shape": "leaf",
-        "color": "d76f49"
-      },
-      "source_status": "PROPOSED_AI_079"
     },
     "cream": {
       "definition": {
@@ -2198,9 +1541,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "egg_dairy",
       "cost_cents": 200,
@@ -2265,9 +1606,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "vegetable",
       "cost_cents": 180,
@@ -2283,78 +1622,6 @@
         "color": "be884d"
       },
       "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE"
-    },
-    "cumin": {
-      "definition": {
-        "id": "cumin",
-        "name": "孜然",
-        "scope": "PROTOTYPE",
-        "category": "seasoning",
-        "subcategory": "cumin",
-        "quality": 0.8,
-        "base_tastes": [
-          0.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0.0,
-          "B": 0.0,
-          "C": 0.0
-        },
-        "aroma": {
-          "孜然香": 2
-        },
-        "region": [
-          "新疆",
-          "中东"
-        ],
-        "special": [],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; doc/source/ingredients.json#cumin"
-      },
-      "source_id": "cumin",
-      "culture_tags": [
-        "新疆",
-        "中东"
-      ],
-      "supply_regions": [
-        "chengdu",
-        "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
-      ],
-      "category": "spice",
-      "cost_cents": 200,
-      "stock": {
-        "group": "seasoning",
-        "shelf_days": 90,
-        "pack_units": 1000,
-        "unit": "瓶",
-        "condiment": true
-      },
-      "icon": {
-        "shape": "bottle",
-        "color": "be884d"
-      },
-      "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE",
-      "unlock_cuisines": [
-        "sea",
-        "lat"
-      ]
     },
     "dashi": {
       "definition": {
@@ -2460,9 +1727,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "grain",
       "cost_cents": 180,
@@ -2590,9 +1855,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "dried",
       "cost_cents": 180,
@@ -2656,9 +1919,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "dried",
       "cost_cents": 180,
@@ -2722,9 +1983,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "meat",
       "cost_cents": 600,
@@ -2920,9 +2179,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "egg_dairy",
       "cost_cents": 150,
@@ -2982,9 +2239,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "vegetable",
       "cost_cents": 180,
@@ -3048,9 +2303,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "seafood",
       "cost_cents": 650,
@@ -3129,71 +2382,6 @@
       },
       "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE"
     },
-    "fishsauce": {
-      "definition": {
-        "id": "fishsauce",
-        "name": "鱼露",
-        "scope": "PROTOTYPE",
-        "category": "seasoning",
-        "subcategory": "fishsauce",
-        "quality": 0.8,
-        "base_tastes": [
-          0.0,
-          0.0,
-          0.0,
-          0.0,
-          85.0,
-          60.0,
-          0.0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0,
-          "B": 0,
-          "C": 0
-        },
-        "aroma": {
-          "发酵鱼香": 2
-        },
-        "region": [
-          "东南亚"
-        ],
-        "special": [],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; doc/source/ingredients.json#fishsauce"
-      },
-      "source_id": "fishsauce",
-      "culture_tags": [
-        "东南亚"
-      ],
-      "supply_regions": [
-        "bangkok"
-      ],
-      "category": "seasoning",
-      "cost_cents": 200,
-      "stock": {
-        "group": "seasoning",
-        "shelf_days": 90,
-        "pack_units": 1000,
-        "unit": "瓶",
-        "condiment": true
-      },
-      "icon": {
-        "shape": "bottle",
-        "color": "94b45f"
-      },
-      "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE",
-      "unlock_cuisines": [
-        "sea"
-      ]
-    },
     "flatbread": {
       "definition": {
         "id": "flatbread",
@@ -3243,9 +2431,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "grain",
       "cost_cents": 180,
@@ -3307,9 +2493,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "grain",
       "cost_cents": 180,
@@ -3368,9 +2552,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "vegetable",
       "cost_cents": 100,
@@ -3433,9 +2615,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "vegetable",
       "cost_cents": 150,
@@ -3453,128 +2633,6 @@
       "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE",
       "unlock_cuisines": [
         "cn"
-      ]
-    },
-    "ginger_scallion_sauce": {
-      "definition": {
-        "id": "ginger_scallion_sauce",
-        "name": "姜葱酱",
-        "scope": "PROTOTYPE",
-        "category": "seasoning",
-        "subcategory": "ginger_scallion_sauce",
-        "quality": 0.8,
-        "base_tastes": [
-          0,
-          0,
-          0,
-          0,
-          25,
-          20,
-          0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0.2,
-          "B": 0.1,
-          "C": 0
-        },
-        "aroma": {},
-        "region": [],
-        "special": [],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; recipe_atlas material extension"
-      },
-      "source_id": "",
-      "culture_tags": [],
-      "supply_regions": [
-        "chengdu",
-        "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
-      ],
-      "category": "seasoning",
-      "cost_cents": 200,
-      "stock": {
-        "group": "seasoning",
-        "shelf_days": 90,
-        "pack_units": 1000,
-        "unit": "瓶",
-        "condiment": true
-      },
-      "icon": {
-        "shape": "bottle",
-        "color": "be884d"
-      },
-      "source_status": "PROPOSED_AI_079",
-      "unlock_cuisines": [
-        "sea"
-      ]
-    },
-    "green_curry": {
-      "definition": {
-        "id": "green_curry",
-        "name": "绿咖喱酱",
-        "scope": "PROTOTYPE",
-        "category": "seasoning",
-        "subcategory": "green_curry",
-        "quality": 0.8,
-        "base_tastes": [
-          0,
-          0,
-          0,
-          45,
-          25,
-          20,
-          0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0.2,
-          "B": 0.1,
-          "C": 0
-        },
-        "aroma": {},
-        "region": [],
-        "special": [],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; recipe_atlas material extension"
-      },
-      "source_id": "",
-      "culture_tags": [],
-      "supply_regions": [
-        "bangkok"
-      ],
-      "category": "seasoning",
-      "cost_cents": 200,
-      "stock": {
-        "group": "seasoning",
-        "shelf_days": 90,
-        "pack_units": 1000,
-        "unit": "瓶",
-        "condiment": true
-      },
-      "icon": {
-        "shape": "bottle",
-        "color": "94b45f"
-      },
-      "source_status": "PROPOSED_AI_079",
-      "unlock_cuisines": [
-        "sea"
       ]
     },
     "ham": {
@@ -3630,9 +2688,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "meat",
       "cost_cents": 600,
@@ -3692,9 +2748,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "seasoning",
       "cost_cents": 200,
@@ -3826,9 +2880,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "seasoning",
       "cost_cents": 200,
@@ -3846,65 +2898,6 @@
       "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE",
       "unlock_cuisines": [
         "eu"
-      ]
-    },
-    "laksa_paste": {
-      "definition": {
-        "id": "laksa_paste",
-        "name": "叻沙汤酱",
-        "scope": "PROTOTYPE",
-        "category": "seasoning",
-        "subcategory": "laksa_paste",
-        "quality": 0.8,
-        "base_tastes": [
-          0,
-          0,
-          0,
-          0,
-          25,
-          20,
-          0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0.2,
-          "B": 0.1,
-          "C": 0
-        },
-        "aroma": {},
-        "region": [],
-        "special": [],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; recipe_atlas material extension"
-      },
-      "source_id": "",
-      "culture_tags": [],
-      "supply_regions": [
-        "bangkok"
-      ],
-      "category": "seasoning",
-      "cost_cents": 200,
-      "stock": {
-        "group": "seasoning",
-        "shelf_days": 90,
-        "pack_units": 1000,
-        "unit": "瓶",
-        "condiment": true
-      },
-      "icon": {
-        "shape": "bottle",
-        "color": "94b45f"
-      },
-      "source_status": "PROPOSED_AI_079",
-      "unlock_cuisines": [
-        "sea"
       ]
     },
     "lasagna_sheet": {
@@ -4016,9 +3009,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "fruit",
       "cost_cents": 250,
@@ -4034,71 +3025,6 @@
         "color": "be884d"
       },
       "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE"
-    },
-    "lemongrass": {
-      "definition": {
-        "id": "lemongrass",
-        "name": "香茅",
-        "scope": "PROTOTYPE",
-        "category": "seasoning",
-        "subcategory": "lemongrass",
-        "quality": 0.8,
-        "base_tastes": [
-          10.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0.0,
-          "B": -0.4,
-          "C": 0.0
-        },
-        "aroma": {
-          "柠檬草香": 2
-        },
-        "region": [
-          "泰"
-        ],
-        "special": [],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; doc/source/ingredients.json#lemongrass"
-      },
-      "source_id": "lemongrass",
-      "culture_tags": [
-        "泰"
-      ],
-      "supply_regions": [
-        "bangkok"
-      ],
-      "category": "vegetable",
-      "cost_cents": 200,
-      "stock": {
-        "group": "seasoning",
-        "shelf_days": 90,
-        "pack_units": 1000,
-        "unit": "瓶",
-        "condiment": true
-      },
-      "icon": {
-        "shape": "bottle",
-        "color": "94b45f"
-      },
-      "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE",
-      "unlock_cuisines": [
-        "sea"
-      ]
     },
     "lettuce": {
       "definition": {
@@ -4143,9 +3069,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "vegetable",
       "cost_cents": 180,
@@ -4161,73 +3085,6 @@
         "color": "be884d"
       },
       "source_status": "PROPOSED_AI_079"
-    },
-    "lime": {
-      "definition": {
-        "id": "lime",
-        "name": "青柠",
-        "scope": "PROTOTYPE",
-        "category": "fruit",
-        "subcategory": "lime",
-        "quality": 0.8,
-        "base_tastes": [
-          85.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0.6,
-          "B": 0.1,
-          "C": 0.0
-        },
-        "aroma": {
-          "柑橘香": 2
-        },
-        "region": [
-          "秘鲁",
-          "东南亚"
-        ],
-        "special": [
-          "cuttable"
-        ],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; doc/source/ingredients.json#lime"
-      },
-      "source_id": "lime",
-      "culture_tags": [
-        "秘鲁",
-        "东南亚"
-      ],
-      "supply_regions": [
-        "bangkok",
-        "mexico_city"
-      ],
-      "category": "fruit",
-      "cost_cents": 250,
-      "stock": {
-        "group": "fruit",
-        "shelf_days": 12,
-        "pack_units": 1000,
-        "unit": "份",
-        "condiment": false
-      },
-      "icon": {
-        "shape": "leaf",
-        "color": "94b45f"
-      },
-      "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE"
     },
     "malt": {
       "definition": {
@@ -4293,126 +3150,6 @@
       },
       "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE"
     },
-    "massaman": {
-      "definition": {
-        "id": "massaman",
-        "name": "马萨曼咖喱酱",
-        "scope": "PROTOTYPE",
-        "category": "seasoning",
-        "subcategory": "massaman",
-        "quality": 0.8,
-        "base_tastes": [
-          0,
-          0,
-          0,
-          0,
-          25,
-          20,
-          0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0.2,
-          "B": 0.1,
-          "C": 0
-        },
-        "aroma": {},
-        "region": [],
-        "special": [],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; recipe_atlas material extension"
-      },
-      "source_id": "",
-      "culture_tags": [],
-      "supply_regions": [
-        "bangkok"
-      ],
-      "category": "seasoning",
-      "cost_cents": 200,
-      "stock": {
-        "group": "seasoning",
-        "shelf_days": 90,
-        "pack_units": 1000,
-        "unit": "瓶",
-        "condiment": true
-      },
-      "icon": {
-        "shape": "bottle",
-        "color": "94b45f"
-      },
-      "source_status": "PROPOSED_AI_079",
-      "unlock_cuisines": [
-        "sea"
-      ]
-    },
-    "mexican_chili_sauce": {
-      "definition": {
-        "id": "mexican_chili_sauce",
-        "name": "墨式辣椒酱",
-        "scope": "PROTOTYPE",
-        "category": "seasoning",
-        "subcategory": "mexican_chili_sauce",
-        "quality": 0.8,
-        "base_tastes": [
-          0.0,
-          0.0,
-          0.0,
-          65.0,
-          40.0,
-          0.0,
-          0.0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0,
-          "B": 0,
-          "C": 0.2
-        },
-        "aroma": {
-          "辣香": 2
-        },
-        "region": [],
-        "special": [],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; doc/source/ingredients.json#chilisauce"
-      },
-      "source_id": "chilisauce",
-      "culture_tags": [],
-      "supply_regions": [
-        "mexico_city"
-      ],
-      "category": "seasoning",
-      "cost_cents": 200,
-      "stock": {
-        "group": "seasoning",
-        "shelf_days": 90,
-        "pack_units": 1000,
-        "unit": "瓶",
-        "condiment": true
-      },
-      "icon": {
-        "shape": "bottle",
-        "color": "d76f49"
-      },
-      "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE",
-      "unlock_cuisines": [
-        "lat"
-      ]
-    },
     "milk": {
       "definition": {
         "id": "milk",
@@ -4459,9 +3196,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "egg_dairy",
       "cost_cents": 600,
@@ -4477,68 +3212,6 @@
         "color": "be884d"
       },
       "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE"
-    },
-    "mint": {
-      "definition": {
-        "id": "mint",
-        "name": "薄荷",
-        "scope": "PROTOTYPE",
-        "category": "seasoning",
-        "subcategory": "mint",
-        "quality": 0.8,
-        "base_tastes": [
-          0.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0.8,
-          "B": 0.1,
-          "C": 0.0
-        },
-        "aroma": {
-          "清凉香": 2
-        },
-        "region": [],
-        "special": [],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; doc/source/ingredients.json#mint"
-      },
-      "source_id": "mint",
-      "culture_tags": [],
-      "supply_regions": [
-        "bangkok",
-        "paris"
-      ],
-      "category": "vegetable",
-      "cost_cents": 200,
-      "stock": {
-        "group": "seasoning",
-        "shelf_days": 90,
-        "pack_units": 1000,
-        "unit": "瓶",
-        "condiment": true
-      },
-      "icon": {
-        "shape": "bottle",
-        "color": "94b45f"
-      },
-      "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE",
-      "unlock_cuisines": [
-        "sea"
-      ]
     },
     "mirin": {
       "definition": {
@@ -4672,65 +3345,6 @@
         "jp"
       ]
     },
-    "mole": {
-      "definition": {
-        "id": "mole",
-        "name": "摩尔酱",
-        "scope": "PROTOTYPE",
-        "category": "seasoning",
-        "subcategory": "mole",
-        "quality": 0.8,
-        "base_tastes": [
-          0,
-          25,
-          0,
-          0,
-          25,
-          20,
-          0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0.2,
-          "B": 0.1,
-          "C": 0
-        },
-        "aroma": {},
-        "region": [],
-        "special": [],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; recipe_atlas material extension"
-      },
-      "source_id": "",
-      "culture_tags": [],
-      "supply_regions": [
-        "mexico_city"
-      ],
-      "category": "seasoning",
-      "cost_cents": 200,
-      "stock": {
-        "group": "seasoning",
-        "shelf_days": 90,
-        "pack_units": 1000,
-        "unit": "瓶",
-        "condiment": true
-      },
-      "icon": {
-        "shape": "bottle",
-        "color": "d76f49"
-      },
-      "source_status": "PROPOSED_AI_079",
-      "unlock_cuisines": [
-        "lat"
-      ]
-    },
     "mozzarella": {
       "definition": {
         "id": "mozzarella",
@@ -4843,9 +3457,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "mushroom",
       "cost_cents": 300,
@@ -4973,9 +3585,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "grain",
       "cost_cents": 200,
@@ -5098,9 +3708,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "fat",
       "cost_cents": 150,
@@ -5118,8 +3726,7 @@
       "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE",
       "unlock_cuisines": [
         "cn",
-        "jp",
-        "sea"
+        "jp"
       ]
     },
     "oliveoil": {
@@ -5234,9 +3841,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "vegetable",
       "cost_cents": 180,
@@ -5426,8 +4031,7 @@
       "culture_tags": [],
       "supply_regions": [
         "chengdu",
-        "paris",
-        "mexico_city"
+        "paris"
       ],
       "category": "grain",
       "cost_cents": 180,
@@ -5487,9 +4091,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "vegetable",
       "cost_cents": 180,
@@ -5552,9 +4154,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "protein",
       "cost_cents": 200,
@@ -5570,65 +4170,6 @@
         "color": "be884d"
       },
       "source_status": "PROPOSED_AI_079"
-    },
-    "peanut_sauce": {
-      "definition": {
-        "id": "peanut_sauce",
-        "name": "沙嗲花生酱",
-        "scope": "PROTOTYPE",
-        "category": "seasoning",
-        "subcategory": "peanut_sauce",
-        "quality": 0.8,
-        "base_tastes": [
-          0,
-          0,
-          0,
-          0,
-          25,
-          20,
-          0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0.2,
-          "B": 0.1,
-          "C": 0
-        },
-        "aroma": {},
-        "region": [],
-        "special": [],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; recipe_atlas material extension"
-      },
-      "source_id": "",
-      "culture_tags": [],
-      "supply_regions": [
-        "bangkok"
-      ],
-      "category": "seasoning",
-      "cost_cents": 200,
-      "stock": {
-        "group": "seasoning",
-        "shelf_days": 90,
-        "pack_units": 1000,
-        "unit": "瓶",
-        "condiment": true
-      },
-      "icon": {
-        "shape": "bottle",
-        "color": "94b45f"
-      },
-      "source_status": "PROPOSED_AI_079",
-      "unlock_cuisines": [
-        "sea"
-      ]
     },
     "pepper": {
       "definition": {
@@ -5807,9 +4348,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "meat",
       "cost_cents": 500,
@@ -5873,9 +4412,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "meat",
       "cost_cents": 600,
@@ -5939,9 +4476,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "meat",
       "cost_cents": 600,
@@ -6001,9 +4536,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "vegetable",
       "cost_cents": 180,
@@ -6019,64 +4552,6 @@
         "color": "be884d"
       },
       "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE"
-    },
-    "prawn_cracker": {
-      "definition": {
-        "id": "prawn_cracker",
-        "name": "虾片",
-        "scope": "PROTOTYPE",
-        "category": "grain",
-        "subcategory": "prawn_cracker",
-        "quality": 0.8,
-        "base_tastes": [
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0.2,
-          "B": 0.1,
-          "C": 0
-        },
-        "aroma": {},
-        "region": [],
-        "special": [
-          "starch"
-        ],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; recipe_atlas material extension"
-      },
-      "source_id": "",
-      "culture_tags": [],
-      "supply_regions": [
-        "bangkok"
-      ],
-      "category": "grain",
-      "cost_cents": 180,
-      "stock": {
-        "group": "vegetable",
-        "shelf_days": 30,
-        "pack_units": 1000,
-        "unit": "份",
-        "condiment": false
-      },
-      "icon": {
-        "shape": "grain",
-        "color": "94b45f"
-      },
-      "source_status": "PROPOSED_AI_079"
     },
     "radish": {
       "definition": {
@@ -6123,9 +4598,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "vegetable",
       "cost_cents": 180,
@@ -6247,9 +4720,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "grain",
       "cost_cents": 180,
@@ -6263,125 +4734,6 @@
       "icon": {
         "shape": "grain",
         "color": "be884d"
-      },
-      "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE"
-    },
-    "red_curry": {
-      "definition": {
-        "id": "red_curry",
-        "name": "红咖喱酱",
-        "scope": "PROTOTYPE",
-        "category": "seasoning",
-        "subcategory": "red_curry",
-        "quality": 0.8,
-        "base_tastes": [
-          0,
-          0,
-          0,
-          45,
-          25,
-          20,
-          0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0.2,
-          "B": 0.1,
-          "C": 0
-        },
-        "aroma": {},
-        "region": [],
-        "special": [],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; recipe_atlas material extension"
-      },
-      "source_id": "",
-      "culture_tags": [],
-      "supply_regions": [
-        "bangkok"
-      ],
-      "category": "seasoning",
-      "cost_cents": 200,
-      "stock": {
-        "group": "seasoning",
-        "shelf_days": 90,
-        "pack_units": 1000,
-        "unit": "瓶",
-        "condiment": true
-      },
-      "icon": {
-        "shape": "bottle",
-        "color": "94b45f"
-      },
-      "source_status": "PROPOSED_AI_079",
-      "unlock_cuisines": [
-        "sea"
-      ]
-    },
-    "red_onion": {
-      "definition": {
-        "id": "red_onion",
-        "name": "红洋葱",
-        "scope": "PROTOTYPE",
-        "category": "vegetable",
-        "subcategory": "red_onion",
-        "quality": 0.8,
-        "base_tastes": [
-          0.0,
-          20.0,
-          0.0,
-          25.0,
-          0.0,
-          0.0,
-          0.0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0.5,
-          "B": 0.2,
-          "C": 0.0
-        },
-        "aroma": {
-          "硫香": 2
-        },
-        "region": [],
-        "special": [
-          "cuttable"
-        ],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; doc/source/ingredients.json#onion"
-      },
-      "source_id": "onion",
-      "culture_tags": [],
-      "supply_regions": [
-        "mexico_city"
-      ],
-      "category": "vegetable",
-      "cost_cents": 180,
-      "stock": {
-        "group": "vegetable",
-        "shelf_days": 9,
-        "pack_units": 1000,
-        "unit": "份",
-        "condiment": false
-      },
-      "icon": {
-        "shape": "leaf",
-        "color": "d76f49"
       },
       "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE"
     },
@@ -6489,9 +4841,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "grain",
       "cost_cents": 80,
@@ -6505,132 +4855,6 @@
       "icon": {
         "shape": "grain",
         "color": "be884d"
-      },
-      "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE"
-    },
-    "rice_paper": {
-      "definition": {
-        "id": "rice_paper",
-        "name": "米纸",
-        "scope": "PROTOTYPE",
-        "category": "grain",
-        "subcategory": "rice_paper",
-        "quality": 0.8,
-        "base_tastes": [
-          0.0,
-          10.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0.5,
-          "B": 0.0,
-          "C": 0.3
-        },
-        "aroma": {
-          "米香": 2
-        },
-        "region": [],
-        "special": [
-          "starch"
-        ],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; doc/source/ingredients.json#rice"
-      },
-      "source_id": "rice",
-      "culture_tags": [],
-      "supply_regions": [
-        "bangkok"
-      ],
-      "category": "grain",
-      "cost_cents": 180,
-      "stock": {
-        "group": "vegetable",
-        "shelf_days": 30,
-        "pack_units": 1000,
-        "unit": "份",
-        "condiment": false
-      },
-      "icon": {
-        "shape": "grain",
-        "color": "94b45f"
-      },
-      "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE"
-    },
-    "rice_vermicelli": {
-      "definition": {
-        "id": "rice_vermicelli",
-        "name": "细米粉",
-        "scope": "PROTOTYPE",
-        "category": "grain",
-        "subcategory": "rice_vermicelli",
-        "quality": 0.8,
-        "base_tastes": [
-          0.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0.4,
-          "B": 0.1,
-          "C": -0.4
-        },
-        "aroma": {
-          "米香": 2
-        },
-        "region": [
-          "粤",
-          "桂"
-        ],
-        "special": [
-          "starch"
-        ],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; doc/source/ingredients.json#ricenoodle"
-      },
-      "source_id": "ricenoodle",
-      "culture_tags": [
-        "粤",
-        "桂"
-      ],
-      "supply_regions": [
-        "bangkok"
-      ],
-      "category": "grain",
-      "cost_cents": 180,
-      "stock": {
-        "group": "vegetable",
-        "shelf_days": 30,
-        "pack_units": 1000,
-        "unit": "份",
-        "condiment": false
-      },
-      "icon": {
-        "shape": "grain",
-        "color": "94b45f"
       },
       "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE"
     },
@@ -6878,9 +5102,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "seafood",
       "cost_cents": 650,
@@ -6896,65 +5118,6 @@
         "color": "be884d"
       },
       "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE"
-    },
-    "salsa": {
-      "definition": {
-        "id": "salsa",
-        "name": "莎莎酱",
-        "scope": "PROTOTYPE",
-        "category": "seasoning",
-        "subcategory": "salsa",
-        "quality": 0.8,
-        "base_tastes": [
-          0,
-          0,
-          0,
-          0,
-          25,
-          20,
-          0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0.2,
-          "B": 0.1,
-          "C": 0
-        },
-        "aroma": {},
-        "region": [],
-        "special": [],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; recipe_atlas material extension"
-      },
-      "source_id": "",
-      "culture_tags": [],
-      "supply_regions": [
-        "mexico_city"
-      ],
-      "category": "seasoning",
-      "cost_cents": 200,
-      "stock": {
-        "group": "seasoning",
-        "shelf_days": 90,
-        "pack_units": 1000,
-        "unit": "瓶",
-        "condiment": true
-      },
-      "icon": {
-        "shape": "bottle",
-        "color": "d76f49"
-      },
-      "source_status": "PROPOSED_AI_079",
-      "unlock_cuisines": [
-        "lat"
-      ]
     },
     "salt": {
       "definition": {
@@ -6998,9 +5161,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "seasoning",
       "cost_cents": 50,
@@ -7019,70 +5180,7 @@
       "unlock_cuisines": [
         "cn",
         "eu",
-        "jp",
-        "sea",
-        "lat"
-      ]
-    },
-    "sambal": {
-      "definition": {
-        "id": "sambal",
-        "name": "参巴辣椒酱",
-        "scope": "PROTOTYPE",
-        "category": "seasoning",
-        "subcategory": "sambal",
-        "quality": 0.8,
-        "base_tastes": [
-          0.0,
-          0.0,
-          0.0,
-          65.0,
-          40.0,
-          0.0,
-          0.0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0,
-          "B": 0,
-          "C": 0.2
-        },
-        "aroma": {
-          "辣香": 2
-        },
-        "region": [],
-        "special": [],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; doc/source/ingredients.json#chilisauce"
-      },
-      "source_id": "chilisauce",
-      "culture_tags": [],
-      "supply_regions": [
-        "bangkok"
-      ],
-      "category": "seasoning",
-      "cost_cents": 200,
-      "stock": {
-        "group": "seasoning",
-        "shelf_days": 90,
-        "pack_units": 1000,
-        "unit": "瓶",
-        "condiment": true
-      },
-      "icon": {
-        "shape": "bottle",
-        "color": "94b45f"
-      },
-      "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE",
-      "unlock_cuisines": [
-        "sea"
+        "jp"
       ]
     },
     "sauerkraut": {
@@ -7197,9 +5295,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "meat",
       "cost_cents": 600,
@@ -7258,9 +5354,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "vegetable",
       "cost_cents": 100,
@@ -7389,9 +5483,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "seafood",
       "cost_cents": 650,
@@ -7511,9 +5603,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "liquid",
       "cost_cents": 180,
@@ -7577,9 +5667,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "seafood",
       "cost_cents": 650,
@@ -7640,9 +5728,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "seasoning",
       "cost_cents": 100,
@@ -7710,9 +5796,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "seafood",
       "cost_cents": 650,
@@ -7774,8 +5858,7 @@
         "中式"
       ],
       "supply_regions": [
-        "chengdu",
-        "bangkok"
+        "chengdu"
       ],
       "category": "spice",
       "cost_cents": 200,
@@ -7792,8 +5875,7 @@
       },
       "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE",
       "unlock_cuisines": [
-        "cn",
-        "sea"
+        "cn"
       ]
     },
     "starch": {
@@ -7840,9 +5922,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "grain",
       "cost_cents": 80,
@@ -7903,9 +5983,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "liquid",
       "cost_cents": 180,
@@ -7967,9 +6045,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "fruit",
       "cost_cents": 250,
@@ -8030,9 +6106,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "seasoning",
       "cost_cents": 80,
@@ -8051,8 +6125,7 @@
       "unlock_cuisines": [
         "cn",
         "eu",
-        "jp",
-        "sea"
+        "jp"
       ]
     },
     "sushi_rice": {
@@ -8114,72 +6187,6 @@
         "color": "77a899"
       },
       "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE"
-    },
-    "sweet_soy": {
-      "definition": {
-        "id": "sweet_soy",
-        "name": "印尼甜酱油",
-        "scope": "PROTOTYPE",
-        "category": "seasoning",
-        "subcategory": "sweet_soy",
-        "quality": 0.8,
-        "base_tastes": [
-          0.0,
-          20.0,
-          0.0,
-          0.0,
-          70.0,
-          0.0,
-          0.0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0,
-          "B": 0,
-          "C": 0
-        },
-        "aroma": {
-          "酱香": 2,
-          "焦糖香": 2
-        },
-        "region": [
-          "中式"
-        ],
-        "special": [],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; doc/source/ingredients.json#soy_dark"
-      },
-      "source_id": "soy_dark",
-      "culture_tags": [
-        "中式"
-      ],
-      "supply_regions": [
-        "bangkok"
-      ],
-      "category": "seasoning",
-      "cost_cents": 200,
-      "stock": {
-        "group": "seasoning",
-        "shelf_days": 90,
-        "pack_units": 1000,
-        "unit": "瓶",
-        "condiment": true
-      },
-      "icon": {
-        "shape": "bottle",
-        "color": "94b45f"
-      },
-      "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE",
-      "unlock_cuisines": [
-        "sea"
-      ]
     },
     "sweetbeansauce": {
       "definition": {
@@ -8245,64 +6252,6 @@
       "unlock_cuisines": [
         "cn"
       ]
-    },
-    "tapioca_starch": {
-      "definition": {
-        "id": "tapioca_starch",
-        "name": "木薯淀粉",
-        "scope": "PROTOTYPE",
-        "category": "grain",
-        "subcategory": "tapioca_starch",
-        "quality": 0.8,
-        "base_tastes": [
-          0.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0.5,
-          "B": 0.0,
-          "C": 0.3
-        },
-        "aroma": {},
-        "region": [],
-        "special": [
-          "starch"
-        ],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; doc/source/ingredients.json#starch"
-      },
-      "source_id": "starch",
-      "culture_tags": [],
-      "supply_regions": [
-        "mexico_city"
-      ],
-      "category": "grain",
-      "cost_cents": 180,
-      "stock": {
-        "group": "vegetable",
-        "shelf_days": 30,
-        "pack_units": 1000,
-        "unit": "份",
-        "condiment": false
-      },
-      "icon": {
-        "shape": "grain",
-        "color": "d76f49"
-      },
-      "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE"
     },
     "teriyaki": {
       "definition": {
@@ -8409,9 +6358,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "soy",
       "cost_cents": 200,
@@ -8473,9 +6420,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "soy",
       "cost_cents": 180,
@@ -8538,9 +6483,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "vegetable",
       "cost_cents": 200,
@@ -8554,126 +6497,6 @@
       "icon": {
         "shape": "leaf",
         "color": "be884d"
-      },
-      "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE"
-    },
-    "tortilla": {
-      "definition": {
-        "id": "tortilla",
-        "name": "玉米饼",
-        "scope": "PROTOTYPE",
-        "category": "grain",
-        "subcategory": "tortilla",
-        "quality": 0.8,
-        "base_tastes": [
-          0.0,
-          40.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0.4,
-          "B": 0.2,
-          "C": 0.0
-        },
-        "aroma": {
-          "玉米香": 2
-        },
-        "region": [],
-        "special": [
-          "starch"
-        ],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; doc/source/ingredients.json#corn"
-      },
-      "source_id": "corn",
-      "culture_tags": [],
-      "supply_regions": [
-        "mexico_city"
-      ],
-      "category": "grain",
-      "cost_cents": 180,
-      "stock": {
-        "group": "vegetable",
-        "shelf_days": 30,
-        "pack_units": 1000,
-        "unit": "份",
-        "condiment": false
-      },
-      "icon": {
-        "shape": "grain",
-        "color": "d76f49"
-      },
-      "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE"
-    },
-    "tortilla_chip": {
-      "definition": {
-        "id": "tortilla_chip",
-        "name": "玉米片",
-        "scope": "PROTOTYPE",
-        "category": "grain",
-        "subcategory": "tortilla_chip",
-        "quality": 0.8,
-        "base_tastes": [
-          0.0,
-          40.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0.4,
-          "B": 0.2,
-          "C": 0.0
-        },
-        "aroma": {
-          "玉米香": 2
-        },
-        "region": [],
-        "special": [
-          "starch"
-        ],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; doc/source/ingredients.json#corn"
-      },
-      "source_id": "corn",
-      "culture_tags": [],
-      "supply_regions": [
-        "mexico_city"
-      ],
-      "category": "grain",
-      "cost_cents": 180,
-      "stock": {
-        "group": "vegetable",
-        "shelf_days": 30,
-        "pack_units": 1000,
-        "unit": "份",
-        "condiment": false
-      },
-      "icon": {
-        "shape": "grain",
-        "color": "d76f49"
       },
       "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE"
     },
@@ -8724,9 +6547,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "meat",
       "cost_cents": 600,
@@ -8794,9 +6615,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "seafood",
       "cost_cents": 650,
@@ -8812,71 +6631,6 @@
         "color": "be884d"
       },
       "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE"
-    },
-    "turmeric": {
-      "definition": {
-        "id": "turmeric",
-        "name": "姜黄",
-        "scope": "PROTOTYPE",
-        "category": "seasoning",
-        "subcategory": "turmeric",
-        "quality": 0.8,
-        "base_tastes": [
-          0.0,
-          0.0,
-          20.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0.0,
-          "B": 0.0,
-          "C": 0.0
-        },
-        "aroma": {
-          "土香": 2
-        },
-        "region": [
-          "印"
-        ],
-        "special": [],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; doc/source/ingredients.json#turmeric"
-      },
-      "source_id": "turmeric",
-      "culture_tags": [
-        "印"
-      ],
-      "supply_regions": [
-        "bangkok"
-      ],
-      "category": "spice",
-      "cost_cents": 200,
-      "stock": {
-        "group": "seasoning",
-        "shelf_days": 90,
-        "pack_units": 1000,
-        "unit": "瓶",
-        "condiment": true
-      },
-      "icon": {
-        "shape": "bottle",
-        "color": "94b45f"
-      },
-      "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE",
-      "unlock_cuisines": [
-        "sea"
-      ]
     },
     "udon": {
       "definition": {
@@ -9175,9 +6929,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "liquid",
       "cost_cents": 5,
@@ -9239,9 +6991,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "grain",
       "cost_cents": 100,
@@ -9255,66 +7005,6 @@
       "icon": {
         "shape": "grain",
         "color": "be884d"
-      },
-      "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE"
-    },
-    "wheat_tortilla": {
-      "definition": {
-        "id": "wheat_tortilla",
-        "name": "大号面饼",
-        "scope": "PROTOTYPE",
-        "category": "grain",
-        "subcategory": "wheat_tortilla",
-        "quality": 0.8,
-        "base_tastes": [
-          0.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0,
-          0.0
-        ],
-        "slot_profile": [
-          0.65,
-          1,
-          0.5,
-          0.3
-        ],
-        "texture": {
-          "A": 0.4,
-          "B": 0.0,
-          "C": -0.1
-        },
-        "aroma": {
-          "麦香": 2
-        },
-        "region": [],
-        "special": [
-          "starch"
-        ],
-        "temperature_c": 22,
-        "max_amount": 10,
-        "available": true,
-        "source": "AI-079 PROPOSED; doc/source/ingredients.json#flour"
-      },
-      "source_id": "flour",
-      "culture_tags": [],
-      "supply_regions": [
-        "mexico_city"
-      ],
-      "category": "grain",
-      "cost_cents": 180,
-      "stock": {
-        "group": "vegetable",
-        "shelf_days": 30,
-        "pack_units": 1000,
-        "unit": "份",
-        "condiment": false
-      },
-      "icon": {
-        "shape": "grain",
-        "color": "d76f49"
       },
       "source_status": "SOURCE_ID_WITH_PROPOSED_BALANCE"
     },
@@ -9423,9 +7113,7 @@
       "supply_regions": [
         "chengdu",
         "paris",
-        "tokyo",
-        "bangkok",
-        "mexico_city"
+        "tokyo"
       ],
       "category": "mushroom",
       "cost_cents": 180,
@@ -10538,674 +8226,6 @@
       ],
       "status": "PROPOSED_AI_079",
       "note": "显式建议材料组合；原文泛称按同菜系常见材料展开，不代表工序/用量已验收。"
-    },
-    {
-      "id": "S01",
-      "cuisine_id": "sea",
-      "name": "越式鲜春卷",
-      "source_text": "米纸、鲜虾、香草、生菜",
-      "ingredients": [
-        "rice_paper",
-        "shrimp",
-        "lettuce"
-      ],
-      "seasonings": [
-        "mint",
-        "cilantro",
-        "fishsauce"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "S02",
-      "cuisine_id": "sea",
-      "name": "椰香米饭",
-      "source_text": "米、椰浆、盐",
-      "ingredients": [
-        "raw_rice"
-      ],
-      "seasonings": [
-        "coconut_milk",
-        "salt"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "S03",
-      "cuisine_id": "sea",
-      "name": "越式清汤粉",
-      "source_text": "米粉、清汤、香草",
-      "ingredients": [
-        "rice_vermicelli",
-        "stock"
-      ],
-      "seasonings": [
-        "basil",
-        "cilantro",
-        "fishsauce"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "S04",
-      "cuisine_id": "sea",
-      "name": "泰式炒河粉",
-      "source_text": "河粉、鸡蛋、豆芽、鱼露",
-      "ingredients": [
-        "noodles",
-        "egg",
-        "beansprout"
-      ],
-      "seasonings": [
-        "fishsauce",
-        "oil",
-        "sugar"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "S05",
-      "cuisine_id": "sea",
-      "name": "越南牛肉河粉",
-      "source_text": "牛肉、米粉、香料高汤",
-      "ingredients": [
-        "beef",
-        "rice_vermicelli",
-        "stock"
-      ],
-      "seasonings": [
-        "staranise",
-        "basil",
-        "fishsauce"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "S06",
-      "cuisine_id": "sea",
-      "name": "印尼炒饭",
-      "source_text": "米饭、甜酱油、虾片",
-      "ingredients": [
-        "rice",
-        "egg",
-        "prawn_cracker"
-      ],
-      "seasonings": [
-        "sweet_soy",
-        "oil"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "S07",
-      "cuisine_id": "sea",
-      "name": "沙嗲串烧",
-      "source_text": "鸡肉、花生酱、香料",
-      "ingredients": [
-        "chicken"
-      ],
-      "seasonings": [
-        "peanut_sauce",
-        "cumin",
-        "turmeric"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "S08",
-      "cuisine_id": "sea",
-      "name": "泰式红咖喱",
-      "source_text": "红咖喱酱、椰浆、肉类",
-      "ingredients": [
-        "chicken"
-      ],
-      "seasonings": [
-        "red_curry",
-        "coconut_milk",
-        "fishsauce"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "S09",
-      "cuisine_id": "sea",
-      "name": "泰式绿咖喱",
-      "source_text": "绿咖喱酱、椰浆、茄子",
-      "ingredients": [
-        "eggplant",
-        "chicken"
-      ],
-      "seasonings": [
-        "green_curry",
-        "coconut_milk",
-        "fishsauce"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "S10",
-      "cuisine_id": "sea",
-      "name": "冬阴功汤",
-      "source_text": "虾、香茅、青柠、辣椒",
-      "ingredients": [
-        "shrimp",
-        "lime",
-        "chili"
-      ],
-      "seasonings": [
-        "lemongrass",
-        "fishsauce"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "S11",
-      "cuisine_id": "sea",
-      "name": "马来西亚叻沙",
-      "source_text": "米粉、咖喱汤底、虾",
-      "ingredients": [
-        "rice_vermicelli",
-        "shrimp"
-      ],
-      "seasonings": [
-        "laksa_paste",
-        "coconut_milk"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "S12",
-      "cuisine_id": "sea",
-      "name": "越式炸春卷",
-      "source_text": "米纸、肉馅、木耳",
-      "ingredients": [
-        "rice_paper",
-        "pork",
-        "woodear"
-      ],
-      "seasonings": [
-        "fishsauce",
-        "oil"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "S13",
-      "cuisine_id": "sea",
-      "name": "海南鸡饭",
-      "source_text": "鸡肉、鸡油饭、姜葱酱",
-      "ingredients": [
-        "chicken",
-        "raw_rice"
-      ],
-      "seasonings": [
-        "chicken_fat",
-        "ginger_scallion_sauce"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "S14",
-      "cuisine_id": "sea",
-      "name": "椰浆咖喱面",
-      "source_text": "面条、椰浆咖喱汤、豆腐泡",
-      "ingredients": [
-        "wheat_noodles",
-        "tofu_puff"
-      ],
-      "seasonings": [
-        "coconut_milk",
-        "red_curry"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "S15",
-      "cuisine_id": "sea",
-      "name": "泰式打抛猪肉饭",
-      "source_text": "猪肉、罗勒、辣椒、米饭",
-      "ingredients": [
-        "pork",
-        "chili",
-        "rice"
-      ],
-      "seasonings": [
-        "basil",
-        "fishsauce",
-        "oil"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "S16",
-      "cuisine_id": "sea",
-      "name": "马萨曼咖喱",
-      "source_text": "马萨曼咖喱酱、土豆、花生",
-      "ingredients": [
-        "potato",
-        "peanut",
-        "beef"
-      ],
-      "seasonings": [
-        "massaman",
-        "coconut_milk"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "S17",
-      "cuisine_id": "sea",
-      "name": "印尼沙爹饭",
-      "source_text": "沙嗲串烧、米饭、花生酱",
-      "ingredients": [
-        "chicken",
-        "rice"
-      ],
-      "seasonings": [
-        "peanut_sauce",
-        "cumin",
-        "turmeric"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "S18",
-      "cuisine_id": "sea",
-      "name": "海鲜叻沙",
-      "source_text": "虾、鱼片、叻沙汤底",
-      "ingredients": [
-        "shrimp",
-        "fish",
-        "rice_vermicelli"
-      ],
-      "seasonings": [
-        "laksa_paste",
-        "coconut_milk"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "S19",
-      "cuisine_id": "sea",
-      "name": "特色香料海鲜拼盘",
-      "source_text": "海鲜、香料酱、香草",
-      "ingredients": [
-        "shrimp",
-        "squid",
-        "clam"
-      ],
-      "seasonings": [
-        "sambal",
-        "lemongrass",
-        "basil"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "显式建议材料组合；原文泛称按同菜系常见材料展开，不代表工序/用量已验收。"
-    },
-    {
-      "id": "S20",
-      "cuisine_id": "sea",
-      "name": "东南亚风味宴席",
-      "source_text": "鸡饭、沙嗲、海鲜、咖喱",
-      "ingredients": [
-        "chicken",
-        "shrimp",
-        "rice"
-      ],
-      "seasonings": [
-        "peanut_sauce",
-        "red_curry",
-        "coconut_milk"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "显式建议材料组合；原文泛称按同菜系常见材料展开，不代表工序/用量已验收。"
-    },
-    {
-      "id": "L01",
-      "cuisine_id": "lat",
-      "name": "墨西哥玉米饼",
-      "source_text": "玉米面、盐、水",
-      "ingredients": [
-        "corn_flour",
-        "water"
-      ],
-      "seasonings": [
-        "salt"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "L02",
-      "cuisine_id": "lat",
-      "name": "黑豆饭",
-      "source_text": "黑豆、米饭、香料",
-      "ingredients": [
-        "black_bean",
-        "rice"
-      ],
-      "seasonings": [
-        "cumin",
-        "salt"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "L03",
-      "cuisine_id": "lat",
-      "name": "阿根廷肉馅饼",
-      "source_text": "酥皮、牛肉、洋葱",
-      "ingredients": [
-        "pastry",
-        "beef",
-        "onion"
-      ],
-      "seasonings": [
-        "cumin",
-        "salt"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "L04",
-      "cuisine_id": "lat",
-      "name": "秘鲁青柠腌鱼",
-      "source_text": "鲜鱼、青柠、红洋葱",
-      "ingredients": [
-        "fish",
-        "lime",
-        "red_onion"
-      ],
-      "seasonings": [
-        "cilantro",
-        "salt"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "L05",
-      "cuisine_id": "lat",
-      "name": "墨西哥玉米片配莎莎酱",
-      "source_text": "玉米片、番茄、洋葱、辣椒",
-      "ingredients": [
-        "tortilla_chip",
-        "tomato",
-        "onion",
-        "chili"
-      ],
-      "seasonings": [
-        "salt",
-        "cilantro"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "L06",
-      "cuisine_id": "lat",
-      "name": "墨西哥塔可",
-      "source_text": "玉米饼、肉类、豆类、莎莎酱",
-      "ingredients": [
-        "tortilla",
-        "beef",
-        "black_bean"
-      ],
-      "seasonings": [
-        "salsa"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "L07",
-      "cuisine_id": "lat",
-      "name": "巴西芝士面包",
-      "source_text": "木薯淀粉、奶酪、鸡蛋",
-      "ingredients": [
-        "tapioca_starch",
-        "cheese",
-        "egg"
-      ],
-      "seasonings": [
-        "salt"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "L08",
-      "cuisine_id": "lat",
-      "name": "墨西哥玉米粽",
-      "source_text": "玉米面、玉米叶、馅料",
-      "ingredients": [
-        "corn_flour",
-        "corn_husk",
-        "pork"
-      ],
-      "seasonings": [
-        "salsa"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "L09",
-      "cuisine_id": "lat",
-      "name": "阿根廷炭烤牛肉",
-      "source_text": "牛肉、盐、炭火",
-      "ingredients": [
-        "beef"
-      ],
-      "seasonings": [
-        "coarse_salt"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "L10",
-      "cuisine_id": "lat",
-      "name": "秘鲁海鲜酸橘汁",
-      "source_text": "鲜虾、贝类、青柠、香菜",
-      "ingredients": [
-        "shrimp",
-        "clam",
-        "lime"
-      ],
-      "seasonings": [
-        "cilantro",
-        "salt"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "L11",
-      "cuisine_id": "lat",
-      "name": "墨西哥辣椒炖肉",
-      "source_text": "牛肉、豆类、辣椒、番茄",
-      "ingredients": [
-        "beef",
-        "black_bean",
-        "chili",
-        "tomato"
-      ],
-      "seasonings": [
-        "cumin"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "L12",
-      "cuisine_id": "lat",
-      "name": "墨西哥辣酱焖鸡",
-      "source_text": "鸡肉、辣椒酱、番茄",
-      "ingredients": [
-        "chicken",
-        "tomato"
-      ],
-      "seasonings": [
-        "mexican_chili_sauce"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "L13",
-      "cuisine_id": "lat",
-      "name": "巴西黑豆炖肉",
-      "source_text": "黑豆、猪肉、香肠",
-      "ingredients": [
-        "black_bean",
-        "pork",
-        "sausage"
-      ],
-      "seasonings": [
-        "salt",
-        "cumin"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "L14",
-      "cuisine_id": "lat",
-      "name": "秘鲁鸡肉辣酱饭",
-      "source_text": "鸡肉、黄辣椒酱、米饭",
-      "ingredients": [
-        "chicken",
-        "rice"
-      ],
-      "seasonings": [
-        "aji_amarillo"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "L15",
-      "cuisine_id": "lat",
-      "name": "墨西哥卷饼",
-      "source_text": "大面饼、肉馅、豆类、米饭",
-      "ingredients": [
-        "wheat_tortilla",
-        "beef",
-        "black_bean",
-        "rice"
-      ],
-      "seasonings": [
-        "salsa"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "L16",
-      "cuisine_id": "lat",
-      "name": "墨西哥摩尔酱鸡",
-      "source_text": "鸡肉、辣椒、可可、香料",
-      "ingredients": [
-        "chicken",
-        "chili",
-        "cocoa"
-      ],
-      "seasonings": [
-        "cumin",
-        "cinnamon"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "L17",
-      "cuisine_id": "lat",
-      "name": "巴西海鲜炖锅",
-      "source_text": "鱼、虾、椰奶、番茄、香菜",
-      "ingredients": [
-        "fish",
-        "shrimp",
-        "tomato"
-      ],
-      "seasonings": [
-        "coconut_milk",
-        "cilantro"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "L18",
-      "cuisine_id": "lat",
-      "name": "阿根廷炭烤拼盘",
-      "source_text": "牛肉、香肠、内脏、炭火",
-      "ingredients": [
-        "beef",
-        "sausage",
-        "tripe"
-      ],
-      "seasonings": [
-        "salt",
-        "chimichurri"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "原文食材身份映射；补充调料与复合酱料定义为建议。"
-    },
-    {
-      "id": "L19",
-      "cuisine_id": "lat",
-      "name": "墨西哥辣酱千层玉米饼",
-      "source_text": "玉米饼、鸡肉、摩尔酱、奶酪",
-      "ingredients": [
-        "tortilla",
-        "chicken",
-        "cheese"
-      ],
-      "seasonings": [
-        "mole"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "显式建议材料组合；原文泛称按同菜系常见材料展开，不代表工序/用量已验收。"
-    },
-    {
-      "id": "L20",
-      "cuisine_id": "lat",
-      "name": "拉丁美洲炭火盛宴",
-      "source_text": "炖海鲜、炭烤肉、玉米料理",
-      "ingredients": [
-        "beef",
-        "fish",
-        "shrimp",
-        "corn_flour"
-      ],
-      "seasonings": [
-        "chimichurri",
-        "coconut_milk",
-        "salsa"
-      ],
-      "status": "PROPOSED_AI_079",
-      "note": "显式建议材料组合；原文泛称按同菜系常见材料展开，不代表工序/用量已验收。"
     }
   ],
   "palettes": {
@@ -11240,26 +8260,43 @@
       "miso",
       "rice_vinegar",
       "wasabi"
-    ],
-    "sea": [
-      "salt",
-      "sugar",
-      "fishsauce",
-      "coconut_milk",
-      "red_curry",
-      "lemongrass",
-      "basil",
-      "sweet_soy"
-    ],
-    "lat": [
-      "salt",
-      "cumin",
-      "mexican_chili_sauce",
-      "salsa",
-      "mole",
-      "cilantro",
-      "cocoa",
-      "chimichurri"
     ]
-  }
+  },
+  "retired_ids": [
+    "aji_amarillo",
+    "black_bean",
+    "chicken_fat",
+    "chimichurri",
+    "cilantro",
+    "cinnamon",
+    "cocoa",
+    "coconut_milk",
+    "corn_flour",
+    "corn_husk",
+    "cumin",
+    "fishsauce",
+    "ginger_scallion_sauce",
+    "green_curry",
+    "laksa_paste",
+    "lemongrass",
+    "lime",
+    "massaman",
+    "mexican_chili_sauce",
+    "mint",
+    "mole",
+    "peanut_sauce",
+    "prawn_cracker",
+    "red_curry",
+    "red_onion",
+    "rice_paper",
+    "rice_vermicelli",
+    "salsa",
+    "sambal",
+    "sweet_soy",
+    "tapioca_starch",
+    "tortilla",
+    "tortilla_chip",
+    "turmeric",
+    "wheat_tortilla"
+  ]
 }

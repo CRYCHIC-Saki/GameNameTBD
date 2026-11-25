@@ -188,7 +188,7 @@ func validate_save(raw: Variant) -> TDOutcome:
 			if not id is String or id.is_empty() or id in seen: return TDOutcome.new(false,"INVALID_IDS")
 			seen.append(id)
 			if field in ["unlocked","licensed","grandfathered"] and not catalog.nodes.has(id): return TDOutcome.new(false,"UNKNOWN_RECIPE")
-			if field=="cuisines" and id not in ["cn","eu","jp","sea","lat"]: return TDOutcome.new(false,"UNKNOWN_CUISINE")
+			if field=="cuisines" and id not in ["cn","eu","jp"]: return TDOutcome.new(false,"UNKNOWN_CUISINE")
 	if "cn" not in raw.cuisines: return TDOutcome.new(false,"INVALID_CUISINES")
 	for id:String in raw.grandfathered:
 		if id not in raw.unlocked or catalog.runtime_id(id) not in raw.legacy_ids: return TDOutcome.new(false,"INVALID_INHERITANCE")

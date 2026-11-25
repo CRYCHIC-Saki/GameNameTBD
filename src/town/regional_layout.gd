@@ -2,7 +2,7 @@ class_name TDRegionalLayout
 extends RefCounted
 ## Shared geography for exploration, property validation and economic distances.
 const SOURCE := "res://content/towns/regions.json"
-const IDS := ["tokyo","paris","bangkok","mexico_city"]
+const IDS := ["tokyo","paris"]
 const SIZE := 73
 static var _data: Dictionary = {}
 static var _cache: Dictionary = {}
@@ -21,6 +21,9 @@ static func validate(raw: Variant) -> TDOutcome:
 	for id: String in IDS:
 		var d: Variant=raw.towns.get(id)
 		if not d is Dictionary: return TDOutcome.new(false,"REGION_MISSING",id)
+		if not TDPlannedTown.valid_districts(d.get("districts")): return TDOutcome.new(false,"REGION_DISTRICTS",id)
+		if not TDPlannedTown.valid_waterworks(d): return TDOutcome.new(false,"REGION_WATERWORKS",id)
+		if not d.get("frontages") is Dictionary: return TDOutcome.new(false,"REGION_FRONTAGES",id)
 		for key: String in ["land","rivers","hills","roads","plots","port"]:
 			if not d.get(key) is Array: return TDOutcome.new(false,"REGION_FIELD",id+":"+key)
 		if d.port.size()!=2 or d.land.size()<3 or d.roads.is_empty(): return TDOutcome.new(false,"REGION_GEOMETRY",id)
@@ -47,6 +50,25 @@ static func validate(raw: Variant) -> TDOutcome:
 					used[at]=true
 		for key: String in ["competitor","commercial_street"]:
 			if not keys.has(key): return TDOutcome.new(false,"REGION_COMMERCIAL",id)
+		var parents:=keys.duplicate()
+		for block: Variant in d.frontages:
+			if not parents.has(block) or block in ["competitor","commercial_street"]: return TDOutcome.new(false,"REGION_FRONTAGE_BLOCK",id)
+			var parts: Variant=d.frontages[block]
+			if not parts is Array or parts.is_empty(): return TDOutcome.new(false,"REGION_FRONTAGE",id)
+			var total_width := 0
+			var keeps_parent := false
+			for part: Variant in parts:
+				if not part is Array or part.size()!=4 or not TDServiceCatalog.integer(part[3],1,71): return TDOutcome.new(false,"REGION_FRONTAGE",id)
+				for field: int in 3:
+					if not part[field] is String or part[field].is_empty(): return TDOutcome.new(false,"REGION_FRONTAGE",id)
+				if part[0]==block:
+					if keeps_parent: return TDOutcome.new(false,"REGION_FRONTAGE_ID",id)
+					keeps_parent=true
+				elif keys.has(part[0]): return TDOutcome.new(false,"REGION_FRONTAGE_ID",id)
+				keys[part[0]]=true
+				total_width+=int(part[3])
+			var parent: Array=d.plots.filter(func(p:Array)->bool:return p[0]==block)[0]
+			if not keeps_parent or total_width!=int(parent[4]): return TDOutcome.new(false,"REGION_FRONTAGE_WIDTH",id)
 		for hill: Variant in d.hills:
 			if not hill is Array or hill.size()!=4: return TDOutcome.new(false,"REGION_HILL",id)
 			for n: Variant in hill:
@@ -107,7 +129,19 @@ static func _prepare(id: String) -> void:
 			if Vector2(at).distance_squared_to(door)<distance: nearest=at;distance=Vector2(at).distance_squared_to(door)
 		if nearest.x>=0 and not grid.is_point_solid(door):
 			for at: Vector2i in grid.get_id_path(door,nearest): roads[at]=true
-	_cache[id]={"ground":ground,"roads":roads}
+	# Keep the inherited street alignments on land. A widened street or
+	# shortest path touching the river never determines the bridge footprint.
+	for at: Vector2i in TDPlannedTown.district_cells([{"outline":d.estuary}]):
+		if ground[at]!="sea": ground[at]="water"
+	for at: Vector2i in roads.keys():
+		if ground[at] in ["sea","water"]: roads.erase(at)
+	for at: Vector2i in TDPlannedTown.bridge_cells(d):
+		roads[at]=true
+	for span: Array in d.bridge_spans:
+		for y: int in range(int(span[1]),int(span[1]+span[3])):
+			roads[Vector2i(int(span[0])-1,y)]=true
+			roads[Vector2i(int(span[0]+span[2]),y)]=true
+	_cache[id]={"ground":ground,"roads":roads,"districts":TDPlannedTown.district_cells(d.districts)}
 
 static func roads(id: String) -> Dictionary:
 	_prepare(id)
@@ -122,17 +156,41 @@ static func terrain(id: String, at: Vector2i) -> Dictionary:
 	if type=="plain" and not road:
 		for offset: Vector2i in [Vector2i.LEFT,Vector2i.RIGHT,Vector2i.UP,Vector2i.DOWN]:
 			if _cache[id].ground.get(at+offset,"")=="sea": shore=true
-	return {"terrain_type":"water" if water else type,"elevation":0 if water else (3 if type=="hill" else 1),"surface_type":"bridge" if water and road else ("stone" if road else ("water" if water else ("woodland" if type=="hill" else ("sand" if shore else "grass")))),"walkable":road or type=="plain","buildable":type=="plain" and not road and not shore}
+	var zone: Dictionary=_cache[id].districts.get(at,{})
+	var surface:=str(zone.get("surface","grass"))
+	if shore: surface="sand"
+	if type=="hill": surface="woodland"
+	if water: surface="water"
+	if road: surface="bridge" if water else "stone"
+	return {"terrain_type":"water" if water else type,"elevation":0 if water else (3 if type=="hill" else 1),"surface_type":surface,"district_id":str(zone.get("id","outskirts")),"walkable":road or type=="plain","buildable":type=="plain" and not road and not shore}
 
 static func populate(map: TDTownMap, catalog: TDTownCatalog, id: String) -> TDOutcome:
 	map.region_id=id;map.layout_version=2;map.extent=SIZE;map.plots=[];map.roads=roads(id)
 	var used: Dictionary={}
-	for p: Array in definition(id).plots:
+	var d:=definition(id)
+	for p: Array in d.plots:
 		for y: int in range(int(p[3]),int(p[3]+p[5])):
 			for x: int in range(int(p[2]),int(p[2]+p[4])):
 				if terrain(id,Vector2i(x,y)).terrain_type!="plain": return TDOutcome.new(false,"REGION_PROPERTY_TERRAIN",id+":"+str(p[0])+":"+str(Vector2i(x,y)))
-		map._commit(p[1],p[0],int(p[2]),int(p[3]),int(p[4]),int(p[5]),used,{"id":p[0]})
+		# Split the frontage within the protected original cadastral block. Roads
+		# and all formerly available player lease rectangles keep their coordinates.
+		var parts: Array=d.frontages.get(p[0],[[p[0],p[1],p[0],p[4]]])
+		var x:=int(p[2])
+		for part: Array in parts:
+			map._commit(part[1],part[2],x,int(p[3]),int(part[3]),int(p[5]),used,{"id":part[0]})
+			var plot: Dictionary=map.plots.back()
+			if d.frontages.has(p[0]):
+				plot.local_name=part[2]
+				# Two doors can share the same public apron without introducing
+				# a road or a phantom interaction point in the town centre.
+				var front:=Vector2i(x+int(part[3])/2,int(p[3]+p[5]))
+				var footprint:=Rect2i(x,int(p[3]),int(part[3]),int(p[5]))
+				if not footprint.grow(1).has_point(Vector2i(plot.approach_x,plot.approach_y)) and terrain(id,front).walkable:
+					plot.approach_x=front.x;plot.approach_y=front.y
+			x+=int(part[3])
 	map._copy_catalog(catalog)
-	for p: Dictionary in map.plots: p.region_layout_version=2
+	for p: Dictionary in map.plots:
+		p.region_layout_version=2
+		if p.has("local_name"): p.name=p.local_name
 	if not map.roads.has(port(id)): return TDOutcome.new(false,"REGION_PORT_DISCONNECTED",id)
 	return TDOutcome.new(true,"REGION_READY")

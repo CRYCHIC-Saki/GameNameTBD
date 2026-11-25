@@ -20,9 +20,9 @@ func after_each() -> void:
 	profiles.clear()
 	stores.clear()
 
-func open_at(p: TDGameProfile, y: int=48, manager: String="manager.steady") -> String:
+func open_at(p: TDGameProfile, site: Vector2i=Vector2i(30,10), manager: String="manager.steady") -> String:
 	if not p.employees.manager_info(manager).assigned.is_empty(): manager="manager.lan"
-	var result:=p.branches.open_store("chengdu",[6,y,3,4],"cn",manager,"open:%d"%y)
+	var result:=p.branches.open_store("chengdu",[site.x,site.y,3,4],"cn",manager,"open:%d:%d"%[site.x,site.y])
 	assert_true(result.ok,result.code+": "+result.message)
 	var id: String=str(result.data.get("store_id",""))
 	if result.ok:
@@ -57,15 +57,15 @@ func test_configuration_star_stats_and_costs_increase() -> void:
 
 func test_quotes_are_read_only_and_multiple_local_stores_charge_once() -> void:
 	var p:=make_profile(); var before:=p.snapshot()
-	var quote:=p.branches.quote("chengdu",[6,48,3,4],"cn","manager.steady")
+	var quote:=p.branches.quote("chengdu",[30,10,3,4],"cn","manager.steady")
 	assert_true(quote.ok,quote.code)
 	assert_eq(int(quote.data.opening_cents),30800)
 	assert_eq(p.snapshot(),before)
-	var first:=open_at(p); var second:=open_at(p,53,"manager.master")
+	var first:=open_at(p); var second:=open_at(p,Vector2i(36,12),"manager.master")
 	assert_ne(first,second); assert_eq(p.branches.state.stores.size(),2)
 	assert_eq(int(p.shop.snapshot().money_cents),int(before.shop.money_cents)-61600)
 	var after:=p.snapshot()
-	assert_eq(p.branches.open_store("chengdu",[6,60,3,4],"cn","manager.master","open:48").code,"DUPLICATE")
+	assert_eq(p.branches.open_store("chengdu",[6,60,3,4],"cn","manager.master","open:30:10").code,"DUPLICATE")
 	assert_eq(p.snapshot(),after)
 	assert_eq(p.world.town_map.plots.filter(func(row:Dictionary)->bool:return row.has("branch_id")).size(),2)
 
@@ -77,20 +77,20 @@ func test_illegal_land_missing_manager_or_money_never_partially_changes_state() 
 	assert_false(p.branches.quote("chengdu",[int(home.x),int(home.y),3,4],"cn").ok)
 	var house: Dictionary=p.world.town_map.plots.filter(func(x:Dictionary)->bool:return x.kind=="housing")[0]
 	assert_false(p.branches.quote("chengdu",[int(house.x),int(house.y),3,4],"cn").ok)
-	assert_eq(p.branches.open_store("chengdu",[6,48,3,4],"cn","missing-manager","no-manager").code,"MANAGER_REQUIRED")
+	assert_eq(p.branches.open_store("chengdu",[30,10,3,4],"cn","missing-manager","no-manager").code,"MANAGER_REQUIRED")
 	assert_eq(p.snapshot(),before)
 	p.shop.world_adjustment(-int(p.shop.snapshot().money_cents),"fixture-empty","test")
 	before=p.snapshot()
-	assert_false(p.branches.open_store("chengdu",[6,48,3,4],"cn","manager.steady","no-cash").ok)
+	assert_false(p.branches.open_store("chengdu",[30,10,3,4],"cn","manager.steady","no-cash").ok)
 	assert_eq(p.snapshot(),before)
 
 func test_town_cuisine_menu_and_overlap_gates() -> void:
 	var p:=make_profile()
 	assert_ne(p.branches.quote("paris",[6,48,3,4],"cn").code,"TOWN_LOCKED")
 	assert_eq(p.branches.quote("london",[6,48,3,4],"cn").code,"TOWN_LOCKED")
-	assert_eq(p.branches.quote("chengdu",[6,48,3,4],"jp").code,"CUISINE_LOCKED")
+	assert_eq(p.branches.quote("chengdu",[30,10,3,4],"jp").code,"CUISINE_LOCKED")
 	var id:=open_at(p)
-	assert_eq(p.branches.quote("chengdu",[6,50,3,4],"cn").code,"OCCUPIED")
+	assert_eq(p.branches.quote("chengdu",[31,10,3,4],"cn").code,"OCCUPIED")
 	var before:=p.branches.snapshot()
 	assert_false(p.branches.configure_store(id,[{"id":"nonexistent","price_cents":100}],1000).ok)
 	assert_false(p.branches.configure_store(id,[],1000).ok)
@@ -147,7 +147,7 @@ func test_real_market_customer_money_stock_and_book_conserve() -> void:
 	assert_eq(int(p.commerce.cash_audit(int(p.shop.snapshot().money_cents)).difference_cents),0)
 
 func test_two_stores_share_existing_finite_customer_pool() -> void:
-	var p:=make_profile(); var one:=open_at(p); var two:=open_at(p,53)
+	var p:=make_profile(); var one:=open_at(p); var two:=open_at(p,Vector2i(36,12))
 	new_day(p);stock(p);p.branches.prepare()
 	var group: Dictionary=p.commerce.config.groups[0]
 	var firms:=p.commerce._firms("chengdu",group)
@@ -180,7 +180,7 @@ func test_debt_preserved_and_pause_still_pays_rent_and_manager() -> void:
 	var before:=p.branches.snapshot(); p.branches.settle(); assert_eq(p.branches.snapshot(),before)
 
 func test_manager_dimensions_and_specials_change_real_capacity_service_and_utilities() -> void:
-	var p:=make_profile(); var a:=open_at(p); var b:=open_at(p,53,"manager.host"); var c:=open_at(p,58,"manager.master")
+	var p:=make_profile(); var a:=open_at(p); var b:=open_at(p,Vector2i(36,12),"manager.host"); var c:=open_at(p,Vector2i(62,5),"manager.master")
 	new_day(p);stock(p);p.branches.prepare()
 	var rows:=p.branches.candidates("chengdu",p.commerce.config.groups[0])
 	var values: Dictionary={}
@@ -202,7 +202,7 @@ func test_old_callbacks_cannot_operate_after_profile_closed() -> void:
 	assert_eq(p.branches.snapshot(),before.branches)
 
 func test_save_reload_three_days_and_corruption_rejected() -> void:
-	var p:=make_profile(); var first:=open_at(p); open_at(p,53,"manager.master")
+	var p:=make_profile(); var first:=open_at(p); open_at(p,Vector2i(36,12),"manager.master")
 	assert_true(p.save().ok)
 	var saved:=p.snapshot()
 	var q:=make_profile(); assert_true(q.restore(saved).ok)
@@ -248,7 +248,7 @@ func test_corrupt_serial_and_cottage_overlap_reject_whole_restore() -> void:
 	assert_eq(p.restore(raw).code,"INVALID_BRANCH_AREA")
 	assert_eq(p.snapshot(),previous)
 
-func test_five_towns_open_trade_locked_and_run_local_business_then_reload() -> void:
+func test_three_towns_open_trade_locked_and_run_local_business_then_reload() -> void:
 	var p:=make_profile()
 	assert_eq(p.commerce.state.routes,["chengdu"])
 	var research:=p.research.snapshot(); var home_stock: Dictionary=p.shop.snapshot().inventory
@@ -266,7 +266,7 @@ func test_five_towns_open_trade_locked_and_run_local_business_then_reload() -> v
 		if result.ok: assert_true(p.employees.auto_assign(result.data.store_id).ok)
 		var map:=TDTravelCatalog.map_for(p,town)
 		assert_eq(map.plots.filter(func(row:Dictionary)->bool:return row.get("branch_id")==result.data.get("store_id")).size(),1)
-	assert_eq(p.branches.state.stores.size(),5)
+	assert_eq(p.branches.state.stores.size(),3)
 	assert_eq(p.commerce.state.routes,["chengdu"]);assert_true(p.commerce.state.route_events.is_empty())
 	assert_eq(p.research.snapshot(),research);assert_eq(p.shop.snapshot().inventory,home_stock)
 	new_day(p);stock(p);p.branches.prepare()

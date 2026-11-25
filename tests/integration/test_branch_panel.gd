@@ -26,13 +26,44 @@ func click_map(view: TDBranchPanel.SiteMap, at: Vector2i, pressed: bool) -> void
 	event.position=view.cell_to_screen(view.selected_town,Vector2(at)+Vector2.ONE*.5)
 	view._gui_input(event)
 
+func pan_to_site(view: TDBranchPanel.SiteMap) -> void:
+	var middle := InputEventMouseButton.new()
+	middle.button_index = MOUSE_BUTTON_MIDDLE
+	middle.pressed = true
+	middle.position = view.size * .5
+	view._gui_input(middle)
+	var drag := InputEventMouseMotion.new()
+	drag.position = middle.position
+	drag.relative = middle.position - view.cell_to_screen("chengdu",Vector2(31,12))
+	view._gui_input(drag)
+	middle.pressed = false
+	view._gui_input(middle)
+
+func test_market_lawn_is_public_frontage_in_the_site_map() -> void:
+	shell.show_branch()
+	var view := panel()
+	view.begin_site()
+	await wait_process_frames(3)
+	view.map_view.choose_town("chengdu")
+	var map: TDTownMap = view.map_view.maps["chengdu"]
+	var geo := TDEconomicGeography.new()
+	geo.configure("chengdu",map.plots,{},map.layout_version)
+	for at: Vector2i in [Vector2i(26,18),Vector2i(26,19),Vector2i(26,20),Vector2i(28,21),Vector2i(29,21)]:
+		var quote := geo.cell(at)
+		assert_eq(map.terrain_at(at).surface_type,"lawn")
+		assert_eq(quote.surface_type,"lawn")
+		assert_eq(quote.zone_id,"road","remains a public access parcel")
+		assert_false(quote.buildable)
+	assert_false(map.can_place(26,18,3,3))
+
 func test_real_entry_rectangle_drag_manager_selection_creation_and_reentry() -> void:
 	shell.show_branch(); var view:=panel(); view.begin_site()
 	await wait_process_frames(3)
 	view.map_view.choose_town("chengdu")
+	pan_to_site(view.map_view)
 	var before:=shell.profile.snapshot()
-	click_map(view.map_view,Vector2i(8,51),true); click_map(view.map_view,Vector2i(6,48),false)
-	assert_eq(view.selected_rect,[6,48,3,4])
+	click_map(view.map_view,Vector2i(32,13),true); click_map(view.map_view,Vector2i(30,10),false)
+	assert_eq(view.selected_rect,[30,10,3,4])
 	assert_true(view.create_button.disabled)
 	assert_eq(shell.profile.snapshot(),before)
 	view.site_button.pressed.emit()
@@ -59,7 +90,7 @@ func test_cancel_and_protected_drag_do_not_change_profile() -> void:
 func test_new_branch_and_menu_changes_only_persist_after_explicit_save() -> void:
 	assert_true(shell.save_game().ok)
 	var original:=shell.profile.snapshot()
-	var opened:=shell.profile.branches.open_store("chengdu",[6,48,3,4],"cn","manager.steady","open-fixture")
+	var opened:=shell.profile.branches.open_store("chengdu",[30,10,3,4],"cn","manager.steady","open-fixture")
 	assert_true(opened.ok,opened.code)
 	var store: TDProfileStore=shell.slots
 	var saved: TDOutcome=store.load_slot("slot-01")
@@ -95,40 +126,41 @@ func test_world_atlas_selects_all_five_towns_resets_selection_and_never_teleport
 		assert_eq(atlas.caption_text(),TDTravelCatalog.info(id).caption)
 		assert_eq(atlas.town_id,"chengdu","selection does not move player marker")
 	assert_eq(shell.visiting_town,location);assert_eq(shell.profile.snapshot(),before)
-	atlas.choose_town("chengdu");click_map(atlas,Vector2i(6,48),true);click_map(atlas,Vector2i(8,51),false)
+	atlas.choose_town("chengdu");pan_to_site(atlas);click_map(atlas,Vector2i(30,10),true);click_map(atlas,Vector2i(32,13),false)
 	atlas.choose_town("tokyo")
 	assert_eq(view.selected_rect,[]);assert_eq(view.selected_manager,"");assert_true(view.create_button.disabled)
 
 func test_zoom_pan_reverse_rectangle_and_aborted_drags_keep_last_valid_selection() -> void:
 	shell.show_branch();var view:=panel();view.begin_site();await wait_process_frames(3)
 	var atlas:=view.map_view;atlas.choose_town("chengdu")
-	atlas.zoom_at(atlas.cell_to_screen("chengdu",Vector2(7,49)),1.4)
+	pan_to_site(atlas)
+	atlas.zoom_at(atlas.cell_to_screen("chengdu",Vector2(31,11)),1.4)
 	var middle:=InputEventMouseButton.new();middle.button_index=MOUSE_BUTTON_MIDDLE;middle.pressed=true
 	atlas._gui_input(middle)
 	var motion:=InputEventMouseMotion.new();motion.relative=Vector2(40,-12);motion.position=atlas.size*.5
 	atlas._gui_input(motion);middle.pressed=false;atlas._gui_input(middle)
-	click_map(atlas,Vector2i(8,51),true);click_map(atlas,Vector2i(6,48),false)
-	assert_eq(view.selected_rect,[6,48,3,4]);assert_true(atlas.valid)
+	click_map(atlas,Vector2i(32,13),true);click_map(atlas,Vector2i(30,10),false)
+	assert_eq(view.selected_rect,[30,10,3,4]);assert_true(atlas.valid)
 	var expected:=atlas.selection;var before:=shell.profile.snapshot()
-	click_map(atlas,Vector2i(6,48),true)
+	click_map(atlas,Vector2i(30,10),true)
 	atlas_click(atlas,Vector2(-20,200),false)
 	assert_eq(atlas.selection,expected)
-	click_map(atlas,Vector2i(6,48),true);atlas._notification(NOTIFICATION_WM_WINDOW_FOCUS_OUT)
-	click_map(atlas,Vector2i(11,51),false);assert_eq(atlas.selection,expected)
-	click_map(atlas,Vector2i(6,48),true)
+	click_map(atlas,Vector2i(30,10),true);atlas._notification(NOTIFICATION_WM_WINDOW_FOCUS_OUT)
+	click_map(atlas,Vector2i(35,13),false);assert_eq(atlas.selection,expected)
+	click_map(atlas,Vector2i(30,10),true)
 	var wheel:=InputEventMouseButton.new();wheel.button_index=MOUSE_BUTTON_WHEEL_UP;wheel.position=atlas.size*.5;wheel.pressed=true
-	atlas._gui_input(wheel);click_map(atlas,Vector2i(11,51),false);assert_eq(atlas.selection,expected)
-	click_map(atlas,Vector2i(6,48),true)
+	atlas._gui_input(wheel);click_map(atlas,Vector2i(35,13),false);assert_eq(atlas.selection,expected)
+	click_map(atlas,Vector2i(30,10),true)
 	motion.position=Vector2(-20,200);atlas._gui_input(motion)
-	click_map(atlas,Vector2i(11,51),false);assert_eq(atlas.selection,expected)
-	assert_eq(view.selected_rect,[6,48,3,4]);assert_eq(shell.profile.snapshot(),before)
+	click_map(atlas,Vector2i(35,13),false);assert_eq(atlas.selection,expected)
+	assert_eq(view.selected_rect,[30,10,3,4]);assert_eq(shell.profile.snapshot(),before)
 
 func test_large_manager_roster_does_not_force_hiring_before_construction() -> void:
 	for n: int in 40:
 		var id: String="employee.v1.s001.n%03d"%(n*3+1)
 		shell.profile.employees.state.owned[id]={"id":id,"copies":3,"xp":0,"assigned":""}
 	shell.show_branch();var view:=panel();view.begin_site();await wait_process_frames(2)
-	view.map_view.choose_town("chengdu");view.selected_rect=[6,48,3,4];view._update_quote();view._toggle_site()
+	view.map_view.choose_town("chengdu");view.selected_rect=[30,10,3,4];view._update_quote();view._toggle_site()
 	assert_eq(view.manager_box.find_children("ManagerCards","",true,false).size(),0)
 	assert_false(view.create_button.disabled)
 	var roster:=shell.profile.employees.snapshot()

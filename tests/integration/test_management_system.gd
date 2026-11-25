@@ -1,4 +1,5 @@
 extends GutTest
+const JIANGNAN_SITE := [26,9,3,4]
 var profiles: Array[TDGameProfile]=[]
 var app: TDApplication
 
@@ -13,7 +14,7 @@ func own(p: TDGameProfile, id: String, copies: int=1) -> void:
 
 func ready_branch(p: TDGameProfile) -> String:
 	own(p,"manager.steady");own(p,"cook-he");own(p,"waiter-ning")
-	var result:=p.branches.open_store("chengdu",[6,48,3,4],"cn","manager.steady","test-open")
+	var result:=p.branches.open_store("chengdu",TDRegionMigration.find_site(p.world.town_map, JIANGNAN_SITE),"cn","manager.steady","test-open")
 	assert_true(result.ok,result.code)
 	return str(result.data.get("store_id",""))
 
@@ -105,7 +106,7 @@ func test_main_payroll_accrues_once_as_operating_cost_and_debt() -> void:
 
 func test_legacy8_migrates_existing_workers_manager_and_supply_entitlements() -> void:
 	var p:=make_profile();p.branches.managed=false
-	assert_true(p.branches.open_store("chengdu",[6,48,3,4],"cn","manager.master","legacy-open").ok)
+	assert_true(p.branches.open_store("chengdu",TDRegionMigration.find_site(p.world.town_map, JIANGNAN_SITE),"cn","manager.master","legacy-open").ok)
 	var raw:=p.snapshot();raw.schema_version=8;raw.erase("employees");raw.erase("suppliers")
 	var crew:=TDRestaurantCrew.new();assert_true(crew.hire("cook-he").ok)
 	raw.layout.crew=crew.export_state()
@@ -152,9 +153,11 @@ func test_real_shell_seven_buttons_shortcuts_pause_and_old_entries_removed() -> 
 	var old_lots: Array=shell.profile.world.town_map.plots.filter(func(p:Dictionary)->bool:return p.kind=="factory_lot")
 	assert_false(old_lots.is_empty())
 	var lot: Dictionary=old_lots[0]
-	shell.town._player.position=shell.town._origin()+Vector2(lot.x+.5,lot.y+.5)*TDTownWorld.CELL
+	shell.town._player.position=shell.town._origin()+Vector2(lot.x+.5,lot.y+.5)*shell.town.cell_size()
 	assert_ne(shell.town.facing_plot().get("id",""),lot.id)
-	assert_true(shell.town._walkable(int(lot.x),int(lot.y)))
+	for facade: Dictionary in shell.town._facades:
+		var kind: String = facade.get("plot",{}).get("kind","")
+		assert_false(kind in ["factory_lot","supply_factory"],"Legacy lot has no interactive factory facade")
 
 func test_boundary_receives_completed_main_supply_before_next_open() -> void:
 	var p:=make_profile()
@@ -216,7 +219,7 @@ func test_fixed_manager_branch_and_schema_one_employee_compatibility() -> void:
 	var p:=make_profile();var hired:=sign_first(p,"manager","fixed-manager")
 	var manager: String=str(hired.id)
 	var name_before: String=str(hired.name)
-	var opened:=p.branches.open_store("chengdu",[6,48,3,4],"cn",manager,"generated-branch")
+	var opened:=p.branches.open_store("chengdu",TDRegionMigration.find_site(p.world.town_map, JIANGNAN_SITE),"cn",manager,"generated-branch")
 	assert_true(opened.ok,opened.code)
 	var raw: Dictionary=JSON.parse_string(JSON.stringify(p.snapshot()));var checked:=TDGameProfile.validate_save(raw)
 	assert_true(checked.ok,checked.code)

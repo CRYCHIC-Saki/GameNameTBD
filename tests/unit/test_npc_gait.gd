@@ -19,5 +19,6 @@ func test_named_actors_keep_original_idle_and_have_distinct_opposite_strides() -
 			assert_same(TDStoryArt.sprite(who,face,1),idle);assert_same(TDStoryArt.sprite(who,face,3),idle)
 			var a:=TDStoryArt.sprite(who,face,0);var b:=TDStoryArt.sprite(who,face,2)
 			assert_ne(a.get_image().get_data(),b.get_image().get_data())
-			assert_gt(a.get_height(),300);assert_lte(a.get_height(),512)
-			assert_lt(a.get_width(),384);assert_same(TDStoryArt.sprite(who,face,0),a)
+			assert_same((idle as AtlasTexture).atlas,TDStoryArt.ALING if who=="aling" else TDStoryArt.CHEN)
+			assert_same((a as AtlasTexture).atlas,TDStoryArt.ALING_WALK if who=="aling" else TDStoryArt.CHEN_WALK)
+			assert_gt(a.get_height(),300);assert_same(TDStoryArt.sprite(who,face,0),a)

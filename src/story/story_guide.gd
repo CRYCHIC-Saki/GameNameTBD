@@ -11,6 +11,7 @@ var _hint: Label
 var _pending_tutorial: String=""
 var _route_key: String=""
 var _route: Array[Vector2i]=[]
+var _reference_route := PackedVector2Array()
 var _pulse: float=0
 var _scene_key: String=""
 var _cut_count: int=0
@@ -361,11 +362,14 @@ func update_route(goal: Dictionary) -> void:
 	var start:=Vector2i.ZERO;var end:=Vector2i.ZERO;var bounds:=Rect2i();var can_walk: Callable;var project: Callable
 	if room=="town":
 		var town:=shell.town;start=town._player_cell();var point:=Vector2.ZERO
+		if town._uses_reference_escort():
+			_update_reference_town_route(town, destination, target)
+			return
 		if destination!="town":
 			var plot:=town.session._plot_by_id("player_diner");point=Vector2(plot.x,plot.y)+Vector2(plot.w,plot.h)*.5
 		elif target=="cottage": point=Vector2(shell.profile.residence.plot.approach_x,shell.profile.residence.plot.approach_y)
-		elif target=="escort": point=(town.escort_position()-town._origin())/town.CELL
-		elif target=="bowl": point=(town.bowl_point()-town._origin())/town.CELL
+		elif target=="escort": point=(town.escort_position()-town._origin())/town.cell_size()
+		elif target=="bowl": point=(town.bowl_point()-town._origin())/town.cell_size()
 		elif target=="market":
 			var plot:=town._plot_of_kind("market");point=Vector2(plot.x,plot.y)+Vector2(plot.w,plot.h)*.5
 		else:
@@ -373,7 +377,7 @@ func update_route(goal: Dictionary) -> void:
 				if person.id==target: point=Vector2(person.get("position",Vector2(person.cell)))
 		end=Vector2i(point);bounds=Rect2i(0,0,town.session.town_map.extent,town.session.town_map.extent)
 		can_walk=func(cell:Vector2i)->bool:return town.session.town_map.is_road(cell.x,cell.y)
-		project=func(cell:Vector2i)->Vector2:return town.get_global_transform_with_canvas()*(town._origin()+(Vector2(cell)+Vector2(.5,.5))*town.CELL)
+		project=func(cell:Vector2i)->Vector2:return town.get_global_transform_with_canvas()*(town._origin()+(Vector2(cell)+Vector2(.5,.5))*town.cell_size())
 	elif room=="restaurant":
 		var restaurant:=shell.restaurant;start=restaurant.cell_of_player()
 		var action:=target if destination=="restaurant" else ("kitchen" if destination=="kitchen" else "town")
@@ -410,6 +414,37 @@ func update_route(goal: Dictionary) -> void:
 	var points:=PackedVector2Array()
 	for cell: Vector2i in _route.slice(maxi(0,_route.find(start))): points.append(project.call(cell))
 	_trail.points=points;_trail.phase=_pulse;_trail.queue_redraw()
+
+func _update_reference_town_route(town: TDTownWorld, destination: String, target: String) -> void:
+	var origin := town._origin()
+	var start := (town._player.position - origin) / town.cell_size()
+	var goal := Vector2(town._diner_door()) + Vector2.ONE * .5
+	if destination == "town":
+		match target:
+			"cottage":
+				goal = Vector2(shell.profile.residence.plot.approach_x, shell.profile.residence.plot.approach_y) + Vector2.ONE * .5
+			"escort":
+				goal = (town.escort_position() - origin) / town.cell_size()
+			"bowl":
+				goal = (town.bowl_point() - origin) / town.cell_size()
+			"market":
+				var market := town._plot_of_kind("market")
+				goal = Vector2(market.approach_x, market.approach_y) + Vector2.ONE * .5
+			_:
+				for person: Dictionary in town._story_people():
+					if person.id == target:
+						goal = Vector2(person.get("position", Vector2(person.cell))) + Vector2.ONE * .5
+	var key := "reference" + str(Vector2i(start.floor())) + str(Vector2i(goal.floor())) + str(shell.profile.world.map_revision)
+	if key != _route_key:
+		_route_key = key
+		_reference_route = town.reference_walk_path(start, goal)
+	var points := PackedVector2Array()
+	var project := town.get_global_transform_with_canvas()
+	for at: Vector2 in _reference_route:
+		points.append(project * (origin + at * town.cell_size()))
+	_trail.points = points
+	_trail.phase = _pulse
+	_trail.queue_redraw()
 
 func close() -> void:
 	_closed=true;_pending_tutorial=""

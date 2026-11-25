@@ -11,12 +11,12 @@ var note: String = ""
 var reset_pot: Callable
 var _closed: bool = false
 var _serial: int = 0
-var _speed: float = 140.0
+var _speed: float = 230.0
 var _handling_sec: float = .4
 
 func _init(owner: TDShopSession, room: TDFullKitchen, reset: Callable) -> void:
 	shop=owner; kitchen=room; reset_pot=reset
-	_speed=float(shop.catalog.config.get("staff_workflow",{}).get("walk_speed_px_sec",140.0))
+	_speed=float(shop.catalog.config.get("staff_workflow",{}).get("walk_speed_px_sec",230.0))
 	_handling_sec=float(shop.catalog.config.get("staff_workflow",{}).get("handling_sec",.4))
 	kitchen.create_staff_preparation()
 
@@ -35,7 +35,7 @@ func tick(seconds: float = 0.0) -> void:
 		if not people.has(id):
 			var point:=kitchen.world.staff_home(i)
 			var gait:=TDNpcGait.new();gait.reset(point)
-			people[id]={"id":id,"name":str(cooks[i].name),"index":i,"point":point,"gait":gait,"route":PackedVector2Array(),"route_at":0,"elapsed":0.0}
+			people[id]={"id":id,"name":str(cooks[i].name),"cuisine_id":cooks[i].get("cuisine_id","cn"),"appearance_variant":cooks[i].get("appearance_variant",0),"index":i,"point":point,"gait":gait,"route":PackedVector2Array(),"route_at":0,"elapsed":0.0}
 	for index: int in jobs.keys():
 		var job: Dictionary=jobs[index]
 		if not owns(index) or job.cook not in live:
@@ -92,16 +92,18 @@ func _assign(cooks: Array) -> void:
 		if family in families: continue
 		var cook_id: String=""
 		for cook: Dictionary in cooks:
-			if job_for(str(cook.id)).is_empty(): cook_id=str(cook.id);break
-		if cook_id.is_empty(): break
+			if job_for(str(cook.id)).is_empty() and shop.cook_can_prepare(cook,order.recipe_id): cook_id=str(cook.id);break
+		if cook_id.is_empty(): continue
 		var profile:=shop.profile_for(order)
-		var recipe: Dictionary=profile.for_recipe(family).recipe
-		var steam: bool=str(recipe.get("cooking_method","stir"))=="steam"
+		var recipe: Dictionary=profile.recipe_data(family)
+		var station: String=""
 		var lane: TDCookingLane=null
 		for candidate: TDCookingLane in kitchen.lanes:
-			if steam and candidate.lane_index!=1: continue
 			if jobs.has(candidate.lane_index) or kitchen.handling.hand==candidate.session: continue
-			if candidate.snapshot().ingredients.is_empty() and candidate.qte==null and candidate.thermal_qte==null and (candidate.sheet==null or not candidate.sheet.running): lane=candidate;break
+			if not candidate.snapshot().ingredients.is_empty() or candidate.qte!=null or candidate.thermal_qte!=null or (candidate.sheet!=null and candidate.sheet.running): continue
+			for target: String in TDCuisineKitchen.IDS:
+				if (0 if target=="kitchen.stove.left" else 1)==candidate.lane_index and TDCuisineKitchen.accepts(shop.cuisine_id,target,recipe): station=target;break
+			if not station.is_empty(): lane=candidate;break
 		if lane==null: continue
 		var need: Dictionary=shop.catalog.material_needs(profile,family)
 		var enough:=true
@@ -111,12 +113,13 @@ func _assign(cooks: Array) -> void:
 		lane.catalog=profile;lane.new_session(family);lane.session.set_material_sink(shop.consume_materials,shop.available)
 		if not lane.use_recipe_profile(profile,family,order.customer).ok: continue
 		lane.session.set_production_mode("automatic")
+		lane.station_role=str(recipe.get("workstation","stove"))
 		lane.external_operator=cook_id
 		_serial+=1
 		var handling:=TDKitchenHandling.new(profile)
 		handling.session_namespace=lane.session_namespace+":staff-%d:"%_serial
 		handling.material_sink=shop.consume_materials
-		var job: Dictionary={"cook":cook_id,"lane":lane.lane_index,"session_id":lane.snapshot().session_id,"family":family,"profile":profile,"handling":handling,"ingredients":shop.catalog.offer(family).primary.duplicate(),"ingredient_at":0,"phase":"","remaining":0.0,"station":"","pot_station":"kitchen.steamer" if steam else ("kitchen.stove.left" if lane.lane_index==0 else "kitchen.stove.right")}
+		var job: Dictionary={"cook":cook_id,"lane":lane.lane_index,"session_id":lane.snapshot().session_id,"family":family,"profile":profile,"handling":handling,"ingredients":shop.catalog.offer(family).primary.duplicate(),"ingredient_at":0,"phase":"","remaining":0.0,"station":"","pot_station":station}
 		jobs[lane.lane_index]=job;families.append(family)
 		_go(job,"to_fridge","kitchen.fridge")
 		note="厨师按菜谱逐份取料、切配、入锅。"
@@ -135,7 +138,7 @@ func _settle(job: Dictionary) -> void:
 			if not result.ok: job.phase="wait_stock";note="等待补货："+id;return
 			hands.hand.set_production_mode("automatic")
 			_event(job,"picked",id)
-			var recipe: Dictionary=(job.profile as TDCookingCatalog).for_recipe(job.family).recipe
+			var recipe: Dictionary=(job.profile as TDCookingCatalog).recipe_data(job.family)
 			if str(recipe.get("preparation_sheets",{}).get(id,"")).is_empty(): _go(job,"to_pot",job.pot_station)
 			else: _board(job)
 		"wait_board": _board(job)
@@ -240,7 +243,7 @@ func rows() -> Array:
 			var hands: TDKitchenHandling=job.handling
 			if hands.hand!=null: carried="dish" if hands.hand_kind=="dish" else str(hands.hand.snapshot().to_dict().ingredients.values()[0].ingredient_id)
 		var gait: TDNpcGait=person.gait
-		result.append({"id":id,"name":person.name,"index":person.index,"point":person.point,"facing":gait.facing,"frame":gait.frame,"phase":phase,"action":label,"elapsed":person.elapsed,"carried":carried})
+		result.append({"id":id,"name":person.name,"cuisine_id":person.cuisine_id,"appearance_variant":person.appearance_variant,"index":person.index,"point":person.point,"facing":gait.facing,"frame":gait.frame,"phase":phase,"action":label,"elapsed":person.elapsed,"carried":carried,"visual_seconds":kitchen.shared_clock.game_sec})
 	return result
 
 func extra_snapshots() -> Array:

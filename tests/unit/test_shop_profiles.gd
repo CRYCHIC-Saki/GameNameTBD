@@ -21,6 +21,22 @@ func create_profile(id: String) -> TDGameProfile:
 	profile.slot_id=id;profile.persistence=store.save_slot
 	return profile
 
+func test_replaced_save_is_revalidated_after_listing() -> void:
+	var profile := create_profile("slot-01")
+	assert_true(profile.save().ok)
+	assert_eq(store.latest(), "slot-01")
+	var path := store.path_for("slot-01")
+	var envelope: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(path))
+	var payload: Dictionary = JSON.parse_string(envelope.payload)
+	payload.shop.money_cents = "invalid cash"
+	envelope.payload = JSON.stringify(payload)
+	envelope.sha256 = envelope.payload.sha256_text()
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	file.store_string(JSON.stringify(envelope))
+	file.close()
+	assert_false(store.load_slot("slot-01").ok)
+	assert_eq(store.latest(), "")
+
 func test_two_slots_keep_research_stock_and_layout_independent() -> void:
 	var a:=create_profile("slot-01");var b:=create_profile("slot-02")
 	assert_true(a.buy({"tomato":1000}).ok)

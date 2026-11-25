@@ -2,6 +2,8 @@ class_name TDCookingCatalog
 extends RefCounted
 
 var _data: Dictionary = {}
+var _recipes: Dictionary = {}
+var _ingredients: Dictionary = {}
 var _source: String = "<memory>"
 const OPERATIONS: Array[String] = ["cut", "preheat", "stir", "heat", "boil", "season", "starch", "ferment", "plate", "steam"]
 
@@ -16,6 +18,8 @@ func load_file(path: String) -> TDOutcome:
 
 func load_data(raw: Variant, source: String = "<memory>") -> TDOutcome:
 	_data = {}
+	_recipes.clear()
+	_ingredients.clear()
 	_source = source
 	if not raw is Dictionary or not _json_value(raw):
 		return _bad("$", "finite JSON object required")
@@ -81,8 +85,10 @@ func load_data(raw: Variant, source: String = "<memory>") -> TDOutcome:
 		var path: String = "recipes." + id
 		if not _id(recipe.get("name")) or recipe.get("scope") not in ["PROTOTYPE", "TEST_ONLY"] or not _range(recipe.get("version"), 1, 100000) or int(recipe.version) != recipe.version or not recipe.get("is_custom") is bool or not recipe.get("expects_aroma") is bool:
 			return _bad(path, "version and identity required")
-		if recipe.has("cuisine_id") and recipe.cuisine_id not in ["cn","eu","jp","sea","lat"]:
+		if recipe.has("cuisine_id") and recipe.cuisine_id not in ["cn","eu","jp"]:
 			return _bad(path+".cuisine_id","unknown cuisine")
+		if recipe.has("thermal_scale") and not _range(recipe.thermal_scale,.001,10): return _bad(path+".thermal_scale","bounded heat unit scale required")
+		if recipe.has("workstation") and recipe.workstation not in ["wok","stockpot","steamer","claypot","oven","skillet","sushi","tamago","grill","fryer","cold","comal"]: return _bad(path+".workstation","unknown workstation")
 		if recipe.has("seasoning_palette"):
 			if not _strings(recipe.seasoning_palette) or recipe.seasoning_palette.size()>10:
 				return _bad(path+".seasoning_palette","at most ten spice IDs required")
@@ -203,14 +209,25 @@ func load_data(raw: Variant, source: String = "<memory>") -> TDOutcome:
 	_data.recipes = []
 	for id: String in raw.active.ingredients:
 		_data.ingredients.append(indexed.ingredients[id].duplicate(true))
+		_ingredients[id]=indexed.ingredients[id].duplicate(true)
 	for id: String in raw.active.recipes:
 		_data.recipes.append(indexed.recipes[id].duplicate(true))
+		_recipes[id]=indexed.recipes[id].duplicate(true)
 	return TDOutcome.new(true, "LOADED")
 
 func data() -> Dictionary:
 	return _data.duplicate(true)
 
+func copy_validated() -> TDCookingCatalog:
+	var copy := TDCookingCatalog.new()
+	copy._data = _data.duplicate(true)
+	copy._recipes = _recipes.duplicate(true)
+	copy._ingredients = _ingredients.duplicate(true)
+	copy._source = _source
+	return copy
+
 func adopt_recipe(recipe: Dictionary, sheet: Dictionary) -> void:
+	_recipes[recipe.id]=recipe.duplicate(true)
 	_data.recipes.append(recipe.duplicate(true))
 	if not (_data.active.recipes as Array).has(recipe.id):
 		_data.active.recipes.append(recipe.id)
@@ -224,13 +241,49 @@ func recipe_ids(include_test: bool = false) -> Array:
 	return values
 
 func for_recipe(id: String) -> Dictionary:
-	for recipe: Dictionary in _data.get("recipes", []):
-		if recipe.id == id:
-			var config: Dictionary = data()
-			config.selected_recipe_id = id
-			config.recipe = recipe.duplicate(true)
-			return config
-	return {}
+	if not _recipes.has(id): return {}
+	var config:=data()
+	config.selected_recipe_id=id;config.recipe=recipe_data(id)
+	return config
+
+func recipe_cuisine(id: String) -> String:
+	if not _recipes.has(id): return ""
+	return str(_recipes[id].get("cuisine_id","cn"))
+
+func recipe_data(id: String) -> Dictionary:
+	# Metadata queries must not clone all 346 charts, especially in HUD updates.
+	return _recipes.get(id,{}).duplicate(true)
+
+func ingredient_data(id: String) -> Dictionary:
+	return _ingredients.get(id,{}).duplicate(true)
+
+func ingredient_definitions() -> Array:
+	return _data.get("ingredients",[]).duplicate(true)
+
+func customer_definitions() -> Array:
+	return _data.get("customers",[]).duplicate(true)
+
+func rule_value(id: String, fallback: float=0.0) -> float:
+	return float(_data.get("rules",{}).get(id,fallback))
+
+func sheet_data(id: String) -> Dictionary:
+	return _data.get("pc_operations",{}).get("document_sheets",{}).get(id,{}).duplicate(true)
+
+func scoped_data(id: String) -> Dictionary:
+	if not _recipes.has(id): return {}
+	var recipe:=recipe_data(id)
+	var config: Dictionary=_data.duplicate(false)
+	config.active=_data.active.duplicate(true);config.active.recipes=[id]
+	config.recipes=[recipe]
+	config.pc_operations=_data.pc_operations.duplicate(false)
+	config.pc_operations.document_rules=_data.pc_operations.document_rules.duplicate(true)
+	config.pc_operations.document_rules.preparation_recipes={}
+	var ids: Array=[recipe.get("guided_profile",""),recipe.get("research_profile",""),"prepare"]+recipe.get("preparation_sheets",{}).values()
+	var charts: Dictionary={}
+	for key: String in ids:
+		if _data.pc_operations.document_sheets.has(key): charts[key]=_data.pc_operations.document_sheets[key]
+	config.pc_operations.document_sheets=charts
+	return config.duplicate(true)
 
 func _check_qte(qte: Variant, path: String) -> TDOutcome:
 	if not qte is Dictionary or qte.get("kind") not in ["charge", "rhythm", "window", "maintain", "sequence"]:

@@ -954,18 +954,19 @@ func build_venue(venue: String) -> TDOutcome:
 		return TDOutcome.new(false, "WRONG_TOWN", "只能在主小镇的餐厅建设区建店。")
 	if home_built:
 		return TDOutcome.new(false, "ALREADY", "主店已经建好了。")
-	var lot := town_map.diner_lot()
-	if lot.is_empty():
+	var entitlement := town_map.diner_estate_span()
+	if entitlement == Vector2i.ZERO:
 		return TDOutcome.new(false, "MISSING", "这座小镇没有餐厅建设区。")
-	home_w = maxi(1, int(lot["w"]) / 2)
-	home_h = maxi(1, int(lot["h"]) / 2)
+	home_w = maxi(1, entitlement.x / 2)
+	home_h = maxi(1, entitlement.y / 2)
 	home_venue = venue
 	home_size = "quarter"
 	home_built = true
 	_rebuild_map()
 	var diner := _plot_by_id("player_diner")
-	var lot_area := int(lot["w"]) * int(lot["h"])
-	if diner.is_empty() or int(diner.get("w", 0)) * int(diner.get("h", 0)) * 4 != lot_area:
+	var lot_area := entitlement.x * entitlement.y
+	var estate := _estate_size(diner)
+	if diner.is_empty() or estate.x * estate.y * 4 != lot_area:
 		home_built = false
 		home_venue = ""
 		home_w = 0
@@ -974,7 +975,10 @@ func build_venue(venue: String) -> TDOutcome:
 		_rebuild_map()
 		return TDOutcome.new(false, "BLOCKED", "建设区落店失败，保持空地。")
 	var label := "西餐厅" if venue == "western" else "中餐厅"
-	return TDOutcome.new(true, "BUILT", "%s建好了，占建设区四分之一（%d×%d）。走到店里就能进去。" % [label, int(diner["w"]), int(diner["h"])])
+	return TDOutcome.new(true, "BUILT", "%s建好了，占建设区四分之一（%d×%d）。走到店里就能进去。" % [label, estate.x, estate.y])
+
+func _estate_size(diner: Dictionary) -> Vector2i:
+	return Vector2i(int(diner.get("estate_w",diner.get("w",0))),int(diner.get("estate_h",diner.get("h",0))))
 
 func build_home(venue: String = "chinese") -> TDOutcome:
 	return build_venue(venue)
@@ -1204,12 +1208,12 @@ func resize_home(size_id: String) -> TDOutcome:
 		return TDOutcome.new(false, "WRONG_TOWN", "先回到主小镇，再改主店面积。")
 	if not home_built:
 		return TDOutcome.new(false, "NEED_HOME", "先在餐厅建设区点空地建店。")
-	var lot := town_map.diner_lot()
+	var entitlement := town_map.diner_estate_span()
 	var foot := TDRestaurantSizes.footprint(size_id)
 	var width := foot.x
 	var height := foot.y
-	if not lot.is_empty() and not _span_fits(width, height, lot):
-		if _span_fits(height, width, lot):
+	if entitlement!=Vector2i.ZERO and (width>entitlement.x or height>entitlement.y):
+		if height<=entitlement.x and width<=entitlement.y:
 			width = foot.y
 			height = foot.x
 		else:
@@ -1222,14 +1226,15 @@ func resize_home(size_id: String) -> TDOutcome:
 	home_h = height
 	_rebuild_map()
 	var diner := _plot_by_id("player_diner")
-	if int(diner.get("w", 0)) * int(diner.get("h", 0)) != width * height:
+	var estate := _estate_size(diner)
+	if estate.x * estate.y != width * height:
 		home_size = previous_size
 		home_w = previous_w
 		home_h = previous_h
 		_rebuild_map()
 		return TDOutcome.new(false, "BLOCKED", "建设区放不下这个面积，主店保持原样。")
 	var room := TDRestaurantSizes.interior(size_id)
-	return TDOutcome.new(true, "RESIZED", "主店地图%d×%d，店内%d×%d。" % [int(diner["w"]), int(diner["h"]), room.x, room.y])
+	return TDOutcome.new(true, "RESIZED", "主店用地%d×%d，店内%d×%d。" % [estate.x, estate.y, room.x, room.y])
 
 func claim_branch(size_id: String, origin: Vector2i) -> TDOutcome:
 	if not TDRestaurantSizes.IDS.has(size_id):

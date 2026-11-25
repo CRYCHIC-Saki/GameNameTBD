@@ -113,7 +113,7 @@ func test_edit_paint_moves_a_blocked_player_and_can_add_a_stool() -> void:
 	world._tier = "high"
 	assert_true(world.restyle_venue().ok)
 	assert_ne((world.get_node("Floor") as Sprite2D).texture.get_image().get_pixel(136, 72), low)
-	assert_eq(String(world.layout.piece_by_kind("hotpot_table")["style_id"]), "french_high")
+	assert_eq(String(world.layout.piece_by_kind("dining_table")["style_id"]), "french_high")
 
 func test_menu_opens_restaurant_without_writing_player_saves() -> void:
 	var app := APP.instantiate() as TDApplication
@@ -286,11 +286,13 @@ func test_waiter_puts_the_ready_plate_on_the_table() -> void:
 	var stand := world._beside_seat(String(seat["id"]))
 	assert_true(world.layout.is_walkable(stand.x, stand.y))
 	assert_false(world._piece_covers(seat, stand))
+	var wall_row := world._waiter_posts(1)[0].y
 	for _step in 80:
 		for person: Variant in world._crew_points(0.5):
 			var feet: Vector2 = (person as Dictionary).point
 			var cell := world._cell_at(feet)
-			assert_true(world.layout.is_walkable(cell.x, cell.y), "服务员要沿过道走，不能穿进桌椅")
+			var at_wall := cell == Vector2i(0,wall_row) and feet.x >= world.layout.cell_px*.28
+			assert_true(at_wall or world.layout.is_walkable(cell.x, cell.y), "服务员只在左墙待命位或可通行的过道行走")
 			if str((person as Dictionary).label).begins_with("上菜"):
 				saw_serve = true
 				if cell == stand:

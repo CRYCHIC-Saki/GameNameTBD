@@ -51,6 +51,8 @@ func setup(levels: TDLevelProgression, points: int) -> void:
 		var badge := TDUI.label("Lv.%02d"%level,TDUI.FONT_SECTION,Color("764019") if achieved else Color("78674d"));badge.custom_minimum_size.x=90;badge.autowrap_mode=TextServer.AUTOWRAP_OFF;row.add_child(badge)
 		var details := VBoxContainer.new();details.size_flags_horizontal=Control.SIZE_EXPAND_FILL;row.add_child(details)
 		_text(details,"灵感 +%d%s"%[reward.inspiration,"  ·  里程碑奖励" if level%int(levels.config.rewards.milestone_every)==0 else ""],TDUI.FONT_BODY)
+		if level==TDGameProfile.MenuSupply.UNLOCK_LEVEL:
+			_text(details,"解锁供应商 · 按次日菜单配送",TDUI.FONT_CAPTION,Color("315836"))
 		for hook: Dictionary in levels.config.hooks:
 			if int(hook.level)!=level: continue
 			var kind := str({"feature":"功能资格","furniture":"家具资格","story":"剧情触发","event":"事件触发"}[hook.kind])

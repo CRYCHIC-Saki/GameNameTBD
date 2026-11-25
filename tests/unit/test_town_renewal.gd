@@ -31,8 +31,9 @@ func test_daylight_changes_gradually_and_indoor_stays_readable() -> void:
 	assert_gt(TDDaylight.sample(1320,true).tint.r,TDDaylight.sample(1320).tint.r)
 	assert_lt(absf(TDDaylight.sample(1080).tint.r-TDDaylight.sample(1080.1).tint.r),.001)
 
-func test_planned_map_terrain_roads_and_facilities() -> void:
+func test_first_planned_layout_terrain_roads_and_facilities() -> void:
 	var world:=TDPhase3Session.new();world.map_version=2
+	world.town_map.jiangnan_layout_revision=1
 	assert_true(world.load_default().ok);assert_true(world.build_home("chinese").ok)
 	var map:=world.town_map
 	assert_eq(map.extent,73)
@@ -48,7 +49,7 @@ func test_planned_map_terrain_roads_and_facilities() -> void:
 	assert_eq(map.factory_lots().size(),8)
 	assert_eq(map.commercial_parcels().size(),6)
 	assert_true(map.validate_cottage(map.choose_cottage()).ok)
-	assert_ne(TDPlannedTown.branch_site(map,12,18),Vector2i(-1,-1))
+	assert_ne(TDLegacyJiangnanLayout.branch_site(map,12,18),Vector2i(-1,-1))
 	var invalid:=TDPlannedTown.definition();invalid.plots[0].rect=[72,30,4,4]
 	assert_false(TDPlannedTown.validate(invalid).ok)
 	var geography:=TDEconomicGeography.new();geography.configure("chengdu",map.plots,{},2)
@@ -62,12 +63,13 @@ func legacy_snapshot() -> Dictionary:
 	var p:=TDGameProfile.new();p.slot_id="slot-01"
 	# A schema-5 fixture predates both the hometown and foreign-region map upgrades.
 	p.region_layout_version=1
+	p.world.town_map.jiangnan_layout_revision=1
 	p.world.map_version=1;p.world.town_map.cottage={};p.world._rebuild_map()
 	p.world.factory_built["chengdu:factory-2"]=true;p.world._rebuild_map()
 	p.commerce=TDWorldEconomy.new(p.service.config.costs,"chengdu",101,1)
 	p._wire_commerce();p.initialize_residence()
 	var raw:=p.snapshot();raw.schema_version=5;raw.world.erase("map_version")
-	raw.erase("region_layout_version");raw.erase("region_migration")
+	raw.erase("jiangnan_layout_revision");raw.erase("region_layout_version");raw.erase("region_migration")
 	raw.residence={"schema_version":1,"anchor":"cottage_bed","plot":raw.residence.plot}
 	p.close();return raw
 
@@ -83,7 +85,8 @@ func test_legacy_geometry_migration_preserves_progress_and_rejects_tamper() -> v
 	assert_eq(result.data.characters,raw.characters);assert_eq(result.data.layout,raw.layout)
 	assert_eq(result.data.world.factory_built,raw.world.factory_built)
 	assert_eq(result.data.economy.society,raw.economy.society)
-	assert_true(TDGameProfile.validate_save(result.data).ok)
+	var checked:=TDGameProfile.validate_save(result.data)
+	assert_true(checked.ok,checked.code)
 	for town: String in raw.economy.expansion.parcels:
 		for id: String in raw.economy.expansion.parcels[town]:
 			for field: String in ["owner_id","store_id","version","land_cents"]: assert_eq(result.data.economy.expansion.parcels[town][id][field],raw.economy.expansion.parcels[town][id][field])
@@ -91,7 +94,7 @@ func test_legacy_geometry_migration_preserves_progress_and_rejects_tamper() -> v
 	var malformed:=result.data.duplicate(true)
 	malformed.economy.expansion.parcels.chengdu["competitor:shop:0"].x=54
 	assert_false(TDGameProfile.validate_save(malformed).ok,"cannot forge ownership on river")
-	var loaded:=TDGameProfile.new();assert_true(loaded.restore(raw).ok)
+	var loaded:=TDGameProfile.new();var restored:=loaded.restore(raw);assert_true(restored.ok,restored.code)
 	assert_true(loaded.map_migrated_on_load);assert_eq(loaded.world.map_version,2)
 	assert_true(TDGameProfile.validate_save(loaded.snapshot()).ok)
 	loaded.close()
@@ -119,11 +122,12 @@ func test_old_branch_and_largest_home_keep_their_size_and_ownership() -> void:
 	assert_true(TDGameProfile.validate_save(raw).ok)
 	var result:=TDMapMigration.convert(raw);assert_true(result.ok,result.code)
 	if not result.ok: return
-	assert_true(TDGameProfile.validate_save(result.data).ok)
+	var checked:=TDGameProfile.validate_save(result.data)
+	assert_true(checked.ok,checked.code)
 	assert_eq(result.data.world.home_size,"huge")
 	assert_eq(int(result.data.world.home_w)*int(result.data.world.home_h),216)
 	assert_eq(result.data.world.branch_town,"paris")
-	var remote:=TDTownMap.new();remote.layout_version=2
+	var remote:=TDTownMap.new();remote.layout_version=2;remote.jiangnan_layout_revision=1
 	var world:=TDPhase3Session.new();world.load_default()
 	remote.build(world.catalog,TDTownMap.seed_of("paris"))
 	var w: Dictionary=result.data.world

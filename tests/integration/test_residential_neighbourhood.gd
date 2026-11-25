@@ -1,11 +1,36 @@
 extends GutTest
 const DRIVER=preload("res://tools/test_support/kitchen_input.gd")
 
+func test_reference_homes_and_boats_show_in_their_authored_places() -> void:
+	var profile := TDGameProfile.new()
+	var map := profile.world.town_map
+	var origin := Vector2(300,24)
+	var cell := float(TDTownWorld.CELL)
+	var entries := TDTownArt.facades(map,cell,origin,true)
+	var homes := 0
+	var boats := 0
+	for item: Dictionary in entries:
+		var id := str(item.get("reference_id", ""))
+		if item.get("reference_layer") == "buildings" and (id.contains("house") or id.contains("homes")):
+			homes += 1
+			assert_false(item.bases.is_empty(), "Every authored residence has a solid ground footprint")
+		if id.begins_with("covered-boat-"):
+			boats += 1
+			assert_true(item.bases.is_empty(), "River craft need no land collision bases")
+			var feet := Vector2(item.rect.get_center().x, item.rect.end.y)
+			assert_false(TDPlannedTown.reference_walkable_at_cell_position((feet - origin) / cell))
+	assert_gte(homes, 8)
+	assert_eq(boats, 4)
+	var cottages := entries.filter(func(e: Dictionary) -> bool: return e.get("plot", {}).get("id") == "player_cottage")
+	assert_eq(cottages.size(), 1)
+	if not cottages.is_empty(): assert_true(cottages[0].has("reference_id"), "The home reuses the matching reference house")
+	profile.close()
+
 func test_housing_groups_survive_reversed_plot_order_and_cover_each_free_cell_once() -> void:
 	var profile:=TDGameProfile.new();var map:=profile.world.town_map
 	var original:=map.plots.duplicate(true);var before: Dictionary=profile.snapshot()
 	var groups:=TDTownArt.housing_groups(map)
-	assert_true(groups.any(func(g:Dictionary)->bool:return int(g["size"])==3),"A complete 3x3 block must be homes, not nine planters")
+	assert_false(groups.is_empty(), "The cadastral housing plots still form blocks")
 	map.plots.reverse();assert_eq(TDTownArt.housing_groups(map),groups,"Same geometry, different dictionary order")
 	map.plots=original
 	var seen: Dictionary={}
@@ -57,10 +82,9 @@ func test_actual_neighbourhood_notice_and_player_cottage_keep_separate_actions()
 	var before: Dictionary=shell.profile.snapshot()
 	var driver:=DRIVER.new();driver.viewport=get_tree().root
 	for id: String in ["urban_village","rich_district"]:
-		var plot: Dictionary=shell.profile.world.town_map.plots.filter(func(p:Dictionary)->bool:return str(p.id)==id)[0]
-		var near:=Vector2(float(plot.x)+float(plot.w)*.5,float(plot.y+plot.h)+.5)
-		assert_true(shell.profile.world.town_map.is_walkable(int(near.x),int(near.y)))
-		shell.town._player.position=shell.town._origin()+near*shell.town.CELL
+		var foot := Vector2(219,197) if id == "urban_village" else Vector2(1180,215)
+		shell.town._player.position = shell.town._origin() + foot / TDPlannedTown.REFERENCE_PIXELS_PER_CELL * shell.town.cell_size()
+		assert_true(shell.town._can_stand(shell.town._player.position), id + " has an open doorstep")
 		assert_eq(str(shell.town.facing_plot().get("id","")),id)
 		driver.tap(KEY_E);assert_not_null(shell._modal_box)
 		if shell._modal_box==null: continue

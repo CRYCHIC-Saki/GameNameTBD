@@ -1,3 +1,24 @@
+## D078-R2 五地域装修卡片（2026-11-17，ENGINEERING_READY，PLAYTEST_PENDING）
+来源：用户要求上轮不同风格餐厅家具、墙纸和地板成为装修面板可选项。实际读取grilling及godot-gdscript-patterns（C:/Users/Administrator/.codex/skills/<name>/SKILL.md，未标版本）。审查六分类、整屋表面替换和持久化；GRILL_RESULT = NO_BLOCKING_PRODUCT_QUESTIONS。当前只扩已有餐厅装修目录；不引入购买/解锁要求、不恢复已删的两下拉栏、不扩建分店独立编辑器。
+- AC-PHASE-D078-R2-001：现有六分类包含五地域家具变体和墙地卡片，实物预览/占地/样式明确，可横向浏览，浏览不改布局。
+- AC-PHASE-D078-R2-002：选不同地域家具→半透明预览→放置具有相同style_id；拖动/逆时针旋转/删除沿用原规则；可混搭且不改餐馆菜系或整屋已有家具。
+- AC-PHASE-D078-R2-003：五种地域地面/墙纸点击整屋替换对应表面，并显示真正对应纹理/细节，另一个表面及家具保持；非法/墙地错用不改状态。
+- AC-PHASE-D078-R2-004：新finish_ids和style_id通过现有Layout/Profile保存往返，旧四类墙/地保持兼容；真实输入/GPU/导入加载/隔离导出验证。人工观感PENDING。
+
+### D078-R2 实现与验收
+- 四项AC工程PASS，人工混搭观感PENDING；全部为生产目录/布局/渲染/保存接口，无平行演示实现或替身。
+- 家具保留kind与每件style_id；目录解码只读，World统一传入原preview/place。后续默认卡片不会继承上次选的异域样式；浏览/取消不改房间。原拖动、逆时针90°和左上删除继续使用现有方法。
+- 五地面/五墙纸为可持久化新ID；iso及旧二维地表解析实际饰面风格，墙门/后厨门框同时取已选墙面。旧八饰面、旧混搭记录和Profile schema9保持，普通退出仍不保存。
+- `artifacts/check/decor-options-final/summary.json`：导入exit0，164资源/0失败；47/47、1301断言、103.117秒，0失败/跳过，exit0。覆盖五主题各家具种类、真鼠标卡片/预览/落位/旋转、整屋与错面拒绝、新旧饰面及混搭家具隔离磁盘往返、小窗口可达；同时复验旧装修/餐厅交互和R1默认主题。
+- `artifacts/decor-options-20261117/gpu-01.log`：真实Compatibility输入47检查、14图、exit0；截图人工查看覆盖卡片/墙纹/棋盘与陶砖、预览、混搭、1024×720最后一张卡。
+- `export-final.log`：1282资源、严格运行白名单无例外；`pack-final.log`：空目录＋实际ZIP资源包运行61检查、5地域截图、exit0，实际卡片→摆放→隔离存读→删除成功。不是重新打包EXE；build仍11月16日14:44，不覆盖玩家档。
+- 34原资料/保护素材SHA全部一致；未提交/推送，root写入锁释放。全仓、远程CI、本轮正式EXE和玩家试玩NOT_RUN/PENDING。
+- 失败保留：import-01/parse-iso-01查出局部变量重名，修复后import-02及最终链通过。decor-options-01的两个新测试驱动问题为使用不存在的add_piece及放置后未先点选就按隐藏旋转控件；改为真实place/点选/旋转后47全过。无生产功能用mock绕过。load_check仍有上游VN独立构造时资产根未装配的既有WARNING，正式宿主未改，资源失败数为0。
+
+复现：锁定Godot4.7.2打开project.godot，F5；检查 `pwsh -File tools/check.ps1 -Suite decor-options -GodotPath F:/MyGameTBD/artifacts/vn-framework-20261113/engine/godot.exe`。图形探针 `godot --path F:/MyGameTBD --rendering-method gl_compatibility --script res://tools/decor_options_probe.gd`，须使用锁定引擎且不加headless；所有测试存档为隔离测试路径。
+
+试玩（最多5步）：1. 餐厅装修图板E进入。2. 在餐桌/座椅/服务台等分类横向滚动，选不同地域款式。3. 放置并点选，拖动/逆时针旋转，观察预览与实物。4. 地面/墙壁分别点卡片，确认整屋替换且家具保留。5. 完成布置，主动保存后重新载入检查。下一步停在本次验收，按用户反馈调整，不自动扩展独立分店装修或新阶段。
+
 # D057 餐厅装修界面
 
 ## D057-R2（2026-11-05）旋转中心与整屋饰面：DELIVERED_LOCAL_PLAYTEST_PENDING

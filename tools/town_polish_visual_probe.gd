@@ -23,7 +23,7 @@ func run() -> void:
 	await capture("npc-lunch-activity")
 	town.spawn_at_plot("market-small");people.clock.minute=1320;await capture("market-night")
 	town.set_process(false);town.set_physics_process(false);town._camera.zoom=Vector2.ONE*.20
-	town._camera.position=town._origin()+Vector2.ONE*shell.profile.world.town_map.extent*24
+	town._camera.position=town._origin()+Vector2.ONE*shell.profile.world.town_map.extent*TDTownScenery.SCALE
 	town._player.position=town._camera.position;people.clock.minute=720;await capture("overview")
 	var f:=FileAccess.open(OUT.path_join("report.json"),FileAccess.WRITE)
 	f.store_string(JSON.stringify({"captures":captures,"renderer":RenderingServer.get_current_rendering_method(),"human_acceptance":"PENDING"},"\t"));f.close()

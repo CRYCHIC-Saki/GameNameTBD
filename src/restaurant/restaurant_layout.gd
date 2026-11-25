@@ -5,8 +5,8 @@ static var import_code: String = ""
 
 const ZONE_OF := {"#": "facade", "+": "movement", ".": "movement", "R": "reception", "O": "ordering", "D": "dining"}
 const CHAR_OF := {"facade": "#", "movement": ".", "reception": "R", "ordering": "O", "dining": "D"}
-const FLOOR_FINISHES: Array[String] = ["wood", "tile", "stone", "carpet"]
-const WALL_FINISHES: Array[String] = ["paper", "stripe", "floral", "brick"]
+const FLOOR_FINISHES: Array[String] = ["wood", "tile", "stone", "carpet", "floor_chinese", "floor_french", "floor_japanese"]
+const WALL_FINISHES: Array[String] = ["paper", "stripe", "floral", "brick", "wall_chinese", "wall_french", "wall_japanese"]
 
 var culture: String = "plain"
 var tier: String = "low"
@@ -22,6 +22,16 @@ var _staff: Dictionary = {}
 var crew := TDRestaurantCrew.new()
 var _serial: int = 100
 
+# Shared decorations have one visual identity and count as wildcard furniture.
+static func shared_accent(kind: String) -> bool:
+	return kind in ["screen", "kiosk"]
+
+func _item_style(kind: String, requested: String) -> String:
+	var parts := requested.split("_")
+	if shared_accent(kind) and parts.size() == 2 and _catalog.has_style(parts[0], parts[1]):
+		return "plain_" + parts[1]
+	return requested
+
 static var floor_error: String = ""
 
 static func make_sized(catalog: TDRestaurantCatalog, columns_value: int, rows_value: int, culture_id: String = "chinese") -> TDRestaurantLayout:
@@ -29,7 +39,7 @@ static func make_sized(catalog: TDRestaurantCatalog, columns_value: int, rows_va
 	if catalog == null or columns_value < 8 or rows_value < 8:
 		floor_error = "店内至少要 8×8，才放得下迎宾台和收银台"
 		return null
-	var style := culture_id
+	var style := TDRegionalInterior.style(culture_id)
 	if not catalog.has_style(style, "low"):
 		style = "chinese"
 	var layout := TDRestaurantLayout.new()
@@ -112,7 +122,7 @@ func furnish_player_home() -> TDOutcome:
 			for x: int in range(point.x,point.x+2):
 				var painted:=paint(x,y,"D")
 				if not painted.ok: return painted
-		var placed:=place("dining_table",point.x,point.y,0,"chinese_low")
+		var placed:=place("dining_table",point.x,point.y,0,_venue_style())
 		if not placed.ok: return placed
 	return TDOutcome.new(true,"FURNISHED")
 
@@ -189,6 +199,7 @@ func set_finish(x: int, y: int, finish_id: String) -> TDOutcome:
 	return TDOutcome.new(true, "FINISHED", "已换成%s" % finish_name(finish_id))
 
 static func finish_name(finish_id: String) -> String:
+	if not TDRegionalInterior.finish_style(finish_id).is_empty(): return TDRegionalInterior.finish_name(finish_id)
 	match finish_id:
 		"wood":
 			return "木地板"
@@ -305,14 +316,14 @@ func move_piece(id: String, x: int, y: int) -> TDOutcome:
 	var current := piece(id)
 	if current.is_empty():
 		return _fail("MISSING", "没有这件家具")
-	return _commit(_index_of(id), _make_piece(id, String(current["kind"]), x, y, int(current["rotation"]), String(current["style_id"])))
+	return _commit(_index_of(id), _make_piece(id, String(current["kind"]), x, y, int(current["rotation"]), String(current["style_id"]), current.get("service_from_right", false)))
 
 func preview_move(id: String, x: int, y: int) -> Dictionary:
 	var current := piece(id)
 	if current.is_empty():
 		return {"ok": false, "code": "MISSING", "message": "没有这件家具", "piece": {}}
 	# Validation already excludes this stable ID; the live layout is never mutated.
-	var built := _make_piece(id, str(current.kind), x, y, int(current.rotation), str(current.style_id))
+	var built := _make_piece(id, str(current.kind), x, y, int(current.rotation), str(current.style_id), current.get("service_from_right", false))
 	var checked := _validate_piece(built)
 	return {"ok": checked.ok, "code": checked.code, "message": checked.message, "piece": built}
 
@@ -324,7 +335,7 @@ func rotate_piece_by(id: String, degrees: int) -> TDOutcome:
 	if current.is_empty():
 		return _fail("MISSING", "没有这件家具")
 	var rotation := posmod(int(current["rotation"]) + degrees, 360)
-	return _commit(_index_of(id), _make_piece(id, String(current["kind"]), int(current["x"]), int(current["y"]), rotation, String(current["style_id"])))
+	return _commit(_index_of(id), _make_piece(id, String(current["kind"]), int(current["x"]), int(current["y"]), rotation, String(current["style_id"]), current.get("service_from_right", false)))
 
 func restyle_piece(id: String, next_culture: String, next_tier: String) -> TDOutcome:
 	if _catalog == null or not _catalog.has_style(next_culture, next_tier):
@@ -332,7 +343,7 @@ func restyle_piece(id: String, next_culture: String, next_tier: String) -> TDOut
 	var index := _index_of(id)
 	if index < 0:
 		return _fail("MISSING", "没有这件家具")
-	(_pieces[index] as Dictionary)["style_id"] = "%s_%s" % [next_culture, next_tier]
+	(_pieces[index] as Dictionary)["style_id"] = _item_style(str(_pieces[index].kind), "%s_%s" % [next_culture, next_tier])
 	return TDOutcome.new(true, "RESTYLED", "这件家具已换风格")
 
 func apply_venue_style(next_culture: String, next_tier: String) -> TDOutcome:
@@ -342,7 +353,7 @@ func apply_venue_style(next_culture: String, next_tier: String) -> TDOutcome:
 	tier = next_tier
 	var style := _venue_style()
 	for item: Variant in _pieces:
-		(item as Dictionary)["style_id"] = style
+		(item as Dictionary)["style_id"] = _item_style(str(item.kind), style)
 	return TDOutcome.new(true, "RESTYLED", "全店已换成%s%s" % [_catalog.culture_name(culture), _catalog.tier_name(tier)])
 
 func set_staff(role: String, hired: bool) -> TDOutcome:
@@ -475,6 +486,7 @@ func to_dict() -> Dictionary:
 			"id": current["id"], "kind": current["kind"], "x": current["x"], "y": current["y"],
 			"rotation": current["rotation"], "style_id": current["style_id"],
 		})
+		if current.get("service_from_right", false): exported[-1]["service_from_right"] = true
 	var data := {
 		"schema_version": 1, "columns": columns, "cell_px": cell_px,
 		"culture": culture, "tier": tier, "staff": _staff.duplicate(true),
@@ -541,7 +553,15 @@ func _load(data: Dictionary, catalog: TDRestaurantCatalog) -> TDOutcome:
 		var id := String(item.get("id", ""))
 		if id.is_empty() or _index_of(id) >= 0:
 			return _fail("DUPLICATE_ID", "家具 ID 重复或为空")
-		var built := _make_piece(id, String(item.get("kind", "")), int(item.get("x", -1)), int(item.get("y", -1)), int(item.get("rotation", -1)), String(item.get("style_id", "")))
+		var kind := str(item.get("kind", ""))
+		var right: Variant = item.get("service_from_right", false)
+		if not right is bool or (right and kind not in ["hotpot_table", "dining_table"]):
+			return _fail("BAD_APPROACH", "餐桌服务侧无效")
+		if kind == "hotpot_table":
+			# Old tables used the opposite service edge. Preserve its rotated aisle.
+			kind = "dining_table"
+			right = true
+		var built := _make_piece(id, kind, int(item.get("x", -1)), int(item.get("y", -1)), int(item.get("rotation", -1)), String(item.get("style_id", "")), right)
 		var committed := _commit(-1, built)
 		if not committed.ok:
 			return committed
@@ -569,7 +589,7 @@ func _commit(index: int, built: Dictionary) -> TDOutcome:
 		_pieces.append(built)
 	return checked
 
-func _make_piece(id: String, kind: String, x: int, y: int, rotation: int, style_id: String) -> Dictionary:
+func _make_piece(id: String, kind: String, x: int, y: int, rotation: int, style_id: String, service_from_right: bool = false) -> Dictionary:
 	if _catalog == null:
 		return {}
 	var definition := _catalog.furniture(kind)
@@ -581,14 +601,15 @@ func _make_piece(id: String, kind: String, x: int, y: int, rotation: int, style_
 	var approach := Vector2i(-999, -999)
 	var has_approach := definition["approach"] != null
 	if has_approach:
-		var offset := _rotated_approach(int(definition["approach"][0]), int(definition["approach"][1]), int(definition["width"]), int(definition["height"]), rotation)
+		var approach_x := int(definition.width) if service_from_right else int(definition.approach[0])
+		var offset := _rotated_approach(approach_x, int(definition["approach"][1]), int(definition["width"]), int(definition["height"]), rotation)
 		approach = Vector2i(x, y) + offset
 	return {
 		"id": id, "kind": kind, "name": definition["name"], "x": x, "y": y,
-		"w": size.x, "h": size.y, "rotation": rotation, "style_id": style_id,
+		"w": size.x, "h": size.y, "rotation": rotation, "style_id": _item_style(kind, style_id),
 		"zone": definition["zone"], "blocks": definition["blocks"], "role": definition["role"],
 		"seat_use": definition["seat_use"], "surface": definition["surface"], "service": definition["service"],
-		"has_approach": has_approach, "approach_x": approach.x, "approach_y": approach.y,
+		"service_from_right": service_from_right, "has_approach": has_approach, "approach_x": approach.x, "approach_y": approach.y,
 	}
 
 func _validate_piece(built: Dictionary) -> TDOutcome:

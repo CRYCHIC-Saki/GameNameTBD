@@ -159,7 +159,7 @@ func test_real_drag_commits_once_and_save_roundtrip_keeps_piece() -> void:
 	await mouse_button(end,false)
 	assert_false(room._dragging);assert_eq(int(room.layout.piece(id).x),10)
 	assert_eq(int(room.layout.piece(id).y),7);assert_eq(room.layout.pieces().size(),count)
-	assert_eq(room.layout.piece(id).style_id,"chinese_low")
+	assert_eq(room.layout.piece(id).style_id,"plain_low")
 	var restored:=TDRestaurantLayout.import_dict(room.layout.to_dict(),room.catalog)
 	assert_eq(restored.piece(id),room.layout.piece(id))
 

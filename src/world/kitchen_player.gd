@@ -3,6 +3,10 @@ extends CharacterBody2D
 
 ## Feet remain the collision origin. Visual frames never move the physics body.
 const WALK_SPEED: float = 230.0
+const FACING_SECTORS: Array[Vector2i] = [
+	Vector2i.RIGHT, Vector2i(1,1), Vector2i.DOWN, Vector2i(-1,1),
+	Vector2i.LEFT, Vector2i(-1,-1), Vector2i.UP, Vector2i(1,-1),
+]
 var controls_enabled: bool = true
 var body_lift: float = 47.0
 var confine_to: Callable = Callable()
@@ -31,7 +35,7 @@ func _ready() -> void:
 
 func face(direction: Vector2) -> void:
 	if direction.is_zero_approx(): return
-	facing=Vector2i(int(signf(direction.x)),0) if absf(direction.x)>absf(direction.y) else Vector2i(0,int(signf(direction.y)))
+	facing = FACING_SECTORS[posmod(roundi(direction.angle() / (PI * 0.25)), 8)]
 	if directional_art and is_instance_valid(_sprite):
 		_apply_directional_pose()
 
@@ -41,14 +45,14 @@ func animation_texture() -> Texture2D:
 func _apply_directional_pose() -> void:
 	_sprite.texture = animation_texture()
 	_sprite.centered = true
-	_sprite.flip_h = false
+	_sprite.flip_h = TDChefArt.mirrored(facing)
 	_sprite.rotation = 0.0
-	_sprite.scale = Vector2.ONE * sprite_height / _sprite.texture.get_height()
+	_sprite.scale = TDChefArt.render_size(facing, walk_frame, sprite_height) / _sprite.texture.get_size()
 	_sprite.position = Vector2(0.0, -sprite_height * 0.5)
 
 func faces_target(target: Vector2) -> bool:
 	var offset:=motion_transform.basis_xform_inv(target-position)
-	return offset.length()<1.0 or offset.normalized().dot(Vector2(facing))>=0.6
+	return offset.length()<1.0 or offset.normalized().dot(Vector2(facing).normalized())>=0.6
 
 func set_controls_enabled(enabled: bool) -> void:
 	controls_enabled = enabled

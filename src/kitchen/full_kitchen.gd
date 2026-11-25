@@ -106,6 +106,7 @@ func _ready() -> void:
 	for index: int in 2:
 		var lane := TDCookingLane.new()
 		lane.catalog = catalog; lane.scorer = scorer; lane.lane_index = index
+		if catalog.recipe_data(lane.base_recipe_id).is_empty(): lane.base_recipe_id=str(catalog.recipe_ids()[0])
 		lane.day_san = day_san
 		lane.pc_controls = true; lane.shared_clock = shared_clock; lane.beat_offset_sec = audio_delay
 		lane.document_rules = guided_controls
@@ -115,6 +116,7 @@ func _ready() -> void:
 		row.add_child(lane)
 		lanes.append(lane)
 	prep = TDCookingLane.new(); prep.catalog = catalog; prep.scorer = scorer; prep.lane_index = 2; prep.day_san = day_san
+	if catalog.recipe_data(prep.base_recipe_id).is_empty(): prep.base_recipe_id=str(catalog.recipe_ids()[0])
 	prep.pc_controls = true; prep.station_role = "board"; prep.shared_clock = shared_clock; prep.beat_offset_sec = audio_delay
 	prep.document_rules = guided_controls
 	prep.library = TDRecipeLibrary.new(library_path, _content); row.add_child(prep); prep.hide()
@@ -210,9 +212,13 @@ func set_dual(value: bool) -> void:
 		lane.refresh()
 
 func _process(_delta: float) -> void:
-	beat_audio.volume_db=-12.0 if music_audible() else -80.0
-	for lane:TDCookingLane in lanes+[prep]: lane.feedback_audible=music_audible() and stage.lanes.has(lane)
 	if auto_advance: _sync_time()
+	var audible := music_audible()
+	beat_audio.volume_db = -12.0 if audible else -80.0
+	if audible:
+		beat_audio.follow_chart(shared_clock.qte_sec-lanes[0].beat_offset_sec)
+	for lane: TDCookingLane in lanes+[prep]:
+		lane.feedback_audible = audible and stage.lanes.has(lane)
 
 func music_audible() -> bool:
 	if _closed or shared_clock.paused or not is_visible_in_tree(): return false
@@ -527,7 +533,8 @@ func _guided_station(id: String) -> void:
 func _open_guided(id: String) -> void:
 	_on_board=id=="kitchen.board"
 	active_lane=1 if id in ["kitchen.stove.right","kitchen.steamer"] else 0
-	if not _on_board: lanes[active_lane].station_role="steamer" if id=="kitchen.steamer" else "stove"
+	if not _on_board:
+		lanes[active_lane].station_role=str(lanes[active_lane].catalog.recipe_data(lanes[active_lane].base_recipe_id).get("workstation","steamer" if id=="kitchen.steamer" else "stove"))
 	panel.hide(); world.hide(); world.set_controls_enabled(false)
 	stage.feedback=""; stage.customer_feedback=[]; stage.show(); _finished_at=-1
 	_refresh_guided()
@@ -543,6 +550,7 @@ func _guided_lanes() -> Array:
 	return active
 
 func _refresh_guided() -> void:
+	stage.cuisine_id = world.cuisine_id
 	stage.lanes=_guided_lanes(); stage.beat_sec=shared_clock.qte_sec-lanes[0].beat_offset_sec
 	stage.bpm=float(_content.pc_operations.bpm); stage.queue_redraw()
 	stage.simmer_meters=world.simmer_meters.duplicate(true)

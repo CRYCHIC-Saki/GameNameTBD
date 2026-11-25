@@ -127,7 +127,7 @@ func test_sprint_is_shared_by_all_rooms_and_cannot_bypass_modal_pause_or_hidden_
 		match destination:
 			"town":
 				body = shell.town._player
-				body.position = shell.town._origin()+Vector2.ONE*(TDTownMap.CENTER+0.5)*TDTownWorld.CELL
+				body.position = shell.town._origin()+Vector2.ONE*(TDTownMap.CENTER+0.5)*shell.town.cell_size()
 			"cottage": body=shell.cottage.player;body.position=Vector2(570,420)
 			"kitchen": body=shell.kitchen_view.kitchen.world._player;body.position=Vector2(640,420)
 			"restaurant": body=shell.restaurant._player;shell.restaurant.teleport_player(Vector2i(6,8))

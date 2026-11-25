@@ -72,11 +72,8 @@ func test_relationships_only_show_met_people_and_do_not_change_affection() -> vo
 	assert_eq(panel.visible_ids.size(),2)
 	assert_eq(TDManagementPanels.RelationshipPanel.public_biography("镇上引路人。开发注释：只用于验证。"),"镇上引路人。")
 
-func test_value_formatting_uses_currency_cents_and_real_production_time() -> void:
+func test_value_formatting_uses_currency_cents() -> void:
 	assert_eq(TDGameHUD.money_text(12345),"123.45")
-	assert_eq(TDManagementPanels.SupplierPanel.time_text(59.2),"60 秒")
-	assert_eq(TDManagementPanels.SupplierPanel.time_text(180),"3.0 分钟")
-	assert_eq(TDManagementPanels.SupplierPanel.time_text(7200),"2.0 小时")
 
 func test_employee_panel_signs_named_candidate_once_per_click_then_assigns_from_warehouse() -> void:
 	var profile:=profile_case();var panel:=TDManagementPanels.EmployeePanel.new();add_child_autofree(panel)
@@ -94,18 +91,16 @@ func test_employee_panel_signs_named_candidate_once_per_click_then_assigns_from_
 	panel.assign_employee(offer.id,"");assert_eq(profile.employees.assigned("player_diner","cook").size(),0)
 	await wait_process_frames(2)
 
-func test_supplier_panel_quotes_real_catalogue_and_prevents_same_frame_double_order() -> void:
-	var profile:=profile_case();var panel:=TDManagementPanels.SupplierPanel.new();add_child_autofree(panel)
-	var before:=profile.snapshot();panel.configure(profile)
-	assert_eq(profile.snapshot(),before,"browsing does not purchase or automate")
-	assert_eq(panel.TOWNS.size(),5)
-	panel.select_item("tomato");assert_false(panel._order_button.disabled)
-	panel.place_order();panel.place_order()
-	assert_eq(profile.suppliers.state.lines.size(),1)
-	assert_eq(str(profile.suppliers.state.lines[0].store_id),"player_diner")
-	assert_true(panel._order_info.text.contains("游戏小时"))
-	await wait_process_frames(2)
-	assert_false(panel._order_button.disabled)
+func test_supplier_panel_shows_unlock_without_charging_when_opened() -> void:
+	var profile:=profile_case()
+	var panel:=TDManagementPanels.SupplierPanel.new()
+	add_child_autofree(panel)
+	var before:=profile.snapshot()
+	panel.configure(profile)
+	assert_eq(profile.snapshot(),before)
+	assert_true(panel.toggle.disabled)
+	assert_true(panel.pay.disabled)
+	assert_true(panel.inputs.is_empty())
 
 func test_employee_panel_pages_owned_people_without_rendering_the_entire_name_pool() -> void:
 	var profile:=profile_case()

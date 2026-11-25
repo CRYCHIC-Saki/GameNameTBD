@@ -22,8 +22,13 @@ func test_all_commercial_doors_connect_to_roads_without_opening_housing() -> voi
 		for plot: Dictionary in map.plots:
 			if plot.has("economic_parcel_id") or plot.kind=="bank":
 				assert_has(reached,Vector2i(plot.approach_x,plot.approach_y),town+":"+str(plot.id))
-				assert_false(map.is_walkable(plot.x,plot.y),"Store footprint remains solid")
-			if plot.kind in ["housing","factory_lot"]: assert_false(map.is_walkable(plot.x,plot.y),"Protected land unchanged")
+				if TDPlannedTown.approved(map):
+					assert_false(map.branch_ground_available(Vector2i(plot.x,plot.y)),"Occupied commercial property")
+				else: assert_false(map.is_walkable(plot.x,plot.y),"Store footprint remains solid")
+			if plot.kind in ["housing","factory_lot"]:
+				if TDPlannedTown.approved(map):
+					assert_false(map.branch_ground_available(Vector2i(plot.x,plot.y)),"Existing title protects this lot")
+				else: assert_false(map.is_walkable(plot.x,plot.y),"Protected land unchanged")
 
 func test_paid_thirteen_town_legacy_save_migrates_without_losing_shipments() -> void:
 	var old: Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/town_economy/profile_v2.json"))
@@ -34,13 +39,20 @@ func test_paid_thirteen_town_legacy_save_migrates_without_losing_shipments() -> 
 	assert_true(result.ok,result.code)
 	if not result.ok: return
 	assert_eq(int(profile.commerce.state.schema_version),2)
-	assert_eq(profile.commerce.state.markets.size(),5)
+	assert_eq(profile.commerce.state.markets.size(),3)
 	assert_eq(profile.commerce.state.familiarity["local:continental"],0.72)
 	assert_eq(profile.commerce.state.familiarity["local:eu"],0.72)
 	var historical:=TDShopSession.normalize_save(old.shop)
 	var current: Dictionary=profile.shop.snapshot()
 	for field: String in historical:
-		if field!="inventory": assert_eq(current[field],historical[field],field)
+		if field in ["menu","fame"]:
+			for id: String in historical[field]: assert_eq(current[field].get(id),historical[field][id],id)
+			for id: String in current[field]:
+				if historical[field].has(id): continue
+				assert_false(profile.shop.offer(id).is_empty(),id)
+				if field=="menu": assert_false(current.menu[id].enabled,id)
+				else: assert_eq(current.fame[id],0,id)
+		elif field!="inventory": assert_eq(current[field],historical[field],field)
 	for id: String in historical.inventory: assert_eq(current.inventory[id],historical.inventory[id],id)
 	for id: String in current.inventory:
 		if historical.inventory.has(id): continue

@@ -1,0 +1,27 @@
+{
+  "date": "2026-11-16",
+  "tool": "image_gen.imagegen",
+  "source": "assets/characters/protagonist/protagonist-idle-four-directions-v1.png",
+  "output": "assets/characters/protagonist/protagonist-diagonal-v1.png",
+  "sha256": "4a38a4e702da5b8de6eefdff7dc3dad9099204531aeabceb12e2feebd668fb7c",
+  "layout": "1254 x 1254 RGBA; 4 columns southeast/southwest/northwest/northeast; 3 rows idle/contact A/contact B; 392px foot-aligned atlas windows; cycle A/idle/B/idle",
+  "source_modified": false,
+  "human_art_acceptance": "PENDING",
+  "iterations": [
+    {
+      "output": "artifacts/protagonist-diagonal-20261115/diagonal-first.png",
+      "prompt_summary": "Use original idle as identity/proportion reference; make transparent 4x3 sheet with four true diagonal orientations and opposite walking contacts. Preserve short legs and large head.",
+      "result": "Rejected: opposite stride too similar."
+    },
+    {
+      "output": "artifacts/protagonist-diagonal-20261115/diagonal-second.png",
+      "prompt_summary": "Edit bottom row only to swap leading leg, overlap and opposing arm without changing direction or identity.",
+      "result": "Rejected: lowest boot still on same side."
+    },
+    {
+      "source_output": "C:/Users/Administrator/.codex/generated_images/01a11e94-e1d7-7c40-8dde-4cfdbe246fc8/exec-58b24804-8f8e-4e91-9b34-18d42d284c91.png",
+      "result": "Selected; alternating lowest boot visible in real renderer.",
+      "prompt": "Edit this transparent 4-column x 3-row character sprite atlas, 1254 x 1254. Preserve the TOP TWO ROWS pixel-for-pixel as much as possible and preserve all spacing, grid, character identity, chibi short legs and large head. REDRAW ONLY THE BOTTOM ROW's arms and legs to create a CLEARLY OPPOSITE contact pose to the middle row. Currently both bottom and middle look like the same leg leading; fix that, with obvious separated leg silhouettes. Four columns stay facing southeast, southwest, northwest, northeast respectively; DO NOT mirror or change facing. For bottom row column 1 and column 3: the SCREEN-LEFT boot must be the foremost/LOWEST boot at left of body center, clearly visible, with its short bent knee descending from the screen-left hip; the screen-RIGHT boot is lifted BEHIND, HIGHER and right, its sole not at bottom. Bottom row column 2 and column 4: SCREEN-RIGHT boot foremost/LOWEST and right of body center, screen-LEFT boot lifted BEHIND/HIGHER/left. This explicitly swaps which side of the image has the lowest boot compared with middle row. Also reverse the arm swing: in bottom columns 1/3 the left hand comes forward and right hand swings back, and mirror this arm pattern in columns 2/4. Legs must NOT cross over each other. Keep all thighs/boots very short, same total silhouette height and same bottom baseline within each grid cell. This is a walking game sprite, not a running leap. Keep pixel outlines, red-orange flame hair, white chef beret, cream flame apron, red tie, black skirt, brown boots and bag, frying pan backpack exactly. No text, shadows, background, floor or new elements. Transparent RGBA output."
+    }
+  ]
+}

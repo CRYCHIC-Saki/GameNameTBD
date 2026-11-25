@@ -4,6 +4,15 @@ extends RefCounted
 const SOURCE := "res://content/employees.json"
 const HOME := "player_diner"
 const ROLES := ["manager", "cook", "waiter"]
+const REGION_CUISINES := {"chengdu":"cn", "tokyo":"jp", "paris":"eu"}
+const LOOKS_PER_ROLE := 3
+# Reserved display names for employees created before the fixed recruitment market.
+const LEGACY_NAMES := {
+	"chengdu":["陆绮","沈玉笙","苏凝露","江秋梨","柳嘉音","陶盈","傅月白","唐杏","严初雪","李绣","张禾音","许春珂"],
+	"tokyo":["浅野小春","片山爱梨","南野美羽","早川花穗","白石和香","秋山纱奈","和田夏帆","神谷沙月","成田芽衣","野口彩音","堀川碧","星野美铃"],
+	"paris":["爱丽丝·法布尔","莉迪娅·罗西","薇拉·孔蒂","科莱特·阿尔芒","伊蕾娜·贝利尼","奥蕾莉亚·科斯塔","艾拉·勒内","玛蒂尔达·费雷","艾米·德吕克","妮娜·巴尔迪","朱莉安娜·里奇","菲奥娜·洛西"],
+}
+
 const GENERATED_PREFIX := "employee.v1."
 var _surnames: Dictionary = {}
 var _given_names: Dictionary = {}
@@ -81,10 +90,10 @@ static func validate_config(raw: Variant, templates_only: bool=false) -> TDOutco
 static func _validate_recruitment(raw: Dictionary) -> TDOutcome:
 	var market: Variant=raw.get("recruitment")
 	if not market is Dictionary or market.get("version")!=1 or not TDServiceCatalog.integer(market.get("rotation_days"),1,30) or not TDServiceCatalog.integer(market.get("fee_salary_days"),1,30): return TDOutcome.new(false,"EMPLOYEE_MARKET_CONFIG")
-	if not market.get("towns") is Array or market.towns.size()!=5 or not market.get("candidate_slots") is Array or market.candidate_slots.size()!=3: return TDOutcome.new(false,"EMPLOYEE_MARKET_CONFIG")
+	if not market.get("towns") is Array or market.towns.size()!=3 or not market.get("candidate_slots") is Array or market.candidate_slots.size()!=3: return TDOutcome.new(false,"EMPLOYEE_MARKET_CONFIG")
 	var towns: Dictionary={}
 	for town: Variant in market.towns:
-		if town not in ["chengdu","tokyo","paris","bangkok","mexico_city"] or towns.has(town): return TDOutcome.new(false,"EMPLOYEE_MARKET_TOWN")
+		if town not in ["chengdu","tokyo","paris"] or towns.has(town): return TDOutcome.new(false,"EMPLOYEE_MARKET_TOWN")
 		towns[town]=true
 	for value: Variant in market.candidate_slots:
 		if not TDServiceCatalog.integer(value,1,20): return TDOutcome.new(false,"EMPLOYEE_MARKET_SLOTS")
@@ -97,6 +106,7 @@ static func _validate_recruitment(raw: Dictionary) -> TDOutcome:
 	for row: Variant in raw.fixed_employees:
 		if not row is Dictionary or not row.get("id") is String or not row.id.begins_with("staff.") or ids.has(row.id) or not row.get("name") is String or row.name.is_empty() or names.has(row.name): return TDOutcome.new(false,"EMPLOYEE_FIXED_ID")
 		if row.get("town") not in towns or not TDServiceCatalog.integer(row.get("stars"),1,3): return TDOutcome.new(false,"EMPLOYEE_FIXED_ORIGIN")
+		if not TDServiceCatalog.integer(row.get("appearance_variant"),0,LOOKS_PER_ROLE-1): return TDOutcome.new(false,"EMPLOYEE_FIXED_APPEARANCE")
 		if not row.get("wages_cents") is Array or row.wages_cents.size()!=3 or not TDServiceCatalog.integer(row.get("sign_fee_cents"),1,3000000): return TDOutcome.new(false,"EMPLOYEE_FIXED_FEE")
 		for wage: Variant in row.wages_cents:
 			if not TDServiceCatalog.integer(wage,1,100000) or int(wage)!=int(row.wages_cents[0]): return TDOutcome.new(false,"EMPLOYEE_FIXED_WAGE")
@@ -148,6 +158,18 @@ func employee_info(id: String) -> Dictionary:
 	var row:=_template(id)
 	if row.is_empty(): return {}
 	var owned: Dictionary=state.owned.get(id,{})
+	row.gender="female"
+	row.town=str(row.get("town",owned.get("origin_town","chengdu")))
+	if _fixed_defs.has(id):
+		row.appearance_variant=int(row.appearance_variant)
+	else:
+		var seed_value:=id.sha256_text().left(8).hex_to_int()
+		row.appearance_variant=seed_value%LOOKS_PER_ROLE
+		if row.town!="chengdu" or state.legacy_defs.has(id):
+			var names: Array=LEGACY_NAMES[row.town]
+			row.name=names[seed_value%names.size()]
+	if row.role in ["cook","waiter"]:
+		row.cuisine_id=REGION_CUISINES[row.town]
 	var copies: int=int(owned.get("copies",0)); var stars: int=int(row.stars) if _fixed_defs.has(id) else stars_for(copies)
 	row.owned=not owned.is_empty(); row.copies=copies; row.stars=stars
 	row.assigned=str(owned.get("assigned","")); row.xp=int(owned.get("xp",0)); row.legacy=state.legacy_defs.has(id)
@@ -224,6 +246,34 @@ func _valid_store(id: String) -> bool:
 	var p:=_profile()
 	return id.is_empty() or id==HOME or (p!=null and p.branches.state.stores.has(id))
 
+func store_cuisine(id: String) -> String:
+	var p:=_profile()
+	if p==null: return ""
+	return p.shop.cuisine_id if id==HOME else str(p.branches.state.stores.get(id,{}).get("cuisine_id",""))
+
+func fits_store(row: Dictionary, id: String) -> bool:
+	return id.is_empty() or row.role=="manager" or row.cuisine_id==store_cuisine(id)
+
+func available_for(id: String, role: String) -> Array:
+	return assigned("",role).filter(func(row: Dictionary)->bool: return fits_store(row,id))
+
+func _reconcile_origins() -> void:
+	# Fixed recruits have permanent home towns. Older unnamed crews inherit the
+	# cuisine they already practiced; retain that origin when they later move.
+	for id: String in state.owned:
+		var person: Dictionary=state.owned[id]
+		var definition_row:=_template(id)
+		if not definition_row.has("town") and not person.has("origin_town"):
+			if definition_row.role=="manager":
+				var profile:=_profile()
+				var branch: Dictionary=profile.branches.state.stores.get(person.assigned,{}) if profile!=null else {}
+				var town: String=branch.get("town_id","chengdu")
+				person.origin_town=town if REGION_CUISINES.has(town) else "chengdu"
+			else:
+				var old_cuisine:=store_cuisine(person.assigned)
+				person.origin_town=REGION_CUISINES.find_key(old_cuisine) if old_cuisine in REGION_CUISINES.values() else "chengdu"
+		if not fits_store(employee_info(id),person.assigned): person.assigned=""
+
 func draw(_count: int, _role: String, _token: String) -> TDOutcome:
 	return TDOutcome.new(false,"RECRUITMENT_REPLACED","请在招聘市场选择具名候选人签约。")
 
@@ -271,8 +321,11 @@ func assign(employee_id: String, store_id: String) -> TDOutcome:
 	if not _valid_store(store_id): return TDOutcome.new(false,"UNKNOWN_STORE")
 	if not store_id.is_empty() and store_id!=HOME and not _profile().branches.funded(store_id): return TDOutcome.new(false,"UNPAID_SITE","请先确认付款施工。")
 	var person: Dictionary=state.owned[employee_id]
+	var row:=employee_info(employee_id)
+	if not fits_store(row,store_id):
+		return TDOutcome.new(false,"CUISINE_MISMATCH","%s只能在%s任职。"%[row.name,TDPlayerBranches.TITLES[row.cuisine_id]])
 	if person.assigned==store_id: return TDOutcome.new(true,"ALREADY_ASSIGNED")
-	var role: String=employee_info(employee_id).role
+	var role: String=row.role
 	if not store_id.is_empty() and assigned(store_id,role).size()>=int(config.role_caps[role]): return TDOutcome.new(false,"ROLE_FULL","这个岗位已满；原派驻保持不变。")
 	var day: int=int(_profile().shop.snapshot().day)
 	record_duties(day)
@@ -287,7 +340,7 @@ func auto_assign(store_id: String) -> TDOutcome:
 	for role: String in ROLES:
 		if store_id==HOME and role=="manager": continue
 		if not assigned(store_id,role).is_empty(): continue
-		var free:=assigned("",role)
+		var free:=available_for(store_id,role)
 		free.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return a.stars>b.stars if a.stars!=b.stars else str(a.id)<str(b.id))
 		if free.is_empty(): missing.append(role); continue
 		var result:=assign(free[0].id,store_id)
@@ -369,7 +422,7 @@ func migrate_legacy(layout_crew: Array, branches: Dictionary, old_staff: Diction
 	next.migrated=true; next.migration_note="旧员工、成长和店长星级已保留；分店原班组转为独立员工。主店超出两名服务员的旧岗位员工保留待岗，现任服务员兼顾前厅。"
 	var checked:=validate_save(next,stores.keys(),-1)
 	if not checked.ok: return checked
-	state=next; sync_main_crew()
+	state=next; _reconcile_origins(); sync_main_crew()
 	return TDOutcome.new(true,"EMPLOYEES_MIGRATED",state.migration_note)
 
 func validate_save(raw: Variant, store_ids: Variant=null, day: int=-1) -> TDOutcome:
@@ -399,6 +452,7 @@ func validate_save(raw: Variant, store_ids: Variant=null, day: int=-1) -> TDOutc
 		if int(raw.schema_version)==1 and str(id).begins_with(GENERATED_PREFIX): return TDOutcome.new(false,"INVALID_EMPLOYEE")
 		if not id is String or def.is_empty() or not person is Dictionary or person.get("id")!=id or not TDServiceCatalog.integer(person.get("copies"),1,9) or not TDServiceCatalog.integer(person.get("xp"),0,16) or not person.get("assigned") is String: return TDOutcome.new(false,"INVALID_EMPLOYEE")
 		if _fixed_defs.has(id) and (int(raw.schema_version)<3 or not contracts.has(id) or int(person.copies)!=[1,3,9][int(def.stars)-1]): return TDOutcome.new(false,"INVALID_FIXED_EMPLOYEE")
+		if person.has("origin_town") and (_fixed_defs.has(id) or not person.origin_town is String or not REGION_CUISINES.has(person.origin_town)): return TDOutcome.new(false,"INVALID_EMPLOYEE_ORIGIN")
 		var store_id: String=person.assigned
 		if not store_id.is_empty():
 			if store_id!=HOME and (not store_id.begins_with("player-branch:") or (store_ids!=null and store_id not in store_ids)): return TDOutcome.new(false,"INVALID_EMPLOYEE_STORE")
@@ -424,5 +478,6 @@ func restore(raw: Dictionary) -> TDOutcome:
 	if not checked.ok: return checked
 	state=raw.duplicate(true); state.schema_version=3
 	if not state.has("contracts"): state.contracts={}
+	if p!=null: _reconcile_origins()
 	sync_main_crew()
 	return TDOutcome.new(true,"EMPLOYEES_RESTORED")

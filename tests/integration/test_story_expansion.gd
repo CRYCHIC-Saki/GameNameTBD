@@ -33,7 +33,7 @@ func test_real_escort_waits_faces_player_and_resumes_without_teleport() -> void:
 	assert_false(town._escort_waiting);assert_gt(town.escort_position().distance_to(first),0.0)
 	var next:=town.escort_position();get_tree().paused=true;town._tick_escort(10);assert_eq(town.escort_position(),next)
 	get_tree().paused=false;town._player.position=next;town._tick_escort(100)
-	assert_lte(town.escort_position().distance_to(next),float(town.CELL*6+8),"A long frame cannot carry the guide out of range")
+	assert_lte(town.escort_position().distance_to(next),float(town.cell_size()*6+8),"A long frame cannot carry the guide out of range")
 
 func test_cg_playback_is_frozen_by_pause_and_cancel_does_not_progress() -> void:
 	shell.guide.present("intro");assert_true(shell.guide.presenting());assert_false(shell.town._player.controls_enabled)
@@ -108,7 +108,7 @@ func test_both_escort_legs_bowl_interaction_and_story_save_round_trip() -> void:
 		assert_ne(story.beat,leg,"Guide actually reaches this leg's destination")
 		if leg=="follow":
 			shell.guide.request_person("chen");shell.guide.dialogue._on_skip();assert_eq(story.beat,"bowl")
-			var bowl_cell:=Vector2i((town.bowl_point()-town._origin())/town.CELL)
+			var bowl_cell:=Vector2i((town.bowl_point()-town._origin())/town.cell_size())
 			assert_true(town.session.town_map.is_road(bowl_cell.x,bowl_cell.y),"The interactive bowl must be on reachable ground")
 			town._player.position=town.bowl_point();town._interact();assert_not_null(shell._modal)
 			for node: Node in shell._modal_box.get_children():
@@ -159,14 +159,23 @@ func play_with_lessons(seconds: int) -> void:
 func test_harbor_is_reachable_and_interactive_without_changing_property_or_save() -> void:
 	var map:=shell.profile.world.town_map;var before:=shell.profile.snapshot()
 	var port:=TDHarbor.facility(map);assert_eq(port.id,"harbor.hekou")
-	for y: int in range(29,31):
-		for x: int in range(71,73):
-			assert_false(map.is_walkable(x,y));assert_false(map.can_place(x,y,1,1))
-	var route:=TDQuestPath.find(Vector2i(20,34),TDHarbor.ARRIVAL,Rect2i(0,0,map.extent,map.extent),func(p:Vector2i)->bool:return map.is_road(p.x,p.y))
-	assert_gt(route.size(),10);assert_eq(route[-1],TDHarbor.ARRIVAL)
+	var restaurant := shell.town._diner_door()
+	var route := TDQuestPath.find(restaurant, TDHarbor.ARRIVAL, Rect2i(0,0,map.extent,map.extent),
+		func(point: Vector2i) -> bool: return map.is_road(point.x,point.y))
+	assert_gt(route.size(),10)
+	if not route.is_empty(): assert_eq(route[-1],TDHarbor.ARRIVAL)
+	var deck := TDHarbor.lot("deck")
+	var step := Vector2(deck.get_center().x + .5, deck.position.y + .5) * shell.town.cell_size()
+	var gangway := shell.town._origin() + step
+	shell.town._player.position = gangway - Vector2(0,shell.town.cell_size())
+	assert_true(shell.town._feet_on_road(gangway),"players can walk from the public quay onto its landing")
+	assert_false(shell.town._feet_on_road(gangway + Vector2(0,shell.town.cell_size()*2)),"open sea has real collision")
+	var box := TDInteractionRange.plot_bounds(port,shell.town.cell_size(),shell.town._origin())
+	var approach := Vector2(box.get_center().x,box.end.y + 30.0)
+	assert_true(shell.town._can_stand(approach))
 	for direction: Vector2i in [Vector2i.UP,Vector2i.DOWN,Vector2i.LEFT,Vector2i.RIGHT]:
-		shell.town._player.position=shell.town._origin()+Vector2(70.5,33.5)*shell.town.CELL;shell.town._player.face(Vector2(direction))
-		assert_eq(shell.town.facing_plot().id,"harbor.hekou")
+		shell.town._player.position=approach;shell.town._player.face(Vector2(direction))
+		assert_eq(shell.town.facing_plot().get("id",""),"harbor.hekou")
 	driver.tap(KEY_E);assert_not_null(shell._modal);assert_true(get_tree().paused)
 	driver.tap(KEY_ESCAPE);assert_false(get_tree().paused)
 	assert_true(TDLevelProgression.same_value(before,shell.profile.snapshot()),"Port preview does not unlock cargo routes, spend money or alter property")

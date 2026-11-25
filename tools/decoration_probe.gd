@@ -18,7 +18,7 @@ func check_rotation_pixels() -> void:
 	var model:=ModelSample.new();model.position=Vector2(384,240);viewport.add_child(model)
 	var catalog:=TDRestaurantCatalog.new()
 	check(catalog.load_file().ok,"pixel probe catalog loads")
-	for kind: String in ["dining_table","hotpot_table","welcome_desk","cashier","order_counter"]:
+	for kind: String in ["dining_table","welcome_desk","cashier","order_counter"]:
 		var definition:=catalog.furniture(kind)
 		var original:=Rect2i()
 		for rotation: int in [0,270,180,90]:

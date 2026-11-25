@@ -55,17 +55,17 @@ func run() -> void:
 	await capture("chengdu-in-game")
 	shell.town.spawn_at_harbor()
 	var before: Dictionary=shell.profile.snapshot()
-	for town: String in ["tokyo","paris","bangkok","mexico_city"]:
+	for town: String in TDRegionalLayout.IDS:
 		check(shell.voyage(town).ok,"travel "+town)
 		await process_frame
 		var visitor: TDTravelWorld=shell.visiting
 		var restaurants: Array=visitor._buildings.filter(func(entry:Dictionary)->bool:return entry.plot.get("kind")=="competitor")
 		check(not restaurants.is_empty(),"restaurant present "+town)
 		if not restaurants.is_empty():
-			visitor.player.position=Vector2(restaurants[0].feet)*48+Vector2(0,48)
+			visitor.player.position=Vector2(restaurants[0].feet)*visitor.cell_size+Vector2(0,48)
 			visitor.camera.zoom=Vector2.ONE
 		await capture(town+"-in-game")
-		visitor.player.position=(Vector2(TDTravelCatalog.port(town))+Vector2.ONE*.5)*48
+		visitor.player.position=(Vector2(TDTravelCatalog.port(town))+Vector2.ONE*.5)*visitor.cell_size
 	check(shell.voyage("chengdu").ok,"return home")
 	check(shell.profile.snapshot()==before,"travel preserves gameplay state")
 	shell._dispose_game();app.queue_free();await process_frame;await process_frame

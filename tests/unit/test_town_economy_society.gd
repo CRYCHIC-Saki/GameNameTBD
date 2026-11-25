@@ -79,9 +79,9 @@ func test_household_social_cash_bank_and_daily_flow_conserve() -> void:
 	var bad:=saved.duplicate(true);bad.households.values()[0].cash_cents=-1
 	assert_false(loaded.restore(bad).ok)
 
-func test_five_cuisines_and_story_routes_do_not_unlock_recipes_implicitly() -> void:
+func test_three_cuisines_and_story_routes_do_not_unlock_recipes_implicitly() -> void:
 	var world:=TDWorldEconomy.new({"tomato":200,"egg":150})
-	assert_eq(world.state.markets.size(),5)
+	assert_eq(world.state.markets.size(),3)
 	assert_eq(world.state.routes,["chengdu"])
 	assert_true(world.open_route("tokyo","story:tokyo").ok)
 	assert_eq(world.state.routes,["chengdu","tokyo"])

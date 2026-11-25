@@ -117,7 +117,8 @@ func sync(player: Node2D, guests: Array, frozen: bool=false) -> void:
 	for person: Dictionary in crew_people:
 		var key: String="staff:"+str(person.actor_id);live[key]=true
 		var gait:=_gait(key,person.point,frozen)
-		person.facing=gait.facing;person.frame=gait.frame
+		person.facing=Vector2i.RIGHT if person.get("at_wall",false) else gait.facing
+		person.frame=-1 if person.get("at_wall",false) else gait.frame
 	if runner_visible: live["runner"]=true;_gait("runner",runner_point,frozen)
 	for key: String in _gaits.keys():
 		if not live.has(key): _gaits.erase(key)
@@ -199,13 +200,20 @@ func _draw() -> void:
 		var staff := _person_entry(person.point, bool(person.get("moving", false)), person.color, str(person.label), false)
 		staff["staff"] = true
 		staff.frame=person.get("frame",-1);staff.facing=person.get("facing",Vector2i.DOWN)
-		staff["depth"] = float(staff.depth) + 30.0
+		if person.get("role","")=="waiter":
+			staff.kind="regional_waiter"
+			staff.cuisine_id=person.cuisine_id
+			staff.appearance_variant=person.get("appearance_variant",0)
+			staff.carrying=person.get("carrying",false)
+			staff.idle_lift=person.get("idle_lift",0.0)
+		else: staff["depth"] = float(staff.depth) + 30.0
 		entries.append(staff)
 	entries.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return a.depth<b.depth)
 	for entry:Dictionary in entries:
 		match entry.kind:
 			"furniture": _furniture(entry.data)
 			"marker": _marker(entry.data)
+			"regional_waiter": _draw_waiter(entry)
 			"person":
 				if entry.seated and not entry.get("seat",{}).is_empty(): _dining_person(entry)
 				else: _person(entry.point,entry.moving,entry.shirt,entry.caption,entry.seated,bool(entry.get("staff", false)),str(entry.get("character_id","")),int(entry.get("appearance_id",0)),int(entry.get("frame",-1)),entry.get("facing",Vector2i.DOWN))
@@ -218,6 +226,22 @@ func _draw() -> void:
 		_direction(ghost_piece,Color("9de6be") if ghost_ok else Color("ed8065"))
 func _person_entry(point:Vector2,moving:bool,shirt:Color,caption:String,seated:bool) -> Dictionary:
 	return {"kind":"person","depth":(point.x+point.y)/float(layout.cell_px),"point":point,"moving":moving,"shirt":shirt,"caption":caption,"seated":seated}
+
+func _draw_waiter(entry: Dictionary) -> void:
+	var cell: Vector2 = entry.point / float(layout.cell_px)
+	var foot := project(cell.x, cell.y)
+	var texture := TDEmployeeArt.sprite(entry.cuisine_id,"waiter",entry.facing,entry.frame,entry.appearance_variant)
+	draw_set_transform(foot,0,Vector2(1,.32))
+	draw_circle(Vector2.ZERO,15,Color(0,0,0,.18))
+	draw_set_transform_matrix(Transform2D.IDENTITY)
+	draw_texture_rect(texture,TDEmployeeArt.pose_rect(foot,PERSON_HEIGHT,entry.idle_lift),false)
+	if entry.carrying:
+		draw_set_transform(foot+Vector2(15,-38),0,Vector2(1,.5))
+		draw_circle(Vector2.ZERO,13,Color("ece6d4"))
+		draw_circle(Vector2(0,-2),9,Color("d69151"))
+		draw_set_transform_matrix(Transform2D.IDENTITY)
+	if not str(entry.caption).is_empty():
+		draw_string(_staff_font(),foot+Vector2(-30,-PERSON_HEIGHT-8),entry.caption,HORIZONTAL_ALIGNMENT_LEFT,-1,TDUI.FONT_MICRO,Color("fff4d2"))
 
 func _dining_person(entry: Dictionary) -> void:
 	var seat: Dictionary=entry.seat
@@ -289,16 +313,20 @@ func _floor_cell(cell: Vector2i) -> void:
 	var shown := "facade" if structural == "facade" else "movement"
 	var color := TDRestaurantArt.zone_color(layout.culture, layout.tier, shown, layout.is_entrance(cell.x, cell.y))
 	var finish := layout.finish_at(cell.x, cell.y)
+	var finish_theme := TDRegionalInterior.finish_style(finish)
 	if finish != "":
 		color = TDRestaurantArt.finish_color(finish).lerp(color, 0.22)
-	if layout.culture=="chinese" and finish=="": color=Color("bd9b72") if (cell.x+cell.y)%2==0 else Color("c6a57d")
+	if not finish_theme.is_empty(): color=TDRegionalInterior.floor_color(finish_theme,cell)
+	if finish=="" and layout.culture in ["chinese","french","japanese"]: color=TDRegionalInterior.floor_color(layout.culture,cell)
 	draw_colored_polygon(points, color)
+	var floor_id := finish if TDRegionalInterior.FLOOR_INDEX.has(finish) else "floor_" + layout.culture
+	TDRegionalInterior.draw_floor(self,floor_id,points,cell)
 	var facility := layout.facility_zone(cell.x, cell.y)
-	if facility != "" and facility != "facade":
+	if editing and facility != "" and facility != "facade":
 		var mark := TDRestaurantArt.zone_color(layout.culture, layout.tier, facility, false)
-		draw_polyline(points + PackedVector2Array([points[0]]), mark, 2.4 if editing else 1.4)
-	else:
-		draw_polyline(points + PackedVector2Array([points[0]]), color.darkened(0.25), 1.0)
+		draw_polyline(points + PackedVector2Array([points[0]]), mark, 2.4)
+	elif floor_id in ["floor_chinese","floor_french"]:
+		draw_polyline(points + PackedVector2Array([points[0]]), color.darkened(0.16), 1.0)
 	if layout.is_entrance(cell.x, cell.y):
 		var edge := _sill_segment(cell)
 		var span := edge[1] - edge[0]
@@ -361,9 +389,13 @@ func _door_inward(cell: Vector2i) -> Vector2:
 	var into := -_exit_step(cell)
 	return project(float(into.x) * 0.16, float(into.y) * 0.16) - project(0.0, 0.0)
 
+func _wall_style(cell: Vector2i) -> String:
+	var finish := layout.finish_at(cell.x,cell.y)
+	return TDRegionalInterior.surface_style(finish,layout.culture) if finish.begins_with("wall_") else layout.culture
+
 func _wall_paint(cell: Vector2i, along_north: bool) -> Color:
 	var swatch := TDRestaurantArt.swatch(layout.culture, layout.tier)
-	var color := Color("efdfbb") if layout.culture == "chinese" else Color(String(swatch["accent"]))
+	var color := Color(TDRegionalInterior.WALLS.get(layout.culture, str(swatch["accent"])))
 	var paper := layout.finish_at(cell.x, cell.y)
 	if TDRestaurantLayout.WALL_FINISHES.has(paper):
 		color = TDRestaurantArt.finish_color(paper)
@@ -376,29 +408,32 @@ func _wall_paint(cell: Vector2i, along_north: bool) -> Color:
 func _slab(a: Vector2, b: Vector2, rise: Vector2, color: Color) -> void:
 	draw_colored_polygon(PackedVector2Array([a, b, b + rise, a + rise]), color)
 
-func _door_in_wall(start: Vector2, finish: Vector2, up: Vector2, wall: Color) -> void:
+func _door_in_wall(start: Vector2, finish: Vector2, up: Vector2, wall: Color, theme: String="") -> void:
 	var span := finish - start
+	if theme.is_empty(): theme=layout.culture
+	var regional := TDRegionalInterior.regional(theme)
+	var wood := Color(TDRegionalInterior.WOODS.get(theme,"785035"))
 	var left_jamb := start + span * 0.18
 	var right_jamb := finish - span * 0.18
 	_slab(start, left_jamb, up, wall)
 	_slab(right_jamb, finish, up, wall)
 	var lintel := up * 0.14
 	_slab(left_jamb + up - lintel, right_jamb + up - lintel, lintel, wall)
-	draw_line(start, left_jamb, Color("543723"), 5.0)
-	draw_line(right_jamb, finish, Color("543723"), 5.0)
-	draw_line(start + up, finish + up, Color("785035"), 5.0)
-	draw_line(left_jamb, left_jamb + up - lintel, Color("4a301c"), 3.0)
-	draw_line(right_jamb, right_jamb + up - lintel, Color("4a301c"), 3.0)
+	draw_line(start, left_jamb, wood.darkened(.25) if regional else Color("543723"), 5.0)
+	draw_line(right_jamb, finish, wood.darkened(.25) if regional else Color("543723"), 5.0)
+	draw_line(start + up, finish + up, wood if regional else Color("785035"), 5.0)
+	draw_line(left_jamb, left_jamb + up - lintel, wood.darkened(.3) if regional else Color("4a301c"), 3.0)
+	draw_line(right_jamb, right_jamb + up - lintel, wood.darkened(.3) if regional else Color("4a301c"), 3.0)
 	var leaf := up - lintel
 	var left := left_jamb + span * 0.02
 	var right := right_jamb - span * 0.02
 	var seam := (left + right) * 0.5
-	_slab(left, seam, leaf * 0.98, Color("8b5a34"))
-	_slab(seam, right, leaf * 0.98, Color("6d4528"))
+	_slab(left, seam, leaf * 0.98, wood if regional else Color("8b5a34"))
+	_slab(seam, right, leaf * 0.98, wood.darkened(.12) if regional else Color("6d4528"))
 	var panel := leaf * 0.62
 	var panel_at := leaf * 0.16
-	_slab(left + span * 0.03 + panel_at, seam - span * 0.015 + panel_at, panel, Color("5c3a22"))
-	_slab(seam + span * 0.015 + panel_at, right - span * 0.03 + panel_at, panel, Color("4a2e1b"))
+	_slab(left + span * 0.03 + panel_at, seam - span * 0.015 + panel_at, panel, wood.darkened(.22) if regional else Color("5c3a22"))
+	_slab(seam + span * 0.015 + panel_at, right - span * 0.03 + panel_at, panel, wood.darkened(.3) if regional else Color("4a2e1b"))
 	draw_line(seam, seam + leaf * 0.98, Color("3a2416"), 2.0)
 	draw_circle(left.lerp(seam, 0.78) + leaf * 0.48, 2.2, Color("e2ba69"))
 	draw_circle(seam.lerp(right, 0.22) + leaf * 0.48, 2.2, Color("e2ba69"))
@@ -437,19 +472,25 @@ func _draw_kitchen_bay() -> void:
 		return
 	var door_x := layout.columns - 2
 	var up := Vector2(0, -WALL_HEIGHT)
-	var paint := _wall_paint(Vector2i(door_x, layout.rows - 2), true)
 	for dx: int in [-1, 0, 1]:
 		var x: int = door_x + dx
 		if x < 0 or x >= layout.columns:
 			continue
+		var wall_cell := Vector2i(x,layout.rows-1)
+		var paint := _wall_paint(wall_cell, true)
 		var edge := PackedVector2Array([project(float(x), float(layout.rows)), project(float(x + 1), float(layout.rows))])
 		if dx == 0:
-			_door_in_wall(edge[0], edge[1], up, paint)
+			_door_in_wall(edge[0], edge[1], up, paint,_wall_style(wall_cell))
 			continue
 		if dx == -1:
 			_service_window(edge[0], edge[1], up, paint)
 			continue
 		_slab(edge[0], edge[1], up, paint)
+		var finish_id := layout.finish_at(wall_cell.x,wall_cell.y)
+		if finish_id.is_empty(): finish_id = "wall_" + layout.culture
+		if TDRegionalInterior.WALL_INDEX.has(finish_id):
+			TDRegionalInterior.draw_wall(self,finish_id,edge[0],edge[1],up,x,true)
+			continue
 		if interaction_markers.is_empty():
 			continue
 		draw_line(edge[0], edge[1], Color("543723"), 7.0)
@@ -469,12 +510,22 @@ func _wall(cell: Vector2i, along_north: bool) -> void:
 	var color := _wall_paint(cell, along_north)
 	if _wall_opens_for_door(cell, along_north):
 		var edge := _door_segment(layout.entrance())
-		_door_in_wall(edge[0], edge[1], up, color)
+		_door_in_wall(edge[0], edge[1], up, color,_wall_style(cell))
 		return
 	var start := project(float(cell.x), float(cell.y))
 	var finish := project(float(cell.x + (1 if along_north else 0)), float(cell.y + (0 if along_north else 1)))
 	var quad := PackedVector2Array([start, finish, finish + up, start + up])
 	draw_colored_polygon(quad, color)
+	var finish_id := layout.finish_at(cell.x,cell.y)
+	if finish_id.is_empty(): finish_id = "wall_" + layout.culture
+	if TDRegionalInterior.WALL_INDEX.has(finish_id):
+		TDRegionalInterior.draw_wall(self,finish_id,start,finish,up,cell.x+cell.y,along_north)
+		if finish_id == "wall_chinese" and (cell.x+cell.y)%3==0:
+			var lamp := start+up+Vector2(0,20)
+			draw_rect(Rect2(lamp-Vector2(5,6),Vector2(10,14)),Color("ae5437"))
+			draw_rect(Rect2(lamp-Vector2(2,5),Vector2(4,11)),Color("efaf59"))
+			TDDaylight.glow(self,lamp,float(TDDaylight.sample(day_minute,true).lamps),35)
+		return
 	if not interaction_markers.is_empty():
 		draw_line(start,finish,Color("543723"),7)
 		draw_line(start+up,finish+up,Color("785035"),6)
@@ -531,7 +582,7 @@ func _person(point: Vector2, _moving: bool, shirt: Color, caption: String, seate
 		draw_colored_polygon(PackedVector2Array([ground+Vector2(-7,0),ground+Vector2(0,-3),ground+Vector2(7,0),ground+Vector2(0,3)]),Color(0,0,0,.25))
 		var body:=chef_rect(point)
 		# The protagonist shares the physics player's frame; no wall-clock bob during pause.
-		draw_texture_rect(CHEF_SPRITE if staff else TDChefArt.texture(player_facing, player_walk_frame),body,false)
+		draw_texture_rect(TDChefArt.texture(player_facing, player_walk_frame),TDChefArt.facing_rect(body,player_facing),false)
 		if not caption.is_empty():
 			var dish_at:=ground+Vector2(16,-PERSON_HEIGHT*.40)
 			draw_set_transform(dish_at,0,Vector2(1,.48))
@@ -582,8 +633,7 @@ func _person(point: Vector2, _moving: bool, shirt: Color, caption: String, seate
 
 func chef_rect(point: Vector2) -> Rect2:
 	var grid:=point/float(layout.cell_px)
-	var texture := TDChefArt.texture(player_facing, player_walk_frame)
-	var size := texture.get_size() * PERSON_HEIGHT / texture.get_height()
+	var size := TDChefArt.render_size(player_facing, player_walk_frame, PERSON_HEIGHT)
 	return Rect2(project(grid.x,grid.y) - Vector2(size.x * 0.5, size.y), size)
 
 func _prop(index: int, at: Vector2, width: float) -> void:

@@ -1,0 +1,396 @@
+{
+  "schema_version": 2,
+  "size": 73,
+  "note": "榕树市心以北是鲜市、老陈巷和百工坊，西南是南埠客栈，南沿夜市接东侧中餐厅、钱庄和跨河的望江亭。食堂原庭院保留原扩建权益，正店面向河畔商街。预留地仅作实地规划标识。",
+  "panorama": {
+    "home_front": [33,42,6,2],
+    "pavilion_landing": [55,41,1,1],
+    "zones": [
+      {"id":"inn","label":"南埠客栈","anchor":"hotel","offset":[3,7]},
+      {"id":"square","label":"榕树广场 · 城南大市","anchor":"plaza","offset":[5,4]},
+      {"id":"pickle_lane","label":"老陈食街 · 腌菜市","anchor":"market-small","offset":[1,2]},
+      {"id":"diner_bank","label":"中餐厅 · 街坊钱庄","anchor":"commercial_street","offset":[13,6]},
+      {"id":"pavilion","label":"望江亭","anchor":"landmark","offset":[2,4]},
+      {"id":"fresh_market","label":"城南菜市","anchor":"market-mid","offset":[3,3]},
+      {"id":"night_market","label":"烟火小吃街","anchor":"snack_street","offset":[3,1]},
+      {"id":"crafts","label":"后街百工坊","anchor":"competitor","offset":[16,3]}
+    ],
+    "sites": [
+      {"id":"inn_farm","rect":[7,36,4,4],"surface":"soil","side":[-1,0],"allow_plot":"diner_lot"},
+      {"id":"inn_welcome","rect":[7,41,3,2],"surface":"turf","side":[0,1],"allow_plot":"diner_lot"},
+      {"id":"square_west","rect":[23,26,1,2],"surface":"gravel","side":[-1,0]},
+      {"id":"square_south","rect":[30,33,3,1],"surface":"gravel","side":[0,1]},
+      {"id":"chen_backyard","rect":[29,18,4,4],"surface":"mud","side":[0,-1]},
+      {"id":"market_perimeter","rect":[11,17,2,4],"surface":"mud","side":[0,-1]},
+      {"id":"snack_court","rect":[23,40,1,3],"surface":"old_stone","side":[-1,0]},
+      {"id":"restaurant_yard","rect":[42,37,2,4],"surface":"turf","side":[1,0]},
+      {"id":"restaurant_garden","rect":[13,28,4,4],"surface":"turf","side":[0,-1],"allow_plot":"diner_lot"},
+      {"id":"riverfront","rect":[48,48,4,4],"surface":"turf","side":[0,-1]},
+      {"id":"workshop_yard","rect":[42,9,2,4],"surface":"soil","side":[1,0]}
+    ]
+  },
+  "bridge_spans": [[53,6,3,2],[53,15,3,2],[53,23,3,2],[53,45,3,2]],
+  "estuary": [[53,65],[56,65],[58,68],[62,69],[67,68],[71,64],[73,64],[73,73],[53,73]],
+  "roads": [
+    [
+      19,
+      6,
+      4,
+      65
+    ],
+    [
+      3,
+      6,
+      3,
+      65
+    ],
+    [
+      44,
+      6,
+      4,
+      65
+    ],
+    [
+      3,
+      6,
+      59,
+      3
+    ],
+    [
+      3,
+      22,
+      60,
+      4
+    ],
+    [
+      3,
+      44,
+      60,
+      4
+    ],
+    [
+      6,
+      13,
+      17,
+      3
+    ],
+    [
+      23,
+      14,
+      25,
+      4
+    ],
+    [
+      23,
+      34,
+      25,
+      3
+    ],
+    [
+      23,
+      53,
+      25,
+      3
+    ],
+    [
+      23,
+      62,
+      25,
+      3
+    ],
+    [
+      3,
+      69,
+      45,
+      3
+    ],
+    [
+      35,
+      30,
+      13,
+      4
+    ],
+    [
+      57,
+      33,
+      13,
+      3
+    ],
+    [
+      62,
+      22,
+      3,
+      26
+    ],
+    [
+      48,
+      14,
+      17,
+      4
+    ],
+    [
+      56,
+      42,
+      9,
+      2
+    ]
+  ],
+  "grass_walkways": [[24, 20, 5, 2]],
+  "plots": [
+    {
+      "id": "diner_lot",
+      "kind": "diner_lot",
+      "name": "食堂庭院",
+      "rect": [
+        6,
+        26,
+        12,
+        18
+      ]
+    },
+    {
+      "id": "competitor",
+      "kind": "competitor",
+      "name": "老街食肆",
+      "rect": [
+        24,
+        9,
+        18,
+        5
+      ]
+    },
+    {
+      "id": "commercial_street",
+      "kind": "commercial_street",
+      "name": "河畔商街",
+      "rect": [
+        24,
+        37,
+        18,
+        7
+      ]
+    },
+    {
+      "id": "plaza",
+      "kind": "plaza",
+      "name": "榕树广场",
+      "rect": [
+        24,
+        26,
+        10,
+        7
+      ]
+    },
+    {
+      "id": "urban_village",
+      "kind": "urban_village",
+      "name": "青瓦民居",
+      "rect": [
+        35,
+        18,
+        4,
+        3
+      ]
+    },
+    {
+      "id": "rich_district",
+      "kind": "rich_district",
+      "name": "竹庭人家",
+      "rect": [
+        13,
+        17,
+        4,
+        4
+      ]
+    },
+    {
+      "id": "market-small",
+      "kind": "market",
+      "name": "老陈食材铺",
+      "rect": [
+        25,
+        18,
+        2,
+        2
+      ],
+      "tier": 1
+    },
+    {
+      "id": "market-mid",
+      "kind": "market",
+      "name": "城南菜市",
+      "rect": [
+        6,
+        16,
+        5,
+        5
+      ],
+      "tier": 2
+    },
+    {
+      "id": "market-large",
+      "kind": "market",
+      "name": "城南大市",
+      "rect": [
+        35,
+        26,
+        6,
+        4
+      ],
+      "tier": 3
+    },
+    {
+      "id": "snack_street",
+      "kind": "snack_street",
+      "name": "烟火小吃街",
+      "rect": [
+        24,
+        42,
+        7,
+        2
+      ]
+    },
+    {
+      "id": "amusement",
+      "kind": "amusement",
+      "name": "河岸游园",
+      "rect": [
+        57,
+        27,
+        8,
+        6
+      ]
+    },
+    {
+      "id": "zoo",
+      "kind": "zoo",
+      "name": "林边小园",
+      "rect": [
+        57,
+        10,
+        5,
+        4
+      ]
+    },
+    {
+      "id": "landmark",
+      "kind": "landmark",
+      "name": "望江亭",
+      "rect": [
+        57,
+        38,
+        4,
+        4
+      ]
+    },
+    {
+      "id": "station",
+      "kind": "station",
+      "name": "南站驿亭",
+      "rect": [
+        35,
+        65,
+        3,
+        4
+      ]
+    },
+    {
+      "id": "hotel",
+      "kind": "hotel",
+      "name": "南埠客栈",
+      "rect": [
+        12,
+        35,
+        6,
+        9
+      ]
+    },
+    {"id":"south-lane-homes","kind":"urban_village","name":"南站西里","rect":[24,65,5,4]},
+    {"id":"south-pier-homes","kind":"urban_village","name":"南站东里","rect":[38,65,4,4]},
+    {
+      "id": "south-gate-homes",
+      "kind": "urban_village",
+      "name": "南埠里",
+      "rect": [
+        29,
+        65,
+        4,
+        4
+      ]
+    },
+    {
+      "id": "ferry-homes",
+      "kind": "urban_village",
+      "name": "渡头人家",
+      "rect": [
+        65,
+        27,
+        4,
+        6
+      ]
+    }
+  ],
+  "housing_blocks": [
+    [
+      6,
+      10,
+      3,
+      3
+    ],
+    [
+      13,
+      10,
+      3,
+      3
+    ]
+  ],
+  "factory_origins": [
+    [
+      25,
+      51
+    ],
+    [
+      30,
+      51
+    ],
+    [
+      35,
+      51
+    ],
+    [
+      40,
+      51
+    ],
+    [
+      25,
+      60
+    ],
+    [
+      30,
+      60
+    ],
+    [
+      35,
+      60
+    ],
+    [
+      40,
+      60
+    ]
+  ],
+  "garden_inlet": {
+    "id": "lotus_inlet",
+    "name": "莲浜",
+    "origin": [56,27],
+    "legend": "~ 水面，= 跨浜步桥，. 滨水步道，g 岸边绿地，空白沿用原地形",
+    "rows": ["~~~.. ", "~~~~~.", "gg.~~~", "gg..==", "g~~~~.", "~~~.g "]
+  },
+  "districts": [
+    {"id":"qingwa","surface":"lawn","outline":[[3,7],[19,7],[21,14],[31,15],[30,22],[22,28],[7,26],[3,21]]},
+    {"id":"old_market","surface":"square","outline":[[21,7],[43,7],[47,11],[48,30],[42,45],[23,46],[21,32]]},
+    {"id":"ferry_lane","surface":"lawn","outline":[[64,25],[69,25],[70,29],[70,33],[64,34],[63,30]]},
+    {"id":"east_quays","surface":"quay","outline":[[49,7],[57,8],[58,17],[65,21],[70,29],[71,38],[63,46],[56,46],[52,39],[50,49],[48,46]]},
+    {"id":"south_gate","surface":"lawn","outline":[[20,60],[36,59],[48,63],[48,70],[40,72],[23,70]]},
+    {"id":"vegetable_gardens","surface":"earth","outline":[[23,47],[41,47],[47,52],[45,62],[32,64],[23,60]]}
+  ]
+}
