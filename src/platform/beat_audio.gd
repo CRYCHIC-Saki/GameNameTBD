@@ -4,11 +4,11 @@ extends AudioStreamPlayer
 ## Continuous sample clock for QTE; legacy clicks remain only in calibration tests.
 var scheduled_beats: Array[float] = []
 var estimated_delay_sec: float = 0.0
-# The authored cooking WAV has a 120 BPM groove and a trailing fade / rest.
-# Loop the first 48 complete 4/4 bars, on the same downbeat as both kitchen lanes.
-const RECORDING_BPM := 120.0
+# Cooking uses the supplied casual track at original pitch.
+# Both lanes follow the shared 140 BPM chart; the full song loops.
+const RECORDING_BPM := 140.0
 const LOOP_BARS := 48
-const LOOP_SEC := LOOP_BARS * 4.0 * 60.0 / RECORDING_BPM
+const LOOP_SEC := 166.2946485260771
 const PHASE_TOLERANCE_SEC := .065
 var _checked_at_usec := -1000000
 static var _feedback_tracks: Dictionary = {}
@@ -79,9 +79,9 @@ func prepare_loop(bpm: float) -> void:
 
 func prepare_cooking_music(bpm:float) -> void:
 	stop();scheduled_beats.clear()
-	var track:=TDGameMusic.loop_track("cooking")
+	var track:=TDGameMusic.loop_track("casual")
 	track.loop_end = roundi(LOOP_SEC*track.mix_rate)
-	pitch_scale = bpm/RECORDING_BPM
+	pitch_scale = 1.0 # Preserve the original track pitch and tempo.
 	stream = track
 	_checked_at_usec = -1000000
 

@@ -8435,7 +8435,7 @@
     "study.egg_fried_rice": {
       "id": "study.egg_fried_rice",
       "dish": "蛋炒饭",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -8874,7 +8874,7 @@
     "lesson.C01": {
       "id": "lesson.C01",
       "dish": "蛋炒饭 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -9462,7 +9462,7 @@
     "service.tomato_egg": {
       "id": "service.tomato_egg",
       "dish": "番茄炒蛋",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -9939,7 +9939,7 @@
     "lesson.C02": {
       "id": "lesson.C02",
       "dish": "番茄炒蛋 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -10565,7 +10565,7 @@
     "service.tomato_egg.prep.tomato": {
       "id": "service.tomato_egg.prep.tomato",
       "dish": "番茄炒蛋",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -10647,7 +10647,7 @@
     "study.yangchun_noodles": {
       "id": "study.yangchun_noodles",
       "dish": "阳春面",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -11014,7 +11014,7 @@
     "lesson.C03": {
       "id": "lesson.C03",
       "dish": "阳春面 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -11519,7 +11519,7 @@
     "study.steamed_egg": {
       "id": "study.steamed_egg",
       "dish": "蒸水蛋",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -11763,7 +11763,7 @@
     "lesson.C04": {
       "id": "lesson.C04",
       "dish": "蒸水蛋 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -12101,7 +12101,7 @@
     "study.c05": {
       "id": "study.c05",
       "dish": "扬州炒饭",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -12541,7 +12541,7 @@
     "lesson.C05": {
       "id": "lesson.C05",
       "dish": "扬州炒饭 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -13119,7 +13119,7 @@
     "study.c05.prep.shrimp": {
       "id": "study.c05.prep.shrimp",
       "dish": "扬州炒饭",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -13212,7 +13212,7 @@
     "study.c05.prep.ham": {
       "id": "study.c05.prep.ham",
       "dish": "扬州炒饭",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -13305,7 +13305,7 @@
     "study.c05.prep.pea": {
       "id": "study.c05.prep.pea",
       "dish": "扬州炒饭",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -13398,7 +13398,7 @@
     "study.c06": {
       "id": "study.c06",
       "dish": "青椒肉丝",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -13871,7 +13871,7 @@
     "lesson.C06": {
       "id": "lesson.C06",
       "dish": "青椒肉丝 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -14482,7 +14482,7 @@
     "study.c06.prep.pork": {
       "id": "study.c06.prep.pork",
       "dish": "青椒肉丝",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -14586,7 +14586,7 @@
     "study.c06.prep.bellpepper": {
       "id": "study.c06.prep.bellpepper",
       "dish": "青椒肉丝",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -14690,7 +14690,7 @@
     "study.c07": {
       "id": "study.c07",
       "dish": "葱油拌面",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -15090,7 +15090,7 @@
     "lesson.C07": {
       "id": "lesson.C07",
       "dish": "葱油拌面 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -15628,7 +15628,7 @@
     "study.c08": {
       "id": "study.c08",
       "dish": "清蒸鱼",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -15917,7 +15917,7 @@
     "lesson.C08": {
       "id": "lesson.C08",
       "dish": "清蒸鱼 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -16289,7 +16289,7 @@
     "study.c08.prep.fish": {
       "id": "study.c08.prep.fish",
       "dish": "清蒸鱼",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -16382,7 +16382,7 @@
     "service.kungpao": {
       "id": "service.kungpao",
       "dish": "宫保鸡丁",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -16921,7 +16921,7 @@
     "lesson.C09": {
       "id": "lesson.C09",
       "dish": "宫保鸡丁 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -17609,7 +17609,7 @@
     "service.kungpao.prep.chicken": {
       "id": "service.kungpao.prep.chicken",
       "dish": "宫保鸡丁",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -17724,7 +17724,7 @@
     "study.c10": {
       "id": "study.c10",
       "dish": "炸酱面",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -18245,7 +18245,7 @@
     "lesson.C10": {
       "id": "lesson.C10",
       "dish": "炸酱面 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -18937,7 +18937,7 @@
     "study.c10.prep.pork": {
       "id": "study.c10.prep.pork",
       "dish": "炸酱面",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -19030,7 +19030,7 @@
     "study.c10.prep.cucumber": {
       "id": "study.c10.prep.cucumber",
       "dish": "炸酱面",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -19123,7 +19123,7 @@
     "study.c11": {
       "id": "study.c11",
       "dish": "红烧肉",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -19713,7 +19713,7 @@
     "lesson.C11": {
       "id": "lesson.C11",
       "dish": "红烧肉 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -20474,7 +20474,7 @@
     "study.c11.prep.porkbelly": {
       "id": "study.c11.prep.porkbelly",
       "dish": "红烧肉",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -20578,7 +20578,7 @@
     "study.c12": {
       "id": "study.c12",
       "dish": "小笼包",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -20862,7 +20862,7 @@
     "lesson.C12": {
       "id": "lesson.C12",
       "dish": "小笼包 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -21251,7 +21251,7 @@
     "study.c12.prep.pork": {
       "id": "study.c12.prep.pork",
       "dish": "小笼包",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -21366,7 +21366,7 @@
     "study.c13": {
       "id": "study.c13",
       "dish": "鱼香肉丝",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -21825,7 +21825,7 @@
     "lesson.C13": {
       "id": "lesson.C13",
       "dish": "鱼香肉丝 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -22422,7 +22422,7 @@
     "study.c13.prep.pork": {
       "id": "study.c13.prep.pork",
       "dish": "鱼香肉丝",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -22526,7 +22526,7 @@
     "study.c13.prep.woodear": {
       "id": "study.c13.prep.woodear",
       "dish": "鱼香肉丝",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -22630,7 +22630,7 @@
     "service.mapo_tofu": {
       "id": "service.mapo_tofu",
       "dish": "麻婆豆腐",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -23355,7 +23355,7 @@
     "lesson.C14": {
       "id": "lesson.C14",
       "dish": "麻婆豆腐 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -24262,7 +24262,7 @@
     "study.c15": {
       "id": "study.c15",
       "dish": "红烧牛肉面",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -25088,7 +25088,7 @@
     "lesson.C15": {
       "id": "lesson.C15",
       "dish": "红烧牛肉面 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -26129,7 +26129,7 @@
     "study.c15.prep.beef": {
       "id": "study.c15.prep.beef",
       "dish": "红烧牛肉面",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -26255,7 +26255,7 @@
     "study.c16": {
       "id": "study.c16",
       "dish": "腊味煲仔饭",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -26893,7 +26893,7 @@
     "lesson.C16": {
       "id": "lesson.C16",
       "dish": "腊味煲仔饭 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -27702,7 +27702,7 @@
     "study.c16.prep.chinese_sausage": {
       "id": "study.c16.prep.chinese_sausage",
       "dish": "腊味煲仔饭",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -27806,7 +27806,7 @@
     "study.c17": {
       "id": "study.c17",
       "dish": "北京烤鸭",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -28271,7 +28271,7 @@
     "lesson.C17": {
       "id": "lesson.C17",
       "dish": "北京烤鸭 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -28874,7 +28874,7 @@
     "study.c17.prep.duck": {
       "id": "study.c17.prep.duck",
       "dish": "北京烤鸭",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -29000,7 +29000,7 @@
     "study.c17.prep.cucumber": {
       "id": "study.c17.prep.cucumber",
       "dish": "北京烤鸭",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -29126,7 +29126,7 @@
     "study.c18": {
       "id": "study.c18",
       "dish": "叉烧酥",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -29568,7 +29568,7 @@
     "lesson.C18": {
       "id": "lesson.C18",
       "dish": "叉烧酥 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -30148,7 +30148,7 @@
     "study.c18.prep.char_siu": {
       "id": "study.c18.prep.char_siu",
       "dish": "叉烧酥",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -30285,7 +30285,7 @@
     "study.c19": {
       "id": "study.c19",
       "dish": "佛跳墙",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -30909,7 +30909,7 @@
     "lesson.C19": {
       "id": "lesson.C19",
       "dish": "佛跳墙 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -31704,7 +31704,7 @@
     "study.c19.prep.seacucumber": {
       "id": "study.c19.prep.seacucumber",
       "dish": "佛跳墙",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -31819,7 +31819,7 @@
     "study.c19.prep.chicken": {
       "id": "study.c19.prep.chicken",
       "dish": "佛跳墙",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -31934,7 +31934,7 @@
     "study.c20": {
       "id": "study.c20",
       "dish": "满汉风味宴席",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -32767,7 +32767,7 @@
     "lesson.C20": {
       "id": "lesson.C20",
       "dish": "满汉风味宴席 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -33804,7 +33804,7 @@
     "study.c20.prep.duck": {
       "id": "study.c20.prep.duck",
       "dish": "满汉风味宴席",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -33930,7 +33930,7 @@
     "study.c20.prep.porkbelly": {
       "id": "study.c20.prep.porkbelly",
       "dish": "满汉风味宴席",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -34056,7 +34056,7 @@
     "study.c20.prep.shrimp": {
       "id": "study.c20.prep.shrimp",
       "dish": "满汉风味宴席",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -34182,7 +34182,7 @@
     "study.e01": {
       "id": "study.e01",
       "dish": "德式椒盐卷饼",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -34459,7 +34459,7 @@
     "lesson.E01": {
       "id": "lesson.E01",
       "dish": "德式椒盐卷饼 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -34874,7 +34874,7 @@
     "study.e02": {
       "id": "study.e02",
       "dish": "意式番茄意面",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -35347,7 +35347,7 @@
     "lesson.E02": {
       "id": "lesson.E02",
       "dish": "意式番茄意面 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -35991,7 +35991,7 @@
     "study.e02.prep.tomato": {
       "id": "study.e02.prep.tomato",
       "dish": "意式番茄意面",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -36062,7 +36062,7 @@
     "study.e03": {
       "id": "study.e03",
       "dish": "法式洋葱汤",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -36512,7 +36512,7 @@
     "lesson.E03": {
       "id": "lesson.E03",
       "dish": "法式洋葱汤 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -37133,7 +37133,7 @@
     "study.e03.prep.onion": {
       "id": "study.e03.prep.onion",
       "dish": "法式洋葱汤",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -37215,7 +37215,7 @@
     "study.e04": {
       "id": "study.e04",
       "dish": "香煎肉排",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -37772,7 +37772,7 @@
     "lesson.E04": {
       "id": "lesson.E04",
       "dish": "香煎肉排 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -38500,7 +38500,7 @@
     "study.e04.prep.beef": {
       "id": "study.e04.prep.beef",
       "dish": "香煎肉排",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -38593,7 +38593,7 @@
     "study.e05": {
       "id": "study.e05",
       "dish": "意式披萨",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -38982,7 +38982,7 @@
     "lesson.E05": {
       "id": "lesson.E05",
       "dish": "意式披萨 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -39509,7 +39509,7 @@
     "study.e06": {
       "id": "study.e06",
       "dish": "奶油蘑菇意面",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -40021,7 +40021,7 @@
     "lesson.E06": {
       "id": "lesson.E06",
       "dish": "奶油蘑菇意面 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -40704,7 +40704,7 @@
     "study.e06.prep.mushroom": {
       "id": "study.e06.prep.mushroom",
       "dish": "奶油蘑菇意面",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -40797,7 +40797,7 @@
     "study.e07": {
       "id": "study.e07",
       "dish": "法式焗土豆",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -41163,7 +41163,7 @@
     "lesson.E07": {
       "id": "lesson.E07",
       "dish": "法式焗土豆 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -41667,7 +41667,7 @@
     "study.e07.prep.potato": {
       "id": "study.e07.prep.potato",
       "dish": "法式焗土豆",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -41771,7 +41771,7 @@
     "study.e08": {
       "id": "study.e08",
       "dish": "香草烤鸡",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -42314,7 +42314,7 @@
     "lesson.E08": {
       "id": "lesson.E08",
       "dish": "香草烤鸡 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -43039,7 +43039,7 @@
     "study.e08.prep.chicken": {
       "id": "study.e08.prep.chicken",
       "dish": "香草烤鸡",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -43121,7 +43121,7 @@
     "study.e09": {
       "id": "study.e09",
       "dish": "西班牙海鲜饭",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -43789,7 +43789,7 @@
     "lesson.E09": {
       "id": "lesson.E09",
       "dish": "西班牙海鲜饭 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -44661,7 +44661,7 @@
     "study.e09.prep.shrimp": {
       "id": "study.e09.prep.shrimp",
       "dish": "西班牙海鲜饭",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -44765,7 +44765,7 @@
     "study.e09.prep.clam": {
       "id": "study.e09.prep.clam",
       "dish": "西班牙海鲜饭",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -44869,7 +44869,7 @@
     "study.e09.prep.squid": {
       "id": "study.e09.prep.squid",
       "dish": "西班牙海鲜饭",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -44973,7 +44973,7 @@
     "study.e10": {
       "id": "study.e10",
       "dish": "意式烩饭",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -45506,7 +45506,7 @@
     "lesson.E10": {
       "id": "lesson.E10",
       "dish": "意式烩饭 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -46210,7 +46210,7 @@
     "study.e11": {
       "id": "study.e11",
       "dish": "法式红酒炖牛肉",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -46788,7 +46788,7 @@
     "lesson.E11": {
       "id": "lesson.E11",
       "dish": "法式红酒炖牛肉 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -47537,7 +47537,7 @@
     "study.e11.prep.beef": {
       "id": "study.e11.prep.beef",
       "dish": "法式红酒炖牛肉",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -47630,7 +47630,7 @@
     "study.e11.prep.carrot": {
       "id": "study.e11.prep.carrot",
       "dish": "法式红酒炖牛肉",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -47723,7 +47723,7 @@
     "study.e11.prep.onion": {
       "id": "study.e11.prep.onion",
       "dish": "法式红酒炖牛肉",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -47816,7 +47816,7 @@
     "study.e12": {
       "id": "study.e12",
       "dish": "德式猪肘配酸菜",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -48330,7 +48330,7 @@
     "lesson.E12": {
       "id": "lesson.E12",
       "dish": "德式猪肘配酸菜 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -49015,7 +49015,7 @@
     "study.e12.prep.pork_knuckle": {
       "id": "study.e12.prep.pork_knuckle",
       "dish": "德式猪肘配酸菜",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -49119,7 +49119,7 @@
     "study.e12.prep.potato": {
       "id": "study.e12.prep.potato",
       "dish": "德式猪肘配酸菜",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -49223,7 +49223,7 @@
     "study.e13": {
       "id": "study.e13",
       "dish": "意式千层面",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -49828,7 +49828,7 @@
     "lesson.E13": {
       "id": "lesson.E13",
       "dish": "意式千层面 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -50604,7 +50604,7 @@
     "study.e13.prep.beef": {
       "id": "study.e13.prep.beef",
       "dish": "意式千层面",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -50730,7 +50730,7 @@
     "study.e13.prep.onion": {
       "id": "study.e13.prep.onion",
       "dish": "意式千层面",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -50856,7 +50856,7 @@
     "study.e14": {
       "id": "study.e14",
       "dish": "法式油封鸭",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -51498,7 +51498,7 @@
     "lesson.E14": {
       "id": "lesson.E14",
       "dish": "法式油封鸭 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -52311,7 +52311,7 @@
     "study.e14.prep.duck": {
       "id": "study.e14.prep.duck",
       "dish": "法式油封鸭",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -52415,7 +52415,7 @@
     "study.e15": {
       "id": "study.e15",
       "dish": "西班牙海鲜烩饭",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -53020,7 +53020,7 @@
     "lesson.E15": {
       "id": "lesson.E15",
       "dish": "西班牙海鲜烩饭 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -53796,7 +53796,7 @@
     "study.e15.prep.clam": {
       "id": "study.e15.prep.clam",
       "dish": "西班牙海鲜烩饭",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -53911,7 +53911,7 @@
     "study.e15.prep.shrimp": {
       "id": "study.e15.prep.shrimp",
       "dish": "西班牙海鲜烩饭",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -54026,7 +54026,7 @@
     "study.e16": {
       "id": "study.e16",
       "dish": "法式可丽饼",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -54616,7 +54616,7 @@
     "lesson.E16": {
       "id": "lesson.E16",
       "dish": "法式可丽饼 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -55366,7 +55366,7 @@
     "study.e16.prep.strawberry": {
       "id": "study.e16.prep.strawberry",
       "dish": "法式可丽饼",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -55492,7 +55492,7 @@
     "study.e17": {
       "id": "study.e17",
       "dish": "牛肉惠灵顿",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -56119,7 +56119,7 @@
     "lesson.E17": {
       "id": "lesson.E17",
       "dish": "牛肉惠灵顿 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -56917,7 +56917,7 @@
     "study.e17.prep.beefsteak": {
       "id": "study.e17.prep.beefsteak",
       "dish": "牛肉惠灵顿",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -57032,7 +57032,7 @@
     "study.e17.prep.mushroom": {
       "id": "study.e17.prep.mushroom",
       "dish": "牛肉惠灵顿",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -57147,7 +57147,7 @@
     "study.e18": {
       "id": "study.e18",
       "dish": "法式舒芙蕾",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -57613,7 +57613,7 @@
     "lesson.E18": {
       "id": "lesson.E18",
       "dish": "法式舒芙蕾 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -58217,7 +58217,7 @@
     "study.e19": {
       "id": "study.e19",
       "dish": "勃艮第风味宴席",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -59076,7 +59076,7 @@
     "lesson.E19": {
       "id": "lesson.E19",
       "dish": "勃艮第风味宴席 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -60150,7 +60150,7 @@
     "study.e19.prep.duck": {
       "id": "study.e19.prep.duck",
       "dish": "勃艮第风味宴席",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -60287,7 +60287,7 @@
     "study.e19.prep.beef": {
       "id": "study.e19.prep.beef",
       "dish": "勃艮第风味宴席",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -60424,7 +60424,7 @@
     "study.e19.prep.carrot": {
       "id": "study.e19.prep.carrot",
       "dish": "勃艮第风味宴席",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -60561,7 +60561,7 @@
     "study.e20": {
       "id": "study.e20",
       "dish": "欧洲主厨品鉴套餐",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -61576,7 +61576,7 @@
     "lesson.E20": {
       "id": "lesson.E20",
       "dish": "欧洲主厨品鉴套餐 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -62828,7 +62828,7 @@
     "study.e20.prep.shrimp": {
       "id": "study.e20.prep.shrimp",
       "dish": "欧洲主厨品鉴套餐",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -62943,7 +62943,7 @@
     "study.e20.prep.beef": {
       "id": "study.e20.prep.beef",
       "dish": "欧洲主厨品鉴套餐",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -63058,7 +63058,7 @@
     "study.e20.prep.potato": {
       "id": "study.e20.prep.potato",
       "dish": "欧洲主厨品鉴套餐",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -63173,7 +63173,7 @@
     "study.j01": {
       "id": "study.j01",
       "dish": "盐饭团",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -63373,7 +63373,7 @@
     "lesson.J01": {
       "id": "lesson.J01",
       "dish": "盐饭团 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -63678,7 +63678,7 @@
     "study.j01.prep.nori": {
       "id": "study.j01.prep.nori",
       "dish": "盐饭团",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -63760,7 +63760,7 @@
     "study.j02": {
       "id": "study.j02",
       "dish": "日式玉子烧",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -64268,7 +64268,7 @@
     "lesson.J02": {
       "id": "lesson.J02",
       "dish": "日式玉子烧 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -64969,7 +64969,7 @@
     "study.j03": {
       "id": "study.j03",
       "dish": "日式乌冬",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -65336,7 +65336,7 @@
     "lesson.J03": {
       "id": "lesson.J03",
       "dish": "日式乌冬 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -65841,7 +65841,7 @@
     "study.j04": {
       "id": "study.j04",
       "dish": "盐烤鱼",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -66294,7 +66294,7 @@
     "lesson.J04": {
       "id": "lesson.J04",
       "dish": "盐烤鱼 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -66929,7 +66929,7 @@
     "study.j04.prep.fish": {
       "id": "study.j04.prep.fish",
       "dish": "盐烤鱼",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -67011,7 +67011,7 @@
     "study.j04.prep.lemon": {
       "id": "study.j04.prep.lemon",
       "dish": "盐烤鱼",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -67093,7 +67093,7 @@
     "study.j05": {
       "id": "study.j05",
       "dish": "照烧鸡肉饭",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -67529,7 +67529,7 @@
     "lesson.J05": {
       "id": "lesson.J05",
       "dish": "照烧鸡肉饭 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -68114,7 +68114,7 @@
     "study.j05.prep.chicken": {
       "id": "study.j05.prep.chicken",
       "dish": "照烧鸡肉饭",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -68218,7 +68218,7 @@
     "study.j06": {
       "id": "study.j06",
       "dish": "亲子丼",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -68728,7 +68728,7 @@
     "lesson.J06": {
       "id": "lesson.J06",
       "dish": "亲子丼 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -69420,7 +69420,7 @@
     "study.j06.prep.chicken": {
       "id": "study.j06.prep.chicken",
       "dish": "亲子丼",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -69502,7 +69502,7 @@
     "study.j07": {
       "id": "study.j07",
       "dish": "炸猪排",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -70000,7 +70000,7 @@
     "lesson.J07": {
       "id": "lesson.J07",
       "dish": "炸猪排 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -70680,7 +70680,7 @@
     "study.j07.prep.pork": {
       "id": "study.j07.prep.pork",
       "dish": "炸猪排",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -70773,7 +70773,7 @@
     "study.j08": {
       "id": "study.j08",
       "dish": "黄瓜卷寿司",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -71063,7 +71063,7 @@
     "lesson.J08": {
       "id": "lesson.J08",
       "dish": "黄瓜卷寿司 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -71458,7 +71458,7 @@
     "study.j08.prep.nori": {
       "id": "study.j08.prep.nori",
       "dish": "黄瓜卷寿司",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -71562,7 +71562,7 @@
     "study.j08.prep.cucumber": {
       "id": "study.j08.prep.cucumber",
       "dish": "黄瓜卷寿司",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -71666,7 +71666,7 @@
     "study.j09": {
       "id": "study.j09",
       "dish": "天妇罗",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -72280,7 +72280,7 @@
     "lesson.J09": {
       "id": "lesson.J09",
       "dish": "天妇罗 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -73087,7 +73087,7 @@
     "study.j09.prep.shrimp": {
       "id": "study.j09.prep.shrimp",
       "dish": "天妇罗",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -73180,7 +73180,7 @@
     "study.j09.prep.carrot": {
       "id": "study.j09.prep.carrot",
       "dish": "天妇罗",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -73273,7 +73273,7 @@
     "study.j09.prep.eggplant": {
       "id": "study.j09.prep.eggplant",
       "dish": "天妇罗",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -73366,7 +73366,7 @@
     "study.j10": {
       "id": "study.j10",
       "dish": "酱油拉面",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -73869,7 +73869,7 @@
     "lesson.J10": {
       "id": "lesson.J10",
       "dish": "酱油拉面 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -74543,7 +74543,7 @@
     "study.j10.prep.char_siu": {
       "id": "study.j10.prep.char_siu",
       "dish": "酱油拉面",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -74647,7 +74647,7 @@
     "study.j11": {
       "id": "study.j11",
       "dish": "炸猪排盖饭",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -75212,7 +75212,7 @@
     "lesson.J11": {
       "id": "lesson.J11",
       "dish": "炸猪排盖饭 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -75959,7 +75959,7 @@
     "study.j11.prep.pork": {
       "id": "study.j11.prep.pork",
       "dish": "炸猪排盖饭",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -76074,7 +76074,7 @@
     "study.j12": {
       "id": "study.j12",
       "dish": "三文鱼握寿司",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -76352,7 +76352,7 @@
     "lesson.J12": {
       "id": "lesson.J12",
       "dish": "三文鱼握寿司 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -76735,7 +76735,7 @@
     "study.j12.prep.salmon": {
       "id": "study.j12.prep.salmon",
       "dish": "三文鱼握寿司",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -76828,7 +76828,7 @@
     "study.j13": {
       "id": "study.j13",
       "dish": "味噌拉面",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -77403,7 +77403,7 @@
     "lesson.J13": {
       "id": "lesson.J13",
       "dish": "味噌拉面 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -78160,7 +78160,7 @@
     "study.j14": {
       "id": "study.j14",
       "dish": "鳗鱼饭",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -78767,7 +78767,7 @@
     "lesson.J14": {
       "id": "lesson.J14",
       "dish": "鳗鱼饭 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -79556,7 +79556,7 @@
     "study.j14.prep.eel": {
       "id": "study.j14.prep.eel",
       "dish": "鳗鱼饭",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -79682,7 +79682,7 @@
     "study.j15": {
       "id": "study.j15",
       "dish": "综合寿司拼盘",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -80043,7 +80043,7 @@
     "lesson.J15": {
       "id": "lesson.J15",
       "dish": "综合寿司拼盘 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -80520,7 +80520,7 @@
     "study.j15.prep.salmon": {
       "id": "study.j15.prep.salmon",
       "dish": "综合寿司拼盘",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -80624,7 +80624,7 @@
     "study.j15.prep.tuna": {
       "id": "study.j15.prep.tuna",
       "dish": "综合寿司拼盘",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -80728,7 +80728,7 @@
     "study.j15.prep.shrimp": {
       "id": "study.j15.prep.shrimp",
       "dish": "综合寿司拼盘",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -80832,7 +80832,7 @@
     "study.j15.prep.nori": {
       "id": "study.j15.prep.nori",
       "dish": "综合寿司拼盘",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -80936,7 +80936,7 @@
     "study.j16": {
       "id": "study.j16",
       "dish": "豚骨拉面",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -81555,7 +81555,7 @@
     "lesson.J16": {
       "id": "lesson.J16",
       "dish": "豚骨拉面 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -82356,7 +82356,7 @@
     "study.j16.prep.char_siu": {
       "id": "study.j16.prep.char_siu",
       "dish": "豚骨拉面",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -82471,7 +82471,7 @@
     "study.j17": {
       "id": "study.j17",
       "dish": "天丼",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -82977,7 +82977,7 @@
     "lesson.J17": {
       "id": "lesson.J17",
       "dish": "天丼 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -83632,7 +83632,7 @@
     "study.j17.prep.shrimp": {
       "id": "study.j17.prep.shrimp",
       "dish": "天丼",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -83769,7 +83769,7 @@
     "study.j17.prep.eggplant": {
       "id": "study.j17.prep.eggplant",
       "dish": "天丼",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -83906,7 +83906,7 @@
     "study.j18": {
       "id": "study.j18",
       "dish": "炭火烤鳗鱼",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -84568,7 +84568,7 @@
     "lesson.J18": {
       "id": "lesson.J18",
       "dish": "炭火烤鳗鱼 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -85412,7 +85412,7 @@
     "study.j18.prep.eel": {
       "id": "study.j18.prep.eel",
       "dish": "炭火烤鳗鱼",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -85527,7 +85527,7 @@
     "study.j19": {
       "id": "study.j19",
       "dish": "主厨特选寿司",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -85949,7 +85949,7 @@
     "lesson.J19": {
       "id": "lesson.J19",
       "dish": "主厨特选寿司 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -86498,7 +86498,7 @@
     "study.j19.prep.tuna": {
       "id": "study.j19.prep.tuna",
       "dish": "主厨特选寿司",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -86624,7 +86624,7 @@
     "study.j19.prep.salmon": {
       "id": "study.j19.prep.salmon",
       "dish": "主厨特选寿司",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -86750,7 +86750,7 @@
     "study.j19.prep.scallop": {
       "id": "study.j19.prep.scallop",
       "dish": "主厨特选寿司",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -86876,7 +86876,7 @@
     "study.j20": {
       "id": "study.j20",
       "dish": "怀石料理套餐",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -87497,7 +87497,7 @@
     "lesson.J20": {
       "id": "lesson.J20",
       "dish": "怀石料理套餐 · 研习",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {
@@ -88278,7 +88278,7 @@
     "study.j20.prep.fish": {
       "id": "study.j20.prep.fish",
       "dish": "怀石料理套餐",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -88415,7 +88415,7 @@
     "study.j20.prep.shrimp": {
       "id": "study.j20.prep.shrimp",
       "dish": "怀石料理套餐",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -88552,7 +88552,7 @@
     "study.j20.prep.radish": {
       "id": "study.j20.prep.radish",
       "dish": "怀石料理套餐",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -88689,7 +88689,7 @@
     "study.j20.prep.mushroom": {
       "id": "study.j20.prep.mushroom",
       "dish": "怀石料理套餐",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "cut": {
@@ -88826,7 +88826,7 @@
     "service.beef_noodles": {
       "id": "service.beef_noodles",
       "dish": "干炒牛河",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -89329,7 +89329,7 @@
     "service.pepper_pork": {
       "id": "service.pepper_pork",
       "dish": "辣椒炒肉",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "step1": {
@@ -89779,7 +89779,7 @@
     "service.qiguoji": {
       "id": "service.qiguoji",
       "dish": "汽锅鸡",
-      "bpm": 120,
+      "bpm": 140,
       "preview_beats": 2,
       "groups": {
         "season": {

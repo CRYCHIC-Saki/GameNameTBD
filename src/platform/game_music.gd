@@ -4,7 +4,8 @@ extends Node
 const TRACKS:Dictionary={
 	"casual":preload("res://assets/audio/casual.wav"),
 	"service":preload("res://assets/audio/service.wav"),
-	"cooking":preload("res://assets/audio/cooking.wav")}
+	"cooking":preload("res://assets/audio/cooking.wav"),
+	"boss":preload("res://assets/audio/boss.wav")}
 var context:String=""
 var player:AudioStreamPlayer
 

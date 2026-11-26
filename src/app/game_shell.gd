@@ -100,7 +100,9 @@ func _process(_delta: float) -> void:
 		if branch_visit!=null: cooking=cooking or branch_visit.shop_view.kitchen.music_audible()
 		if atlas!=null and atlas.trial!=null and atlas.trial.lesson!=null: cooking=atlas.trial.lesson.kitchen.music_audible()
 		var opening_film: bool=guide!=null and guide.presenting() and guide.dialogue.talk.context.get("scene")=="intro"
-		music.select_context("silent" if cooking else ("service" if profile!=null and not profile.at_boundary() else "casual"),_music_should_pause() or (opening_film and guide.dialogue.presentation_paused))
+		var music_context: String = "silent" if cooking else ("service" if profile!=null and not profile.at_boundary() else "casual")
+		if _modal != null and _modal.has_meta("story_music"): music_context = str(_modal.get_meta("story_music"))
+		music.select_context(music_context,_music_should_pause() or (opening_film and guide.dialogue.presentation_paused))
 	if profile==null: return
 	if restaurant!=null and restaurant.layout!=null and profile.commerce!=null and profile.world!=null and profile.world.catalog!=null:
 		profile.commerce.interior_effect=float(TDEconomyMath.decor_of(restaurant.layout.pieces(),profile.world.catalog.wildcards).effect)
@@ -328,7 +330,7 @@ func _enter_game(action: Callable, progress: String) -> void:
 	_entry_busy=false
 	if not result.ok: _message("无法进入游戏（%s）：%s"%[result.code,result.message if not result.message.is_empty() else "请检查存档或游戏文件。"])
 
-func create_game(id: String, name_value: String="小镇食堂") -> TDOutcome:
+func create_game(id: String, name_value: String="小镇食堂", use_revised_story: bool = true) -> TDOutcome:
 	if slots.load_slot(id).code!="NOT_FOUND": return _outcome(TDOutcome.new(false,"SLOT_OCCUPIED","这个存档位已有内容，请选择空位。"))
 	var next:=TDGameProfile.new()
 	if not next.error.ok:
@@ -336,6 +338,10 @@ func create_game(id: String, name_value: String="小镇食堂") -> TDOutcome:
 		return _outcome(next.error)
 	next.slot_id=id;next.title=name_value.strip_edges() if not name_value.strip_edges().is_empty() else "小镇食堂";next.persistence=slots.save_slot
 	next.story.begin()
+	if use_revised_story:
+		next.story.revised = TDRevisedMainline.initial()
+		next.story.beat = "done"
+		next.story.hero_name = "焰子"
 	var result:=next.save()
 	if not result.ok: next.close();return _outcome(result)
 	_activate(next,true)

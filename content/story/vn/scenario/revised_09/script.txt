@@ -1,0 +1,22 @@
+# start
+@bg knight-hall with instant 0
+// 原稿第 60 段 【得意】焰子
+@show hero proud at td:0.268170:1.464197:2.150000 with instant
+hero: 维托，我已经完成他们的考验，也把小摊经营起来了！这次我想和你比一比，就用你最擅长的番茄意面。
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide hertz with instant
+@hide hina with instant
+// 原稿第 61 段 【得意】维托
+@show vito proud at td:0.772680:1.496877:2.150000 with instant
+vito: 看来你很有信心啊。那我也会拿出最好的手艺，作为骑士，可不能在自己的拿手菜上输给你。
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hina with instant
+// 原稿第 62 段 【高兴】赫兹
+@show hertz happy at td:0.707320:1.555701:2.150000 with instant
+hertz: 观众朋友们，焰子已经通过当地厨师的考验，也接待了不少客人，今天终于要和料理骑士维托比试了！两位，请把你们最拿手的番茄意面端上来吧！
+@end

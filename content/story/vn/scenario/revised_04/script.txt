@@ -1,0 +1,30 @@
+# start
+@bg ingredient-shop with instant 0
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+// 原稿第 39 段 【通常】阿铃
+@show aling calm at td:0.740000:1.555701:2.150000 with instant
+aling: 罗司祭，夜鸦带来了一位异乡厨师。此人方才胜过吾，想必值得你亲自一试。
+@hide aling with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+// 原稿第 40 段 【高兴】罗金娜
+@show chen happy at td:0.789020:1.503413:2.150000 with instant
+chen: 欢迎，背着锅的小家伙！叫我金娜姐就好啦。能让阿铃这么夸你，看来手艺很不错嘛。
+// 原稿第 41 段 【高兴】焰子
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 我是焰子！听说你是这里很厉害的厨师，我也想和你比一场，可以吗？
+@hide aling with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+// 原稿第 42 段 【通常】罗金娜
+@show chen calm at td:0.789020:1.503413:2.150000 with instant
+chen: 当然可以，我也正想尝尝你的手艺呢。这里的鸡肉和配菜都备好了，我们就用这些做一道料理吧。
+@end

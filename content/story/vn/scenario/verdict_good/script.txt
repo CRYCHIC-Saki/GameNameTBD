@@ -1,0 +1,110 @@
+// D078: verdict_good; source: opening.json / homecoming.json. Visual presentation only.
+# start
+@bg restaurant with instant 0
+
+# beat_0
+@hide hero with instant
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@bg restaurant with instant 0
+narrator: 阿铃端坐，双手握筷。老陈抱臂，等待裁决。
+
+# beat_1
+@hide chen with instant
+@hide luo with instant
+@show aling surprised at td:0.740000:1.555701:2.150000 with instant
+aling: 封存的记录……回来了。
+
+# beat_2
+@show hero calm at td:0.268170:1.464197:2.150000 with instant
+hero: 如何？
+
+# beat_3
+@hide chen with instant
+@hide luo with instant
+@show aling happy at td:0.740000:1.555701:2.150000 with instant
+aling: 我小时候，母亲也会这样炒。她总说……
+
+# beat_4
+@hide hero with instant
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@bg restaurant with instant 0
+narrator: 街口广播响起。画像旁的喇叭传出低沉而温柔的男声。
+
+# beat_5
+@hide aling with instant
+@hide chen with instant
+@show luo calm at td:0.731830:1.411909:2.150000 with instant
+luo: 河口的眷属们，午间圣宴已启。吾乃至味卿罗厄，统御万味之人。谨记，唯有吾赐之味，值得渴求。
+
+# beat_6
+@hide hero with instant
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@bg restaurant with instant 0
+narrator: 阿铃的筷子停在半空。
+
+# beat_7
+@hide chen with instant
+@hide luo with instant
+@show aling calm at td:0.740000:1.555701:2.150000 with instant
+aling: ……这道菜，缺少圣餐的恩典。
+
+# beat_8
+@hide hero with instant
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@bg restaurant with instant 0
+narrator: 她看向盘子，却又夹起一块鸡蛋。广播继续，她的手仍没有停。
+
+# beat_9
+@hide aling with instant
+@hide luo with instant
+@show chen calm at td:0.789020:1.503413:2.150000 with instant
+chen: 夜鸦，你的筷子似乎背叛了你的誓言。
+
+# beat_10
+@hide chen with instant
+@hide luo with instant
+@show aling happy at td:0.740000:1.555701:2.150000 with instant
+aling: 吾决定继续审判。下一次，备足一整盘！
+
+# beat_11
+@show hero angry at td:0.268170:1.464197:2.150000 with instant
+hero: 你们天天吃那种东西，却连这一口都觉得有罪？
+
+# beat_12
+@hide hero with instant
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@bg restaurant with instant 0
+narrator: 他把自己的见习厨师证压在桌上，抹平卷起的边角。
+
+# beat_13
+@show hero calm at td:0.268170:1.464197:2.150000 with instant
+hero: 那我就留在这里。先从这口锅开始，让这条街重新闻到饭香。
+
+# beat_14
+@show hero angry at td:0.268170:1.464197:2.150000 with instant
+hero: 至味卿，记住今日！向你宣战的，是尚未毕业的赤焰之手！
+
+# beat_15
+@hide chen with instant
+@hide luo with instant
+@show aling happy at td:0.740000:1.555701:2.150000 with instant
+aling: 见习厨师一名，旧灶一口，同盟者一人。夜鸦见证，讨伐军于此成立！
+
+# beat_16
+@hide aling with instant
+@hide luo with instant
+@show chen happy at td:0.789020:1.503413:2.150000 with instant
+chen: 好！灰烬司祭愿为双方供给粮秣。无论谁赢，食材绝不可赊账！
+
+# finish
+@end

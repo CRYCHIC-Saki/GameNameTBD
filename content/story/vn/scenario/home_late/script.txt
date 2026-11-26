@@ -1,0 +1,32 @@
+// D078: home_late; source: opening.json / homecoming.json. Visual presentation only.
+# start
+@bg home with instant 0
+
+# beat_0
+@hide chen with instant
+@hide luo with instant
+@show aling surprised at td:0.740000:1.555701:2.150000 with instant
+aling: 赤焰之手！港钟已敲过两点，你打算与太阳比谁先起锅？
+
+# beat_1
+@show hero puzzled at td:0.268170:1.464197:2.150000 with instant
+hero: 可我还有些事没有做完……
+
+# beat_2
+@hide chen with instant
+@hide luo with instant
+@show aling calm at td:0.740000:1.555701:2.150000 with instant
+aling: 未完的记录，吾一字未删。留到明日，不算败退。
+
+# beat_3
+@hide chen with instant
+@hide luo with instant
+@show aling happy at td:0.740000:1.555701:2.150000 with instant
+aling: 老陈托吾带你去巷子里的小屋。夜鸦今晚的密令只有一条：先去睡觉。
+
+# beat_4
+@show hero calm at td:0.268170:1.464197:2.150000 with instant
+hero: 好。养足精神，明日继续！
+
+# finish
+@end

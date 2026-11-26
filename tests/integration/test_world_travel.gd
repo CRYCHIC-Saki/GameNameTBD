@@ -7,7 +7,7 @@ func before_each() -> void:
 	app.settings_path="res://artifacts/travel/tests/%d/settings.json"%Time.get_ticks_usec()
 	add_child_autofree(app);shell=app.game_shell;shell.automatic_time=false
 	await wait_process_frames(1)
-	assert_true(shell.create_game("slot-01","航线测试").ok)
+	assert_true(shell.create_game("slot-01","航线测试",false).ok)
 	shell.guide.dialogue.finish_now();shell.profile.story.beat="done"
 	shell.travel("town");shell.town.spawn_at_harbor()
 
@@ -521,6 +521,12 @@ func test_world_map_five_towns_wheel_anchor_drag_and_limits() -> void:
 	assert_eq(view.zoom,5.0)
 	view.reset_view();assert_eq(view.zoom,1.0);assert_eq(view.pan,Vector2.ZERO)
 	assert_eq(shell.visiting_town,"chengdu","atlas never teleports")
+	assert_eq(view.focused_town(),"")
+	for id: String in TDTravelCatalog.IDS:
+		view.focus_town(id)
+		assert_eq(view.focused_town(),id,"Live local map is separate from world illustration")
+	view.reset_view()
+	assert_eq(view.focused_town(),"")
 
 func test_interrupted_migration_write_keeps_old_bytes_and_live_profile_then_retries() -> void:
 	var p:=shell.profile

@@ -339,18 +339,20 @@ func test_window_close_warns_and_cancel_preserves_live_order() -> void:
 	assert_eq(view.store.load_game().data.phase,"PREPARE")
 
 func test_real_mouse_hold_release_outside_changes_usage_and_recipe_amounts() -> void:
+	# At 140 BPM the same 40% short hold lasts fewer seconds.
+	# The 25ms input driver releases salt at 175ms: 0.2 units/s = 0.035.
 	season_duration_scale=.4; release_outside=true
 	var id: String=prepare_order("service.tomato_egg")
 	cook_order(id)
 	var item: Dictionary=view.shop.order(id)
-	assert_eq(item.used.get("salt"),40)
+	assert_eq(item.used.get("salt"),35)
 	assert_eq(item.used.get("sugar"),80)
-	assert_eq(item.used.get("oil"),180)
+	assert_eq(item.used.get("oil"),170)
 	assert_eq(item.plan.schema_version,3)
 	var season: Dictionary={}
 	for step: Dictionary in item.plan.operations:
 		if step.parameters.has("sequence"): season=step.parameters
-	assert_eq(season.amounts,[.08,.08,.04,.06])
+	assert_eq(season.amounts,[.07,.08,.035,.055])
 	view.shop.close_early(); kitchen.advance(.01)
 	var saved:=view.save_order_plan(id,"少盐短按炒蛋")
 	assert_true(saved.ok,saved.code)

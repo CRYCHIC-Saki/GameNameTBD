@@ -81,7 +81,7 @@ func test_main_management_slot_roundtrip_old_default_invalid_and_no_implicit_sav
 func make_ui() -> TDBranchPanel:
 	app=load("res://src/app/main.tscn").instantiate();app.settings_path="res://artifacts/store-management/ui/%d/settings.json"%Time.get_ticks_usec();add_child(app)
 	await wait_process_frames(2)
-	app.game_shell.automatic_time=false;assert_true(app.game_shell.create_game("slot-01","店铺测试").ok)
+	app.game_shell.automatic_time=false;assert_true(app.game_shell.create_game("slot-01","店铺测试",false).ok)
 	app.game_shell.guide.close();get_tree().paused=false
 	app.game_shell.profile.shop.world_adjustment(300000,"fixture","fixture")
 	app.game_shell.show_branch()

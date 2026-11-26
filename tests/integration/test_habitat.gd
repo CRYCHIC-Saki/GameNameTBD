@@ -8,7 +8,7 @@ func before_each() -> void:
 	app=load("res://src/app/main.tscn").instantiate()
 	app.settings_path="res://artifacts/habitat-tests/%d/settings.json"%Time.get_ticks_usec()
 	add_child_autofree(app);shell=app.game_shell;shell.automatic_time=false
-	assert_true(shell.create_game("slot-01").ok);shell.guide.dialogue.finish_now()
+	assert_true(shell.create_game("slot-01","小镇食堂",false).ok);shell.guide.dialogue.finish_now()
 	# These regressions exercise an already acquired cottage; new-slot gating has dedicated tests.
 	shell.profile.residence.stage="door";assert_true(shell.profile.unlock_residence().ok)
 	driver=DRIVER.new();driver.viewport=get_tree().root;driver.kitchen=shell.kitchen_view.kitchen

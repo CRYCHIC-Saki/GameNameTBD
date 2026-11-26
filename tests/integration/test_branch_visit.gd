@@ -6,7 +6,7 @@ func before_each() -> void:
 	app=load("res://src/app/main.tscn").instantiate();app.settings_path="res://artifacts/branch-visit/%d/settings.json"%Time.get_ticks_usec()
 	add_child_autofree(app);shell=app.game_shell;shell.automatic_time=false
 	await get_tree().process_frame
-	var created:=shell.create_game("slot-01","分店巡视测试");assert_true(created.ok,created.code+": "+created.message)
+	var created:=shell.create_game("slot-01","分店巡视测试",false);assert_true(created.ok,created.code+": "+created.message)
 	shell.guide.dialogue.finish_now();shell.profile.shop.world_adjustment(300000,"fixture","test")
 	jiangnan_site=TDRegionMigration.find_site(shell.profile.world.town_map,[26,9,3,4])
 func after_each() -> void:

@@ -6,7 +6,7 @@ func before_each() -> void:
 	app=load("res://src/app/main.tscn").instantiate()
 	app.settings_path="res://artifacts/movement-tests/%d/settings.json"%Time.get_ticks_usec()
 	add_child_autofree(app);shell=app.game_shell;shell.automatic_time=false
-	assert_true(shell.create_game("slot-01").ok);shell.guide.dialogue.finish_now()
+	assert_true(shell.create_game("slot-01","小镇食堂",false).ok);shell.guide.dialogue.finish_now()
 	shell.travel("restaurant")
 	await wait_physics_frames(2)
 

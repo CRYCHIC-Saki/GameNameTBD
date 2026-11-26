@@ -21,6 +21,8 @@ static func conversation(scene: String, hero: String, san: int) -> TDDialogue:
 	var talk:=TDDialogue.new()
 	talk.story_layout(hero,"aling")
 	talk.context={"kind":"story","scene":scene}
+	talk.context.san_before = san
+	talk.context.san_after = maxi(0, san-5)
 	var sequences: Dictionary=data().get("scenes",{})
 	var rows: Array=sequences.get(scene,[]).duplicate(true)
 	if scene in ["verdict_good","verdict_bad"]: rows.append_array(sequences.verdict_tail)

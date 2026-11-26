@@ -84,6 +84,10 @@ func _init() -> void:
 	if not progression.error.ok: error=progression.error;return
 	initialize_progression()
 	shop.day_settled.connect(_on_day_settled)
+	shop.opening_permission = func() -> TDOutcome:
+		if not story.revised.is_empty() and not story.revised.port_reopened:
+			return TDOutcome.new(false,"PORT_CLOSED_BY_STORY","臻味港征召令尚未解除；可以私下试做，正式经营请前往外地。")
+		return TDOutcome.new(true,"ALLOWED")
 	shop.day_opened.connect(_on_business_opened)
 	shop.day_settled.connect(_on_business_settled)
 	error=initialize_residence()
@@ -893,6 +897,7 @@ func close() -> void:
 		# Keep the rejecting sink on stale references instead of silently accepting writes.
 	persistence=Callable()
 	if shop!=null:
+		shop.opening_permission=Callable()
 		shop.before_open=Callable();shop.before_settlement=Callable()
 		shop.cooking_reward=Callable()
 		shop.kitchen_gate=Callable()

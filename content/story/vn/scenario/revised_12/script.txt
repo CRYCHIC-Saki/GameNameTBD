@@ -1,0 +1,33 @@
+# start
+@bg riverside-diner with instant 0
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+// 原稿第 71 段 【通常】希娜
+@show hina calm at td:0.740000:1.503413:2.150000 with instant
+hina: 欢迎，三位就是罗金娜提过的客人吧？先坐下喝碗汤，刚赶完路，应该也饿了。
+// 原稿第 72 段 【高兴】焰子
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 好鲜啊！看起来这么清的汤，竟然能有这么浓的味道。这个可以教我吗？
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+// 原稿第 73 段 【通常】希娜
+@show hina calm at td:0.740000:1.503413:2.150000 with instant
+hina: 当然可以。高汤要留意材料和火候，米饭、煎鱼也各有讲究。镇上的厨师都很乐意教人，你可以先跟他们学，再借用这里的厨房接待客人，慢慢把做法练熟。
+// 原稿第 74 段 【通常】焰子
+@show hero calm at td:0.268170:1.464197:2.150000 with instant
+hero: 那我学好以后，也能来挑战你吗？我想看看自己能做到什么程度。
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+// 原稿第 75 段 【通常】希娜
+@show hina calm at td:0.740000:1.503413:2.150000 with instant
+hina: 好，我就在店里等你。等你准备好了，我们一起做一份煎鱼定食吧。
+@end

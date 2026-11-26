@@ -12,7 +12,7 @@ func before_each() -> void:
 	var base: String="res://artifacts/d059/save-tests/%d"%Time.get_ticks_usec()
 	shell.profile_root=base+"/profiles";shell.preferences_path=base+"/settings.json"
 	shell.automatic_time=false;add_child_autofree(shell)
-	assert_true(shell.create_game("slot-01").ok);shell.guide.dialogue.finish_now()
+	assert_true(shell.create_game("slot-01","小镇食堂",false).ok);shell.guide.dialogue.finish_now()
 	shell.profile.story.beat="done"
 	shell.profile.residence.stage="door";assert_true(shell.profile.unlock_residence().ok)
 	assert_true(shell.save_game().ok)

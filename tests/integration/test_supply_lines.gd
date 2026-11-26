@@ -9,7 +9,7 @@ func test_real_shell_clock_pause_ui_creation_sleep_save_roundtrip() -> void:
 	app.settings_path="res://artifacts/supplier-lines/isolated-%d/settings.json"%Time.get_ticks_usec()
 	add_child(app);await wait_process_frames(3)
 	var shell: TDGameShell=app.game_shell;shell.automatic_time=false
-	var created:=shell.create_game("slot-01","产线测试");assert_true(created.ok,created.code+":"+created.message)
+	var created:=shell.create_game("slot-01","产线测试",false);assert_true(created.ok,created.code+":"+created.message)
 	if not created.ok: return
 	var p:=shell.profile
 	shell.guide.dialogue.finish_now();shell.guide.close();get_tree().paused=false;await wait_process_frames(2)

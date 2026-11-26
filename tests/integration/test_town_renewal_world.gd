@@ -59,7 +59,7 @@ func simulate_real_clock(chunks: Array) -> Dictionary:
 	var app: TDApplication=load("res://src/app/main.tscn").instantiate()
 	app.settings_path="res://artifacts/town-renewal/clock-%d/settings.json"%Time.get_ticks_usec()
 	add_child(app);var shell:=app.game_shell;shell.automatic_time=false
-	assert_true(shell.create_game("slot-01").ok);shell.guide.dialogue.finish_now()
+	assert_true(shell.create_game("slot-01","小镇食堂",false).ok);shell.guide.dialogue.finish_now()
 	shell.profile.story.beat="done"
 	var kitchen:=shell.kitchen_view.kitchen
 	# Drive the actual cooking signal clock deterministically, without wall time.

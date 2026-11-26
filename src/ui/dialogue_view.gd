@@ -183,6 +183,17 @@ func present(next: TDDialogue) -> void:
 	set_process(true)
 	if _native:
 		_vn_stage.event_chapter = next.context.get("event_chapter",{}).duplicate(true)
+		_vn_stage.source_talk = next
+		next.picks.clear()
+		_vn_stage.scenario_text = ""
+		if _vn_stage.event_chapter.is_empty() and next.context.get("scene") != "intro":
+			var scene := str(next.context.get("scene", ""))
+			var chapter := TDVNPresentation.chapter(scene)
+			if not chapter.is_empty():
+				_vn_stage.event_chapter = chapter
+			else:
+				_vn_stage.scenario_text = TDVNPresentation.compile(next)
+				_vn_stage.event_chapter = {"id":"host","title":"小镇纪事","script_path":"res://content/story/vn/scenario/host/script.txt"}
 		_vn_stage.start(talk.hero_name, next.context.get("request_name", false))
 		_refresh_native()
 	else: _refresh()
@@ -287,7 +298,7 @@ func _refresh() -> void:
 	_cg.size=size
 	var film:=talk.display_kind=="cg"
 	var intro: bool=str(talk.context.get("scene",""))=="intro"
-	if film and TDArrivalCutscene.SEGMENTS.has(talk.cg_id): _arrival_hold=talk.cg_id
+	if film and talk.cg_id in ["arrival", "hungry", "messenger"]: _arrival_hold=talk.cg_id
 	_cg.show_shot(talk.cg_id if film else "",talk.cg_elapsed,talk.cg_duration)
 	_vn_stage.set_paused(presentation_paused)
 	_chapter.visible=intro
@@ -430,7 +441,7 @@ func _refresh_native() -> void:
 	_film_controls.show(); _chapter.show()
 	_film_pause.text = "继续播放" if presentation_paused else "暂停"
 	_skip_clip.visible = film; _skip_clip.disabled = presentation_paused
-	_chapter.text = str(talk.context.get("event_chapter",{}).get("title","")) if talk.context.get("kind") == "authored_event" else ("序章  /  赤焰之手，空腹降临" if film else "河口镇  /  港口")
+	_chapter.text = "序章  /  赤焰之手，空腹降临" if talk.context.get("scene") == "intro" else str(_vn_stage.event_chapter.get("title", "小镇纪事"))
 	_cg.size = size
 	_cg.show_shot(talk.cg_id if film else "", talk.cg_elapsed, talk.cg_duration)
 	_cg.set_audio_paused(presentation_paused)
@@ -449,10 +460,11 @@ func _close_native(success: bool) -> void:
 	last_context = talk.context.duplicate(true)
 	last_completed = success
 	var text := talk.body
+	var picked := talk.picks.duplicate()
 	_native = false; talk = null
 	_vn_stage.reset(); _cg.stop_audio()
 	hide(); set_process(false)
-	closed.emit(text, [])
+	closed.emit(text, picked)
 
 func _rebuild_choices() -> void:
 	if _choices == null:

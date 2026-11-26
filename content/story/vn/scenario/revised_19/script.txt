@@ -1,0 +1,33 @@
+# start
+@bg ingredient-shop with instant 0
+@hide aling with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+// 原稿第 93 段 【高兴】罗金娜
+@show chen happy at td:0.789020:1.503413:2.150000 with instant
+chen: 主菜的火候、配菜的味道，还有酱汁，都照顾得很好。已经能把不同地方的做法配合起来用了，看来这趟旅行真的很值得呢。
+// 原稿第 94 段 【通常】焰子
+@show hero calm at td:0.268170:1.464197:2.150000 with instant
+hero: 嗯！有几道菜我在营业时做了好多次，客人也提了不少意见，后来又试着改了改。现在做起来，总算不用手忙脚乱啦。
+@hide aling with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+// 原稿第 95 段 【高兴】罗金娜
+@show chen happy at td:0.789020:1.503413:2.150000 with instant
+chen: 这次是你赢了，焰子。你已经是一位能独当一面的厨师了，也该让公主尝尝你的料理。
+// 原稿第 96 段 【高兴】焰子
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 我现在就可以去挑战她了吗？太好了，我一直想让她也尝尝这些味道！
+@hide aling with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+// 原稿第 97 段 【通常】罗金娜
+@show chen calm at td:0.789020:1.503413:2.150000 with instant
+chen: 当然可以，我来替你引荐。不过她对料理非常挑剔，你可要把自己的本事都拿出来。
+@end

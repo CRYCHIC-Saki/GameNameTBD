@@ -1229,7 +1229,7 @@
     "service.slice": {
       "id": "service.slice",
       "dish": "切片",
-      "bpm": 120,
+      "bpm": 140,
       "groups": {
         "cut": {
           "operation": "cut",
@@ -1286,7 +1286,7 @@
     "service.strips": {
       "id": "service.strips",
       "dish": "切条",
-      "bpm": 120,
+      "bpm": 140,
       "groups": {
         "cut": {
           "operation": "cut",
@@ -1359,7 +1359,7 @@
     "service.dice": {
       "id": "service.dice",
       "dish": "切丁",
-      "bpm": 120,
+      "bpm": 140,
       "groups": {
         "cut": {
           "operation": "cut",
@@ -1480,7 +1480,7 @@
     "service.tomato_egg": {
       "id": "service.tomato_egg",
       "dish": "番茄炒蛋",
-      "bpm": 120,
+      "bpm": 140,
       "groups": {
         "ignite": {
           "operation": "preheat",
@@ -2486,7 +2486,7 @@
     "service.beef_noodles": {
       "id": "service.beef_noodles",
       "dish": "干炒牛河",
-      "bpm": 120,
+      "bpm": 140,
       "groups": {
         "ignite": {
           "operation": "preheat",
@@ -3466,7 +3466,7 @@
     "service.mapo_tofu": {
       "id": "service.mapo_tofu",
       "dish": "麻婆豆腐",
-      "bpm": 120,
+      "bpm": 140,
       "groups": {
         "ignite": {
           "operation": "preheat",
@@ -4472,7 +4472,7 @@
     "service.kungpao": {
       "id": "service.kungpao",
       "dish": "宫保鸡丁",
-      "bpm": 120,
+      "bpm": 140,
       "groups": {
         "ignite": {
           "operation": "preheat",
@@ -5478,7 +5478,7 @@
     "service.pepper_pork": {
       "id": "service.pepper_pork",
       "dish": "辣椒炒肉",
-      "bpm": 120,
+      "bpm": 140,
       "groups": {
         "ignite": {
           "operation": "preheat",
@@ -6458,7 +6458,7 @@
     "service.small": {
       "id": "service.small",
       "dish": "小丁",
-      "bpm": 120,
+      "bpm": 140,
       "groups": {
         "cut": {
           "operation": "cut",
@@ -6587,7 +6587,7 @@
     "service.qiguoji": {
       "id": "service.qiguoji",
       "dish": "汽锅鸡",
-      "bpm": 120,
+      "bpm": 140,
       "groups": {
         "season": {
           "operation": "season",
@@ -6911,7 +6911,7 @@
     "kitchen.unknown_stir": {
       "id": "kitchen.unknown_stir",
       "dish": "自由尝试 · 炒菜",
-      "bpm": 120,
+      "bpm": 140,
       "groups": {
         "ignite": {
           "operation": "preheat",
@@ -7885,7 +7885,7 @@
     "kitchen.unknown_steam": {
       "id": "kitchen.unknown_steam",
       "dish": "自由尝试 · 蒸菜",
-      "bpm": 120,
+      "bpm": 140,
       "groups": {
         "season": {
           "operation": "season",

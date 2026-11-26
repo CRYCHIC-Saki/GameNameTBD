@@ -55,6 +55,7 @@ func _assemble(input: Dictionary) -> int:
 	map.y_sort_enabled = true
 	var ground_material := ShaderMaterial.new()
 	ground_material.shader = load("res://src/town/jiangnan_ground_light.gdshader")
+	ground_material.set_shader_parameter("continuous_grass",load("res://assets/town/egret-grass.png"))
 	var tile_count := 0
 	for i: int in LAYERS.size():
 		var key: String = LAYERS[i]

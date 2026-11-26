@@ -9,7 +9,7 @@ func before_each() -> void:
 	app.settings_path="res://artifacts/story-tests/%d/settings.json"%Time.get_ticks_usec()
 	autofree(app);get_tree().root.add_child(app)
 	shell=app.game_shell;shell.automatic_time=false
-	assert_true(shell.create_game("slot-01","试做食堂").ok);shell.guide.dialogue.finish_now()
+	assert_true(shell.create_game("slot-01","试做食堂",false).ok);shell.guide.dialogue.finish_now()
 	driver=DRIVER.new();driver.viewport=get_tree().root;driver.kitchen=shell.kitchen_view.kitchen
 	await get_tree().process_frame
 

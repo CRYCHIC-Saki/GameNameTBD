@@ -5,7 +5,7 @@ func start(active: bool=true) -> void:
 	app=load("res://src/app/main.tscn").instantiate();app.settings_path="res://artifacts/console/tests/%d/settings.json"%Time.get_ticks_usec();add_child(app)
 	await wait_process_frames(2);shell=app.game_shell;shell.automatic_time=false
 	if active:
-		assert_true(shell.create_game("slot-01","控制台测试").ok);shell.guide.close();get_tree().paused=false
+		assert_true(shell.create_game("slot-01","控制台测试",false).ok);shell.guide.close();get_tree().paused=false
 func after_each() -> void:
 	if is_instance_valid(app): shell.go_title();app.queue_free();app=null
 	get_tree().paused=false;await wait_process_frames(2)

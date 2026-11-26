@@ -143,14 +143,24 @@ func _text(at: Vector2, value: String, font_size: int=TDUI.FONT_CAPTION, color: 
 	draw_string_outline(font,at,value,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size,4,Color("233c3d"))
 	draw_string(font,at,value,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size,color)
 
+func focused_town() -> String:
+	if zoom < 2.4: return ""
+	for id: String in maps:
+		if Rect2(ORIGINS[id],Vector2.ONE*TOWN_SIZE).has_point(screen_to_world(size*.5)): return id
+	return ""
+
 func _draw() -> void:
+	var local_id := focused_town()
 	var local_island: bool=maps.has("tokyo") and maps.tokyo.shiomi and zoom>=3.0 and Rect2(ORIGINS.tokyo,Vector2.ONE*TOWN_SIZE).has_point(screen_to_world(size*.5))
 	draw_rect(Rect2(Vector2.ZERO,size),Color("075968") if local_island else SEA)
-	if not local_island:
+	if local_id.is_empty():
 		var texels := BACKGROUND.get_size() / ATLAS_SIZE
 		draw_texture_rect_region(BACKGROUND,Rect2(world_to_screen(Vector2.ZERO),WORLD_SIZE*scale_factor()),Rect2(CHART_ORIGIN*texels,WORLD_SIZE*texels))
 	for id: String in maps:
-		if local_island and id!="tokyo": continue
+		if local_id.is_empty():
+			_draw_town(id,ORIGINS[id])
+			continue
+		if id != local_id: continue
 		var origin: Vector2=ORIGINS[id];var rect:=Rect2(world_to_screen(origin),Vector2.ONE*TOWN_SIZE*scale_factor())
 		var terrain: Texture2D = _textures[id]
 		rect.size.y = rect.size.x/terrain.get_size().aspect()
@@ -160,13 +170,13 @@ func _draw() -> void:
 	# Passenger routes are independent of economic route unlocks.
 	var home:=_port_point("chengdu")
 	for id: String in maps:
-		if local_island or id=="chengdu": continue
+		if not local_id.is_empty() or id=="chengdu": continue
 		var dest:=_port_point(id);var delta:=dest-home
 		for step: int in range(1,30,2):
 			var t:=float(step)/30;var u:=float(step+1)/30
 			draw_line(world_to_screen(home+delta*t+Vector2(0,sin(t*PI)*35)),world_to_screen(home+delta*u+Vector2(0,sin(u*PI)*35)),Color(.96,.85,.57,.5),1.4,true)
 	_draw_land_overlay()
-	if show_player:
+	if show_player and (local_id.is_empty() or local_id == town_id):
 		var p:=world_to_screen(ORIGINS[town_id]+marker/73.0*TOWN_SIZE)
 		draw_circle(p,9,Color("263e40"));draw_circle(p,6,Color("fff3ad"));draw_arc(p,12,0,TAU,24,Color("ffe298"),1.5,true)
 		_text(p+Vector2(13,5),"你在这里",TDUI.FONT_CAPTION)
@@ -193,6 +203,11 @@ func _port_point(id: String) -> Vector2:
 	return ORIGINS[id]+point/73.0*TOWN_SIZE
 
 func _draw_town(id: String, origin: Vector2) -> void:
+	# At world scale the redrawn chart owns the towns; never paste live rectangles over it.
+	if focused_town().is_empty():
+		var title_at := world_to_screen(origin+Vector2(0,-14))
+		_text(title_at,str(TDTravelCatalog.info(id).name),18 if id==town_id else 16,Color("ffdc8c") if id==town_id else Color("f5e4bb"))
+		return
 	var map: TDTownMap=maps[id];var unit: float=TOWN_SIZE/73.0
 	var reference := TDPlannedTown.approved(map) or map.shiomi or map.egret
 	var show_neighborhoods := id=="chengdu" and show_player and zoom>=3.0 and not _jiangnan_zones.is_empty()

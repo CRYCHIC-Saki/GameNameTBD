@@ -1,0 +1,27 @@
+# start
+@bg knight-hall with instant 0
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide hertz with instant
+@hide hina with instant
+// 原稿第 64 段 【通常】维托
+@show vito calm at td:0.772680:1.496877:2.150000 with instant
+vito: 你的酱汁收得比我好，面条也正合适。这几天练得很勤嘛，我每天路过广场，都能闻到你那口锅里的番茄味。
+// 原稿第 65 段 【通常】焰子
+@show hero calm at td:0.268170:1.464197:2.150000 with instant
+hero: 之前总是面煮好了，酱汁还没做好。这几天我一直在练，总算把这个问题解决啦！
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide hertz with instant
+@hide hina with instant
+// 原稿第 66 段 【通常】维托
+@show vito calm at td:0.772680:1.496877:2.150000 with instant
+vito: 这场比赛是你赢了。我的料理笔记也送给你，路上可以接着练。下次见面，我们再好好比一场。
+// 原稿第 67 段 【高兴】焰子
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 谢谢你！等我学会其他地方的料理，也会带回来做给你吃的！
+// 原稿第 68 段
+narrator: 赫兹把这场对决做进了节目，随后跟着焰子和阿铃，继续前往日式小镇。
+@end

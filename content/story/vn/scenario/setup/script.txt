@@ -1,0 +1,38 @@
+// D078: setup; source: opening.json / homecoming.json. Visual presentation only.
+# start
+@bg restaurant with instant 0
+
+# beat_0
+narrator: 将“番茄炒蛋”加入菜单，保留参考售价；查看所需材料，按菜补齐下一份库存。完成后可为小摊命名。
+
+# beat_1
+@hide chen with instant
+@hide luo with instant
+@show aling calm at td:0.740000:1.555701:2.150000 with instant
+aling: 明日有外海商船入港。那些漂泊的厨师，每个人都声称自己握着改变世界的食谱。
+
+# beat_2
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 那就让他们来。我会端着盘子，逐一发起挑战！
+
+# beat_3
+narrator: 下一任务：点燃第一日。开门营业，完成一轮经营；打烊后，与阿铃商议拜访港口厨师。
+
+# beat_4
+@hide hero with instant
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@bg town-china with instant 0
+narrator: 阿铃将写着“讨伐军本部”的纸贴上摊位。海风吹过，纸的一角卷起，露出底下旧招牌的三个字：“家常菜”。
+
+# beat_5
+@hide hero with instant
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@bg cg-kitchen with instant 0
+narrator: 镜头停在灶火上。
+
+# finish
+@end

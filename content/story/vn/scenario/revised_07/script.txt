@@ -1,0 +1,22 @@
+# start
+@bg knight-hall with instant 0
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide hertz with instant
+@hide hina with instant
+// 原稿第 56 段 【通常】维托
+@show vito calm at td:0.772680:1.496877:2.150000 with instant
+vito: 欢迎来到骑士馆，我是维托。罗金娜在信里提过你，听说你想学这里的料理，还想和我比试？
+// 原稿第 57 段 【高兴】焰子
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 是啊！金娜姐说你很厉害，我想先跟你学做菜，练好了再来挑战你。
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide hertz with instant
+@hide hina with instant
+// 原稿第 58 段 【通常】维托
+@show vito calm at td:0.772680:1.496877:2.150000 with instant
+vito: 那你先去广场看看吧，那里有几位厨师愿意教人。你可以借用那边的小摊，一边接待客人，一边把意面、酱汁和配菜练熟，准备好了再来找我。
+@end

@@ -15,6 +15,8 @@ var block_args: String = ""
 var hero_name: String = ""
 var needs_name: bool = false
 var event_chapter: Dictionary = {}
+var source_talk: TDDialogue
+var scenario_text: String = ""
 var chapter_id: String = "intro"
 var _dialog_layer: CanvasLayer
 var _generation: int = 0
@@ -34,7 +36,7 @@ func _ready() -> void:
 	hide()
 
 static func supports(talk: TDDialogue) -> bool:
-	return talk != null and talk.presentation == "story" and (str(talk.context.get("scene", "")) == "intro" or talk.context.get("kind") == "authored_event")
+	return talk != null and talk.presentation == "story"
 
 func start(name_value: String, request_name: bool) -> void:
 	reset()
@@ -74,10 +76,32 @@ func attach_stage(stage: VNEngineStageScreen) -> void:
 	runner = stage.story_runner
 	dialog = runner.ctx.dialog_ui
 	_dialog_layer = stage.get_node("CanvasLayer")
-	for cmd: String in ["td_cg", "td_name"]:
+	for cmd: String in ["td_cg", "td_name", "td_pick"]:
 		runner.bus.register(HOST_COMMAND.new(self, cmd))
+	if source_talk != null:
+		for beat: Dictionary in source_talk._beats:
+			_register_speaker(beat)
+			for option: Dictionary in beat.get("options", []): _register_speaker(option)
+		runner.state.flags["san_before"] = str(source_talk.context.get("san_before", 100))
+		runner.state.flags["san_after"] = str(source_talk.context.get("san_after", 95))
 	runner.dialog_started.connect(_on_line)
 	if not needs_name: _set_name(hero_name)
+
+func _register_speaker(beat: Dictionary) -> void:
+	var id := TDVNPresentation.speaker_id(beat)
+	if id == "narrator" or runner.ctx.characters.cast.get_entry(id) != null: return
+	var member := VNEngineCastMember.new()
+	member.id = id
+	member.display_name = str(beat.get("speaker", ""))
+	member.blip = "off"
+	runner.ctx.characters.cast.characters.append(member)
+
+func preparsed_script(path: String) -> VNEngineStoryScript:
+	if scenario_text.is_empty() or path != str(event_chapter.get("script_path", "")): return null
+	return VNEngineScenarioParser.parse_text(scenario_text, path)
+
+func record_pick(id: String) -> void:
+	if source_talk != null and not _completed: source_talk.picks.append(id)
 
 func begin_block(kind: String, args: String, context: VNEngineCommandContext) -> void:
 	if context.runner != runner or _completed: return
@@ -127,7 +151,7 @@ func _on_line(node: VNEngineStoryNode) -> void:
 		if str(actor.get_meta("td_layout", "")).is_empty():
 			actor.offset_top = -720.0
 			actor.offset_bottom = -115.0
-		if who == "aling" and not actor.sprite.has_node("LedgerTitle"):
+		if who == "aling" and not actor.sprite.has_node("LedgerTitle") and (source_talk == null or source_talk.context.get("kind") not in ["revised_mainline","revised_preview"]):
 			var title := LedgerTitle.new()
 			title.name = "LedgerTitle"
 			title.mouse_filter = Control.MOUSE_FILTER_IGNORE

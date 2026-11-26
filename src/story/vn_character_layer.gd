@@ -26,6 +26,22 @@ func show_character(id: String, outfit: String, pose: String, expression: String
 	# Empty position avoids the upstream automatic 0.4s move fighting the authored pose.
 	super.show_character(id,outfit,pose,expression,shot,"",transition)
 	_apply_layout(id,token)
+	if id == "hina" and active_sprites.has(id):
+		var actor: Control = active_sprites[id]
+		var label := actor.get_node_or_null("TextPlaceholder") as Label
+		if label == null:
+			label = Label.new(); label.name = "TextPlaceholder"; actor.add_child(label)
+			label.anchor_left = 0; label.anchor_right = 1
+			label.anchor_top = .28; label.anchor_bottom = .28
+			label.offset_top = -36; label.offset_bottom = 36
+			label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			label.add_theme_font_size_override("font_size",46)
+			label.add_theme_color_override("font_color",Color.BLACK)
+			label.add_theme_color_override("font_shadow_color",Color("fff5df"))
+			label.add_theme_constant_override("shadow_offset_x",2)
+			label.add_theme_constant_override("shadow_offset_y",2)
+		label.text = "希娜-" + str({"calm":"通常","angry":"生气","happy":"高兴","proud":"得意","cry":"哭哭","puzzled":"疑惑","troubled":"困扰","speechless":"无语"}.get(expression,expression))
 
 func move_character(id: String, position_str: String, duration: float) -> void:
 	var layout := TDVNLayout.parse(position_str)

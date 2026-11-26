@@ -1,0 +1,57 @@
+# start
+@bg riverside-diner with instant 0
+narrator: 【剧本预览】本场可查看完整台词，战斗和经营结果不写入正式进度。
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@show hina calm at td:0.740000:1.503413:2.150000 with instant
+hina: 欢迎，三位就是罗金娜提过的客人吧？先坐下喝碗汤，刚赶完路，应该也饿了。
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 好鲜啊！看起来这么清的汤，竟然能有这么浓的味道。这个可以教我吗？
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@show hina calm at td:0.740000:1.503413:2.150000 with instant
+hina: 当然可以。高汤要留意材料和火候，米饭、煎鱼也各有讲究。镇上的厨师都很乐意教人，你可以先跟他们学，再借用这里的厨房接待客人，慢慢把做法练熟。
+@show hero calm at td:0.268170:1.464197:2.150000 with instant
+hero: 那我学好以后，也能来挑战你吗？我想看看自己能做到什么程度。
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@show hina calm at td:0.740000:1.503413:2.150000 with instant
+hina: 好，我就在店里等你。等你准备好了，我们一起做一份煎鱼定食吧。
+narrator: 【接口留白】【操作·经营与战斗】在日式小镇学习米饭、煎鱼及高汤，将已学料理加入菜单，采购对应食材并按订单营业。完成当地经营目标及居民厨师战斗后，打烊、备齐比赛材料，进入希娜战斗接口，剧情主题为煎鱼定食。胜利后播放下文，失败则返回经营准备。
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@show hina calm at td:0.740000:1.503413:2.150000 with instant
+hina: 鱼的火候很好，饭和汤上桌时也都还热着。你把这些做法都用得很熟练了，这次是你赢了。
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hina with instant
+@show hertz happy at td:0.707320:1.555701:2.150000 with instant
+hertz: 又赢过了一位当地高手！焰子，这里的料理和维托教你的很不一样，你觉得最难学的是什么？
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 是高汤吧！以前我总想把火开大一点，早点做好，现在才知道，有些香味要慢慢煮才出得来。幸好希娜教了我好多次，这回总算做好了！
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@show hina calm at td:0.740000:1.503413:2.150000 with instant
+hina: 你学得很认真，我也很高兴。接下来还要去别的地方吧？记得把这份高汤笔记带上，遇到合适的食材，可以试着做些变化。
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 我会的！下次回来，也让你尝尝我学到的新菜。
+narrator: 【接口留白】【操作·游历经营】各地沿用“学习料理—采购与菜单准备—接待出餐—结算补货”的经营循环，并在合适的主线节点衔接居民厨师战斗。通过地区任务学习香料、海鲜处理及多单出餐；完成本阶段经营与战斗目标后，返回臻味港。
+narrator: 赫兹持续报道沿途的厨师与比试。随着节目传回臻味港，越来越多人知道了焰子的名字，罗厄也留意到了这位四处学艺的见习厨师。
+@end

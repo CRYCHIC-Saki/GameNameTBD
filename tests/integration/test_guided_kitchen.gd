@@ -155,7 +155,7 @@ func test_real_recipe_notes_make_chunks_and_feedback_survives_release_pause_and_
 	var lane: TDCookingLane=kitchen.prep
 	assert_true(wait_for_module(lane,"M1",5))
 	assert_eq(lane.progress.cut_actions,["primary","rotate_right","primary"])
-	kitchen.advance(2-float(lane.progress.elapsed_sec)); tap(KEY_SPACE)
+	kitchen.advance(12.0/7-float(lane.progress.elapsed_sec)); tap(KEY_SPACE)
 	assert_eq(lane.judgement_feedback.grade,"perfect")
 	assert_gt(lane.feedback_remaining(),.8)
 	assert_true(lane._audio.stream is AudioStreamWAV)
@@ -168,8 +168,8 @@ func test_real_recipe_notes_make_chunks_and_feedback_survives_release_pause_and_
 	app.toggle_pause(); kitchen.advance(2)
 	assert_eq(TDGuidedCookingView.CLOSEUP.impulse(lane),impulse,"Paused artwork stays on the accepted note")
 	app.toggle_pause()
-	kitchen.advance(.9); tap(KEY_D); assert_eq(int(lane.progress.cut_hits),1)
-	kitchen.advance(1); tap(KEY_SPACE); kitchen.advance(.25) # Production Good window is now inclusive through +200ms.
+	kitchen.advance(6.0/7-.1); tap(KEY_D); assert_eq(int(lane.progress.cut_hits),1)
+	kitchen.advance(6.0/7); tap(KEY_SPACE); kitchen.advance(.25) # Two-beat spacing at 140 BPM.
 	assert_null(lane.qte); assert_gt(lane.feedback_remaining(),.6)
 	var ingredient: Dictionary=lane.snapshot().ingredients.values()[0]
 	assert_eq(ingredient.shape,"chunk"); assert_eq(float(ingredient.fine),.25)
@@ -177,15 +177,16 @@ func test_real_recipe_notes_make_chunks_and_feedback_survives_release_pause_and_
 	lane.cancel_operation(); assert_true(lane.judgement_feedback.is_empty())
 	assert_eq(TDGuidedCookingView.CLOSEUP.impulse(lane),0.0,"No previous strike on restarting")
 
-func test_musical_bar_loop_crosses_zero_without_discontinuity_in_chart_phase() -> void:
-	assert_almost_eq(TDBeatAudio.phase_error(.008,95.992),.016,.000001)
-	assert_almost_eq(TDBeatAudio.phase_error(95.970,.010),-.040,.000001)
-	assert_almost_eq(TDBeatAudio.phase_error(.500,192.5),0.0,.000001)
-	var audio:=kitchen.beat_audio
-	audio.prepare_cooking_music(90.0)
-	var wav:=audio.stream as AudioStreamWAV
-	assert_eq(wav.loop_end,roundi(wav.mix_rate*96.0))
-	assert_almost_eq(float(wav.loop_end)/wav.mix_rate/audio.pitch_scale,128.0,.00001,"48 four-beat bars at 90 BPM")
+func test_casual_full_song_loops_without_pitch_change_at_shared_140_bpm() -> void:
+	var duration := TDBeatAudio.LOOP_SEC
+	assert_almost_eq(TDBeatAudio.phase_error(.008,duration-.008),.016,.000001)
+	assert_almost_eq(TDBeatAudio.phase_error(duration-.030,.010),-.040,.000001)
+	var audio := kitchen.beat_audio
+	audio.prepare_cooking_music(140.0)
+	var wav := audio.stream as AudioStreamWAV
+	assert_eq(wav.loop_end,roundi(wav.mix_rate*duration))
+	assert_eq(audio.pitch_scale,1.0)
+	assert_almost_eq(float(wav.loop_end)/wav.mix_rate,duration,.0001)
 
 func test_dual_seasoning_reserves_mouse_and_keeps_other_heat_unscored() -> void:
 	prepared_to("kitchen.stove.left"); prepared_to("kitchen.stove.right")
@@ -212,10 +213,10 @@ func test_real_late_plating_waits_for_complete_cursor_travel() -> void:
 	var lane: TDCookingLane=kitchen.lanes[0]
 	assert_true(wait_for_module(lane,"M7"))
 	tap(KEY_SPACE); assert_false(bool(lane.progress.charge_started))
-	kitchen.advance(3.7-float(lane.progress.elapsed_sec)); key(KEY_SPACE)
+	kitchen.advance(111.0/35-float(lane.progress.elapsed_sec)); key(KEY_SPACE) # Late inside the 8-beat start window at 140 BPM.
 	kitchen.advance(1.5); assert_not_null(lane.qte)
 	assert_almost_eq(float(lane.progress.held_sec),1.5,.000001)
-	kitchen.advance(.5); key(KEY_SPACE,false)
+	kitchen.advance(12.0/7-1.5); key(KEY_SPACE,false) # Complete all four hold beats.
 	assert_eq(lane.snapshot().state,"plated")
 	assert_eq(float(lane.snapshot().steps.back().quality),1.0)
 	assert_eq(lane.judgement_feedback.grade,"perfect")

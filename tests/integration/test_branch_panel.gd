@@ -7,7 +7,7 @@ func before_each() -> void:
 	app.settings_path="res://artifacts/branch-ui/%d/settings.json"%Time.get_ticks_usec()
 	add_child_autofree(app); shell=app.game_shell; shell.automatic_time=false
 	await get_tree().process_frame
-	assert_true(shell.create_game("slot-01","分店测试").ok)
+	assert_true(shell.create_game("slot-01","分店测试",false).ok)
 	shell.guide.dialogue.finish_now()
 	shell.profile.shop.world_adjustment(300000,"fixture","test")
 	# D063: selection is from owned cards, never free anonymous managers.

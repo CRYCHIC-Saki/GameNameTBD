@@ -1,0 +1,38 @@
+// D078: home_invite; source: opening.json / homecoming.json. Visual presentation only.
+# start
+@bg home with instant 0
+
+# beat_0
+@hide chen with instant
+@hide luo with instant
+@show aling calm at td:0.740000:1.555701:2.150000 with instant
+aling: 今日的战报，夜鸦已经封存。赤焰之手，还有最后一道密令。
+
+# beat_1
+@show hero surprised at td:0.268170:1.464197:2.150000 with instant
+hero: 最后一道？灶火尚未冷却，我还能再战！
+
+# beat_2
+@hide chen with instant
+@hide luo with instant
+@show aling calm at td:0.740000:1.555701:2.150000 with instant
+aling: 睡觉。
+
+# beat_3
+@show hero puzzled at td:0.268170:1.464197:2.150000 with instant
+hero: ……这也算密令？
+
+# beat_4
+@hide chen with instant
+@hide luo with instant
+@show aling happy at td:0.740000:1.555701:2.150000 with instant
+aling: 连锅都要离火，何况掌锅的人。老陈把巷子里那间小屋的钥匙托付给了吾。
+
+# beat_5
+@hide chen with instant
+@hide luo with instant
+@show aling calm at td:0.740000:1.555701:2.150000 with instant
+aling: 不是新战场，是你的落脚处。跟紧夜鸦，别让明日的讨伐军统帅睡在码头。
+
+# finish
+@end

@@ -1,3 +1,7 @@
+## 2026-11-26 当前用户配乐
+
+casual.wav：日常及做菜，原速完整循环；厨房谱面为 140 BPM。cooking.wav：普通厨艺战斗；boss.wav：《探寻至味的公主 ~Not enough！》，最终 Boss。后两者在未制作战斗的占位卡中使用，不代表已有战斗系统。原来源和 SHA256 见 mainline-20261126.json。不要用旧音乐生成器覆盖用户音频。
+
 # 原创占位音乐（D039 / AI-047）
 
 三首循环由本项目`tools/generate_music.ps1`离线合成：casual（80 BPM）、service（104 BPM）、cooking（120 BPM），各32拍，PCM16单声道22050Hz。旋律、和弦、合成音色均为本次原创，没有第三方采样或外部音乐素材。

@@ -1,0 +1,46 @@
+# start
+@bg harbor with instant 0
+narrator: 【剧本预览】本场可查看完整台词，战斗和经营结果不写入正式进度。
+narrator: 在这个厨艺至上的世界里，焰子最想去的地方，就是号称“百国商船汇聚，天下千味之港”的臻味港。如今刚下长途车，她的肚子就先叫了起来。
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 总算到了！这就是那个传说中的地方嘛。赶紧找家店，好好吃一顿吧！
+narrator: 她沿街找了几家餐馆，却发现连卖热饼的小店都关着门。
+@show hero puzzled at td:0.268170:1.464197:2.150000 with instant
+hero: 奇怪，这里怎么一家店都没开？地图上明明说，随时都能吃到各国的料理呀。
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show aling proud at td:0.740000:1.555701:2.150000 with instant
+aling: 背锅的旅人，请慢！吾乃夜鸦密使阿铃。看你并非本地人，报上姓名与来意！
+@show hero calm at td:0.268170:1.464197:2.150000 with instant
+hero: 我是见习厨师焰子哦，听说这里有很多好吃的，想来尝尝，顺便学做菜。
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show aling calm at td:0.740000:1.555701:2.150000 with instant
+aling: 原来是寻味的巡礼者。可惜你来得不巧，此地厨师皆已奉召入宫，如今无人敢开门迎客。
+@show hero puzzled at td:0.268170:1.464197:2.150000 with instant
+hero: 全都进宫了？那我想吃顿饭，还得先去见这里的公主吗？
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show aling calm at td:0.740000:1.555701:2.150000 with instant
+aling: 至味公主罗厄，厨艺已登世间之巅，对美食尤为狂热。如今百般滋味皆已尝腻，便下令全镇厨师入宫献膳，直到寻得令她满意的至味。
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 原来是这样啊。连这里的厨师都满足不了她，要是能做出让她喜欢的料理，一定很有意思！
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show aling proud at td:0.740000:1.555701:2.150000 with instant
+aling: 你不过是个见习厨师，也敢夸此海口？先与吾比试一番，让夜鸦看看你的本领！
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 好啊！不过要先借我一个厨房，我从下车到现在，还没吃上东西呢。
+@end

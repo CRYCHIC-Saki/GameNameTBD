@@ -1,3 +1,9 @@
+- 2026-11-26 后续：以用户新附件为准（源 SHA4a65f8b），终场罗厄两处哭哭已接；六角色统一2.15倍率、按面部原图坐标平移，宽屏等比。用户确认大色块像素风后替换23张地图/餐厅/航海图资源；世界总览不再叠实时矩形图，局部放大仍用真实地图。地图场景/TileSet/通行/碰撞/地籍保持，详见 docs/PIXEL_MAP_AND_PORTRAITS_20261126.md。不提交推送。
+
+- 2026-11-26：修订 DOCX 八场/26节点接原生 VN，48 张原差分、希娜文字占位；140 BPM，casual 做菜，cooking/最终 Boss 曲用于待制作接口。战斗显示待制作，点击继续不结算奖励；新经营目标及最终菜谱暂留接口。五张新背景及五张地图主素材重绘，三镇地理/碰撞未改。93 项专项、Windows 98 项输入与 32 项图形检查通过，固定 build/TownDiner.exe 更新，人工待验、不提交推送。见 docs/REVISED_MAINLINE_20261126.md。
+
+- 2026-11-26：main cedc4cc 上迁入 11/23 暂存新美术，保留三镇地理、角色音频及 113 食材/60 菜品。图标以 ingredient_slots/dish_slots 绑定原格；剧情改静态原生 VN，旧转场不发行。参见 docs/ART_MIGRATION_20261126.md。
+
 - 潮见町采用 `src/town/shiomi_map.tscn`。步行、M 图、分店选址共用该场景。街道和场景道具按 `tools/layout_shiomi.py` 与打包好的素材图集重建，同时更新 `content/towns/shiomi_survey.json`。既有产权 ID 和区域旧档迁移须一起验证。见 [潮见町制作记录](docs/phases/world-travel.md)。
 
 - 潮见町建筑按江南的角色比例校准。房屋草地脚线、稻畦和石阶由 `tools/shiomi_finishes.py` 绘制。右上木桥用拱面轮廓判定脚点，前栏挡在角色前，桥头接回陆地。复验时从两端用实际移动输入走过桥。

@@ -10,6 +10,18 @@ const MAX_SCALE := 5.0
 const MIN_POSITION := -10.0
 const MAX_POSITION := 11.0
 
+const HALF_BODY_SCALE := 2.15
+# Face anchors in the untouched original square canvases. Expressions share one anchor.
+const FACE_FOCUS := {"hero":Vector2(.49,.26), "aling":Vector2(.50,.19), "chen":Vector2(.44,.23), "luo":Vector2(.51,.30), "vito":Vector2(.46,.235), "hertz":Vector2(.54,.19), "hina":Vector2(.50,.23)}
+
+static func half_body(side: String, actor: String = "") -> String:
+	var focus: Vector2 = FACE_FOCUS.get(actor, FACE_FOCUS.hero)
+	var width := 760.0 * .64 * HALF_BODY_SCALE
+	var height := BASE_HEIGHT * HALF_BODY_SCALE
+	var x := float({"left":.26, "right":.74}.get(side,.5)) - (focus.x-.5)*width/DESIGN.x
+	var image_top := 270.0-focus.y*width
+	return encode(x,(image_top+(height+width)*.5)/DESIGN.y,HALF_BODY_SCALE)
+
 static func parse(token: String) -> Dictionary:
 	if not token.begins_with("td:"): return {}
 	var parts := token.split(":")
@@ -34,7 +46,10 @@ static func rect(token: String, cast_scale: float = .64, viewport_size: Vector2 
 		x = layout.x; bottom = layout.y * DESIGN.y; factor = layout.scale
 	var size_value := Vector2(760.0 * cast_scale, BASE_HEIGHT) * factor
 	var result := Rect2(Vector2(x*DESIGN.x - size_value.x/2,bottom-size_value.y),size_value)
-	return Rect2(result.position * viewport_size / DESIGN,result.size * viewport_size / DESIGN)
+	# Uniform viewport scaling prevents wide windows enlarging faces until heads clip.
+	var screen_scale := minf(viewport_size.x/DESIGN.x,viewport_size.y/DESIGN.y)
+	var rendered_size := result.size * screen_scale
+	return Rect2(Vector2(x*viewport_size.x-rendered_size.x*.5,bottom/DESIGN.y*viewport_size.y-rendered_size.y),rendered_size)
 
 static func fit(texture: Texture2D, bounds: Rect2) -> Rect2:
 	var factor := minf(bounds.size.x/texture.get_width(),bounds.size.y/texture.get_height())

@@ -1,0 +1,35 @@
+# start
+@bg ingredient-shop with instant 0
+// 原稿第 86 段
+narrator: 焰子回到臻味港时，沿街的餐馆依旧关着门。罗金娜已经收到回程消息，替她留好了厨房。
+// 原稿第 87 段 【高兴】焰子
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 金娜姐，我回来啦！维托和希娜教了我好多做法，我还去了其他几个小镇，这次终于能做出一整桌菜了！
+@hide aling with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+// 原稿第 88 段 【高兴】罗金娜
+@show chen happy at td:0.789020:1.503413:2.150000 with instant
+chen: 欢迎回来！看你这么高兴，路上一定收获不少吧。还记得出发前，我们约好什么了吗？
+// 原稿第 89 段 【得意】焰子
+@show hero proud at td:0.268170:1.464197:2.150000 with instant
+hero: 当然记得！今天我就是回来挑战你的，我们还用上次的食材，好不好？
+@hide aling with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+// 原稿第 90 段 【通常】罗金娜
+@show chen calm at td:0.789020:1.503413:2.150000 with instant
+chen: 好啊，那就让我尝尝，你这一路学到了多少本事。这次我们就好好比一场吧！
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hina with instant
+// 原稿第 91 段 【高兴】赫兹
+@show hertz happy at td:0.707320:1.555701:2.150000 with instant
+hertz: 观众朋友们，还记得焰子出发前输掉的那场比试吗？今天她回来了，连食材都选了上次那一份。罗金娜，这回也请你认真尝尝她的手艺吧！
+@end

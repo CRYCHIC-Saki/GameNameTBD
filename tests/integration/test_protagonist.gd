@@ -14,7 +14,7 @@ func before_each() -> void:
 	add_child_autofree(app)
 	shell = app.game_shell
 	shell.automatic_time = false
-	assert_true(shell.create_game("slot-01").ok);shell.guide.dialogue.finish_now()
+	assert_true(shell.create_game("slot-01","小镇食堂",false).ok);shell.guide.dialogue.finish_now()
 	# Shared-room locomotion fixture already owns the house; gating is covered in homecoming.
 	shell.profile.residence.stage="door";assert_true(shell.profile.unlock_residence().ok)
 	await wait_physics_frames(2)

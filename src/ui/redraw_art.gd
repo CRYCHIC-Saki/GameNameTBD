@@ -15,7 +15,9 @@ static func catalog() -> Dictionary:
 		for id: String in _index.ingredient_ids:
 			var cell_index: int = _index.ingredient_slots[id]
 			_index.ingredients[id] = {"path":"res://assets/redraw-v1/ingredients-%d.png" % (cell_index/30),"index":cell_index%30}
-		for i: int in _index.dish_ids.size(): _index.dishes[_index.dish_ids[i]]={"path":"res://assets/redraw-v1/dishes-%d.png"%(i/20),"index":i%20}
+		for id: String in _index.dish_ids:
+			var slot: int = int(_index.get("dish_slots", {}).get(id, _index.dish_ids.find(id)))
+			_index.dishes[id] = {"path":"res://assets/redraw-v1/dishes-%d.png" % (slot/20),"index":slot%20}
 	return _index
 
 static func image(path: String) -> Image:
@@ -43,22 +45,13 @@ static func cell(path: String,index: int,columns: int,rows: int,trim: bool=true)
 		_cache[key]=result
 	return _cache[key]
 
-static func portrait(who: String,emotion: String="") -> Texture2D:
-	var key: String={"焰子":"hero","阿铃":"aling","灰烬司祭":"chen","罗厄":"luo"}.get(who,who)
-	if not catalog().portraits.has(key): return null
-	var index: int=maxi(0,EMOTIONS.find(emotion))
-	var path: String=catalog().portraits[key]
-	var cache_key: String="portrait:"+key+":"+str(index)
-	if not _cache.has(cache_key):
-		var source:=image(path)
-		var dimensions:=Vector2i(source.get_width()/3,source.get_height()/2)
-		# Preserve the complete original composition and decorative background.
-		var bounds:=Rect2i(Vector2i.ZERO,dimensions)
-		for i: int in 6:
-			var result:=AtlasTexture.new();result.atlas=load(path)
-			result.region=Rect2(Vector2i(i%3,i/3)*dimensions+bounds.position,bounds.size)
-			result.filter_clip=true;_cache["portrait:"+key+":"+str(i)]=result
-	return _cache[cache_key]
+static func portrait(who: String, emotion: String = "") -> Texture2D:
+	var key: String = {"焰子":"hero","阿铃":"aling","罗金娜":"chen","灰烬司祭":"chen","罗厄":"luo","维托":"vito","赫兹":"hertz"}.get(who,who)
+	if key not in ["hero","aling","chen","luo","vito","hertz"]: return null
+	var mood: String = {"surprised":"puzzled","sad":"troubled","":"calm"}.get(emotion,emotion)
+	var path := "res://content/story/vn/portraits/%s/%s_base_base_%s_mid.tres" % [key,key,mood]
+	if not ResourceLoader.exists(path): path = "res://content/story/vn/portraits/%s/%s_base_base_calm_mid.tres" % [key,key]
+	return load(path) as Texture2D
 
 static func ingredient(id: String) -> Texture2D:
 	var key: String=id if catalog().ingredients.has(id) else {"peanut_oil":"oil","peppercorn":"pepper","cooking_wine":"wine","shanxi_vinegar":"vinegar"}.get(id,id)

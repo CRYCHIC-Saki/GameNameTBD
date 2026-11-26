@@ -266,7 +266,7 @@ func test_factory_clock_freezes_in_pause_and_research_overlay() -> void:
 	shell.profile_root="res://artifacts/economy-clock/%d"%Time.get_ticks_usec()
 	shell.preferences_path=shell.profile_root+"/settings.json"
 	add_child_autofree(shell)
-	assert_true(shell.create_game("slot-01","时钟测试").ok);shell.guide.dialogue.finish_now()
+	assert_true(shell.create_game("slot-01","时钟测试",false).ok);shell.guide.dialogue.finish_now()
 	var world:=shell.profile.world
 	var plot: Dictionary=world.town_map.plots.filter(func(p:Dictionary)->bool:return p.kind=="factory_lot")[0]
 	assert_true(world.build_factory(plot.id).ok)

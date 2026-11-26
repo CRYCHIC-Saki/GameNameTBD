@@ -1,0 +1,58 @@
+{
+  "mode": "built-in imagegen",
+  "style": "A 动画赛璐璐：线条干净、色块清爽，低至中等饱和度",
+  "reference": "assets/vn-painterly-v1/restaurant.png",
+  "backgrounds": [
+    {
+      "id": "ingredient-shop",
+      "path": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-e0cfcb20-3bc2-415b-90d6-bc178cc6a9d6.png"
+    },
+    {
+      "id": "knight-hall",
+      "path": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-04357201-2db2-4ba0-ad24-c164bb58b6cf.png"
+    },
+    {
+      "id": "riverside-diner",
+      "path": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-890dc404-ab35-410a-93a2-c77325e88f23.png"
+    },
+    {
+      "id": "harbor-square",
+      "path": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-7395307e-9740-4e43-a510-7d17baedf0cb.png"
+    }
+  ],
+  "palace": "C:/Users/myzpw/.codex/generated_images/01a1ca90-c01d-7342-9478-22737be801fd/exec-356a731f-7a0e-4d3e-88ce-7706d3e77ca8.png",
+  "atlases": [
+    {
+      "id": "shiomi",
+      "target": "assets/town/shiomi-sprites-v1.png",
+      "key": "shiomi_cel_revision",
+      "generated": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-3e3ef148-a771-4ffe-96da-08730a9c5816.png"
+    },
+    {
+      "id": "egret",
+      "target": "assets/town/egret-sprites.png",
+      "key": "revised_map_egret",
+      "generated": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-095d3a64-82eb-4274-8f9a-2c9120f7b868.png"
+    },
+    {
+      "id": "jiangnan",
+      "target": "assets/town/jiangnan-map-props-v2.png",
+      "key": "revised_map_jiangnan",
+      "generated": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-3f3fcf66-9963-4123-af82-93e4720506b7.png"
+    },
+    {
+      "id": "egret-passenger-station",
+      "target": "assets/town/egret-passenger-station.png",
+      "generated": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-ffcbf7cf-bdc7-44e0-ab08-880b5348f857.png",
+      "fit_visible": true
+    },
+    {
+      "id": "egret-wharf",
+      "target": "assets/town/egret-wharf.png",
+      "generated": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-2eb5d949-5bf3-4966-8587-5661049fd3fe.png",
+      "fit_visible": true
+    }
+  ],
+  "background_prompt": "Production VN background 16:9, clean anime cel shading, thin warm grey contours, flat pastel jade/cream/taupe, two shadow tones, quiet foreground and bottom quarter, no people/text/UI. Scenes: ingredient shop; old European culinary knight hall; Japanese riverside diner; harbor square contest table; palace reception room. Reference is style only.",
+  "atlas_prompt": "Restyle target production atlas with same object count, exact normalized coordinates, silhouettes, baselines and transparent gaps, thin warm grey outlines and flat pastel cel shading. Preserve coherent map footprints, no new objects or labels. Native import fits only generated canvas and clips alpha overflow to original."
+}

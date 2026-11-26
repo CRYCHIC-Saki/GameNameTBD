@@ -8,7 +8,7 @@ func before_each() -> void:
 	app=load("res://src/app/main.tscn").instantiate()
 	app.settings_path="res://artifacts/story-expansion/tests/%d/settings.json"%Time.get_ticks_usec()
 	add_child_autofree(app);shell=app.game_shell;shell.automatic_time=false
-	assert_true(shell.create_game("slot-01","赤焰").ok);shell.guide.dialogue.finish_now()
+	assert_true(shell.create_game("slot-01","赤焰",false).ok);shell.guide.dialogue.finish_now()
 	driver=DRIVER.new();driver.viewport=get_tree().root;driver.kitchen=shell.kitchen_view.kitchen
 	await get_tree().process_frame
 
@@ -40,15 +40,15 @@ func test_cg_playback_is_frozen_by_pause_and_cancel_does_not_progress() -> void:
 	await wait_process_frames(2)
 	var view:=shell.guide.dialogue
 	view.set_process(false)
-	assert_eq(view._vn_stage.blocked,"td_cg")
+	assert_eq(view._vn_stage.blocked,"")
 	var talk:=view.talk;view._process(.5);var elapsed:=talk.cg_elapsed
-	assert_gt(elapsed,0.0)
+	assert_eq(elapsed,0.0)
 	get_tree().paused=true;await get_tree().process_frame;assert_eq(talk.cg_elapsed,elapsed)
 	get_tree().paused=false;shell.guide.dialogue.finish_now();assert_eq(shell.profile.story.beat,"arrive")
 	assert_false(shell.town.external_story_frozen);assert_true(shell.town._player.controls_enabled)
-	shell.guide.present("intro");shell.guide.dialogue.talk.skip();shell.guide.dialogue._emit_if_finished();assert_eq(shell.profile.story.beat,"follow")
+	shell.guide.present("intro");await preload("res://tools/test_support/native_dialogue.gd").finish(shell.guide.dialogue,get_tree());assert_eq(shell.profile.story.beat,"follow")
 
-func test_movie_uses_full_screen_without_gal_box_and_restores_dialogue() -> void:
+func test_static_native_narration_uses_one_dialogue_box_and_restores_control() -> void:
 	shell.guide.present("intro")
 	await wait_process_frames(2)
 	var view:=shell.guide.dialogue;var talk:=view.talk
@@ -56,7 +56,7 @@ func test_movie_uses_full_screen_without_gal_box_and_restores_dialogue() -> void
 	assert_false(view.get_node("Box").visible);assert_false(view.get_node("Portrait").visible)
 	assert_true(view.get_node("FilmControls").visible);assert_eq(view._cg.size,view.size)
 	var minute:=shell.profile.characters.clock.minute
-	view._process(talk.cg_duration)
+	view._vn_stage.dialog._reveal_to_end();view._vn_stage.dialog._advance_dialog()
 	await get_tree().process_frame
 	assert_false(view._cg.visible)
 	assert_true(view._vn_stage.dialog.background_box.is_visible_in_tree())
@@ -67,12 +67,12 @@ func test_movie_uses_full_screen_without_gal_box_and_restores_dialogue() -> void
 	assert_eq(shell.profile.characters.clock.minute,minute);assert_false(shell.town._player.controls_enabled)
 	view.finish_now();assert_true(shell.town._player.controls_enabled)
 
-func test_end_movie_returns_control_once_without_click_or_reward_replay() -> void:
-	var talk:=TDDialogue.new();talk.context={"kind":"story_replay"};talk.add_cg("sign","",.1);talk.add_cg("fire","",.1)
+func test_static_cg_pages_return_control_once_without_reward_replay() -> void:
+	var talk:=TDDialogue.new();talk.story_layout("测试厨神","aling");talk.context={"kind":"story_replay"};talk.add_cg("sign","",.1);talk.add_cg("fire","",.1)
 	shell.guide.show_talk(talk);shell.guide.dialogue.set_process(false)
 	var old:=shell.profile.story.export_state();var ends: Array=[]
 	shell.guide.dialogue.closed.connect(func(_s:String,_p:Array)->void:ends.append(1))
-	shell.guide.dialogue._process(.3)
+	await preload("res://tools/test_support/native_dialogue.gd").finish(shell.guide.dialogue,get_tree())
 	assert_eq(ends.size(),1);assert_false(shell.guide.presenting());assert_true(shell.town._player.controls_enabled)
 	shell.guide.dialogue._process(1);assert_eq(ends.size(),1);assert_eq(shell.profile.story.export_state(),old)
 
@@ -98,7 +98,7 @@ func test_tutorial_gate_freezes_exact_qte_and_world_then_resumes() -> void:
 func test_both_escort_legs_bowl_interaction_and_story_save_round_trip() -> void:
 	var story:=shell.profile.story;story.hero_name="测试厨神"
 	var san_before:=shell.profile.world.san
-	shell.guide.present("intro");shell.guide.dialogue.talk.skip();shell.guide.dialogue._emit_if_finished()
+	shell.guide.present("intro");await preload("res://tools/test_support/native_dialogue.gd").finish(shell.guide.dialogue,get_tree())
 	var town:=shell.town
 	for leg: String in ["follow","return"]:
 		assert_eq(story.beat,leg)
@@ -107,14 +107,14 @@ func test_both_escort_legs_bowl_interaction_and_story_save_round_trip() -> void:
 			if story.beat!=leg: break
 		assert_ne(story.beat,leg,"Guide actually reaches this leg's destination")
 		if leg=="follow":
-			shell.guide.request_person("chen");shell.guide.dialogue._on_skip();assert_eq(story.beat,"bowl")
+			shell.guide.request_person("chen");await preload("res://tools/test_support/native_dialogue.gd").finish(shell.guide.dialogue,get_tree());assert_eq(story.beat,"bowl")
 			var bowl_cell:=Vector2i((town.bowl_point()-town._origin())/town.cell_size())
 			assert_true(town.session.town_map.is_road(bowl_cell.x,bowl_cell.y),"The interactive bowl must be on reachable ground")
 			town._player.position=town.bowl_point();town._interact();assert_not_null(shell._modal)
 			for node: Node in shell._modal_box.get_children():
 				if node is Button and node.text=="尝一口": node.pressed.emit();break
-			shell.guide.dialogue._on_skip();assert_eq(shell.profile.world.san,san_before-5)
-	shell.guide.present("awaken");shell.guide.dialogue._on_skip();assert_eq(story.beat,"cook")
+			await preload("res://tools/test_support/native_dialogue.gd").finish(shell.guide.dialogue,get_tree());assert_eq(shell.profile.world.san,san_before-5)
+	shell.guide.present("awaken");await preload("res://tools/test_support/native_dialogue.gd").finish(shell.guide.dialogue,get_tree());assert_eq(story.beat,"cook")
 	story.recipe_viewed=true;story.tutorials.append("M1");story.tracked=false
 	var inventory: Dictionary=shell.profile.shop.snapshot().inventory
 	var snapshot:=story.export_state();assert_true(shell.save_game().ok)
@@ -131,7 +131,7 @@ func test_old_completed_chapter_replay_cannot_repeat_rewards() -> void:
 	shell.profile.story.beat="done";shell.profile.story.paid=true
 	var before:=shell.profile.snapshot()
 	var talk:=TDOpeningScript.conversation("after_taste","赤焰",100);talk.context={"kind":"story_replay"}
-	shell.guide.show_talk(talk);shell.guide.dialogue._on_skip()
+	shell.guide.show_talk(talk);await preload("res://tools/test_support/native_dialogue.gd").finish(shell.guide.dialogue,get_tree())
 	assert_true(TDLevelProgression.same_value(shell.profile.snapshot(),before))
 
 func test_first_cooking_pipeline_teaches_every_used_module_without_skipping_time() -> void:

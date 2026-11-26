@@ -219,7 +219,7 @@
       "sheet": {
         "id": "study.egg_fried_rice",
         "dish": "蛋炒饭",
-        "bpm": 120,
+        "bpm": 140,
         "groups": {
           "ignite": {
             "operation": "preheat",
@@ -1333,7 +1333,7 @@
       "sheet": {
         "id": "study.yangchun_noodles",
         "dish": "阳春面",
-        "bpm": 120,
+        "bpm": 140,
         "groups": {
           "ignite": {
             "operation": "preheat",
@@ -2056,7 +2056,7 @@
       "sheet": {
         "id": "study.steamed_egg",
         "dish": "蒸水蛋",
-        "bpm": 120,
+        "bpm": 140,
         "groups": {
           "season": {
             "operation": "season",

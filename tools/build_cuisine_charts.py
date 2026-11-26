@@ -137,7 +137,7 @@ def chart(identity, name, steps, seasonings, ordinal, tier, study=False):
     group='plate';groups[group]={'operation':'plate','technique':'plate','label':'把握完成时机','parameters':{}}
     at=int(at)+1
     for i in range(4+ordinal%4):note(at+i,group,'plate','primary','hold')
-    return dict(id=identity,dish=name,bpm=120,preview_beats=2,groups=groups,beats=[rows[t] for t in sorted(rows)])
+    return dict(id=identity,dish=name,bpm=140,preview_beats=2,groups=groups,beats=[rows[t] for t in sorted(rows)])
 
 def main():
     materials=read('content/culinary_materials.json');atlas=read('content/research/recipe_atlas.json')
@@ -194,7 +194,7 @@ def main():
             count=min(12,4+tier+index%3);actions=['primary']*count
             for n in range(2,count,3):actions[n]='rotate_left' if (index+offset+n)%2 else 'rotate_right'
             beats=[{'t':5+i*(1. if tier>=3 else 1.5),'lanes':{'hand':{'group':'cut','op':'cut','input':a,'form':'tap'}}} for i,a in enumerate(actions)]
-            sheets[sid]={'id':sid,'dish':m['name'],'bpm':120,'preview_beats':2,'groups':{'cut':group},'beats':beats};recipe['preparation_sheets'][food]=sid
+            sheets[sid]={'id':sid,'dish':m['name'],'bpm':140,'preview_beats':2,'groups':{'cut':group},'beats':beats};recipe['preparation_sheets'][food]=sid
         price=1200+tier*650+index%4*150
         existing=next((d for d in old['dishes'] if d['atlas_id']==aid),None)
         wid=atlas['runtime_mapping'].get(aid,'cuisine_'+aid.lower())

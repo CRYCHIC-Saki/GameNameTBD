@@ -1,0 +1,39 @@
+# start
+@bg palace with instant 0
+narrator: 【剧本预览】本场可查看完整台词，战斗和经营结果不写入正式进度。
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show luo calm at td:0.731830:1.411909:2.150000 with instant
+luo: 你就是罗金娜推荐的焰子？我在赫兹的节目里见过你，去了不少地方，还赢过几位很有名的厨师，看来是有些本事。
+@show hero calm at td:0.268170:1.464197:2.150000 with instant
+hero: 是啊，我学了好多新菜！听说你已经吃腻了世间的美食，我就想来试试，说不定能做出你喜欢的料理呢。
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show luo proud at td:0.731830:1.411909:2.150000 with instant
+luo: 这种话我已经听过很多次了。我的厨艺和见识，你应该有所了解吧？只是把别人的菜学来，可没那么容易让我满意。
+@show hero proud at td:0.268170:1.464197:2.150000 with instant
+hero: 那就等你尝过再说吧！这次我准备的料理，是把一路学到的做法放在一起，试过好多次才做好的。
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show luo calm at td:0.731830:1.411909:2.150000 with instant
+luo: 既然这么有信心，我就亲自和你比一场。明天到港口广场来，带上你最拿手的料理。你若能让我满意，无比丰厚的奖励正等着你。赫兹，明天由你主持，把比赛从头到尾播出去。
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 那就说定了！我会好好准备，让你尝尝我在那些地方学到的好东西！
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hina with instant
+@show hertz happy at td:0.707320:1.555701:2.150000 with instant
+hertz: 两位放心，明天我一定准时到场！这次终于能让观众看看，焰子从各地学来的手艺，能不能得到公主的认可了。
+narrator: 【接口留白】【操作·终战准备】用现有料理制作流程试做“百味归港”，检查所需菜谱和库存，补齐材料。准备完成后确认赴约，次日进入港口广场的剧情；此处不安排臻味港公开营业。
+@end

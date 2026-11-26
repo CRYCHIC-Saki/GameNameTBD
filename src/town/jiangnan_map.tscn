@@ -1,5 +1,6 @@
 [gd_scene format=4]
 [ext_resource type="Script" path="res://src/town/outdoor_atmosphere.gd" id="outdoors"]
+[ext_resource type="Texture2D" path="res://assets/town/egret-grass.png" id="continuous_grass"]
 
 [ext_resource type="TileSet" path="res://src/town/jiangnan_map_tileset.tres" id="1_xs2mc"]
 [ext_resource type="Shader" path="res://src/town/jiangnan_ground_light.gdshader" id="2_rxwnm"]
@@ -9,6 +10,7 @@
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_r1brn"]
 shader = ExtResource("2_rxwnm")
+shader_parameter/continuous_grass = ExtResource("continuous_grass")
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_k11d8"]
 atlas = ExtResource("3_vddfj")

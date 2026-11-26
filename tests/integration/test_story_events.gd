@@ -7,7 +7,7 @@ func before_each() -> void:
 	app=load("res://src/app/main.tscn").instantiate()
 	app.settings_path="res://artifacts/vn-triggers-20261116/tests/%d/settings.json"%Time.get_ticks_usec()
 	add_child_autofree(app);shell=app.game_shell;shell.automatic_time=false
-	assert_true(shell.create_game("slot-01","触发测试").ok);shell.guide.dialogue.finish_now()
+	assert_true(shell.create_game("slot-01","触发测试",false).ok);shell.guide.dialogue.finish_now()
 	shell.profile.story.beat="done";shell.profile.residence.stage="door"
 	assert_true(shell.profile.unlock_residence().ok)
 	shell.guide.set_process(false)

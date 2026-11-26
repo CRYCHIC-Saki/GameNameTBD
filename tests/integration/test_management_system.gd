@@ -136,7 +136,7 @@ func test_real_shell_seven_buttons_shortcuts_pause_and_old_entries_removed() -> 
 	app.settings_path="res://artifacts/management-ui/scene/%d/settings.json"%Time.get_ticks_usec()
 	add_child(app);await wait_process_frames(2)
 	var shell: TDGameShell=app.game_shell;shell.automatic_time=false
-	assert_true(shell.create_game("slot-01","管理测试").ok)
+	assert_true(shell.create_game("slot-01","管理测试",false).ok)
 	shell.guide.dialogue.finish_now();shell.profile.story.beat="done"
 	await wait_process_frames(2)
 	for pair: Array in [["employees","employees_menu"],["quests","quest_journal"],["map","world_map"],["branches","branches_menu"],["suppliers","suppliers_menu"],["relationships","relationships_menu"]]:

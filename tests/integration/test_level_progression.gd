@@ -172,7 +172,7 @@ func test_real_main_ledger_reward_page_is_readonly_and_returns_controls() -> voi
 	var app:TDApplication=load("res://src/app/main.tscn").instantiate()
 	app.settings_path=store.root.path_join("scene/settings.json");layer.add_child(app)
 	var shell:=app.game_shell;shell.automatic_time=false
-	assert_true(shell.create_game("slot-01").ok);shell.guide.dialogue.finish_now();shell.travel("restaurant")
+	assert_true(shell.create_game("slot-01","小镇食堂",false).ok);shell.guide.dialogue.finish_now();shell.travel("restaurant")
 	var driver:=DRIVER.new();driver.viewport=get_tree().root
 	var point:Dictionary=shell.restaurant.interaction_points().filter(func(item:Dictionary)->bool:return item.action=="ledger")[0]
 	shell.restaurant.teleport_player(Vector2i(point.cell));driver.tap(KEY_E)
@@ -196,7 +196,7 @@ func test_real_daily_transition_displays_upgrade_and_reloads_same_reward() -> vo
 	var app:TDApplication=load("res://src/app/main.tscn").instantiate()
 	app.settings_path=store.root.path_join("upgrade/settings.json");layer.add_child(app)
 	var shell:=app.game_shell;shell.automatic_time=false
-	assert_true(shell.create_game("slot-01").ok);shell.guide.dialogue.finish_now()
+	assert_true(shell.create_game("slot-01","小镇食堂",false).ok);shell.guide.dialogue.finish_now()
 	for day: int in range(1,9):
 		# Use formal day transition; the shell sees OPEN before SETTLED.
 		assert_true(shell.start_day().ok);shell._process(0)

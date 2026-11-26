@@ -1,0 +1,57 @@
+# start
+@bg knight-hall with instant 0
+narrator: 【剧本预览】本场可查看完整台词，战斗和经营结果不写入正式进度。
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide hertz with instant
+@hide hina with instant
+@show vito calm at td:0.772680:1.496877:2.150000 with instant
+vito: 欢迎来到骑士馆，我是维托。罗金娜在信里提过你，听说你想学这里的料理，还想和我比试？
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 是啊！金娜姐说你很厉害，我想先跟你学做菜，练好了再来挑战你。
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide hertz with instant
+@hide hina with instant
+@show vito calm at td:0.772680:1.496877:2.150000 with instant
+vito: 那你先去广场看看吧，那里有几位厨师愿意教人。你可以借用那边的小摊，一边接待客人，一边把意面、酱汁和配菜练熟，准备好了再来找我。
+narrator: 【接口留白】【操作·经营教学】借用欧洲小镇的经营点。与当地厨师交谈，学习番茄意面、菌菇浓汤及配菜；随后查看菜单与库存、采购补货、开门迎客，按实际订单烹饪上菜，送客后查看账本。完成当地经营目标及居民厨师战斗后，打烊并返回维托处。居民战斗预留接口，具体规则待定。
+@show hero proud at td:0.268170:1.464197:2.150000 with instant
+hero: 维托，我已经完成他们的考验，也把小摊经营起来了！这次我想和你比一比，就用你最擅长的番茄意面。
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide hertz with instant
+@hide hina with instant
+@show vito proud at td:0.772680:1.496877:2.150000 with instant
+vito: 看来你很有信心啊。那我也会拿出最好的手艺，作为骑士，可不能在自己的拿手菜上输给你。
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hina with instant
+@show hertz happy at td:0.707320:1.555701:2.150000 with instant
+hertz: 观众朋友们，焰子已经通过当地厨师的考验，也接待了不少客人，今天终于要和料理骑士维托比试了！两位，请把你们最拿手的番茄意面端上来吧！
+narrator: 【接口留白】【操作·厨艺战斗预留】对手：维托；剧情主题：番茄意面。赛前在经营场景备齐所需材料，打烊并接待完已有客人，再确认进入战斗。胜利后播放下文，开放后续欧式料理研习；失败则返回经营，可补货、营业练习后再挑战。
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide hertz with instant
+@hide hina with instant
+@show vito calm at td:0.772680:1.496877:2.150000 with instant
+vito: 你的酱汁收得比我好，面条也正合适。这几天练得很勤嘛，我每天路过广场，都能闻到你那口锅里的番茄味。
+@show hero calm at td:0.268170:1.464197:2.150000 with instant
+hero: 之前总是面煮好了，酱汁还没做好。这几天我一直在练，总算把这个问题解决啦！
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide hertz with instant
+@hide hina with instant
+@show vito calm at td:0.772680:1.496877:2.150000 with instant
+vito: 这场比赛是你赢了。我的料理笔记也送给你，路上可以接着练。下次见面，我们再好好比一场。
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 谢谢你！等我学会其他地方的料理，也会带回来做给你吃的！
+narrator: 赫兹把这场对决做进了节目，随后跟着焰子和阿铃，继续前往日式小镇。
+@end

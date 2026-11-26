@@ -1,0 +1,104 @@
+# start
+@bg harbor-square with instant 0
+narrator: 【剧本预览】本场可查看完整台词，战斗和经营结果不写入正式进度。
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hina with instant
+@show hertz happy at td:0.707320:1.555701:2.150000 with instant
+hertz: 观众朋友们，这里是臻味港的港口广场！一路跟着节目走来的焰子，今天将正式挑战至味公主罗厄。这趟旅行学来的手艺究竟能做到哪一步，我们就在这里见证结果！
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show luo proud at td:0.731830:1.411909:2.150000 with instant
+luo: 准备好了吗？这场比赛，我也会亲自做一道料理。你既然来挑战我，就应该知道自己要面对什么水平的对手。
+@show hero proud at td:0.268170:1.464197:2.150000 with instant
+hero: 我已经等不及啦！这道“百味归港”，就请你亲口尝尝吧！
+narrator: 【接口留白】【操作·厨艺战斗预留】对手：罗厄；剧情主题：“百味归港”。战斗结束后按结果返回剧情：胜利进入下方公布结果及试吃对白，失败返回备战，可在准备场景练习、补货后再战。罗厄坦白心愿及离港结局仅在胜利后触发。
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hina with instant
+@show hertz happy at td:0.707320:1.555701:2.150000 with instant
+hertz: 比赛结果已经出来了，今天的胜者是焰子！两位现在也尝尝对方的料理吧，观众们还等着听你们的感想呢。
+narrator: 罗厄尝过焰子的料理，久久没有开口。等她再次拿起勺子时，眼角已经有些湿润。
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show luo cry at td:0.731830:1.411909:2.150000 with instant
+luo: 这些食材和做法，我明明都见过，竟然还能做出这样的味道……我已经很久没有吃得这么高兴了。
+@show hero proud at td:0.268170:1.464197:2.150000 with instant
+hero: 真的好吃吧？我在路上吃到喜欢的东西，就想把它学会，再做给别人尝尝。这道菜也是这样慢慢试出来的。
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show luo calm at td:0.731830:1.411909:2.150000 with instant
+luo: 这场比赛是你赢了。其实，我一直盼着有人能在厨艺上击败我，让我尝到比自己做的还好的料理。可这些年，端来的菜总是差一点，我也渐渐觉得，也许只能一直吃那些熟悉的味道了。
+@show hero proud at td:0.268170:1.464197:2.150000 with instant
+hero: 原来你这么想输啊？刚才还一副谁也赢不了你的样子，我还以为输一场会把你气坏呢。
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show luo angry at td:0.731830:1.411909:2.150000 with instant
+luo: 我只是想吃到更好的料理，难道还得逢人就说，快来赢我一次吗？
+@show hero speechless at td:0.268170:1.464197:2.150000 with instant
+hero: 那就自己出去找嘛！你一直坐在宫里等，还把全镇的厨师都叫去替你想办法。我刚到这里就饿着肚子，连张热饼都买不到，你倒是每天都有一大桌菜吃。
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show luo troubled at td:0.731830:1.411909:2.150000 with instant
+luo: ……看来，我确实该自己出去一趟。你走了那么多地方，才能做出今天这道菜，我也想去看看，还有多少手艺是我没见过的。等这里的事安排好，我就离开臻味港，亲自去找那些美味的料理。
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show luo cry at td:0.731830:1.411909:2.150000 with instant
+luo: 从今天起，取消征召厨师的规定，大家都可以回去自由营业。这段时间辛苦各位了，欠下的工钱和食材费，宫里会一并结清……
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hina with instant
+@show hertz happy at td:0.707320:1.555701:2.150000 with instant
+hertz: 观众朋友们，你们都听到了！公主已经宣布撤销征召令，臻味港的餐馆可以重新营业了。这次关于餐馆停业的报道，终于能给大家一个好消息！
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show aling proud at td:0.740000:1.555701:2.150000 with instant
+aling: 夜鸦作证，此令已传。明日起，臻味港诸店终于可以重燃灶火了！
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 太好了！我刚来的时候就想吃街口那家的面，明天总算能尝到啦！
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show luo calm at td:0.731830:1.411909:2.150000 with instant
+luo: 你还真是一直惦记着吃饭呢。答应你的奖励也不会少，我的料理食谱就送给你了。可要认真学，下次再见，我还要和你比一场。
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 好啊！你也记得把路上学到的菜带回来，下次换我尝尝你的新手艺！
+narrator: 几天后，臻味港的餐馆陆续重新开门。罗厄带上行李，踏上寻找新料理的旅途。焰子和阿铃终于走进了那家一直没能吃上的面馆，赫兹则在店外继续她的报道。
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hina with instant
+@show hertz happy at td:0.707320:1.555701:2.150000 with instant
+hertz: 观众朋友们，这里是重新开张的臻味港！今天的节目，就从街口这家面馆开始。老板，先给大家介绍一下，你们最拿手的面吧！
+narrator: 【接口留白】【操作·自由经营】主线完成，进入日常经营。保留已学菜谱、库存与经营积累，上架新获得的料理，继续采购、接客、出餐与结算；已完成的厨艺战斗可在对应角色处再次挑战。
+@end

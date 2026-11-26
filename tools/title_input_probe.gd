@@ -109,7 +109,7 @@ func run() -> void:
 	shell.go_title();await frames()
 	await click("开始游戏",shell._title_screen)
 	check(shell.profile!=null and shell.profile.slot_id=="slot-03","start always creates a new empty slot")
-	check(shell.guide.presenting() and shell.profile.story.beat=="arrive","new start replays opening")
+	check(shell.guide.presenting() and shell.profile.story.revised.get("cursor",-1)==0,"new start replays revised opening")
 	shell.guide.dialogue.finish_now()
 	await check_checkpoint()
 	await finish()
@@ -199,6 +199,10 @@ func check_dining() -> void:
 	for id: String in shop.snapshot().menu: shop.set_menu(id,id=="service.tomato_egg",1200)
 	shell.travel("restaurant");await frames()
 	check(shop.require_seating and shell.restaurant.unified_dining_clock,"formal shell connects the dining clock")
+	check(shop.open_day().code=="PORT_CLOSED_BY_STORY","revised port ban blocks public service")
+	# The remaining section is the historical dining regression, independent of story.
+	var revised_story := shell.profile.story.revised.duplicate(true)
+	shell.profile.story.revised.clear()
 	check(shop.open_day().ok and shop.advance(1).ok,"exported diner arrives")
 	check(shop.pending_orders().size()==1 and shop.active_orders().is_empty(),"arriving diner is not a kitchen order")
 	if shop.pending_orders().is_empty(): return
@@ -223,6 +227,7 @@ func check_dining() -> void:
 		check(TDDinerArt.dining_sprite(1,who).get_height()>50,"exported aligned dining pose "+who)
 	for order: Dictionary in shop.pending_orders(): shop.cancel_order(order.id)
 	shop.close_early()
+	shell.profile.story.revised = revised_story
 
 func click_at(point: Vector2, button: MouseButton=MOUSE_BUTTON_LEFT) -> void:
 	var motion:=InputEventMouseMotion.new();motion.position=point;motion.global_position=point

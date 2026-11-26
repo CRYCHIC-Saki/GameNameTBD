@@ -8,7 +8,7 @@ func before_each() -> void:
 	app=load("res://src/app/main.tscn").instantiate()
 	app.settings_path="res://artifacts/character-tests/%d/settings.json"%Time.get_ticks_usec()
 	add_child_autofree(app);shell=app.game_shell;shell.automatic_time=false
-	assert_true(shell.create_game("slot-01","日程测试").ok);shell.guide.dialogue.finish_now()
+	assert_true(shell.create_game("slot-01","日程测试",false).ok);shell.guide.dialogue.finish_now()
 	# These regressions exercise an already acquired cottage; new-slot gating has dedicated tests.
 	shell.profile.residence.stage="door";assert_true(shell.profile.unlock_residence().ok)
 	driver=DRIVER.new();driver.viewport=get_tree().root;driver.kitchen=shell.kitchen_view.kitchen
@@ -59,7 +59,7 @@ func test_profile_clock_relationship_roundtrip_legacy_and_slot_isolation() -> vo
 	var bad:=saved.duplicate(true);bad.characters.clock.day=2
 	assert_false(shell.profile.restore(bad).ok)
 	assert_true(TDLevelProgression.same_value(shell.profile.characters.snapshot(),expected))
-	shell.go_title();assert_true(shell.create_game("slot-02").ok);shell.guide.dialogue.finish_now()
+	shell.go_title();assert_true(shell.create_game("slot-02","小镇食堂",false).ok);shell.guide.dialogue.finish_now()
 	assert_eq(shell.profile.characters.relationship("chen").affection,0)
 	assert_eq(shell.profile.characters.clock.minute,480.0)
 

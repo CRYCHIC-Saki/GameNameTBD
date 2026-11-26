@@ -1,0 +1,56 @@
+# start
+@bg ingredient-shop with instant 0
+narrator: 【剧本预览】本场可查看完整台词，战斗和经营结果不写入正式进度。
+narrator: 焰子回到臻味港时，沿街的餐馆依旧关着门。罗金娜已经收到回程消息，替她留好了厨房。
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 金娜姐，我回来啦！维托和希娜教了我好多做法，我还去了其他几个小镇，这次终于能做出一整桌菜了！
+@hide aling with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show chen happy at td:0.789020:1.503413:2.150000 with instant
+chen: 欢迎回来！看你这么高兴，路上一定收获不少吧。还记得出发前，我们约好什么了吗？
+@show hero proud at td:0.268170:1.464197:2.150000 with instant
+hero: 当然记得！今天我就是回来挑战你的，我们还用上次的食材，好不好？
+@hide aling with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show chen calm at td:0.789020:1.503413:2.150000 with instant
+chen: 好啊，那就让我尝尝，你这一路学到了多少本事。这次我们就好好比一场吧！
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hina with instant
+@show hertz happy at td:0.707320:1.555701:2.150000 with instant
+hertz: 观众朋友们，还记得焰子出发前输掉的那场比试吗？今天她回来了，连食材都选了上次那一份。罗金娜，这回也请你认真尝尝她的手艺吧！
+narrator: 【接口留白】【操作·厨艺战斗预留】对手：罗金娜；剧情主题：以初战食材重新制作鸡肉料理。返回前可在外地经营点练习、补齐材料；臻味港此时仅进行约定比试。胜利后播放下文并开放公主挑战，失败则返回准备，保留已完成的经营进度。
+@hide aling with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show chen happy at td:0.789020:1.503413:2.150000 with instant
+chen: 主菜的火候、配菜的味道，还有酱汁，都照顾得很好。已经能把不同地方的做法配合起来用了，看来这趟旅行真的很值得呢。
+@show hero calm at td:0.268170:1.464197:2.150000 with instant
+hero: 嗯！有几道菜我在营业时做了好多次，客人也提了不少意见，后来又试着改了改。现在做起来，总算不用手忙脚乱啦。
+@hide aling with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show chen happy at td:0.789020:1.503413:2.150000 with instant
+chen: 这次是你赢了，焰子。你已经是一位能独当一面的厨师了，也该让公主尝尝你的料理。
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 我现在就可以去挑战她了吗？太好了，我一直想让她也尝尝这些味道！
+@hide aling with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show chen calm at td:0.789020:1.503413:2.150000 with instant
+chen: 当然可以，我来替你引荐。不过她对料理非常挑剔，你可要把自己的本事都拿出来。
+@end

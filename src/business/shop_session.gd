@@ -1,5 +1,6 @@
 class_name TDShopSession
 extends RefCounted
+var opening_permission: Callable
 var before_open: Callable
 var before_settlement: Callable
 signal day_settled(day: int)
@@ -466,6 +467,9 @@ func sold_out(id: String) -> TDOutcome:
 	return TDOutcome.new(true,"SOLD_OUT")
 
 func open_day(random_source: RefCounted = null) -> TDOutcome:
+	if opening_permission.is_valid():
+		var permission: TDOutcome = opening_permission.call()
+		if not permission.ok: return permission
 	if _s.phase != "PREPARE": return TDOutcome.new(false,"INVALID_STATE")
 	if _s.menu.values().filter(func(x:Dictionary)->bool:return x.enabled).is_empty(): return TDOutcome.new(false,"EMPTY_MENU")
 	if before_open.is_valid(): before_open.call()

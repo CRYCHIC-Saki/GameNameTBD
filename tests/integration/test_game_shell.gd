@@ -20,7 +20,7 @@ func after_each() -> void:
 	await get_tree().process_frame;await get_tree().process_frame
 
 func start() -> void:
-	var result:=shell.create_game("slot-01","灶间烟火")
+	var result:=shell.create_game("slot-01","灶间烟火",false)
 	shell.guide.dialogue.finish_now() # Fixture cancels the automatic arrival.
 	assert_true(result.ok,result.code)
 	driver.kitchen=shell.kitchen_view.kitchen
@@ -181,7 +181,7 @@ func test_book_uses_real_kitchen_unlocks_within_slot_and_never_in_other_slot() -
 	assert_has(shell.profile.research.snapshot().unlocked,"C03")
 	shell.close_atlas();assert_true(shell.save_game().ok)
 	var old:=shell.profile
-	shell.go_title();assert_true(shell.create_game("slot-02").ok);shell.guide.dialogue.finish_now()
+	shell.go_title();assert_true(shell.create_game("slot-02","小镇食堂",false).ok);shell.guide.dialogue.finish_now()
 	assert_eq(shell.profile.research.snapshot().unlocked,["C01","C02"])
 	assert_eq(old._research_candidate(old.research.snapshot()).code,"STALE_PROFILE")
 	shell.go_title();assert_true(shell.load_game("slot-01").ok)
@@ -207,7 +207,7 @@ func test_bank_world_interaction_and_buttons_use_the_profile_wallet() -> void:
 	assert_true(shell.save_game().ok)
 	shell.show_bank()
 	var stale_action: Callable=button("存入",shell._modal_box).pressed.get_connections()[0].callable
-	shell.go_title();assert_true(shell.create_game("slot-02").ok);shell.guide.dialogue.finish_now()
+	shell.go_title();assert_true(shell.create_game("slot-02","小镇食堂",false).ok);shell.guide.dialogue.finish_now()
 	var unchanged:=shell.profile.snapshot()
 	stale_action.call()
 	assert_eq(shell.profile.snapshot(),unchanged)

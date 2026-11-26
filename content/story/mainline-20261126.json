@@ -1,0 +1,1781 @@
+{
+  "schema_version": 1,
+  "revision": "20261126",
+  "source_sha256": "4a65f8bad716ac8cd7074320fe1c1190eeea6996020ea661e733208495029767",
+  "expressions": {
+    "通常": "calm",
+    "生气": "angry",
+    "高兴": "happy",
+    "得意": "proud",
+    "哭哭": "cry",
+    "疑惑": "puzzled",
+    "困扰": "troubled",
+    "无语": "speechless"
+  },
+  "cast": {
+    "焰子": "hero",
+    "阿铃": "aling",
+    "罗金娜": "chen",
+    "罗厄": "luo",
+    "维托": "vito",
+    "赫兹": "hertz",
+    "希娜": "hina"
+  },
+  "chapters": [
+    {
+      "number": 1,
+      "title": "第一场 空腹来到臻味港",
+      "background": "harbor",
+      "source_paragraph": 6,
+      "rows": [
+        {
+          "kind": "narration",
+          "text": "在这个厨艺至上的世界里，焰子最想去的地方，就是号称“百国商船汇聚，天下千味之港”的臻味港。如今刚下长途车，她的肚子就先叫了起来。",
+          "source_paragraph": 8
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "happy",
+          "expression_label": "高兴",
+          "text": "总算到了！这就是那个传说中的地方嘛。赶紧找家店，好好吃一顿吧！",
+          "source_paragraph": 9
+        },
+        {
+          "kind": "narration",
+          "text": "她沿街找了几家餐馆，却发现连卖热饼的小店都关着门。",
+          "source_paragraph": 10
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "puzzled",
+          "expression_label": "疑惑",
+          "text": "奇怪，这里怎么一家店都没开？地图上明明说，随时都能吃到各国的料理呀。",
+          "source_paragraph": 11
+        },
+        {
+          "kind": "dialogue",
+          "actor": "aling",
+          "name": "阿铃",
+          "expression": "proud",
+          "expression_label": "得意",
+          "text": "背锅的旅人，请慢！吾乃夜鸦密使阿铃。看你并非本地人，报上姓名与来意！",
+          "source_paragraph": 12
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "calm",
+          "expression_label": "通常",
+          "text": "我是见习厨师焰子哦，听说这里有很多好吃的，想来尝尝，顺便学做菜。",
+          "source_paragraph": 13
+        },
+        {
+          "kind": "dialogue",
+          "actor": "aling",
+          "name": "阿铃",
+          "expression": "calm",
+          "expression_label": "通常",
+          "text": "原来是寻味的巡礼者。可惜你来得不巧，此地厨师皆已奉召入宫，如今无人敢开门迎客。",
+          "source_paragraph": 14
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "puzzled",
+          "expression_label": "疑惑",
+          "text": "全都进宫了？那我想吃顿饭，还得先去见这里的公主吗？",
+          "source_paragraph": 15
+        },
+        {
+          "kind": "dialogue",
+          "actor": "aling",
+          "name": "阿铃",
+          "expression": "calm",
+          "expression_label": "通常",
+          "text": "至味公主罗厄，厨艺已登世间之巅，对美食尤为狂热。如今百般滋味皆已尝腻，便下令全镇厨师入宫献膳，直到寻得令她满意的至味。",
+          "source_paragraph": 16
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "happy",
+          "expression_label": "高兴",
+          "text": "原来是这样啊。连这里的厨师都满足不了她，要是能做出让她喜欢的料理，一定很有意思！",
+          "source_paragraph": 17
+        },
+        {
+          "kind": "dialogue",
+          "actor": "aling",
+          "name": "阿铃",
+          "expression": "proud",
+          "expression_label": "得意",
+          "text": "你不过是个见习厨师，也敢夸此海口？先与吾比试一番，让夜鸦看看你的本领！",
+          "source_paragraph": 18
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "happy",
+          "expression_label": "高兴",
+          "text": "好啊！不过要先借我一个厨房，我从下车到现在，还没吃上东西呢。",
+          "source_paragraph": 19
+        }
+      ],
+      "location": "臻味港街道。",
+      "preview": "res://content/story/vn/scenario/revised_preview_01/script.txt"
+    },
+    {
+      "number": 2,
+      "title": "第二场 夜鸦的试炼",
+      "background": "old-stall",
+      "source_paragraph": 20,
+      "rows": [
+        {
+          "kind": "dialogue",
+          "actor": "aling",
+          "name": "阿铃",
+          "expression": "proud",
+          "expression_label": "得意",
+          "text": "此处乃吾家闲置的摊位，今日便借你一用。排烟结界，展开！莫让你的火焰惊动四邻。",
+          "source_paragraph": 22
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "calm",
+          "expression_label": "通常",
+          "text": "欸，那我就不客气啦！这里有番茄和鸡蛋，我们就比番茄炒蛋怎么样？",
+          "source_paragraph": 23
+        },
+        {
+          "kind": "dialogue",
+          "actor": "aling",
+          "name": "阿铃",
+          "expression": "proud",
+          "expression_label": "得意",
+          "text": "吾要大块番茄、嫩鸡蛋，略带甜味。若你献上焦炭，夜鸦自会如实记下。",
+          "source_paragraph": 24
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "proud",
+          "expression_label": "得意",
+          "text": "放心吧，这道菜我练了整整一个冬天，今天一定让你吃个满意！",
+          "source_paragraph": 25
+        },
+        {
+          "kind": "narration",
+          "text": "两人正要开火，一位拿着麦克风的少女循着声音找了过来。她正用操纵电磁波传播的能力，为电视台进行现场报道。",
+          "source_paragraph": 26
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hertz",
+          "name": "赫兹",
+          "expression": "calm",
+          "expression_label": "通常",
+          "text": "两位，我是电视台主持人赫兹，正在调查这里的餐馆为什么全部停业。难得碰到有人比试，能让我做个现场报道吗？",
+          "source_paragraph": 27
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "calm",
+          "expression_label": "通常",
+          "text": "好啊！不过我要先把这顿饭做好，采访的话，等吃饭的时候再问吧。",
+          "source_paragraph": 28
+        },
+        {
+          "kind": "operation",
+          "text": "【操作·厨艺战斗预留】对手：阿铃；剧情主题：番茄炒蛋；用途：初次战斗教学。胜利后返回下方试吃对白，失败则回到准备状态重试。此处借用旧摊私下比试，不开门营业。",
+          "source_paragraph": 29
+        },
+        {
+          "kind": "narration",
+          "text": "阿铃尝过焰子的炒蛋，原本准备好的评语迟迟没说出口，筷子倒是一直没停。",
+          "source_paragraph": 30
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "speechless",
+          "expression_label": "无语",
+          "text": "怎么样，好吃吧？不过你记得给我留一点，我还饿着呢。",
+          "source_paragraph": 31
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hertz",
+          "name": "赫兹",
+          "expression": "happy",
+          "expression_label": "高兴",
+          "text": "刚到臻味港就赢下了一场比试，真是个不错的开头！焰子，你接下来还想挑战这里的其他厨师吗？",
+          "source_paragraph": 32
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "calm",
+          "expression_label": "通常",
+          "text": "有机会的话当然想试试，我还想做道菜给那位公主尝尝呢。听说她很挑剔，我就更想知道，她到底喜欢吃什么了。",
+          "source_paragraph": 33
+        },
+        {
+          "kind": "dialogue",
+          "actor": "aling",
+          "name": "阿铃",
+          "expression": "speechless",
+          "expression_label": "无语",
+          "text": "咳，此战是吾输了。你虽尚在见习，手艺却颇有可取之处，值得引荐给罗金娜。",
+          "source_paragraph": 34
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "puzzled",
+          "expression_label": "疑惑",
+          "text": "罗金娜是谁？也是这里的厨师吗？",
+          "source_paragraph": 35
+        },
+        {
+          "kind": "dialogue",
+          "actor": "aling",
+          "name": "阿铃",
+          "expression": "calm",
+          "expression_label": "通常",
+          "text": "正是。她厨艺精湛，又经营着食材铺，今日恰好回店补货。待用过饭，吾便带你前去拜访。",
+          "source_paragraph": 36
+        }
+      ],
+      "location": "阿铃家的旧摊位。",
+      "preview": "res://content/story/vn/scenario/revised_preview_02/script.txt"
+    },
+    {
+      "number": 3,
+      "title": "第三场 罗金娜的建议",
+      "background": "ingredient-shop",
+      "source_paragraph": 37,
+      "rows": [
+        {
+          "kind": "dialogue",
+          "actor": "aling",
+          "name": "阿铃",
+          "expression": "calm",
+          "expression_label": "通常",
+          "text": "罗司祭，夜鸦带来了一位异乡厨师。此人方才胜过吾，想必值得你亲自一试。",
+          "source_paragraph": 39
+        },
+        {
+          "kind": "dialogue",
+          "actor": "chen",
+          "name": "罗金娜",
+          "expression": "happy",
+          "expression_label": "高兴",
+          "text": "欢迎，背着锅的小家伙！叫我金娜姐就好啦。能让阿铃这么夸你，看来手艺很不错嘛。",
+          "source_paragraph": 40
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "happy",
+          "expression_label": "高兴",
+          "text": "我是焰子！听说你是这里很厉害的厨师，我也想和你比一场，可以吗？",
+          "source_paragraph": 41
+        },
+        {
+          "kind": "dialogue",
+          "actor": "chen",
+          "name": "罗金娜",
+          "expression": "calm",
+          "expression_label": "通常",
+          "text": "当然可以，我也正想尝尝你的手艺呢。这里的鸡肉和配菜都备好了，我们就用这些做一道料理吧。",
+          "source_paragraph": 42
+        },
+        {
+          "kind": "operation",
+          "text": "【操作·剧情评鉴】使用经营玩法中的试做流程，制作一份鸡肉料理，再由罗金娜示范完整搭配。完成后播放差距说明及落败对白；本场用于展示学艺起点。",
+          "source_paragraph": 43
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "troubled",
+          "expression_label": "困扰",
+          "text": "明明用的是一样的食材，你做的却香好多，连配菜也这么好吃……这次是我输了。",
+          "source_paragraph": 44
+        },
+        {
+          "kind": "dialogue",
+          "actor": "chen",
+          "name": "罗金娜",
+          "expression": "calm",
+          "expression_label": "通常",
+          "text": "你的控火很有天赋，不过一着急就只顾着主菜，酱汁和配菜都没来得及照顾好。多学些做法，再安排好顺序，会进步得很快哦。",
+          "source_paragraph": 45
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "puzzled",
+          "expression_label": "疑惑",
+          "text": "那我该从哪里学起？我想把这些都练好，再和你比一次！",
+          "source_paragraph": 46
+        },
+        {
+          "kind": "dialogue",
+          "actor": "chen",
+          "name": "罗金娜",
+          "expression": "calm",
+          "expression_label": "通常",
+          "text": "先去欧洲小镇找维托吧，她住在钟楼旁的旧骑士馆。再去日式小镇，找河边挂蓝布帘那家店的希娜，她们都有很擅长的料理。",
+          "source_paragraph": 47
+        },
+        {
+          "kind": "dialogue",
+          "actor": "chen",
+          "name": "罗金娜",
+          "expression": "calm",
+          "expression_label": "通常",
+          "text": "我把其他几位厨师的住处也标在地图上了。先向当地居民学些基础做法，再去挑战她们，沿途一定能学到不少东西。",
+          "source_paragraph": 48
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "happy",
+          "expression_label": "高兴",
+          "text": "好！等我成为一个成熟的厨师，就回来重新挑战你。到时候你可要好好尝尝我的菜！",
+          "source_paragraph": 49
+        },
+        {
+          "kind": "dialogue",
+          "actor": "chen",
+          "name": "罗金娜",
+          "expression": "happy",
+          "expression_label": "高兴",
+          "text": "那就说好了，我会在这里等你回来。路上用的食材先送你们一些，等你回来，可要常来照顾我的生意哦。",
+          "source_paragraph": 50
+        },
+        {
+          "kind": "dialogue",
+          "actor": "aling",
+          "name": "阿铃",
+          "expression": "proud",
+          "expression_label": "得意",
+          "text": "此行路途遥远，夜鸦愿为向导，与你同赴各地灶前。",
+          "source_paragraph": 51
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hertz",
+          "name": "赫兹",
+          "expression": "happy",
+          "expression_label": "高兴",
+          "text": "从见习厨师开始，学会各地的料理，最后回来挑战公主，这段经历很适合做成追踪节目！你们愿意让我随行采访吗？沿途的厨师和他们的拿手菜，我也想介绍给观众。",
+          "source_paragraph": 52
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "happy",
+          "expression_label": "高兴",
+          "text": "好啊，大家一起去吧！有阿铃带路，我就不用担心找不到那些店了。赫兹，你也可以跟着尝尝，我们先去维托那里！",
+          "source_paragraph": 53
+        }
+      ],
+      "location": "罗金娜的食材铺。",
+      "preview": "res://content/story/vn/scenario/revised_preview_03/script.txt"
+    },
+    {
+      "number": 4,
+      "title": "第四场 朴实无华的料理骑士",
+      "background": "knight-hall",
+      "source_paragraph": 54,
+      "rows": [
+        {
+          "kind": "dialogue",
+          "actor": "vito",
+          "name": "维托",
+          "expression": "calm",
+          "expression_label": "通常",
+          "text": "欢迎来到骑士馆，我是维托。罗金娜在信里提过你，听说你想学这里的料理，还想和我比试？",
+          "source_paragraph": 56
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "happy",
+          "expression_label": "高兴",
+          "text": "是啊！金娜姐说你很厉害，我想先跟你学做菜，练好了再来挑战你。",
+          "source_paragraph": 57
+        },
+        {
+          "kind": "dialogue",
+          "actor": "vito",
+          "name": "维托",
+          "expression": "calm",
+          "expression_label": "通常",
+          "text": "那你先去广场看看吧，那里有几位厨师愿意教人。你可以借用那边的小摊，一边接待客人，一边把意面、酱汁和配菜练熟，准备好了再来找我。",
+          "source_paragraph": 58
+        },
+        {
+          "kind": "operation",
+          "text": "【操作·经营教学】借用欧洲小镇的经营点。与当地厨师交谈，学习番茄意面、菌菇浓汤及配菜；随后查看菜单与库存、采购补货、开门迎客，按实际订单烹饪上菜，送客后查看账本。完成当地经营目标及居民厨师战斗后，打烊并返回维托处。居民战斗预留接口，具体规则待定。",
+          "source_paragraph": 59
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "proud",
+          "expression_label": "得意",
+          "text": "维托，我已经完成他们的考验，也把小摊经营起来了！这次我想和你比一比，就用你最擅长的番茄意面。",
+          "source_paragraph": 60
+        },
+        {
+          "kind": "dialogue",
+          "actor": "vito",
+          "name": "维托",
+          "expression": "proud",
+          "expression_label": "得意",
+          "text": "看来你很有信心啊。那我也会拿出最好的手艺，作为骑士，可不能在自己的拿手菜上输给你。",
+          "source_paragraph": 61
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hertz",
+          "name": "赫兹",
+          "expression": "happy",
+          "expression_label": "高兴",
+          "text": "观众朋友们，焰子已经通过当地厨师的考验，也接待了不少客人，今天终于要和料理骑士维托比试了！两位，请把你们最拿手的番茄意面端上来吧！",
+          "source_paragraph": 62
+        },
+        {
+          "kind": "operation",
+          "text": "【操作·厨艺战斗预留】对手：维托；剧情主题：番茄意面。赛前在经营场景备齐所需材料，打烊并接待完已有客人，再确认进入战斗。胜利后播放下文，开放后续欧式料理研习；失败则返回经营，可补货、营业练习后再挑战。",
+          "source_paragraph": 63
+        },
+        {
+          "kind": "dialogue",
+          "actor": "vito",
+          "name": "维托",
+          "expression": "calm",
+          "expression_label": "通常",
+          "text": "你的酱汁收得比我好，面条也正合适。这几天练得很勤嘛，我每天路过广场，都能闻到你那口锅里的番茄味。",
+          "source_paragraph": 64
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "calm",
+          "expression_label": "通常",
+          "text": "之前总是面煮好了，酱汁还没做好。这几天我一直在练，总算把这个问题解决啦！",
+          "source_paragraph": 65
+        },
+        {
+          "kind": "dialogue",
+          "actor": "vito",
+          "name": "维托",
+          "expression": "calm",
+          "expression_label": "通常",
+          "text": "这场比赛是你赢了。我的料理笔记也送给你，路上可以接着练。下次见面，我们再好好比一场。",
+          "source_paragraph": 66
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "happy",
+          "expression_label": "高兴",
+          "text": "谢谢你！等我学会其他地方的料理，也会带回来做给你吃的！",
+          "source_paragraph": 67
+        },
+        {
+          "kind": "narration",
+          "text": "赫兹把这场对决做进了节目，随后跟着焰子和阿铃，继续前往日式小镇。",
+          "source_paragraph": 68
+        }
+      ],
+      "location": "欧洲小镇的旧骑士馆。",
+      "preview": "res://content/story/vn/scenario/revised_preview_04/script.txt"
+    },
+    {
+      "number": 5,
+      "title": "第五场 河畔的料理店",
+      "background": "riverside-diner",
+      "source_paragraph": 69,
+      "rows": [
+        {
+          "kind": "dialogue",
+          "actor": "hina",
+          "name": "希娜",
+          "expression": "calm",
+          "expression_label": "通常",
+          "text": "欢迎，三位就是罗金娜提过的客人吧？先坐下喝碗汤，刚赶完路，应该也饿了。",
+          "source_paragraph": 71
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "happy",
+          "expression_label": "高兴",
+          "text": "好鲜啊！看起来这么清的汤，竟然能有这么浓的味道。这个可以教我吗？",
+          "source_paragraph": 72
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hina",
+          "name": "希娜",
+          "expression": "calm",
+          "expression_label": "通常",
+          "text": "当然可以。高汤要留意材料和火候，米饭、煎鱼也各有讲究。镇上的厨师都很乐意教人，你可以先跟他们学，再借用这里的厨房接待客人，慢慢把做法练熟。",
+          "source_paragraph": 73
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "calm",
+          "expression_label": "通常",
+          "text": "那我学好以后，也能来挑战你吗？我想看看自己能做到什么程度。",
+          "source_paragraph": 74
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hina",
+          "name": "希娜",
+          "expression": "calm",
+          "expression_label": "通常",
+          "text": "好，我就在店里等你。等你准备好了，我们一起做一份煎鱼定食吧。",
+          "source_paragraph": 75
+        },
+        {
+          "kind": "operation",
+          "text": "【操作·经营与战斗】在日式小镇学习米饭、煎鱼及高汤，将已学料理加入菜单，采购对应食材并按订单营业。完成当地经营目标及居民厨师战斗后，打烊、备齐比赛材料，进入希娜战斗接口，剧情主题为煎鱼定食。胜利后播放下文，失败则返回经营准备。",
+          "source_paragraph": 76
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hina",
+          "name": "希娜",
+          "expression": "calm",
+          "expression_label": "通常",
+          "text": "鱼的火候很好，饭和汤上桌时也都还热着。你把这些做法都用得很熟练了，这次是你赢了。",
+          "source_paragraph": 77
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hertz",
+          "name": "赫兹",
+          "expression": "happy",
+          "expression_label": "高兴",
+          "text": "又赢过了一位当地高手！焰子，这里的料理和维托教你的很不一样，你觉得最难学的是什么？",
+          "source_paragraph": 78
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "happy",
+          "expression_label": "高兴",
+          "text": "是高汤吧！以前我总想把火开大一点，早点做好，现在才知道，有些香味要慢慢煮才出得来。幸好希娜教了我好多次，这回总算做好了！",
+          "source_paragraph": 79
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hina",
+          "name": "希娜",
+          "expression": "calm",
+          "expression_label": "通常",
+          "text": "你学得很认真，我也很高兴。接下来还要去别的地方吧？记得把这份高汤笔记带上，遇到合适的食材，可以试着做些变化。",
+          "source_paragraph": 80
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "happy",
+          "expression_label": "高兴",
+          "text": "我会的！下次回来，也让你尝尝我学到的新菜。",
+          "source_paragraph": 81
+        },
+        {
+          "kind": "operation",
+          "text": "【操作·游历经营】各地沿用“学习料理—采购与菜单准备—接待出餐—结算补货”的经营循环，并在合适的主线节点衔接居民厨师战斗。通过地区任务学习香料、海鲜处理及多单出餐；完成本阶段经营与战斗目标后，返回臻味港。",
+          "source_paragraph": 82
+        },
+        {
+          "kind": "narration",
+          "text": "赫兹持续报道沿途的厨师与比试。随着节目传回臻味港，越来越多人知道了焰子的名字，罗厄也留意到了这位四处学艺的见习厨师。",
+          "source_paragraph": 83
+        }
+      ],
+      "location": "日式小镇的河畔料理店。",
+      "preview": "res://content/story/vn/scenario/revised_preview_05/script.txt"
+    },
+    {
+      "number": 6,
+      "title": "第六场 重返罗金娜的厨房",
+      "background": "ingredient-shop",
+      "source_paragraph": 84,
+      "rows": [
+        {
+          "kind": "narration",
+          "text": "焰子回到臻味港时，沿街的餐馆依旧关着门。罗金娜已经收到回程消息，替她留好了厨房。",
+          "source_paragraph": 86
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "happy",
+          "expression_label": "高兴",
+          "text": "金娜姐，我回来啦！维托和希娜教了我好多做法，我还去了其他几个小镇，这次终于能做出一整桌菜了！",
+          "source_paragraph": 87
+        },
+        {
+          "kind": "dialogue",
+          "actor": "chen",
+          "name": "罗金娜",
+          "expression": "happy",
+          "expression_label": "高兴",
+          "text": "欢迎回来！看你这么高兴，路上一定收获不少吧。还记得出发前，我们约好什么了吗？",
+          "source_paragraph": 88
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "proud",
+          "expression_label": "得意",
+          "text": "当然记得！今天我就是回来挑战你的，我们还用上次的食材，好不好？",
+          "source_paragraph": 89
+        },
+        {
+          "kind": "dialogue",
+          "actor": "chen",
+          "name": "罗金娜",
+          "expression": "calm",
+          "expression_label": "通常",
+          "text": "好啊，那就让我尝尝，你这一路学到了多少本事。这次我们就好好比一场吧！",
+          "source_paragraph": 90
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hertz",
+          "name": "赫兹",
+          "expression": "happy",
+          "expression_label": "高兴",
+          "text": "观众朋友们，还记得焰子出发前输掉的那场比试吗？今天她回来了，连食材都选了上次那一份。罗金娜，这回也请你认真尝尝她的手艺吧！",
+          "source_paragraph": 91
+        },
+        {
+          "kind": "operation",
+          "text": "【操作·厨艺战斗预留】对手：罗金娜；剧情主题：以初战食材重新制作鸡肉料理。返回前可在外地经营点练习、补齐材料；臻味港此时仅进行约定比试。胜利后播放下文并开放公主挑战，失败则返回准备，保留已完成的经营进度。",
+          "source_paragraph": 92
+        },
+        {
+          "kind": "dialogue",
+          "actor": "chen",
+          "name": "罗金娜",
+          "expression": "happy",
+          "expression_label": "高兴",
+          "text": "主菜的火候、配菜的味道，还有酱汁，都照顾得很好。已经能把不同地方的做法配合起来用了，看来这趟旅行真的很值得呢。",
+          "source_paragraph": 93
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "calm",
+          "expression_label": "通常",
+          "text": "嗯！有几道菜我在营业时做了好多次，客人也提了不少意见，后来又试着改了改。现在做起来，总算不用手忙脚乱啦。",
+          "source_paragraph": 94
+        },
+        {
+          "kind": "dialogue",
+          "actor": "chen",
+          "name": "罗金娜",
+          "expression": "happy",
+          "expression_label": "高兴",
+          "text": "这次是你赢了，焰子。你已经是一位能独当一面的厨师了，也该让公主尝尝你的料理。",
+          "source_paragraph": 95
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "happy",
+          "expression_label": "高兴",
+          "text": "我现在就可以去挑战她了吗？太好了，我一直想让她也尝尝这些味道！",
+          "source_paragraph": 96
+        },
+        {
+          "kind": "dialogue",
+          "actor": "chen",
+          "name": "罗金娜",
+          "expression": "calm",
+          "expression_label": "通常",
+          "text": "当然可以，我来替你引荐。不过她对料理非常挑剔，你可要把自己的本事都拿出来。",
+          "source_paragraph": 97
+        }
+      ],
+      "location": "罗金娜的食材铺。",
+      "preview": "res://content/story/vn/scenario/revised_preview_06/script.txt"
+    },
+    {
+      "number": 7,
+      "title": "第七场 至味公主的邀约",
+      "background": "palace",
+      "source_paragraph": 98,
+      "rows": [
+        {
+          "kind": "dialogue",
+          "actor": "luo",
+          "name": "罗厄",
+          "expression": "calm",
+          "expression_label": "通常",
+          "text": "你就是罗金娜推荐的焰子？我在赫兹的节目里见过你，去了不少地方，还赢过几位很有名的厨师，看来是有些本事。",
+          "source_paragraph": 100
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "calm",
+          "expression_label": "通常",
+          "text": "是啊，我学了好多新菜！听说你已经吃腻了世间的美食，我就想来试试，说不定能做出你喜欢的料理呢。",
+          "source_paragraph": 101
+        },
+        {
+          "kind": "dialogue",
+          "actor": "luo",
+          "name": "罗厄",
+          "expression": "proud",
+          "expression_label": "得意",
+          "text": "这种话我已经听过很多次了。我的厨艺和见识，你应该有所了解吧？只是把别人的菜学来，可没那么容易让我满意。",
+          "source_paragraph": 102
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "proud",
+          "expression_label": "得意",
+          "text": "那就等你尝过再说吧！这次我准备的料理，是把一路学到的做法放在一起，试过好多次才做好的。",
+          "source_paragraph": 103
+        },
+        {
+          "kind": "dialogue",
+          "actor": "luo",
+          "name": "罗厄",
+          "expression": "calm",
+          "expression_label": "通常",
+          "text": "既然这么有信心，我就亲自和你比一场。明天到港口广场来，带上你最拿手的料理。你若能让我满意，无比丰厚的奖励正等着你。赫兹，明天由你主持，把比赛从头到尾播出去。",
+          "source_paragraph": 104
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "happy",
+          "expression_label": "高兴",
+          "text": "那就说定了！我会好好准备，让你尝尝我在那些地方学到的好东西！",
+          "source_paragraph": 105
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hertz",
+          "name": "赫兹",
+          "expression": "happy",
+          "expression_label": "高兴",
+          "text": "两位放心，明天我一定准时到场！这次终于能让观众看看，焰子从各地学来的手艺，能不能得到公主的认可了。",
+          "source_paragraph": 106
+        },
+        {
+          "kind": "operation",
+          "text": "【操作·终战准备】用现有料理制作流程试做“百味归港”，检查所需菜谱和库存，补齐材料。准备完成后确认赴约，次日进入港口广场的剧情；此处不安排臻味港公开营业。",
+          "source_paragraph": 107
+        }
+      ],
+      "location": "王宫会客厅。",
+      "preview": "res://content/story/vn/scenario/revised_preview_07/script.txt"
+    },
+    {
+      "number": 8,
+      "title": "第八场 公主尝到的新滋味",
+      "background": "harbor-square",
+      "source_paragraph": 108,
+      "rows": [
+        {
+          "kind": "dialogue",
+          "actor": "hertz",
+          "name": "赫兹",
+          "expression": "happy",
+          "expression_label": "高兴",
+          "text": "观众朋友们，这里是臻味港的港口广场！一路跟着节目走来的焰子，今天将正式挑战至味公主罗厄。这趟旅行学来的手艺究竟能做到哪一步，我们就在这里见证结果！",
+          "source_paragraph": 110
+        },
+        {
+          "kind": "dialogue",
+          "actor": "luo",
+          "name": "罗厄",
+          "expression": "proud",
+          "expression_label": "得意",
+          "text": "准备好了吗？这场比赛，我也会亲自做一道料理。你既然来挑战我，就应该知道自己要面对什么水平的对手。",
+          "source_paragraph": 111
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "proud",
+          "expression_label": "得意",
+          "text": "我已经等不及啦！这道“百味归港”，就请你亲口尝尝吧！",
+          "source_paragraph": 112
+        },
+        {
+          "kind": "operation",
+          "text": "【操作·厨艺战斗预留】对手：罗厄；剧情主题：“百味归港”。战斗结束后按结果返回剧情：胜利进入下方公布结果及试吃对白，失败返回备战，可在准备场景练习、补货后再战。罗厄坦白心愿及离港结局仅在胜利后触发。",
+          "source_paragraph": 113
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hertz",
+          "name": "赫兹",
+          "expression": "happy",
+          "expression_label": "高兴",
+          "text": "比赛结果已经出来了，今天的胜者是焰子！两位现在也尝尝对方的料理吧，观众们还等着听你们的感想呢。",
+          "source_paragraph": 114
+        },
+        {
+          "kind": "narration",
+          "text": "罗厄尝过焰子的料理，久久没有开口。等她再次拿起勺子时，眼角已经有些湿润。",
+          "source_paragraph": 115
+        },
+        {
+          "kind": "dialogue",
+          "actor": "luo",
+          "name": "罗厄",
+          "expression": "cry",
+          "expression_label": "哭哭",
+          "text": "这些食材和做法，我明明都见过，竟然还能做出这样的味道……我已经很久没有吃得这么高兴了。",
+          "source_paragraph": 116
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "proud",
+          "expression_label": "得意",
+          "text": "真的好吃吧？我在路上吃到喜欢的东西，就想把它学会，再做给别人尝尝。这道菜也是这样慢慢试出来的。",
+          "source_paragraph": 117
+        },
+        {
+          "kind": "dialogue",
+          "actor": "luo",
+          "name": "罗厄",
+          "expression": "calm",
+          "expression_label": "通常",
+          "text": "这场比赛是你赢了。其实，我一直盼着有人能在厨艺上击败我，让我尝到比自己做的还好的料理。可这些年，端来的菜总是差一点，我也渐渐觉得，也许只能一直吃那些熟悉的味道了。",
+          "source_paragraph": 118
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "proud",
+          "expression_label": "得意",
+          "text": "原来你这么想输啊？刚才还一副谁也赢不了你的样子，我还以为输一场会把你气坏呢。",
+          "source_paragraph": 119
+        },
+        {
+          "kind": "dialogue",
+          "actor": "luo",
+          "name": "罗厄",
+          "expression": "angry",
+          "expression_label": "生气",
+          "text": "我只是想吃到更好的料理，难道还得逢人就说，快来赢我一次吗？",
+          "source_paragraph": 120
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "speechless",
+          "expression_label": "无语",
+          "text": "那就自己出去找嘛！你一直坐在宫里等，还把全镇的厨师都叫去替你想办法。我刚到这里就饿着肚子，连张热饼都买不到，你倒是每天都有一大桌菜吃。",
+          "source_paragraph": 121
+        },
+        {
+          "kind": "dialogue",
+          "actor": "luo",
+          "name": "罗厄",
+          "expression": "troubled",
+          "expression_label": "困扰",
+          "text": "……看来，我确实该自己出去一趟。你走了那么多地方，才能做出今天这道菜，我也想去看看，还有多少手艺是我没见过的。等这里的事安排好，我就离开臻味港，亲自去找那些美味的料理。",
+          "source_paragraph": 122
+        },
+        {
+          "kind": "dialogue",
+          "actor": "luo",
+          "name": "罗厄",
+          "expression": "cry",
+          "expression_label": "哭哭",
+          "text": "从今天起，取消征召厨师的规定，大家都可以回去自由营业。这段时间辛苦各位了，欠下的工钱和食材费，宫里会一并结清……",
+          "source_paragraph": 123
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hertz",
+          "name": "赫兹",
+          "expression": "happy",
+          "expression_label": "高兴",
+          "text": "观众朋友们，你们都听到了！公主已经宣布撤销征召令，臻味港的餐馆可以重新营业了。这次关于餐馆停业的报道，终于能给大家一个好消息！",
+          "source_paragraph": 124
+        },
+        {
+          "kind": "dialogue",
+          "actor": "aling",
+          "name": "阿铃",
+          "expression": "proud",
+          "expression_label": "得意",
+          "text": "夜鸦作证，此令已传。明日起，臻味港诸店终于可以重燃灶火了！",
+          "source_paragraph": 125
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "happy",
+          "expression_label": "高兴",
+          "text": "太好了！我刚来的时候就想吃街口那家的面，明天总算能尝到啦！",
+          "source_paragraph": 126
+        },
+        {
+          "kind": "dialogue",
+          "actor": "luo",
+          "name": "罗厄",
+          "expression": "calm",
+          "expression_label": "通常",
+          "text": "你还真是一直惦记着吃饭呢。答应你的奖励也不会少，我的料理食谱就送给你了。可要认真学，下次再见，我还要和你比一场。",
+          "source_paragraph": 127
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hero",
+          "name": "焰子",
+          "expression": "happy",
+          "expression_label": "高兴",
+          "text": "好啊！你也记得把路上学到的菜带回来，下次换我尝尝你的新手艺！",
+          "source_paragraph": 128
+        },
+        {
+          "kind": "narration",
+          "text": "几天后，臻味港的餐馆陆续重新开门。罗厄带上行李，踏上寻找新料理的旅途。焰子和阿铃终于走进了那家一直没能吃上的面馆，赫兹则在店外继续她的报道。",
+          "source_paragraph": 129
+        },
+        {
+          "kind": "dialogue",
+          "actor": "hertz",
+          "name": "赫兹",
+          "expression": "happy",
+          "expression_label": "高兴",
+          "text": "观众朋友们，这里是重新开张的臻味港！今天的节目，就从街口这家面馆开始。老板，先给大家介绍一下，你们最拿手的面吧！",
+          "source_paragraph": 130
+        },
+        {
+          "kind": "operation",
+          "text": "【操作·自由经营】主线完成，进入日常经营。保留已学菜谱、库存与经营积累，上架新获得的料理，继续采购、接客、出餐与结算；已完成的厨艺战斗可在对应角色处再次挑战。",
+          "source_paragraph": 131
+        }
+      ],
+      "location": "港口广场。",
+      "preview": "res://content/story/vn/scenario/revised_preview_08/script.txt"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "revised_00",
+      "chapter": 1,
+      "title": "第一场 空腹来到臻味港",
+      "kind": "dialogue",
+      "source_paragraph": 8,
+      "path": "res://content/story/vn/scenario/revised_00/script.txt"
+    },
+    {
+      "id": "revised_01",
+      "chapter": 2,
+      "title": "第二场 夜鸦的试炼",
+      "kind": "dialogue",
+      "source_paragraph": 22,
+      "path": "res://content/story/vn/scenario/revised_01/script.txt"
+    },
+    {
+      "id": "revised_02",
+      "chapter": 2,
+      "title": "第二场 夜鸦的试炼",
+      "kind": "battle",
+      "description": "【操作·厨艺战斗预留】对手：阿铃；剧情主题：番茄炒蛋；用途：初次战斗教学。胜利后返回下方试吃对白，失败则回到准备状态重试。此处借用旧摊私下比试，不开门营业。",
+      "source_paragraph": 29,
+      "implemented": false,
+      "music": "cooking"
+    },
+    {
+      "id": "revised_03",
+      "chapter": 2,
+      "title": "第二场 夜鸦的试炼",
+      "kind": "dialogue",
+      "source_paragraph": 30,
+      "path": "res://content/story/vn/scenario/revised_03/script.txt"
+    },
+    {
+      "id": "revised_04",
+      "chapter": 3,
+      "title": "第三场 罗金娜的建议",
+      "kind": "dialogue",
+      "source_paragraph": 39,
+      "path": "res://content/story/vn/scenario/revised_04/script.txt"
+    },
+    {
+      "id": "revised_05",
+      "chapter": 3,
+      "title": "第三场 罗金娜的建议",
+      "kind": "evaluation",
+      "description": "【操作·剧情评鉴】使用经营玩法中的试做流程，制作一份鸡肉料理，再由罗金娜示范完整搭配。完成后播放差距说明及落败对白；本场用于展示学艺起点。",
+      "source_paragraph": 43,
+      "implemented": false,
+      "music": "casual"
+    },
+    {
+      "id": "revised_06",
+      "chapter": 3,
+      "title": "第三场 罗金娜的建议",
+      "kind": "dialogue",
+      "source_paragraph": 44,
+      "path": "res://content/story/vn/scenario/revised_06/script.txt"
+    },
+    {
+      "id": "revised_07",
+      "chapter": 4,
+      "title": "第四场 朴实无华的料理骑士",
+      "kind": "dialogue",
+      "source_paragraph": 56,
+      "path": "res://content/story/vn/scenario/revised_07/script.txt"
+    },
+    {
+      "id": "revised_08",
+      "chapter": 4,
+      "title": "第四场 朴实无华的料理骑士",
+      "kind": "preparation",
+      "description": "【操作·经营教学】借用欧洲小镇的经营点。与当地厨师交谈，学习番茄意面、菌菇浓汤及配菜；随后查看菜单与库存、采购补货、开门迎客，按实际订单烹饪上菜，送客后查看账本。完成当地经营目标及居民厨师战斗后，打烊并返回维托处。居民战斗预留接口，具体规则待定。",
+      "source_paragraph": 59,
+      "implemented": false,
+      "music": "casual"
+    },
+    {
+      "id": "revised_09",
+      "chapter": 4,
+      "title": "第四场 朴实无华的料理骑士",
+      "kind": "dialogue",
+      "source_paragraph": 60,
+      "path": "res://content/story/vn/scenario/revised_09/script.txt"
+    },
+    {
+      "id": "revised_10",
+      "chapter": 4,
+      "title": "第四场 朴实无华的料理骑士",
+      "kind": "battle",
+      "description": "【操作·厨艺战斗预留】对手：维托；剧情主题：番茄意面。赛前在经营场景备齐所需材料，打烊并接待完已有客人，再确认进入战斗。胜利后播放下文，开放后续欧式料理研习；失败则返回经营，可补货、营业练习后再挑战。",
+      "source_paragraph": 63,
+      "implemented": false,
+      "music": "cooking"
+    },
+    {
+      "id": "revised_11",
+      "chapter": 4,
+      "title": "第四场 朴实无华的料理骑士",
+      "kind": "dialogue",
+      "source_paragraph": 64,
+      "path": "res://content/story/vn/scenario/revised_11/script.txt"
+    },
+    {
+      "id": "revised_12",
+      "chapter": 5,
+      "title": "第五场 河畔的料理店",
+      "kind": "dialogue",
+      "source_paragraph": 71,
+      "path": "res://content/story/vn/scenario/revised_12/script.txt"
+    },
+    {
+      "id": "revised_13",
+      "chapter": 5,
+      "title": "第五场 河畔的料理店",
+      "kind": "battle",
+      "description": "【操作·经营与战斗】在日式小镇学习米饭、煎鱼及高汤，将已学料理加入菜单，采购对应食材并按订单营业。完成当地经营目标及居民厨师战斗后，打烊、备齐比赛材料，进入希娜战斗接口，剧情主题为煎鱼定食。胜利后播放下文，失败则返回经营准备。",
+      "source_paragraph": 76,
+      "implemented": false,
+      "music": "cooking"
+    },
+    {
+      "id": "revised_14",
+      "chapter": 5,
+      "title": "第五场 河畔的料理店",
+      "kind": "dialogue",
+      "source_paragraph": 77,
+      "path": "res://content/story/vn/scenario/revised_14/script.txt"
+    },
+    {
+      "id": "revised_15",
+      "chapter": 5,
+      "title": "第五场 河畔的料理店",
+      "kind": "preparation",
+      "description": "【操作·游历经营】各地沿用“学习料理—采购与菜单准备—接待出餐—结算补货”的经营循环，并在合适的主线节点衔接居民厨师战斗。通过地区任务学习香料、海鲜处理及多单出餐；完成本阶段经营与战斗目标后，返回臻味港。",
+      "source_paragraph": 82,
+      "implemented": false,
+      "music": "casual"
+    },
+    {
+      "id": "revised_16",
+      "chapter": 5,
+      "title": "第五场 河畔的料理店",
+      "kind": "dialogue",
+      "source_paragraph": 83,
+      "path": "res://content/story/vn/scenario/revised_16/script.txt"
+    },
+    {
+      "id": "revised_17",
+      "chapter": 6,
+      "title": "第六场 重返罗金娜的厨房",
+      "kind": "dialogue",
+      "source_paragraph": 86,
+      "path": "res://content/story/vn/scenario/revised_17/script.txt"
+    },
+    {
+      "id": "revised_18",
+      "chapter": 6,
+      "title": "第六场 重返罗金娜的厨房",
+      "kind": "battle",
+      "description": "【操作·厨艺战斗预留】对手：罗金娜；剧情主题：以初战食材重新制作鸡肉料理。返回前可在外地经营点练习、补齐材料；臻味港此时仅进行约定比试。胜利后播放下文并开放公主挑战，失败则返回准备，保留已完成的经营进度。",
+      "source_paragraph": 92,
+      "implemented": false,
+      "music": "cooking"
+    },
+    {
+      "id": "revised_19",
+      "chapter": 6,
+      "title": "第六场 重返罗金娜的厨房",
+      "kind": "dialogue",
+      "source_paragraph": 93,
+      "path": "res://content/story/vn/scenario/revised_19/script.txt"
+    },
+    {
+      "id": "revised_20",
+      "chapter": 7,
+      "title": "第七场 至味公主的邀约",
+      "kind": "dialogue",
+      "source_paragraph": 100,
+      "path": "res://content/story/vn/scenario/revised_20/script.txt"
+    },
+    {
+      "id": "revised_21",
+      "chapter": 7,
+      "title": "第七场 至味公主的邀约",
+      "kind": "preparation",
+      "description": "【操作·终战准备】用现有料理制作流程试做“百味归港”，检查所需菜谱和库存，补齐材料。准备完成后确认赴约，次日进入港口广场的剧情；此处不安排臻味港公开营业。",
+      "source_paragraph": 107,
+      "implemented": false,
+      "music": "casual"
+    },
+    {
+      "id": "revised_22",
+      "chapter": 8,
+      "title": "第八场 公主尝到的新滋味",
+      "kind": "dialogue",
+      "source_paragraph": 110,
+      "path": "res://content/story/vn/scenario/revised_22/script.txt"
+    },
+    {
+      "id": "revised_23",
+      "chapter": 8,
+      "title": "第八场 公主尝到的新滋味",
+      "kind": "battle",
+      "description": "【操作·厨艺战斗预留】对手：罗厄；剧情主题：“百味归港”。战斗结束后按结果返回剧情：胜利进入下方公布结果及试吃对白，失败返回备战，可在准备场景练习、补货后再战。罗厄坦白心愿及离港结局仅在胜利后触发。",
+      "source_paragraph": 113,
+      "implemented": false,
+      "music": "boss"
+    },
+    {
+      "id": "revised_24",
+      "chapter": 8,
+      "title": "第八场 公主尝到的新滋味",
+      "kind": "dialogue",
+      "source_paragraph": 114,
+      "path": "res://content/story/vn/scenario/revised_24/script.txt"
+    },
+    {
+      "id": "revised_25",
+      "chapter": 8,
+      "title": "第八场 公主尝到的新滋味",
+      "kind": "freeplay",
+      "description": "【操作·自由经营】主线完成，进入日常经营。保留已学菜谱、库存与经营积累，上架新获得的料理，继续采购、接客、出餐与结算；已完成的厨艺战斗可在对应角色处再次挑战。",
+      "source_paragraph": 131,
+      "implemented": true,
+      "music": "casual"
+    }
+  ],
+  "portraits": [
+    {
+      "actor": "hero",
+      "expression": "cry",
+      "label": "哭哭",
+      "path": "assets/characters/mainline-20261126/hero/cry.png",
+      "sha256": "4f52f2bf40f627683d5814150a0be9c6684a332a887528e882e9b0ebf94659c5",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "hero",
+      "expression": "troubled",
+      "label": "困扰",
+      "path": "assets/characters/mainline-20261126/hero/troubled.png",
+      "sha256": "83006e8e7e6188633280f9442dd39b627d3f73be4f422765a3e48fc66db2767d",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "hero",
+      "expression": "proud",
+      "label": "得意",
+      "path": "assets/characters/mainline-20261126/hero/proud.png",
+      "sha256": "141bac36f10e611ced8f8e156a7e344bad9079365423b42e543543deb25f5e7e",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "hero",
+      "expression": "speechless",
+      "label": "无语",
+      "path": "assets/characters/mainline-20261126/hero/speechless.png",
+      "sha256": "71339b88a3d1b12a391ef624d51df53797d198c0b4aa74ae17e306fc6e623647",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "hero",
+      "expression": "angry",
+      "label": "生气",
+      "path": "assets/characters/mainline-20261126/hero/angry.png",
+      "sha256": "9c37fd40bdec8659276ae4d2ab0500ffe92b86b7c90c224c73e1a0e8c77995f9",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "hero",
+      "expression": "puzzled",
+      "label": "疑惑",
+      "path": "assets/characters/mainline-20261126/hero/puzzled.png",
+      "sha256": "ac2acaa3d8d634790aafc5473bf87518b21bdf3077cae96390bb01f7cf562770",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "hero",
+      "expression": "calm",
+      "label": "通常",
+      "path": "assets/characters/mainline-20261126/hero/calm.png",
+      "sha256": "7a67fd0d8f611e8f5f6699fef70e58e636c901482278b647507dcedbf68c6150",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "hero",
+      "expression": "happy",
+      "label": "高兴",
+      "path": "assets/characters/mainline-20261126/hero/happy.png",
+      "sha256": "57ac474a867f910178bbb98f5727b80f77d20ab5a64958c184ac20864809434e",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "aling",
+      "expression": "cry",
+      "label": "哭哭",
+      "path": "assets/characters/mainline-20261126/aling/cry.png",
+      "sha256": "3cef6d85c7312f8debd51f267ada7e9e94b4e8d4682a356653a2c00f08645b2f",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "aling",
+      "expression": "troubled",
+      "label": "困扰",
+      "path": "assets/characters/mainline-20261126/aling/troubled.png",
+      "sha256": "1e8b5ae7d28881c3abf27892d3e36c09a7773a767ca46fcd32a72426bd0fa052",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "aling",
+      "expression": "proud",
+      "label": "得意",
+      "path": "assets/characters/mainline-20261126/aling/proud.png",
+      "sha256": "a545fcf44d1d95293462062e1bfa87dc1dc745a7425592bd7e9fbc5b72057d83",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "aling",
+      "expression": "speechless",
+      "label": "无语",
+      "path": "assets/characters/mainline-20261126/aling/speechless.png",
+      "sha256": "9a4f8f479834c33248d47a1962e6c726093629f0c1fc1322626912bfd16380eb",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "aling",
+      "expression": "angry",
+      "label": "生气",
+      "path": "assets/characters/mainline-20261126/aling/angry.png",
+      "sha256": "e88e0de8f262d09c627204415fdb2899d03e6bcdeabcce2ca99693fa8d7664a5",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "aling",
+      "expression": "puzzled",
+      "label": "疑惑",
+      "path": "assets/characters/mainline-20261126/aling/puzzled.png",
+      "sha256": "816e518dcde21f151b508ad0c5dca856ef12b77a47b05c88e1c8c9c0905224fd",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "aling",
+      "expression": "calm",
+      "label": "通常",
+      "path": "assets/characters/mainline-20261126/aling/calm.png",
+      "sha256": "20284c1ec7e493d5e5be1b0de9fbe064a72ef4db1e3958f78aaefefa9230defb",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "aling",
+      "expression": "happy",
+      "label": "高兴",
+      "path": "assets/characters/mainline-20261126/aling/happy.png",
+      "sha256": "08bc301a30e8984d942b3193239e4834156b9ff72a3371d817edc758347cd1eb",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "chen",
+      "expression": "cry",
+      "label": "哭哭",
+      "path": "assets/characters/mainline-20261126/chen/cry.png",
+      "sha256": "6a09c02edf78b36d628c3e4041abb2b602216d563fd35442e156137ee060d613",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "chen",
+      "expression": "troubled",
+      "label": "困扰",
+      "path": "assets/characters/mainline-20261126/chen/troubled.png",
+      "sha256": "a7dc8b5ea8dfa27ee3234fcf4e1396bd6808c4cec576fa933aa402e1cffc2ada",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "chen",
+      "expression": "proud",
+      "label": "得意",
+      "path": "assets/characters/mainline-20261126/chen/proud.png",
+      "sha256": "20d98316e28d4725277b51455b295a0ad5dab16ae9a414cc1b1f35a33ddb4cad",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "chen",
+      "expression": "speechless",
+      "label": "无语",
+      "path": "assets/characters/mainline-20261126/chen/speechless.png",
+      "sha256": "44f0890bd5e6851eb83a3f01bf0eff5e6ffa7e831bc326a01c90580a7cb32f6d",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "chen",
+      "expression": "angry",
+      "label": "生气",
+      "path": "assets/characters/mainline-20261126/chen/angry.png",
+      "sha256": "147bcd10042b9585ac76f51269f2e5ff169220ed4e11f499bb97fdea38bb7643",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "chen",
+      "expression": "puzzled",
+      "label": "疑惑",
+      "path": "assets/characters/mainline-20261126/chen/puzzled.png",
+      "sha256": "a746851cc3b4539ef69cb8fc329fdc0d6d2badbc38602c561703ee4181af44fb",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "chen",
+      "expression": "calm",
+      "label": "通常",
+      "path": "assets/characters/mainline-20261126/chen/calm.png",
+      "sha256": "1833ff80ca1f2ce918fa40b98cb34261af15920683a8861fbd779d3087fca067",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "chen",
+      "expression": "happy",
+      "label": "高兴",
+      "path": "assets/characters/mainline-20261126/chen/happy.png",
+      "sha256": "9feea80ac8b44f086fcff2873113668b1a91be6c8837ce998d698f4db8356581",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "luo",
+      "expression": "cry",
+      "label": "哭哭",
+      "path": "assets/characters/mainline-20261126/luo/cry.png",
+      "sha256": "b2080190d9c03aa0ec55efd3948c5e35b36fba282ecec3b487a7abda9eca1340",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "luo",
+      "expression": "troubled",
+      "label": "困扰",
+      "path": "assets/characters/mainline-20261126/luo/troubled.png",
+      "sha256": "0e0a0b1813af4c52256adf970ef8e27aa4e4569eba4dcb83c516c83939436691",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "luo",
+      "expression": "proud",
+      "label": "得意",
+      "path": "assets/characters/mainline-20261126/luo/proud.png",
+      "sha256": "c17778985823d765a474fb7798e7fbd10bfbc276b6024ae12be84b42db9d81b6",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "luo",
+      "expression": "speechless",
+      "label": "无语",
+      "path": "assets/characters/mainline-20261126/luo/speechless.png",
+      "sha256": "9a642c626aa44d019a71cf618a12636b4ad18891fe58e0a056768b78896b1a6c",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "luo",
+      "expression": "angry",
+      "label": "生气",
+      "path": "assets/characters/mainline-20261126/luo/angry.png",
+      "sha256": "a3209e6a4ca85e108c7778e9a40babf57747049fdb23f8575a6d3fb5960fbc7b",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "luo",
+      "expression": "puzzled",
+      "label": "疑惑",
+      "path": "assets/characters/mainline-20261126/luo/puzzled.png",
+      "sha256": "9390f3271711ca4a8440e6ace8b180725ca7c5505c111110e502554ca3d15a6e",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "luo",
+      "expression": "calm",
+      "label": "通常",
+      "path": "assets/characters/mainline-20261126/luo/calm.png",
+      "sha256": "77b586914467556fcea6e07dd82e0be4390943ea37df2ebaf8bb00f5a2d75a1f",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "luo",
+      "expression": "happy",
+      "label": "高兴",
+      "path": "assets/characters/mainline-20261126/luo/happy.png",
+      "sha256": "ee3e88e11404efc2caf4322a195bbd9e127b0c7cd616fa6fa3f87a95efa65c94",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "vito",
+      "expression": "cry",
+      "label": "哭哭",
+      "path": "assets/characters/mainline-20261126/vito/cry.png",
+      "sha256": "708a634c7dd9be3bf2805744c55c603c4df61ff626f72b2115b6d885248b3999",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "vito",
+      "expression": "troubled",
+      "label": "困扰",
+      "path": "assets/characters/mainline-20261126/vito/troubled.png",
+      "sha256": "94d3ca864f12685de63ed8a59e8af75117ae9a877ac7f59abbe08a31162c3581",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "vito",
+      "expression": "proud",
+      "label": "得意",
+      "path": "assets/characters/mainline-20261126/vito/proud.png",
+      "sha256": "f6a4860b9c9852f43357a4232a6af6c794f73d476d92426edf59e801dcd03409",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "vito",
+      "expression": "speechless",
+      "label": "无语",
+      "path": "assets/characters/mainline-20261126/vito/speechless.png",
+      "sha256": "e24dc562baefdace48f55341026fc6f6014e2cf0962cd140acdd7b379900984c",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "vito",
+      "expression": "angry",
+      "label": "生气",
+      "path": "assets/characters/mainline-20261126/vito/angry.png",
+      "sha256": "965545030ac338399e97a224bf00a44cfdd9f23339a2d4ddc656b55541bc9092",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "vito",
+      "expression": "puzzled",
+      "label": "疑惑",
+      "path": "assets/characters/mainline-20261126/vito/puzzled.png",
+      "sha256": "11273c98a54c6e42831b9c69e2e10f80064add1205a28c1b2eff7a2b7c82f181",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "vito",
+      "expression": "calm",
+      "label": "通常",
+      "path": "assets/characters/mainline-20261126/vito/calm.png",
+      "sha256": "0b7ee6ccbce49d8595dfd5a0a69f2fec06e487193ee42b2de9b8b43420e4ace0",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "vito",
+      "expression": "happy",
+      "label": "高兴",
+      "path": "assets/characters/mainline-20261126/vito/happy.png",
+      "sha256": "9e24e3cde7dbce47e426a1f19f17400854858014103bc5f3f305dd44ea06c638",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "hertz",
+      "expression": "cry",
+      "label": "哭哭",
+      "path": "assets/characters/mainline-20261126/hertz/cry.png",
+      "sha256": "97d70821922d942d9491b0c7a881c196192334a8962dae60469d067c6adb73d3",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "hertz",
+      "expression": "troubled",
+      "label": "困扰",
+      "path": "assets/characters/mainline-20261126/hertz/troubled.png",
+      "sha256": "ad8ecb594017ed23c5aa32058dcb188a0d1afae59aa7b66172bb37fd3b463a54",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "hertz",
+      "expression": "proud",
+      "label": "得意",
+      "path": "assets/characters/mainline-20261126/hertz/proud.png",
+      "sha256": "4c9731690ca376a22b4dd9044d969863be84ff8aedb536831dde1d8316625927",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "hertz",
+      "expression": "speechless",
+      "label": "无语",
+      "path": "assets/characters/mainline-20261126/hertz/speechless.png",
+      "sha256": "0a097120eba2e9897bd774e41ecd7c3dccb7008ec11f4f8c9c909df30551d5cc",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "hertz",
+      "expression": "angry",
+      "label": "生气",
+      "path": "assets/characters/mainline-20261126/hertz/angry.png",
+      "sha256": "2b9cdc56205dbdc6db7774228eb115c9d13f149d6eee0569769d15fb38badfc6",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "hertz",
+      "expression": "puzzled",
+      "label": "疑惑",
+      "path": "assets/characters/mainline-20261126/hertz/puzzled.png",
+      "sha256": "c79c9a9a6c5dd6b390780e7b164f91fdbfed95ac54fa7d5c8cea81b9d0a3be33",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "hertz",
+      "expression": "calm",
+      "label": "通常",
+      "path": "assets/characters/mainline-20261126/hertz/calm.png",
+      "sha256": "cdd9dff9900b0d1797758f7f76cbe697f39307696426d6e8a801689037857e4c",
+      "size": [
+        2560,
+        2560
+      ]
+    },
+    {
+      "actor": "hertz",
+      "expression": "happy",
+      "label": "高兴",
+      "path": "assets/characters/mainline-20261126/hertz/happy.png",
+      "sha256": "ae8d2ae0d8342dcd29ef0a81da5b4c2797ae8f0f4db46f90a3805eab7786108a",
+      "size": [
+        2560,
+        2560
+      ]
+    }
+  ],
+  "combat_implemented": false
+}
