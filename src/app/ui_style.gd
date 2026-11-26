@@ -103,7 +103,13 @@ static func label(text: String, size: int=TDUI.FONT_BODY, color: Color=INK) -> L
 
 static func button(text: String,callback: Callable) -> Button:
 	var node:=Button.new();node.text=text;node.custom_minimum_size.y=48
-	node.focus_mode=Control.FOCUS_NONE;node.pressed.connect(callback);return node
+	node.focus_mode=Control.FOCUS_NONE
+	node.mouse_entered.connect(func() -> void:
+		if not node.disabled and node.is_visible_in_tree(): TDSoundEffects.request(node,"ui.hover"))
+	node.pressed.connect(func() -> void:
+		TDSoundEffects.request(node,"ui.click")
+		callback.call())
+	return node
 
 static func column(parent: Node,spacing: int=16) -> VBoxContainer:
 	var node:=VBoxContainer.new();node.add_theme_constant_override("separation",spacing);parent.add_child(node);return node

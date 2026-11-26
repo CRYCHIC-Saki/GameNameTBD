@@ -1,4 +1,4 @@
-﻿#Requires -Version 7.2
+#Requires -Version 7.2
 [CmdletBinding()]
 param([string]$GodotPath = $env:GODOT_BIN, [int]$CheckTimeoutSeconds = 1800, [string]$CheckSuite = 'all')
 $ErrorActionPreference = 'Stop'
@@ -46,9 +46,18 @@ try {
     $storyScripts = @('content/story/vn/scenario/host/script.txt.res') + @($presentation.chapters.psobject.Properties | ForEach-Object { $_.Value.path.Substring(6) + '.res' }) + @($storyEvents.events | Where-Object enabled | ForEach-Object { $_.script_path.Substring(6) + '.res' })
     foreach ($script in $storyScripts) { if ($script -notin $names) { throw "Missing registered VN scenario: $script" } }
     foreach ($name in $names) {
+      if ($name -match '^assets/audio/sfx/(?:[a-z]+/(?:kenney_[a-z-]+|cozy-cafe-sfx)/[A-Za-z0-9_-]+\.(?:wav|ogg)\.import|licenses/(?:kenney_[a-z-]+|cozy-cafe-(?:sfx|ambience))/(?:cozy-cafe-sfx/)?(?:License|LICENSE|README)\.txt|AUDIO_LICENSES\.md)$') { continue }
       if ($name -match 'jiangnan-river-town\.png|src/town/river_street(_layout)?\.gd') { throw "Design reference or parallel map present in the game package: $name" }
       if ($name -match '^assets/characters/mainline-20261126/[a-z]+/[a-z]+\.png(\.import)?$' -or $name -eq 'content/story/mainline-20261126.json' -or $name -eq 'assets/audio/boss.wav.import' -or $name -eq 'content/story/vn/presentation.json' -or $name -match '^assets/vn-painterly-v1/[a-z-]+\.png(\.import)?$' -or $name -eq 'content/story/events.json' -or $name -in $storyScripts) { continue }
       if ($name -notmatch '^(assets/characters/staff/regional-(portraits|walk)\.png(\.import)?$|assets/interiors/(regional-(kitchens|dining|props)|wall-finishes|floor-finishes|shared-accents|lounge-furniture)-v1\.png(\.import)?$|assets/story/imported/(bg_|actor_|expr_)[a-f0-9]{12}\.(png|jpg|jpeg|webp)(\.import)?$|assets/ui-wood-v1/[^/]+\.png(\.import)?$|assets/redraw-v1/([^/]+\.png(\.import)?|(index|icon-regions)\.json)$|content/story/vn/(config/.*\.tres(\.remap)?|(portraits|backgrounds)/.*\.tres(\.remap)?|scenario/intro/script\.txt\.res)$|addons/vn_engine/(src/(?!editor/|tools/|ui/dev_overlay|ui/scenes/dev_overlay)|LICENSE$)|src/|\.godot/|assets/characters/diners/diners-((four-directions|seated)-v1|isometric-seated-v2|occupied-seat-v4)\.png(\.import)?$|assets/characters/(aling/archive/2026-10-29/aling|ash-priest/archive/2026-10-29/ash-priest)-(idle-four-directions|dialogue-halfbody)\.png(\.import)?$|assets/characters/(aling/aling|ash-priest/ash-priest)-walk-four-directions-v1\.png(\.import)?$|assets/characters/protagonist/protagonist-((idle|walk)-four-directions-v1|diagonal-(front|back)-v2|dialogue-halfbody-pose-pixel-v7)\.png(\.import)?$|assets/audio/(casual|service|cooking)\.wav(\.import)?$|assets/(kitchen/(recipe-icons/)?|town/|story/|cottage/)[^/]+\.png(\.import)?$|content/(story/(opening|homecoming)|characters/roster|dev_samples|cooking_prototype|cooking_system|cuisine_recipes|service_content|employees|suppliers|culinary_materials|branches|restaurant|phase3_world|pantry|ingredient_index|research/recipe_atlas|research/runtime_recipes|town_economy/(economy|meal_schedule)|towns/(chinese_layout|chinese_layout_legacy|regions|egret_survey(?:_v(?:[4-9]|10))?|shiomi_survey|jiangnan_reference_geography|jiangnan_map_footprints)|markets/kitchen_stock|brand/progression)\.json$|project\.binary$)') { throw "Non-runtime resource exported: $name" }
+    }
+    # A selected-resource export does not discover every constant audio dependency.
+    foreach ($audio in Get-ChildItem -LiteralPath (Join-Path $root 'assets/audio/sfx') -Recurse -File | Where-Object { $_.Extension -in @('.wav','.ogg') }) {
+      $resource = [IO.Path]::GetRelativePath($root,$audio.FullName).Replace('\','/') + '.import'
+      if ($resource -notin $names) { throw "Missing selected SFX in exported package: $resource" }
+    }
+    foreach ($notice in @('assets/audio/sfx/AUDIO_LICENSES.md','assets/audio/sfx/licenses/cozy-cafe-sfx/cozy-cafe-sfx/LICENSE.txt','assets/audio/sfx/licenses/kenney_rpg-audio/License.txt')) {
+      if ($notice -notin $names) { throw "Missing audio license: $notice" }
     }
     foreach ($retired in @('src/story/arrival_cutscene.gd','src/story/arrival_cutscene.tscn')) {
       if ($retired -in $names -or ($retired + '.remap') -in $names) { throw "Retired animation exported: $retired" }

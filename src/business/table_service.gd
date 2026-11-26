@@ -34,6 +34,7 @@ func place(order_id: String, dish: Dictionary) -> TDOutcome:
 	_plates.append({"id":str(dish.dish_id),"order_id":order_id,"carrier":"","dish":dish.duplicate(true)})
 	_seen[str(dish.dish_id)]=true
 	shop._kitchen_key=""
+	shop.sound_requested.emit("restaurant.pass_ready")
 	return TDOutcome.new(true,"AT_PASS","已放到出餐口，需端到客人桌边才算送达。",{"order_id":order_id,"dish_id":dish.dish_id})
 
 func place_trial(dish: Dictionary) -> TDOutcome:
@@ -45,6 +46,7 @@ func place_trial(dish: Dictionary) -> TDOutcome:
 	if not for_order(TRIAL_ORDER).is_empty(): return TDOutcome.new(false,"TRIAL_AT_PASS","阿铃的菜已在出餐口，请先送到她桌边。")
 	_plates.append({"id":str(dish.dish_id),"order_id":TRIAL_ORDER,"carrier":"","dish":dish.duplicate(true)})
 	_seen[str(dish.dish_id)]=true
+	_shop().sound_requested.emit("restaurant.pass_ready")
 	return TDOutcome.new(true,"AT_PASS","已放到出餐口。回餐厅按 E 取菜，再到阿铃桌边按 E 交给她。")
 
 func reconcile() -> void:
@@ -66,6 +68,7 @@ func take(id: String, carrier: String) -> TDOutcome:
 		if plate.id!=id: continue
 		if not str(plate.carrier).is_empty(): return TDOutcome.new(false,"ALREADY_CLAIMED","这盘菜已被端走。")
 		plate.carrier=carrier
+		_shop().sound_requested.emit("restaurant.plate_take")
 		return TDOutcome.new(true,"PICKED_UP","已端起菜，走到对应客人桌边按 E。",plate.duplicate(true))
 	return TDOutcome.new(false,"UNKNOWN_PLATE")
 
@@ -86,6 +89,7 @@ func serve(id: String, carrier: String, order_id: String) -> TDOutcome:
 		result=trial_received.call(plate.dish)
 	else: result=_shop()._complete_delivery(order_id,plate.dish)
 	if result.ok:
+		if order_id == TRIAL_ORDER: _shop().sound_requested.emit("restaurant.serve")
 		for i: int in _plates.size():
 			if _plates[i].id==id: _plates.remove_at(i);break
 		_shop()._kitchen_key=""

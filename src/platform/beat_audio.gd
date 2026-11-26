@@ -14,26 +14,20 @@ var _checked_at_usec := -1000000
 static var _feedback_tracks: Dictionary = {}
 
 func play_feedback(grade: String, module: String = "", reason: String = "") -> void:
-	var family := "wood" if module=="M1" else ("glass" if module=="M6" else "metal")
-	if grade=="miss": family="mute"
-	if reason=="HOLD_STARTED": family="touch"
-	var key := family+":"+grade
-	if not _feedback_tracks.has(key):
-		var rate := 22050
-		var pcm := PackedByteArray()
-		pcm.resize(int(.17*rate)*2)
-		var root: float = {"wood":480.0,"glass":940.0,"metal":650.0,"mute":145.0,"touch":410.0}[family]
-		var peak := 1.12 if grade=="perfect" else .83
-		for sample: int in pcm.size()/2:
-			var t := float(sample)/rate
-			var contact := sin(TAU*root*2.7*t+1.2*sin(t*3000.0))*exp(-t*230.0)
-			var body := sin(TAU*root*t)*exp(-t*(62.0 if family=="wood" else 36.0))
-			var overtone := sin(TAU*root*1.5*t)*exp(-t*25.0) if grade=="perfect" else 0.0
-			pcm.encode_s16(sample*2,roundi((.17*contact+.32*body+.12*overtone)*peak*32767))
-		var track := AudioStreamWAV.new()
-		track.format=AudioStreamWAV.FORMAT_16_BITS;track.mix_rate=rate;track.data=pcm
-		_feedback_tracks[key]=track
-	stream=_feedback_tracks[key];volume_db=-7;play()
+	var event_id: String = "cooking.qte_good"
+	if grade == "miss": event_id = "cooking.qte_miss"
+	elif reason == "HOLD_STARTED": event_id = "cooking.m6_start" if module == "M6" else "cooking.m1_rotate"
+	elif module == "M1": event_id = "cooking.m1_cut_hit"
+	elif module == "M2": event_id = "cooking.m2_ignite"
+	elif module == "M3": event_id = "cooking.m3_stir_hit"
+	elif module == "M6": event_id = "cooking.m6_start"
+	elif module == "M7": event_id = "cooking.m7_plate"
+	elif grade == "perfect": event_id = "cooking.qte_perfect"
+	stop()
+	stream = TDSoundEffects.stream_for(event_id)
+	volume_db = -15.0 if grade == "perfect" else -18.0
+	pitch_scale = 1.0
+	play()
 
 func prepare(config: Dictionary) -> void:
 	stop()

@@ -1,3 +1,7 @@
+## 2026-11-26 音效接入（本地工程完成，锁释放）
+
+root唯一写入sound_effects、beat_audio、ui_style、game_shell、shop_session、table_service、shop_view、vn_stage、dialogue_view、kitchen_player；音频副本/授权/测试/探针/check/export及本轮文档。只作音效呈现，不改钱物/评分/存档或战斗规则；无其他写入者。备份artifacts/audio-integration-20261126/baseline。GRILL_SKILL=NOT_AVAILABLE；等价审查NO_BLOCKING_PRODUCT_QUESTIONS；使用../work/godot-gdscript-patterns-SKILL.md。不提交推送。最终33音源/37事件、46专项分批、196加载、Windows三次启动/98输入及45音效/WASAPI输出检查通过。固定试玩包更新，人工听感待验；本轮锁全部释放。详见docs/AUDIO_INTEGRATION_20261126.md。
+
 ## 2026-11-26 草地连续与对话留场（本地完成，锁释放）
 
 93 项专项、Windows 98 项输入及 74 项图形检查通过；固定试玩程序已更新。修复江南草地图集随机切片接缝；材质按地图坐标连续采样，保持原透明遮罩、道路、地块、碰撞。修订稿正式/预览对白在焰子说话时保留上一位对话者，沿用原生引擎变暗和后层机制。保留已有工作，不提交推送。

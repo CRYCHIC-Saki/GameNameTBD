@@ -94,6 +94,8 @@ func _ready() -> void:
 		if resume_saved and shop.is_unlocked(recipe_id): continue # Keep saved menu enabled/price choices.
 		var granted:=shop.grant_recipe(recipe_id)
 		if not granted.ok: last_result=granted
+	if shop is TDBranchKitchenSession:
+		shop.sound_requested.connect(_branch_sound)
 	_build_shell(); _make_kitchen(); refresh(true)
 	if _load_blocked: _show_recovery()
 
@@ -723,6 +725,7 @@ func finish_night() -> TDOutcome:
 	return TDOutcome.new(true,"KITCHEN_CLOSED","原料与切配品已归还%d份，已开火食物按报废处理。"%returned,{"returned":returned,"waste":waste})
 
 func _station_done(result: TDOutcome) -> void:
+	if not result.ok: TDSoundEffects.request(self,"ui.error")
 	_show(result); _sync_usage(); kitchen.world.set_controls_enabled(true); kitchen.refresh_world(); refresh(true)
 
 func _show(result: TDOutcome) -> void:
@@ -817,3 +820,10 @@ func sync_research_recipes(ids:Array) -> void:
 	for id:String in ids:
 		if not shop.is_unlocked(id): shop.grant_recipe(id)
 	refresh(true)
+
+func _branch_sound(event_id: String) -> void:
+	var ancestor: Node = get_parent()
+	while ancestor != null and not ancestor is TDBranchInterior: ancestor = ancestor.get_parent()
+	var interior := ancestor as TDBranchInterior
+	if interior != null and interior.is_visible_in_tree() and not _closed:
+		TDSoundEffects.request(self,event_id)

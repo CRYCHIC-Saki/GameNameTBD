@@ -1,3 +1,11 @@
+## 2026-11-26 音效呈现契约（AI-093-SFX）
+
+Shell独占TDSoundEffects实例与12个有界声部，沿祖先查找服务，不新增Autoload、存档或全局信号总线。音效只消费已成功的操作：Shop.sound_requested不写任何额外钱物；出餐口place/取盘take/桌边serve分开，剧情试吃无收银；反复失败/重复交付不发成功音。只在可见主店/分店呈现经营音，后台远镇静默。日结仅正net_cents用收益提示，其余用打烊提示。
+
+既有TDBeatAudio反馈播放器使用下载素材替换原合成反馈，不双播；140BPM原曲、原时钟与评分窗口不改。隐藏料理反馈停止，暂停沿原lane.stream_paused链。UI在暂停面板可响，世界音冻结/拒收新请求；切场景/换槽/回标题/退出清除旧声部。系统总音量沿TDPlayerPreferences，所有素材原件不改，单声部增益保留余量。
+
+原生VN读取runner.state.characters表情，按演员表情变化去重；auto/skip静默，不新建第二推进器。calm/cry/speechless不伪造人声，常规对白仅短tick。中性脚步按碰撞后真实位移及原步距，不声明精确地表材质。战斗机制未实现，不接胜利/伤害事件。音量、限流和选材为可调呈现假设（AI-093-SFX），不是新玩法。
+
 ## D080 地块、立面和家具兼容
 TDTravelCatalog.facade(town,plot,variation) 供实景和 M 地图共用。地形与经济查询共用 district_id、surface_type、walkable、buildable。道路、存档身份由原模型持有。旧 hotpot_table 在 Layout 载入时转换为 dining_table 并保留服务过道，正式目录只允许普通餐桌。厨房动作只读谱面、工位和最近判定。
 

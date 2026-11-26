@@ -20,6 +20,7 @@ var visiting_town: String="chengdu"
 var _map_open: bool=false
 var restaurant: TDRestaurantWorld
 var cottage:TDCottageWorld
+var sfx: TDSoundEffects
 var music:TDGameMusic
 var _rest_busy:bool=false
 var _quitting:bool=false
@@ -63,6 +64,7 @@ func _ready() -> void:
 	slots=TDProfileStore.new(profile_root,TDGameProfile.validate_save)
 	preferences=TDPlayerPreferences.new(preferences_path)
 	preferences.apply()
+	sfx=TDSoundEffects.new();sfx.name="SoundEffects";add_child(sfx)
 	music=TDGameMusic.new();add_child(music)
 	_build_title()
 	_hud_layer=CanvasLayer.new();_hud_layer.layer=20;add_child(_hud_layer)
@@ -103,6 +105,7 @@ func _process(_delta: float) -> void:
 		var music_context: String = "silent" if cooking else ("service" if profile!=null and not profile.at_boundary() else "casual")
 		if _modal != null and _modal.has_meta("story_music"): music_context = str(_modal.get_meta("story_music"))
 		music.select_context(music_context,_music_should_pause() or (opening_film and guide.dialogue.presentation_paused))
+	if sfx!=null: sfx.set_world_paused(get_tree().paused or _story_frozen)
 	if profile==null: return
 	if restaurant!=null and restaurant.layout!=null and profile.commerce!=null and profile.world!=null and profile.world.catalog!=null:
 		profile.commerce.interior_effect=float(TDEconomyMath.decor_of(restaurant.layout.pieces(),profile.world.catalog.wildcards).effect)
@@ -221,6 +224,7 @@ func _dialog(title: String, freeze: bool=false) -> VBoxContainer:
 	if freeze: _pause(true)
 	_lock_controls(false)
 	_modal=CanvasLayer.new();_modal.layer=800;add_child(_modal)
+	if sfx != null: sfx.play_event("ui.open")
 	var scrim:=ColorRect.new();scrim.color=Color(0.02,0.04,0.03,.72);scrim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);_modal.add_child(scrim)
 	var panel:=PanelContainer.new();panel.position=Vector2(210,74);panel.size=Vector2(860,650);panel.theme=theme;_modal.add_child(panel)
 	var margin:=MarginContainer.new()
@@ -244,6 +248,7 @@ func _close_dialog() -> void:
 	_management_action=""
 	_map_open=false
 	if is_instance_valid(_modal):
+		if sfx != null: sfx.play_event("ui.close")
 		remove_child(_modal);_modal.queue_free();_modal=null
 		_pause(_prior_pause)
 	_console=null;_console_output=null;_notice=null
@@ -271,6 +276,7 @@ func _lock_controls(value: bool) -> void:
 
 func _pause(value: bool) -> void:
 	get_tree().paused=value
+	if sfx != null: sfx.set_world_paused(value or _story_frozen)
 	if kitchen_view!=null: kitchen_view.set_paused(value)
 	if atlas!=null: atlas.set_paused(value)
 
@@ -384,7 +390,8 @@ func _recover_slot(id: String, temporary: bool) -> void:
 	else: _outcome(result)
 
 func _activate(next: TDGameProfile,first_entry:bool=false) -> void:
-	_close_dialog();_dispose_game();profile=next;_generation+=1
+	_close_dialog();_dispose_game();profile=next
+	profile.shop.sound_requested.connect(_on_shop_sound);_generation+=1
 	visiting_town=str(profile.commerce.state.home)
 	_story_supply_checked=false
 	_story_frozen=false;_night_closing=false
@@ -429,6 +436,7 @@ func travel(destination: String,at_bed:bool=false) -> TDOutcome:
 	var previous_location:=location
 	if destination=="kitchen": _coach_story_kitchen()
 	location=destination
+	if sfx != null: sfx.stop_all()
 	town.set_presented(destination=="town")
 	cottage.set_presented(destination=="cottage",at_bed)
 	restaurant.set_floor_cover(destination!="restaurant")
@@ -1124,6 +1132,9 @@ func go_title() -> void:
 	_close_dialog();_dispose_game();location="title";_hud.set_toast("");_build_title()
 
 func _dispose_game() -> void:
+	if profile != null and profile.shop.sound_requested.is_connected(_on_shop_sound):
+		profile.shop.sound_requested.disconnect(_on_shop_sound)
+	if sfx != null: sfx.stop_all()
 	debug_enabled=false;_console_lines.clear();_command_history.clear();_history_cursor=0;_history_draft=""
 	close_atlas();_pause(false)
 	_clear_branch_visit()
@@ -1276,10 +1287,15 @@ func import_legacy() -> TDOutcome:
 	return result
 
 func _outcome(result: TDOutcome) -> TDOutcome:
+	if sfx != null:
+		if not result.ok: sfx.play_event("ui.error")
+		elif result.code == "SAVED": sfx.play_event("ui.save_ok")
+		elif result.code in ["PURCHASED", "BANK_RECORDED"]: sfx.play_event("ui.confirm")
 	_message(result.message if not result.message.is_empty() else ({"SAVED":"进度已保存。","PURCHASED":"已购入，食材已放入厨房库存。","OPENED":"开门营业！","BANK_RECORDED":"已办理，金额记入当前存档的钱庄账户。","INSUFFICIENT_FUNDS":"手头现金不足，本次没有扣款。","INSUFFICIENT_DEPOSIT":"存款余额不足。","CREDIT_LIMIT":"超过当前贷款额度。","BANK_LIQUIDITY":"钱庄当前可用资金不足，请减少金额或之后再来。","EXCEEDS_LOAN":"还款金额超过本金和应付利息之和。","DUPLICATE":"这笔操作已经办理，不会重复扣款。","INVALID_BANK_REQUEST":"请输入有效金额。"}.get(result.code,result.code)))
 	return result
 
 func _exit_tree() -> void:
+	if sfx != null: sfx.stop_all()
 	if atlas!=null: atlas.close()
 	if kitchen_view!=null: kitchen_view.close()
 	if profile!=null: profile.close()
@@ -1347,3 +1363,10 @@ func _refresh_branch_maps() -> void:
 	visiting.harbor_requested.connect(show_harbor);visiting.landmark_requested.connect(_travel_landmark);add_child(visiting)
 	if visiting._can_stand(feet): visiting.player.position=feet
 	visiting.set_presented(location=="voyage");_lock_controls(_modal==null)
+
+func _on_shop_sound(event_id: String) -> void:
+	if sfx == null: return
+	if event_id in ["restaurant.open", "restaurant.close", "restaurant.recipe_unlock", "restaurant.day_settle"]:
+		sfx.play_event(event_id)
+	elif location in ["restaurant", "kitchen"] and atlas == null and _modal == null and not _story_frozen:
+		sfx.play_event(event_id)

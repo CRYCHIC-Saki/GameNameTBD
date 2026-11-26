@@ -22,6 +22,7 @@ var _dialog_layer: CanvasLayer
 var _generation: int = 0
 var _paused: bool = false
 var _completed: bool = false
+var _sound_moods: Dictionary = {}
 
 class LedgerTitle extends Control:
 	func _draw() -> void:
@@ -157,6 +158,15 @@ func _on_line(node: VNEngineStoryNode) -> void:
 			title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			actor.sprite.add_child(title)
 			title.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	if not _paused and not runner.is_skip and not runner.is_auto:
+		var mood: String = str(runner.state.characters.get(node.speaker_id, {}).get("expression", "calm"))
+		var previous: String = str(_sound_moods.get(node.speaker_id, ""))
+		_sound_moods[node.speaker_id] = mood
+		if mood != previous and TDSoundEffects.EVENTS.has("emotion." + mood):
+			TDSoundEffects.request(self, "emotion." + mood)
+		else: TDSoundEffects.request(self, "dialogue.advance")
+	else:
+		_sound_moods[node.speaker_id] = str(runner.state.characters.get(node.speaker_id, {}).get("expression", "calm"))
 	line_started.emit(node.speaker_id, runner.current_text)
 
 func _on_completed(chapter: String) -> void:
@@ -174,6 +184,7 @@ func set_paused(value: bool) -> void:
 
 func reset() -> void:
 	_generation += 1
+	_sound_moods.clear()
 	blocked = ""; block_args = ""; _paused = false
 	if is_instance_valid(container):
 		if is_instance_valid(runner): runner.cancel_host()

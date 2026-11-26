@@ -3,6 +3,7 @@ extends RefCounted
 var opening_permission: Callable
 var before_open: Callable
 var before_settlement: Callable
+signal sound_requested(event_id: String)
 signal day_settled(day: int)
 signal day_opened()
 ## Money, orders and stock have one owner. The kitchen provides real dish snapshots.
@@ -486,6 +487,7 @@ func open_day(random_source: RefCounted = null) -> TDOutcome:
 			_next_arrival=_scheduled_arrival()
 		commerce.begin_day()
 	day_opened.emit()
+	sound_requested.emit("restaurant.open")
 	return TDOutcome.new(true,"OPENED")
 
 func advance(seconds: float, paused: bool = false) -> TDOutcome:
@@ -616,6 +618,7 @@ func _prepare_arrival(item: Dictionary) -> Dictionary:
 		item.status="ARRIVING"
 		item.patience_seconds=float(item.deadline_sec)-float(item.arrival_sec)
 		item.deadline_sec=float(_s.elapsed_sec)+float(catalog.config.settings.get("arrival_wait_sec",120.0))
+	else: sound_requested.emit("restaurant.order_new")
 	return item
 
 func confirm_seated(id: String, seat_id: String) -> TDOutcome:
@@ -630,6 +633,7 @@ func confirm_seated(id: String, seat_id: String) -> TDOutcome:
 	item.status="WAITING";item.seat_id=seat_id;item.ordered_sec=float(_s.elapsed_sec)
 	item.deadline_sec=float(_s.elapsed_sec)+float(item.patience_seconds)
 	table_service.reconcile()
+	sound_requested.emit("restaurant.order_new")
 	return TDOutcome.new(true,"ORDERED","已落座点单。",{"id":id,"seat_id":seat_id})
 
 func pending_orders() -> Array:
@@ -1012,6 +1016,7 @@ func _complete_delivery(id: String, dish: Dictionary) -> TDOutcome:
 	var growth := ""
 	if crew != null:
 		growth = "，".join(PackedStringArray(crew.record_served_order()))
+	sound_requested.emit("restaurant.serve")
 	return TDOutcome.new(true,"SERVED",growth,item)
 
 func refund(id: String) -> TDOutcome:
@@ -1244,6 +1249,10 @@ func _record(kind: String, cents: int, inventory_delta: Dictionary, reference: S
 		_s.inventory[id] += units
 	_s.ledger.append({"id":"%s:txn-%d" % [_s.run_id,_s.serial],"day":int(_s.day),"kind":kind,"cents":cents,"inventory_delta":inventory_delta.duplicate(true),"reference":reference,"extra":extra.duplicate(true)})
 	if commerce!=null: commerce.sync_costs(_s.ledger)
+	var sound_id: String = {"recipe_unlock":"restaurant.recipe_unlock", "prepayment":"restaurant.payment", "failed_delivery":"restaurant.unhappy"}.get(kind, "")
+	if kind == "tip" and cents > 0: sound_id = "restaurant.tip"
+	if kind == "settlement": sound_id = "restaurant.day_settle" if int(day_summary().net_cents) > 0 else "restaurant.close"
+	if not sound_id.is_empty(): sound_requested.emit(sound_id)
 
 func restore(data: Variant) -> TDOutcome:
 	var checked := validate_save(data)

@@ -19,6 +19,8 @@ var directional_art: bool=true
 @export var sprite_height: float = 70.0
 var walk_cycle_distance: float = 140.0
 var vertical_stride_multiplier: float = 1.0
+var _step_distance: float = 0.0
+var _step_variant: int = 0
 var _walk_time: float = 0.0
 var _walk_phase: float = 0.0
 var walk_frame: int = -1
@@ -104,6 +106,14 @@ func _physics_process(delta: float) -> void:
 	# transposes it and would count horizontal pixels twice and vertical pixels
 	# eight times. Use the actual affine inverse when measuring animation travel.
 	var screen_travel := motion_transform.affine_inverse().basis_xform(position - before_motion)
+	if controls_enabled and is_visible_in_tree() and screen_travel.length_squared() > .0001:
+		_step_distance += screen_travel.length()
+		var step_length: float = maxf(30.0, walk_cycle_distance * .5 * (vertical_stride_multiplier if facing.y != 0 else 1.0))
+		if _step_distance >= step_length:
+			_step_distance = fmod(_step_distance, step_length)
+			TDSoundEffects.request(self,"world.step%d" % _step_variant)
+			_step_variant = (_step_variant + 1) % 3
+	elif not controls_enabled: _step_distance = 0.0
 	if directional_art:
 		if controls_enabled and screen_travel.length_squared() > 0.0001:
 			var stride_scale := vertical_stride_multiplier if facing.y != 0 else 1.0

@@ -43,6 +43,7 @@ var _name_confirmed: bool=false
 var _vn_stage: TDVisualNovelStage
 var _chapter: Label
 var _native: bool = false
+var _sound_line: String = ""
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -319,6 +320,11 @@ func _refresh() -> void:
 	_right_portrait.action=talk.action if talk.active_side=="right" else ""
 	_name.text = "演出" if talk.display_kind=="cg" else talk.speaker_name
 	_body.text = talk.visible_text()
+	var sound_line: String = "%d:%d" % [talk.get_instance_id(),talk._index]
+	if sound_line != _sound_line:
+		_sound_line = sound_line
+		if not presentation_paused and not talk._armed and talk.display_kind == "line":
+			TDSoundEffects.request(self,"dialogue.advance")
 	if talk.presentation=="story":
 		_portrait.who=talk.left_portrait;_right_portrait.who=talk.right_portrait
 		_portrait.modulate=Color.WHITE if talk.active_side=="left" else Color(0.42,0.42,0.48)

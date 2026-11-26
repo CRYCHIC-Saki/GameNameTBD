@@ -687,7 +687,10 @@ func recipe_spices(commands: Array=[]) -> Array[String]:
 func feedback_remaining() -> float:
 	return maxf(0,float(judgement_feedback.get("shown_at_sec",-10)) + float(_content.pc_operations.document_rules.get("feedback_sec",.9)) - clock.qte_sec)
 
-var feedback_audible: bool=true
+var feedback_audible: bool=true:
+	set(value):
+		feedback_audible = value
+		if not value and pc_controls and is_instance_valid(_audio): _audio.stop()
 
 func _capture_feedback(data: Dictionary) -> void:
 	if not document_rules: return

@@ -158,7 +158,7 @@ func test_real_recipe_notes_make_chunks_and_feedback_survives_release_pause_and_
 	kitchen.advance(12.0/7-float(lane.progress.elapsed_sec)); tap(KEY_SPACE)
 	assert_eq(lane.judgement_feedback.grade,"perfect")
 	assert_gt(lane.feedback_remaining(),.8)
-	assert_true(lane._audio.stream is AudioStreamWAV)
+	assert_eq(lane._audio.stream,TDSoundEffects.stream_for("cooking.m1_cut_hit"),"Accepted cut uses the imported short chop sound")
 	var event: Dictionary=lane.judgement_feedback.duplicate(true)
 	var life: float=lane.feedback_remaining()
 	app.toggle_pause(); kitchen.advance(15); assert_eq(lane.feedback_remaining(),life); app.toggle_pause()
