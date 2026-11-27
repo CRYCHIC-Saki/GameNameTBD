@@ -15,8 +15,12 @@ var research: TDResearchSession
 var factory_products_provider: Callable
 var factory_item_provider: Callable
 
-func factory_products(supply_id: String) -> Array:
-	return factory_products_provider.call(supply_id) if factory_products_provider.is_valid() else TDTownMap.products_of(supply_id)
+func factory_products(supply_id: String, stock: Dictionary = {}) -> Array:
+	if factory_products_provider.is_valid():
+		return factory_products_provider.call(supply_id, stock)
+	var products := TDTownMap.products_of(supply_id)
+	if stock.is_empty(): return products
+	return products.filter(func(item: Dictionary) -> bool: return int(stock.get(item.id, 0)) > 0)
 
 func factory_product(supply_id: String, item_id: String) -> Dictionary:
 	for item: Dictionary in factory_products(supply_id):
@@ -142,7 +146,7 @@ func town_name() -> String:
 	var town := catalog.town(town_id)
 	if town.is_empty():
 		return town_id
-	return "%s（%s）" % [String(town["real"]), String(town["nickname"])]
+	return String(town["nickname"])
 
 func set_town(next_id: String) -> TDOutcome:
 	var town := catalog.town(next_id)
@@ -221,7 +225,7 @@ func learned_kitchen_dishes() -> Array:
 		if current.is_empty():
 			continue
 		var service_id := String(current.get("service_recipe", ""))
-		if research!=null or service_id == "" or service_id == "service.qiguoji":
+		if research != null or service_id.is_empty():
 			result.append(current)
 	return result
 
@@ -518,9 +522,8 @@ func report() -> String:
 	var cookable := PackedStringArray()
 	for dish_id: String in recipes.ids():
 		var mapped := catalog.kitchen_recipe_id(dish_id)
-		if mapped.begins_with("phase3.") or mapped == "service.qiguoji":
-			if recipes.has(dish_id) and (mapped.begins_with("phase3.") or dish_id == "qiguoji"):
-				cookable.append("%s→%s" % [String(catalog.dish(dish_id).get("name", dish_id)), mapped])
+		if mapped.begins_with("phase3."):
+			cookable.append("%s→%s" % [String(catalog.dish(dish_id).get("name", dish_id)), mapped])
 	if not cookable.is_empty():
 		lines.append("可回厨房按谱做：" + "、".join(cookable))
 	lines.append("供货：%s。流水线%s，近市%s。" % [_stock_text(), "开" if supply.pipeline else "关", "开" if supply.nearby_market else "关"])
@@ -1063,8 +1066,10 @@ func _factory_job_list(plot_id: String) -> Array:
 
 func factory_goods() -> Array:
 	var rows: Array = []
+	if not supply.stock.values().any(func(qty: int) -> bool: return qty > 0):
+		return rows
 	for supply_id: String in ["seasoning", "vegetable", "meat", "fruit"]:
-		for item: Variant in factory_products(supply_id):
+		for item: Variant in factory_products(supply_id, supply.stock):
 			var item_id := String((item as Dictionary).get("id", ""))
 			var qty := supply.count(item_id)
 			if qty <= 0:

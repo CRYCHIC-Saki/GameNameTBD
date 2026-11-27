@@ -1,0 +1,287 @@
+[
+  {
+    "target": "assets/town/jiangnan-map-props-v2.png",
+    "generated": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-f92a1476-b164-410c-9f64-d182a15d51f0.png",
+    "prompt": "STYLE TRANSFER production game sprite atlas. Image1 EDIT TARGET, image2 STYLE ONLY. Repaint image1 in approved chunky painterly PIXEL ART style of image2: visibly stepped pixel clusters, large clean sunlit planes, cool indigo shadows, lime/sage trees, jade water, warm peach roof accents and muted blue tile roofs, restrained palette, minimal dark contour, no smooth vector curves, no tiny noisy texture. CRITICAL exact atlas invariants: identical canvas aspect, every sprite at same coordinates, same size, same silhouette and empty margins, same item count/order, same camera and floors, leave all existing transparent gaps transparent. Do not move, merge, add, enlarge or crop any sprite; no extra scenery/people/text. Remove colored fringe/matte in empty gaps. Keep architecture regional identity. This atlas is sliced at fixed pixel coordinates, so exact layout is essential.",
+    "grid": 4,
+    "fit_visible": false,
+    "seamless": false
+  },
+  {
+    "target": "assets/town/shiomi-sprites-v1.png",
+    "generated": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-493248a6-ad21-4de7-b68a-6d0661fb9116.png",
+    "prompt": "STYLE TRANSFER production game sprite atlas. Image1 EDIT TARGET, image2 STYLE ONLY. Repaint image1 in approved chunky painterly PIXEL ART style of image2: visibly stepped pixel clusters, large clean sunlit planes, cool indigo shadows, lime/sage trees, jade water, warm peach roof accents and muted blue tile roofs, restrained palette, minimal dark contour, no smooth vector curves, no tiny noisy texture. CRITICAL exact atlas invariants: identical canvas aspect, every sprite at same coordinates, same size, same silhouette and empty margins, same item count/order, same camera and floors, leave all existing transparent gaps transparent. Do not move, merge, add, enlarge or crop any sprite; no extra scenery/people/text. Remove colored fringe/matte in empty gaps. Keep architecture regional identity. This atlas is sliced at fixed pixel coordinates, so exact layout is essential.",
+    "grid": 4,
+    "fit_visible": false,
+    "seamless": false
+  },
+  {
+    "target": "assets/town/egret-sprites.png",
+    "generated": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-5a4b2fe6-abd8-45be-9063-533d9627c2ae.png",
+    "prompt": "STYLE TRANSFER production game sprite atlas. Image1 EDIT TARGET, image2 STYLE ONLY. Repaint image1 in approved chunky painterly PIXEL ART style of image2: visibly stepped pixel clusters, large clean sunlit planes, cool indigo shadows, lime/sage trees, jade water, warm peach roof accents and muted blue tile roofs, restrained palette, minimal dark contour, no smooth vector curves, no tiny noisy texture. CRITICAL exact atlas invariants: identical canvas aspect, every sprite at same coordinates, same size, same silhouette and empty margins, same item count/order, same camera and floors, leave all existing transparent gaps transparent. Do not move, merge, add, enlarge or crop any sprite; no extra scenery/people/text. Remove colored fringe/matte in empty gaps. Keep architecture regional identity. This atlas is sliced at fixed pixel coordinates, so exact layout is essential.",
+    "grid": 4,
+    "fit_visible": false,
+    "seamless": false
+  },
+  {
+    "target": "assets/town/jiangnan-map-arches-v1.png",
+    "generated": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-64b35e0c-55df-4d2d-b19e-0b7ce79f3b05.png",
+    "prompt": "STYLE TRANSFER production game sprite atlas. Image1 EDIT TARGET, image2 STYLE ONLY. Repaint image1 in approved chunky painterly PIXEL ART style of image2: visibly stepped pixel clusters, large clean sunlit planes, cool indigo shadows, lime/sage trees, jade water, warm peach roof accents and muted blue tile roofs, restrained palette, minimal dark contour, no smooth vector curves, no tiny noisy texture. CRITICAL exact atlas invariants: identical canvas aspect, every sprite at same coordinates, same size, same silhouette and empty margins, same item count/order, same camera and floors, leave all existing transparent gaps transparent. Do not move, merge, add, enlarge or crop any sprite; no extra scenery/people/text. Remove colored fringe/matte in empty gaps. Keep architecture regional identity. This atlas is sliced at fixed pixel coordinates, so exact layout is essential.",
+    "grid": 1,
+    "fit_visible": false,
+    "seamless": false
+  },
+  {
+    "target": "assets/town/jiangnan-map-tiles-v3.png",
+    "generated": "C:/Users/myzpw/.codex/generated_images/01a1ca90-c01d-7342-9478-22737be801fd/exec-ab7e8b27-a829-4976-ad79-3ed0d3b5e410.png",
+    "prompt": "Production TILE TEXTURE STYLE TRANSFER. Image1 target, image2 art style only. Repaint as chunky painterly pixel-art terrain: sage/lime grass, cool blue-grey stone, jade turquoise water, ochre earth, warm wood; 3-4 broad shade clusters, crisp square pixels, minimal dark outlines, no noise or realistic tiny texture, no smooth gradients. Preserve exact canvas aspect, texture grid, material boundaries, same orientation. Do not add houses, people, UI, letters, border, or scenery. 14 HORIZONTAL equal material strips. Preserve every strip boundary and material order. Grass, stone, deep water, sand, dirt, shade grass, wood, shallow water, rock, dirt, cobbles, brick variants. Each strip seamless horizontally.",
+    "grid": 1,
+    "fit_visible": false,
+    "seamless": false,
+    "strips": [
+      [
+        0,
+        0.071,
+        0,
+        48
+      ],
+      [
+        0.071,
+        0.142,
+        48,
+        48
+      ],
+      [
+        0.142,
+        0.284,
+        96,
+        96
+      ],
+      [
+        0.284,
+        0.354,
+        192,
+        48
+      ],
+      [
+        0.354,
+        0.423,
+        240,
+        48
+      ],
+      [
+        0.423,
+        0.494,
+        288,
+        48
+      ],
+      [
+        0.494,
+        0.565,
+        336,
+        48
+      ],
+      [
+        0.565,
+        0.632,
+        384,
+        48
+      ],
+      [
+        0.632,
+        0.697,
+        432,
+        48
+      ],
+      [
+        0.697,
+        0.759,
+        480,
+        48
+      ],
+      [
+        0.759,
+        0.822,
+        528,
+        48
+      ],
+      [
+        0.822,
+        0.886,
+        576,
+        48
+      ],
+      [
+        0.886,
+        0.94,
+        624,
+        48
+      ]
+    ]
+  },
+  {
+    "target": "assets/town/jiangnan-map-paving-v1.png",
+    "generated": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-734075a6-64c4-41fd-99ad-8eb0548482ed.png",
+    "prompt": "Production TILE TEXTURE STYLE TRANSFER. Image1 target, image2 art style only. Repaint as chunky painterly pixel-art terrain: sage/lime grass, cool blue-grey stone, jade turquoise water, ochre earth, warm wood; 3-4 broad shade clusters, crisp square pixels, minimal dark outlines, no noise or realistic tiny texture, no smooth gradients. Preserve exact canvas aspect, texture grid, material boundaries, same orientation. Do not add houses, people, UI, letters, border, or scenery. One seamless grey stone paved path texture, irregular broad stone shapes.",
+    "grid": 1,
+    "fit_visible": false,
+    "seamless": false,
+    "preserve_alpha": true,
+    "material": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-7cdcf60d-0452-405b-9893-91015f78e842.png"
+  },
+  {
+    "target": "assets/town/shiomi-ground-v1.png",
+    "generated": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-6c6420b5-dd4b-433a-85bf-b2019ff2e3e4.png",
+    "prompt": "Production TILE TEXTURE STYLE TRANSFER. Image1 target, image2 art style only. Repaint as chunky painterly pixel-art terrain: sage/lime grass, cool blue-grey stone, jade turquoise water, ochre earth, warm wood; 3-4 broad shade clusters, crisp square pixels, minimal dark outlines, no noise or realistic tiny texture, no smooth gradients. Preserve exact canvas aspect, texture grid, material boundaries, same orientation. Do not add houses, people, UI, letters, border, or scenery. 12 SQUARE material tiles in ONE horizontal strip. Exact 12 slots/order: grass, stone steps, pale gravel, sea water, wood planks, rocks, rice plants, white raked sand, grass, grass, grass, grass. Do not merge or shift slot boundaries.",
+    "grid": 1,
+    "fit_visible": false,
+    "seamless": false
+  },
+  {
+    "target": "assets/town/shiomi-verges-v1.png",
+    "generated": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-023e3913-4b46-49d6-9d75-369aeccb4e25.png",
+    "prompt": "Production TILE TEXTURE STYLE TRANSFER. Image1 target, image2 art style only. Repaint as chunky painterly pixel-art terrain: sage/lime grass, cool blue-grey stone, jade turquoise water, ochre earth, warm wood; 3-4 broad shade clusters, crisp square pixels, minimal dark outlines, no noise or realistic tiny texture, no smooth gradients. Preserve exact canvas aspect, texture grid, material boundaries, same orientation. Do not add houses, people, UI, letters, border, or scenery. Transition tiles atlas; retain EXACT existing terrain-boundary pattern, material positions and alpha mask for every tiny tile. Flat orthographic game ground texture; do not make scenery or perspective.",
+    "grid": 1,
+    "fit_visible": false,
+    "seamless": false,
+    "preserve_alpha": true
+  },
+  {
+    "target": "assets/town/shiomi-detail-tiles.png",
+    "generated": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-baf4206c-c6cb-44be-b005-cebcc10bee60.png",
+    "prompt": "Production TILE TEXTURE STYLE TRANSFER. Image1 target, image2 art style only. Repaint as chunky painterly pixel-art terrain: sage/lime grass, cool blue-grey stone, jade turquoise water, ochre earth, warm wood; 3-4 broad shade clusters, crisp square pixels, minimal dark outlines, no noise or realistic tiny texture, no smooth gradients. Preserve exact canvas aspect, texture grid, material boundaries, same orientation. Do not add houses, people, UI, letters, border, or scenery. Ground-overlay texture atlas. Keep exact arrangement of many small 24px tiles and existing silhouettes/alpha positions. Simplify noisy texture into sparse broad pixel clusters, keep bridge and dock pieces along bottom in exact original positions. Do not change layout.",
+    "grid": 1,
+    "fit_visible": false,
+    "seamless": false,
+    "preserve_alpha": true
+  },
+  {
+    "target": "assets/town/egret-grass.png",
+    "generated": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-53bbc49e-cf04-47f7-ba83-06b57ef5c504.png",
+    "prompt": "undefinedONE edge-to-edge seamless tiling simple sage/lime grass with few broad pixel tufts. Top-down flat material ONLY. Seamless on all four edges, no edge bevel/border. Keep material scale broad and readable; deliberate pixel grid. No transparent area.",
+    "grid": 1,
+    "fit_visible": false,
+    "seamless": true
+  },
+  {
+    "target": "assets/town/egret-sea.png",
+    "generated": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-cb0669ca-f825-4aa9-a690-71a3816e37ab.png",
+    "prompt": "undefinedONE edge-to-edge seamless tiling turquoise teal sea with sparse horizontal angular pale turquoise ripple marks; calm not noisy. Top-down flat material ONLY. Seamless on all four edges, no edge bevel/border. Keep material scale broad and readable; deliberate pixel grid. No transparent area.",
+    "grid": 1,
+    "fit_visible": false,
+    "seamless": true
+  },
+  {
+    "target": "assets/town/egret-cobbles.png",
+    "generated": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-1016e8b0-06f6-4350-893d-c9153ce4db2b.png",
+    "prompt": "undefinedONE edge-to-edge seamless tiling warm grey broad cobblestones. Top-down flat material ONLY. Seamless on all four edges, no edge bevel/border. Keep material scale broad and readable; deliberate pixel grid. No transparent area.",
+    "grid": 1,
+    "fit_visible": false,
+    "seamless": true
+  },
+  {
+    "target": "assets/town/egret-granite.png",
+    "generated": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-7cdcf60d-0452-405b-9893-91015f78e842.png",
+    "prompt": "undefinedONE edge-to-edge seamless tiling pale cool grey angular granite paving. Top-down flat material ONLY. Seamless on all four edges, no edge bevel/border. Keep material scale broad and readable; deliberate pixel grid. No transparent area.",
+    "grid": 1,
+    "fit_visible": false,
+    "seamless": true
+  },
+  {
+    "target": "assets/town/egret-quay.png",
+    "generated": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-dbea9653-aa8b-4f12-8e6d-da3faa5a3946.png",
+    "prompt": "undefinedONE edge-to-edge seamless tiling warm beige-grey flat broad irregular stone paving. Top-down flat material ONLY. Seamless on all four edges, no edge bevel/border. Keep material scale broad and readable; deliberate pixel grid. No transparent area.",
+    "grid": 1,
+    "fit_visible": false,
+    "seamless": true
+  },
+  {
+    "target": "assets/town/egret-cart-track.png",
+    "generated": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-0be2e265-83eb-482a-b8d1-18ec36f120ef.png",
+    "prompt": "undefinedONE edge-to-edge seamless tiling muted ochre compact earth cart track, subtle broad marks. Top-down flat material ONLY. Seamless on all four edges, no edge bevel/border. Keep material scale broad and readable; deliberate pixel grid. No transparent area.",
+    "grid": 1,
+    "fit_visible": false,
+    "seamless": true
+  },
+  {
+    "target": "assets/town/egret-passenger-station.png",
+    "generated": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-dd5f9a17-0004-4050-9392-ae1d5f9d1302.png",
+    "prompt": "undefined Keep this single object fully visible in EXACT original canvas footprint. For wharf keep all SIX support posts at same spacing and existing front/side perspective, no new walkway. For station keep entrance at existing baseline. For bollard use dark blue cast iron with broad pixel highlights.",
+    "grid": 1,
+    "fit_visible": true,
+    "seamless": false
+  },
+  {
+    "target": "assets/town/egret-wharf.png",
+    "generated": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-c0e75f65-c434-4afd-b0c9-cd38963f56c6.png",
+    "prompt": "ONE empty horizontal wooden harbor pier sprite ONLY, same six posts, deck spanning entire width, same original camera/silhouette. NO house, building, station, ship, bollard, trees or added items. Preserve all original six posts spacing and all original sprite positions, empty gaps transparent. Redraw original wood with chunky painterly pixel blocks, warm tan sunlit surface and cool blue brown shadows. Same wide canvas aspect, clean pixel edges. ORIGINAL TARGET image only.",
+    "grid": 1,
+    "fit_visible": true,
+    "seamless": false
+  },
+  {
+    "target": "assets/town/egret-bollard.png",
+    "generated": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-2ff22aad-0f7b-4f85-93f0-4c80c55aa82a.png",
+    "prompt": "ONE tiny cast iron harbor bollard sprite ONLY. Shape exactly like attached original, dark navy cylindrical pedestal and rounded cap, subtle square pixel highlights, restrained 3 shades. Same camera/silhouette/proportions. Entire empty background transparent. No scenery, islands, maps, people, buildings, collage, or other objects. Draw bollard large in canvas.",
+    "grid": 1,
+    "fit_visible": true,
+    "seamless": false
+  },
+  {
+    "target": "assets/town/jiangnan-map-frontages-v1.png",
+    "generated": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-f3f5d699-8803-4a2c-b92b-4b9c46b5152e.png",
+    "prompt": "This is a production terrain OVERLAY texture sheet, NOT scenery. Repaint ONLY existing noise/fragments of grass, water ripples, stone retaining wall and pavement in same locations. Keep original transparent areas clear. Same grid and every tiny fragment EXACT original coordinates, do not rearrange. Chunky painterly pixel color clusters: sage green grass, teal water, cool grey stone. NO houses, trees, islands, landscape scene, clouds, buildings, characters, text. NEVER draw a scene. It must remain a flat orthographic texture strip atlas just like original.",
+    "grid": 1,
+    "fit_visible": false,
+    "seamless": false,
+    "preserve_alpha": true,
+    "material_bands": [
+      {
+        "y": 0,
+        "height": 392,
+        "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-53bbc49e-cf04-47f7-ba83-06b57ef5c504.png"
+      },
+      {
+        "y": 392,
+        "height": 72,
+        "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-cb0669ca-f825-4aa9-a690-71a3816e37ab.png"
+      },
+      {
+        "y": 464,
+        "height": 32,
+        "source": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-7cdcf60d-0452-405b-9893-91015f78e842.png"
+      }
+    ]
+  },
+  {
+    "target": "assets/town/world-atlas-v1.png",
+    "generated": "C:/Users/myzpw/.codex/generated_images/01a1ca90-c01d-7342-9478-22737be801fd/exec-58c7e887-1e92-4a17-a5bf-bd3fc96396a2.png",
+    "world_chart": true,
+    "prompt": "Create coherent PIXEL ART three-town travel minimap STYLE APPROVAL SAMPLE wide16:9. Image1 chosen by user is exact art direction: chunky painterly pixel clusters, large simplified sunlit planes, cool blue/indigo shadows, warm orange roofs, lime and sage foliage, bright turquoise/jade water, minimal dark outlines. Image2 provides REGION PLACEMENT and three-town scope only: European coastal town upper-left mainland, Chinese river delta town lower-center mainland, Japanese town right island. Keep mainland/river/island placement readable as existing map; do not add extra regions. Stylized 3/4 overview with tiny recognizable half-timber houses/windmill in European town, Chinese grey/teal tiled roofs/stone bridge/harbor in river town, pagoda/torii/cherry trees Japanese island. Match reference1 rendering style across ALL terrain buildings trees water. Town icons organically sit on terrain, NO pasted rectangular screenshots, NO insets, no collage borders. Simplify details enough to work at thumbnail scale. Small dotted shipping routes between actual three harbors. No text/UI/labels. No smooth vector, no realistic materials, no grain/no fine noisy shading. Clearly visible pixel edges and compact palette.",
+    "grid": 1
+  },
+  {
+    "target": "assets/town/restaurant-chinese-v1.png",
+    "generated": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-07a32256-caac-4740-a5ac-9eded88677ed.png",
+    "prompt": "Repaint image1 (single restaurant facade SPRITE EDIT TARGET) into image2's painterly PIXEL ART rendering: chunky stepped color clusters, broad sunlit planes, indigo cool shadow planes, warm roof accents, compact shades, minimal dark outlines. Preserve image1 exact front-facing camera, two floors, silhouette, width/height and margins, doorway baseline, all distinctive restaurant/flame motifs, Chinese sign text unchanged. All background transparent. Do NOT add scenery, islands, extra buildings, people, UI, decorative ground, or perspective changes. Pixel clusters clearly visible and coherent with detailed16bit JRPG outdoor sprites; no smooth vector curves or tiny texture noise. Keep original architecture identity.",
+    "grid": 8,
+    "fit_visible": false,
+    "seamless": false
+  },
+  {
+    "target": "assets/town/restaurant-japanese-v1.png",
+    "generated": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-d6ae41b3-c0cd-45cf-b40c-74ed11988845.png",
+    "prompt": "Repaint image1 (single restaurant facade SPRITE EDIT TARGET) into image2's painterly PIXEL ART rendering: chunky stepped color clusters, broad sunlit planes, indigo cool shadow planes, warm roof accents, compact shades, minimal dark outlines. Preserve image1 exact front-facing camera, two floors, silhouette, width/height and margins, doorway baseline, all distinctive restaurant/flame motifs, Chinese sign text unchanged. All background transparent. Do NOT add scenery, islands, extra buildings, people, UI, decorative ground, or perspective changes. Pixel clusters clearly visible and coherent with detailed16bit JRPG outdoor sprites; no smooth vector curves or tiny texture noise. Keep original architecture identity.",
+    "grid": 8,
+    "fit_visible": false,
+    "seamless": false
+  },
+  {
+    "target": "assets/town/restaurant-european-v1.png",
+    "generated": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-7cf1d89e-7162-45d4-8fa3-6db3ce32924a.png",
+    "prompt": "Repaint image1 (single restaurant facade SPRITE EDIT TARGET) into image2's painterly PIXEL ART rendering: chunky stepped color clusters, broad sunlit planes, indigo cool shadow planes, warm roof accents, compact shades, minimal dark outlines. Preserve image1 exact front-facing camera, two floors, silhouette, width/height and margins, doorway baseline, all distinctive restaurant/flame motifs, Chinese sign text unchanged. All background transparent. Do NOT add scenery, islands, extra buildings, people, UI, decorative ground, or perspective changes. Pixel clusters clearly visible and coherent with detailed16bit JRPG outdoor sprites; no smooth vector curves or tiny texture noise. Keep original architecture identity.",
+    "grid": 8,
+    "fit_visible": false,
+    "seamless": false
+  }
+]

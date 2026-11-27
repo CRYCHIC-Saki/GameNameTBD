@@ -28,13 +28,13 @@ func test_daily_conversation_completes_once_and_has_affection_tiers() -> void:
 	assert_eq(people.relationship("aling").affection,0)
 	assert_true(people.complete_chat(talk.context,true,["chat"]).ok)
 	people.complete_chat(talk.context,true,["about"])
-	assert_eq(people.relationship("aling").affection,2)
+	assert_eq(people.relationship("aling").affection,int(people.settings.chat_gain))
 	people.records.aling.affection=20;assert_eq(people.tier("aling"),"friend")
 	people.records.aling.affection=60;assert_eq(people.tier("aling"),"close")
 	people.next_day(2)
 	assert_eq(people.complete_chat(talk.context,true,["chat"]).code,"STALE_CONVERSATION")
 	people.complete_chat(people.conversation("aling").context,true,["chat"])
-	assert_eq(people.relationship("aling").affection,62)
+	assert_eq(people.relationship("aling").affection,60+int(people.settings.chat_gain))
 
 func test_named_customer_keeps_economic_type_family_and_has_one_daily_opportunity() -> void:
 	var people:=TDCharacterRoster.new()
@@ -93,13 +93,12 @@ func test_real_dialogue_view_layers_story_portraits_behind_text_and_restores_dai
 	var talk:=TDDialogue.new();talk.story_layout("主角","chen");talk.add_line("老陈","chen","尝尝这道菜。")
 	view.present(talk)
 	var left:=view.get_node("Portrait") as Control;var right:=view.get_node("RightPortrait") as Control
-	assert_true(right.visible);assert_lt(left.modulate.r,right.modulate.r)
-	var panel:=view.get_node("Box") as Control
-	# The integrated artwork extends beneath the foreground text panel; heads stay above it.
-	for portrait: Control in [left,right]:
-		assert_lt(portrait.get_global_rect().position.y,panel.global_position.y)
-		assert_gt(panel.z_index,portrait.z_index,"Text panel is drawn in front of both full busts")
-	assert_true(panel.get_global_rect().encloses((panel.get_node("Body") as Control).get_global_rect()))
+	await wait_process_frames(2)
+	assert_true(view._native)
+	assert_false(left.visible)
+	assert_false(right.visible)
+	assert_true(view._vn_stage.dialog.background_box.is_visible_in_tree())
+	assert_true(view._vn_stage.runner.ctx.characters.active_sprites.has("chen"))
 	var daily:=TDCharacterRoster.new().conversation("chen")
 	view.present(daily);assert_false(right.visible);assert_eq(left.modulate,Color.WHITE)
 	view.finish_now();assert_false(view.last_completed)

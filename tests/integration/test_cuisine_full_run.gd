@@ -9,7 +9,17 @@ func _twenty(prefix: String, study: bool=true) -> void:
 		var lesson:=TDResearchLesson.new();var configured:=lesson.configure(chart)
 		assert_true(configured.ok,id+" "+configured.code)
 		lesson.token="full:"+id;add_child(lesson)
-		var completed: bool=load("res://tools/test_support/cuisine_input.gd").play(lesson)
+		var seen: Array[String] = []
+		var completed: bool=load("res://tools/test_support/cuisine_input.gd").play(lesson,func(lane:TDCookingLane)->void:
+			if lane != null and lane == lesson._pot() and not lane.food_stage.is_empty():
+				if seen.is_empty() or seen.back() != lane.food_stage: seen.append(lane.food_stage))
+		var sheet := lesson._service.cooking.sheet_data(chart.profile)
+		var timeline := TDBeatSheet.new()
+		assert_true(timeline.configure(sheet,lesson._service.cooking.data().operations).ok,id)
+		var expected: Array[String] = [sheet.initial_food_stage]
+		for event: Dictionary in timeline.snapshot().events:
+			if event.has("food_stage") and expected.back() != event.food_stage: expected.append(event.food_stage)
+		assert_eq(seen,expected,id+" visual sequence through live operations")
 		assert_true(completed,id+" must complete real operations")
 		var progress:=lesson.update()
 		assert_true(progress.ok,id+" "+progress.code)

@@ -4,9 +4,13 @@ extends RefCounted
 const SIZE := TDPlannedTown.REFERENCE_SIZE
 const MAP_PATH := "res://src/town/jiangnan_map.tscn"
 const CELL_SIZE := 90
+# The lower wall extends a few painted pixels beyond the old bands. Leave
+# room for the actor's feet at the front lip and the side of enclosed walls.
+const WALL_EDGE := Vector4(6,4,6,12)
 const WORLD_SIZE := SIZE * (73.0 * CELL_SIZE / SIZE.x)
 static var _map: PackedScene
 static var _parts: Array[Dictionary] = []
+static var _diner: Dictionary
 
 static func make_scene() -> Node2D:
 	if _map == null: _map = load(MAP_PATH)
@@ -28,9 +32,14 @@ static func _parts_from_scene() -> Array[Dictionary]:
 		_parts.append({"id": sprite.get_meta("scenic_id"), "art": sprite.texture,
 			"rect": sprite.transform * sprite.get_rect(), "bases": bases, "walking": walking, "foot": sprite.position.y,
 			"service": sprite.get_meta("service", ""), "layer": sprite.get_meta("scenic_layer"),
-			"below_player": sprite.z_index < 0})
+			"below_player": sprite.z_index < 0, "enclosed": sprite.get_meta("enclosed",false)})
+		if sprite.get_meta("scenic_id") == "diner": _diner = _parts.back()
 	scene.free()
 	return _parts
+
+static func diner_facade() -> Dictionary:
+	_parts_from_scene()
+	return _diner
 
 static func world_scale(map: TDTownMap, cell: float) -> float:
 	return map.extent * cell / SIZE.x
@@ -88,6 +97,7 @@ static func facades(map: TDTownMap, cell: float, origin: Vector2) -> Array[Dicti
 		if part.service == "harbor.hekou": plot = TDHarbor.facility(map)
 		var walking: Array[Rect2] = []
 		for contact: Rect2 in part.walking:
+			if part.enclosed: contact=contact.grow_individual(WALL_EDGE.x,WALL_EDGE.y,WALL_EDGE.z,WALL_EDGE.w)
 			walking.append(_place(contact,origin,scale_factor))
 		var sort_y := origin.y + float(part.foot) * scale_factor
 		if part.below_player: sort_y = origin.y - 1.0

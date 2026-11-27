@@ -8,6 +8,9 @@ var _trail: TDQuestTrail
 var _card: PanelContainer
 var _title: Label
 var _hint: Label
+const TASK_NOTICE_SECONDS := 5.0
+var _noticed_task := ""
+var _task_notice_left := 0.0
 var _pending_tutorial: String=""
 var _route_key: String=""
 var _route: Array[Vector2i]=[]
@@ -25,16 +28,20 @@ var _closed: bool=false
 var _bark_seen: Dictionary={}
 var _first_arrival: bool=false
 var _event_place: String=""
+var _failed_revised_scene: TDDialogue
+var journey := preload("res://src/story/revised_journey.gd").new()
 
 func reserved_bottom() -> float:
 	return _card.get_global_rect().end.y if _card!=null and _card.is_visible_in_tree() else 0.0
 
 func _ready() -> void:
+	journey.guide=self
 	process_mode=Node.PROCESS_MODE_ALWAYS;mouse_filter=Control.MOUSE_FILTER_IGNORE
 	_layer=CanvasLayer.new();_layer.layer=50;add_child(_layer)
 	_trail=TDQuestTrail.new();_layer.add_child(_trail)
 	_card=PanelContainer.new();_card.position=Vector2(26,118);_card.size=Vector2(372,0)
 	_card.mouse_filter=Control.MOUSE_FILTER_IGNORE;_card.theme=TDUI.theme();_layer.add_child(_card)
+	_card.hide()
 	var box:=VBoxContainer.new();box.mouse_filter=Control.MOUSE_FILTER_IGNORE;_card.add_child(box)
 	_title=TDUI.label("第一口异端",TDUI.FONT_BODY,TDUI.ORANGE);box.add_child(_title)
 	_hint=TDUI.label("",TDUI.FONT_BODY);_hint.custom_minimum_size.x=348;_hint.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;box.add_child(_hint)
@@ -43,6 +50,7 @@ func _ready() -> void:
 	_bark_portrait.texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST;_bark_portrait.mouse_filter=Control.MOUSE_FILTER_IGNORE;_layer.add_child(_bark_portrait)
 	_bark=TDUI.label("",TDUI.FONT_BODY,Color("ffe4a0"));_bark.position=Vector2(955,530);_bark.size=Vector2(300,120);_bark.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;_bark.mouse_filter=Control.MOUSE_FILTER_IGNORE;_layer.add_child(_bark)
 	dialogue=TDDialogueView.new();_layer.add_child(dialogue);dialogue.closed.connect(_on_dialogue_closed)
+	dialogue.playback_failed.connect(_on_playback_failed)
 	dialogue.hero_named.connect(func(value:String)->void:
 		if shell.profile!=null and dialogue.talk!=null and dialogue.talk.context.get("kind")=="story": shell.profile.story.hero_name=value)
 	shell.town.story_requested.connect(request_person)
@@ -61,23 +69,28 @@ func presenting() -> bool:
 func begin_arrival() -> void:
 	# Called synchronously before the first new-slot frame can be drawn.
 	_first_arrival=true
-	shell.town.hide();shell.town._status_panel.hide();shell._hud_layer.hide()
-	present("intro")
+	shell.town.set_presented(false)
+	shell._hud_layer.hide()
+	if not shell.profile.story.revised.is_empty():
+		continue_revised()
+	else: present("intro")
 
 func _process(delta: float) -> void:
 	if shell==null or shell.profile==null: return
+	if not shell.profile.story.revised.is_empty():
+		_process_revised(delta)
+		return
 	observe_authored()
 	var story:=shell.profile.story
-	if presenting() and dialogue.talk!=null and dialogue.talk.display_kind=="line": shell.profile.characters.mark_met(dialogue.talk.portrait_id)
+	if presenting() and dialogue.talk!=null and dialogue.talk.context.get("kind") != "story_replay" and dialogue.talk.display_kind=="line": shell.profile.characters.mark_met(dialogue.talk.portrait_id)
 	if shell.atlas!=null and shell.atlas.selected_id=="C02" and story.waiting_cook(): story.recipe_viewed=true
 	var hidden:=shell.location=="voyage" or presenting() or shell._modal!=null or shell.atlas!=null or shell.kitchen_view._popup!=null or not story.started()
 	var pending_home: bool=not shell.profile.has_residence() and shell.profile.residence.stage!="locked"
-	_card.visible=not hidden and (not story.finished() or pending_home)
 	_trail.visible=not hidden and story.tracked and (not story.finished() or pending_home)
 	if not get_tree().paused and not presenting(): _pulse+=delta
 	var now:=objective()
-	_hint.text=str(now.get("text",""));_title.text="主线 · "+str(now.get("title","第一口异端"))
-	_card.reset_size()
+	var task_id := "%s:%s" % [story.beat, shell.profile.residence.stage] if not story.finished() or pending_home else ""
+	_update_task_notice(task_id, now, hidden, delta)
 	if shell.location=="kitchen" and shell.kitchen_view.kitchen.stage.visible: _card.hide();_trail.hide()
 	if _trail.visible: update_route(now)
 	_bark.visible=not hidden and shell.location=="kitchen" and _pulse<_bark_until
@@ -97,6 +110,14 @@ func _process(delta: float) -> void:
 
 func request_person(who: String) -> void:
 	if presenting() or shell._modal!=null: return
+	if not shell.profile.story.revised.is_empty():
+		if who=="aling" and shell.profile.residence.stage in ["invited","following","door"]:
+			begin_homecoming()
+			return
+		if who == "chen" and journey.home_landmark("market-small"): return
+		if who=="aling" and journey.try_introduce_expansion(): return
+		show_resident(who)
+		return
 	if request_authored_person(who): return
 	if who=="aling" and not shell.profile.has_residence():
 		if shell.profile.residence.stage=="locked": shell.profile.invite_home("first_day")
@@ -117,6 +138,10 @@ func request_person(who: String) -> void:
 	if id!="": present(id)
 	else: show_talk(story.talk(who,shell.profile.title,shell.town.chapter_ready,shell.profile.world.san,shell.town.story_board))
 
+func show_resident(id: String) -> void:
+	if presenting() or shell._modal!=null or not shell.profile.characters.can_chat(id): return
+	show_talk(shell.profile.characters.conversation(id))
+
 func present(id: String) -> void:
 	if _closed or presenting(): return
 	var talk:=TDOpeningScript.conversation(id,hero_name(),shell.profile.world.san)
@@ -127,22 +152,47 @@ func hero_name() -> String:
 	return shell.profile.story.hero_name if not shell.profile.story.hero_name.is_empty() else "？？？"
 
 func begin_homecoming() -> void:
-	if shell.profile.residence.stage!="invited" or presenting(): return
-	present_home("home_late" if shell.profile.residence.reason=="late" else "home_invite")
+	if presenting(): return
+	var profile := shell.profile
+	if profile.residence.stage=="invited": present_home("home_late" if profile.residence.reason=="late" else "home_invite")
 
 func present_home(scene: String) -> void:
 	if presenting(): return
 	show_talk(TDOpeningScript.home_conversation(scene,hero_name()))
 
 func show_talk(talk: TDDialogue) -> void:
-	_scene_key=str(talk.context.get("scene",""));dialogue.present(talk)
+	talk.context.vn_background = TDVNPresentation.background_for(authored_place())
+	_scene_key=str(talk.context.get("scene",""))
 	shell.town.external_story_frozen=true;shell.restaurant.story_frozen=true
 	shell.kitchen_view.set_paused(true);shell._lock_controls(false)
+	dialogue.present(talk)
+
+func _on_playback_failed(scene: TDDialogue) -> void:
+	if scene.context.get("kind") in ["revised_mainline","revised_route","revised_unlock"]:
+		_failed_revised_scene = scene
+		shell._message("剧情资源读取失败。可在任务栏重试。")
+	else:
+		shell._message("这段剧情暂时无法播放。")
 
 func _on_dialogue_closed(_text: String, _picks: Array) -> void:
 	var story:=shell.profile.story
 	var home_finished: bool=false
-	if dialogue.last_context.get("kind") == "authored_event":
+	if dialogue.last_context.get("kind") in ["revised_mainline","revised_route","revised_unlock","revised_preview"]:
+		if dialogue.last_context.kind != "revised_preview":
+			journey.dialogue_finished(_scene_key,dialogue.last_context.kind,dialogue.last_completed)
+	elif dialogue.last_context.get("kind") == "resident":
+		var roster := shell.profile.characters
+		var id := str(dialogue.last_context.character_id)
+		var chat := roster.complete_chat(dialogue.last_context,dialogue.last_completed,_picks)
+		if chat.code=="RELATIONSHIP_CHANGED":
+			shell._message("%s · 好感 %d/100" % [roster.definition(id).name, int(roster.relationship(id).affection)])
+	elif dialogue.last_context.get("kind") == "landmark":
+		if dialogue.last_completed and "rest" in _picks:
+			var zone := str(dialogue.last_context.zone)
+			shell._outcome(shell.profile.world_transaction(shell.profile.world.visit_zone.bind(zone),"visit:"+zone))
+	elif dialogue.last_context.get("kind") == "story_replay":
+		pass # A recap never grants progress, encounters, SAN changes or supplies.
+	elif dialogue.last_context.get("kind") == "authored_event":
 		var committed := shell.profile.story_events.finish(int(dialogue.last_context.get("event_token",-1)),dialogue.last_completed,_apply_event_effect)
 		if dialogue.last_completed and not committed: shell._message("演出的完成效果未能应用，未记录完成；可重新触发后再试。")
 	elif _scene_key in ["home_invite","home_late","home_door"]:
@@ -159,20 +209,17 @@ func _on_dialogue_closed(_text: String, _picks: Array) -> void:
 	shell.kitchen_view.set_paused(get_tree().paused);shell._lock_controls(true)
 	if home_finished:
 		shell.travel("cottage",true)
-		shell._message("小屋已解锁。靠近床按 E 保存或休息；退出不会自动保存，未完成的教学会随存档保留。")
+		shell._message("小屋已解锁。靠近床按 E 休息，睡下时会自动存档。")
 
 func show_journal() -> void:
 	if presenting() or shell.atlas!=null or shell._modal!=null: return
 	var story:=shell.profile.story
+	if not story.revised.is_empty():
+		show_revised_journal()
+		return
 	var box:=shell._dialog("任务 · 第一口异端",true)
 	box.add_child(TDUI.label("主线  ·  "+("已完成" if story.finished() else "进行中"),TDUI.FONT_SECTION,TDUI.ORANGE))
 	var now:=objective();box.add_child(TDUI.label(str(now.get("text","")),TDUI.FONT_SECTION))
-	var stages: Array=[{"ids":["arrive","follow"],"text":"寻找传说中的美味 · 跟随阿铃"},{"ids":["soup","bowl"],"text":"众口称颂的圣餐 · 尝一口汤"},{"ids":["return","awaken","cook"],"text":"唤醒灶火 · 为阿铃做番茄炒蛋"},{"ids":["verdict"],"text":"第一位异端 · 听取真实评价"},{"ids":["founded"],"text":"点燃第一日 · 菜单、备货、开门与打烊"}]
-	var reached: bool=false
-	for entry: Dictionary in stages:
-		var active: bool=story.beat in entry.ids
-		if active: reached=true
-		box.add_child(TDUI.label(("◆ " if active else ("○ " if reached else "✓ "))+str(entry.text),TDUI.FONT_BODY,TDUI.ORANGE if active else TDUI.MUTED))
 	box.add_child(TDUI.button("停止追踪 [T]" if story.tracked else "追踪任务 [T]",func()->void:story.tracked=not story.tracked;shell._close_dialog()))
 	box.add_child(TDUI.button("操作教学手册",show_manual))
 	if story.finished(): box.add_child(TDUI.button("第一章回顾（不改变进度或奖励）",show_replay))
@@ -192,6 +239,7 @@ func objective() -> Dictionary:
 		var stage: String=shell.profile.residence.stage
 		if stage!="locked":
 			return {"title":"夜鸦的落脚密令","room":"town","target":"cottage" if stage=="door" else ("escort" if stage=="following" else "aling"),"text":{"invited":"到店外找阿铃","following":"跟随阿铃前往小屋","door":"E 接过钥匙"}[stage]}
+	if not story.revised.is_empty(): return journey.objective()
 	var result: Dictionary={"title":"第一口异端","text":story.quest(shell.town.chapter_ready,shell.town.story_board),"room":"town","target":"aling"}
 	match story.beat:
 		"arrive": result.text="与阿铃交谈"
@@ -434,6 +482,9 @@ func _update_reference_town_route(town: TDTownWorld, destination: String, target
 				for person: Dictionary in town._story_people():
 					if person.id == target:
 						goal = Vector2(person.get("position", Vector2(person.cell))) + Vector2.ONE * .5
+	_show_reference_route(town,start,goal)
+
+func _show_reference_route(town: TDTownWorld, start: Vector2, goal: Vector2) -> void:
 	var key := "reference" + str(Vector2i(start.floor())) + str(Vector2i(goal.floor())) + str(shell.profile.world.map_revision)
 	if key != _route_key:
 		_route_key = key
@@ -441,12 +492,13 @@ func _update_reference_town_route(town: TDTownWorld, destination: String, target
 	var points := PackedVector2Array()
 	var project := town.get_global_transform_with_canvas()
 	for at: Vector2 in _reference_route:
-		points.append(project * (origin + at * town.cell_size()))
+		points.append(project * (town._origin() + at * town.cell_size()))
 	_trail.points = points
 	_trail.phase = _pulse
 	_trail.queue_redraw()
 
 func close() -> void:
+	journey.clear_escort()
 	_closed=true;_pending_tutorial=""
 	if shell!=null and shell.profile!=null: shell.profile.story_events.cancel(); shell.profile.story_events.pending.clear()
 	if shell!=null and shell.town!=null: shell.town.authored_interaction=Callable()
@@ -526,4 +578,125 @@ func show_replay() -> void:
 		box.add_child(TDUI.button(str(pair[1]),func()->void:
 			shell._close_dialog()
 			var talk:=TDOpeningScript.conversation(id,hero_name(),shell.profile.world.san)
-			talk.context={"kind":"story_replay","scene":id};show_talk(talk)))
+			talk.context.kind="story_replay";show_talk(talk)))
+
+func _process_revised(delta: float) -> void:
+	var hidden := presenting() or shell._modal != null or shell.atlas != null or shell.kitchen_view._popup!=null or shell._rest_busy
+	_trail.hide(); _bark.hide(); _bark_portrait.hide()
+	if not shell.profile.has_residence() and shell.profile.story.served and shell.profile.shop.snapshot().phase == "SETTLED": shell.profile.invite_home("first_day")
+	if not hidden and shell.location=="town" and shell.profile.residence.stage=="invited":
+		begin_homecoming()
+	if _failed_revised_scene == null: journey.tick(delta)
+	var node := TDRevisedMainline.current(shell.profile.story.revised)
+	var branch := shell.branch_visit
+	var in_branch_overlay := branch!=null and (branch.dining._editing or branch.shop_view._popup!=null or branch.shop_view.kitchen.stage.visible)
+	_card.visible = shell.profile.story.tracked and not node.is_empty() and node.get("kind")!="freeplay" and not hidden and not presenting() and shell._modal==null and not get_tree().paused and not shell.kitchen_view.kitchen.stage.is_visible_in_tree() and not in_branch_overlay
+	if not _card.visible: return
+	var now := objective()
+	_set_task_card(now)
+	if shell.location=="town" and journey.cursor()==0:
+		var goal := journey.arrival_walk_goal()
+		if goal.is_finite():
+			var town := shell.town
+			var start := (town._player.position-town._origin())/town.cell_size()
+			_pulse+=delta
+			_show_reference_route(town,start,goal)
+			_trail.show()
+	elif shell.location=="voyage" and shell.visiting_town=="paris" and not str(now.get("resident_site", "")).is_empty():
+		var visit := shell.visiting
+		var sites: Dictionary = visit._crowd_stands.map_locations(Vector2.ZERO,visit.cell_size)
+		if sites.has(now.resident_site):
+			_trail.points=PackedVector2Array([visit.get_global_transform_with_canvas()*(sites[now.resident_site]*visit.cell_size)])
+			_pulse+=delta
+			_trail.phase=_pulse
+			_trail.show()
+			_trail.queue_redraw()
+
+func _update_task_notice(task_id: String, now: Dictionary, hidden: bool, delta: float) -> void:
+	if task_id != _noticed_task:
+		_noticed_task = task_id
+		_task_notice_left = TASK_NOTICE_SECONDS
+	_card.visible = not hidden and not get_tree().paused and not task_id.is_empty() and _task_notice_left > 0.0
+	if not _card.visible: return
+	_task_notice_left = maxf(0.0, _task_notice_left - delta)
+	_set_task_card(now)
+
+func _set_task_card(now: Dictionary) -> void:
+	var title := str(now.get("title","主线"))
+	var hint := str(now.get("text",""))
+	if _title.text != title or _hint.text != hint:
+		_title.text = title
+		_hint.text = hint
+		_card.call_deferred("reset_size")
+
+func continue_revised() -> void:
+	if not presenting() and shell.profile!=null and _failed_revised_scene == null: journey.tick(0)
+
+func _open_revised_brief(town_id: String) -> void:
+	journey.open_brief(town_id)
+
+func show_revised_journal() -> void:
+	if presenting(): return
+	shell._close_dialog()
+	var box := shell._dialog("任务",true)
+	var now := journey.objective() if not shell.profile.story.revised.is_empty() else TDRevisedMainline.objective({})
+	box.add_child(TDUI.label("当前任务 · " + str(now.title), TDUI.FONT_SECTION, TDUI.ORANGE))
+	var description := TDUI.label(str(now.text),TDUI.FONT_BODY)
+	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	description.custom_minimum_size.x = 700; box.add_child(description)
+	if not shell.profile.story.revised.is_empty() and not TDRevisedMainline.current(shell.profile.story.revised).is_empty():
+		var story := shell.profile.story
+		box.add_child(TDUI.button("停止追踪 [T]" if story.tracked else "追踪任务 [T]",func() -> void:
+			story.tracked=not story.tracked
+			show_revised_journal()))
+	if _failed_revised_scene != null:
+		box.add_child(TDUI.button("重试当前剧情",func() -> void:
+			var scene := _failed_revised_scene
+			_failed_revised_scene = null
+			shell._close_dialog()
+			show_talk(scene)))
+	if not shell.profile.story.revised.is_empty() and journey.can_retry():
+		box.add_child(TDUI.button("开始料理",func() -> void: shell._close_dialog(); journey.start_cooking()))
+	if journey.cursor()==8 and journey.level()>=2 and journey.level()<journey.VITO_LEVEL and TDRevisedMainline.flag(shell.profile.story.revised,"paris_training_complete"):
+		box.add_child(TDUI.label("稀味郡 · 居民挑战",TDUI.FONT_SECTION,TDUI.ORANGE))
+		for required: int in journey.PARIS_RESIDENTS:
+			if journey.level()<required: continue
+			var resident: Array = journey.PARIS_RESIDENTS[required]
+			var site: String = resident[0]
+			var status := "已完成" if journey.paris_resident_defeated(site) else "待挑战"
+			box.add_child(TDUI.label("Lv.%d · %s · %s · %s" % [required,resident[1],journey.paris_resident_dish(site),status],TDUI.FONT_BODY))
+	box.add_child(TDUI.label("历史剧情回放", TDUI.FONT_SECTION, TDUI.ORANGE))
+	var nodes: Array = TDRevisedMainline.data().nodes
+	var completed: Array = shell.profile.story.revised.get("completed", [])
+	var counts := {}
+	var entries: Array[Dictionary] = []
+	for index: int in nodes.size():
+		var node: Dictionary = nodes[index]
+		if node.kind != "dialogue" or node.id not in completed: continue
+		var chapter := int(node.chapter)
+		counts[chapter] = int(counts.get(chapter, 0)) + 1
+		entries.append({"node":node, "chapter":chapter, "part":counts[chapter]})
+		if node.id==TDRevisedMainline.ARRIVAL_ID:
+			counts[chapter] += 1
+			entries.append({"node":TDRevisedMainline.arrival_return(), "chapter":chapter, "part":counts[chapter]})
+		elif journey.ROUTE_CHAPTERS.has(index):
+			counts[chapter] += 1
+			entries.append({"node":journey.ROUTE_CHAPTERS[index], "chapter":chapter, "part":counts[chapter]})
+	if entries.is_empty():
+		box.add_child(TDUI.label("还没有可回放的剧情。", TDUI.FONT_BODY, TDUI.MUTED))
+	for entry: Dictionary in entries:
+		var scene: Dictionary = entry.node
+		var title := str(scene.title)
+		if not title.begins_with("第"): title = str(TDRevisedMainline.data().chapters[int(entry.chapter) - 1].title)
+		if int(counts[entry.chapter]) > 1: title += " · 第 %d 段" % int(entry.part)
+		box.add_child(TDUI.button(title, _replay_scene.bind(scene)))
+
+func _replay_scene(scene: Dictionary) -> void:
+	shell._close_dialog()
+	show_talk(TDRevisedMainline.talk(scene, true))
+
+func revised_boundary_ready() -> bool:
+	if not shell.profile.at_boundary(): return false
+	if shell.branch_visit != null and shell.branch_visit.shop_view != null:
+		return shell.branch_visit.shop_view.shop.snapshot().phase in ["PREPARE","SETTLED"]
+	return true

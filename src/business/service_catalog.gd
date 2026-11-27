@@ -66,7 +66,7 @@ func load_data(raw: Variant) -> TDOutcome:
 			if not definition.is_empty(): names[id]=definition
 		if not id is String or not names.has(id) or not integer(raw.costs[id],1,1000000) or names[id].scope == "TEST_ONLY": return TDOutcome.new(false,"INVALID_COST")
 	var seen: Dictionary = {}
-	if raw.offers.size() < 5 or raw.offers.size() > 8: return TDOutcome.new(false,"INVALID_MENU_COUNT")
+	if raw.offers.is_empty() or raw.offers.size() > 8: return TDOutcome.new(false,"INVALID_MENU_COUNT")
 	for offer: Variant in raw.offers:
 		if not offer is Dictionary or not offer.get("id") is String or seen.has(offer.id): return TDOutcome.new(false,"INVALID_OFFER")
 		seen[offer.id] = true
@@ -158,7 +158,7 @@ func request_profile(family: String, customer: Dictionary, entry: Dictionary = {
 				if i not in claimed: chosen=i; break
 		if chosen>=0:
 			claimed.append(chosen); notes[chosen].input="spice:"+ingredient; notes[chosen].form="hold"
-			notes[chosen].hold_beats=float(targets[ingredient])/float(chart.groups.season.get("pour_rate_per_sec",.2))/(60.0/float(chart.bpm))
+			notes[chosen].hold_beats=float(targets[ingredient])/TDBeatSheet.measured_pour_rate(chart.groups.season,float(chart.bpm))/(60.0/float(chart.bpm))
 	var shift: float=0
 	for row: Dictionary in chart.beats:
 		row.t=float(row.t)+shift
@@ -202,7 +202,7 @@ func _chart_material_needs(family: String, chart: Dictionary, completed: Array) 
 				var note: Dictionary=row.lanes.get("mouse",{})
 				if note.get("group")!=group_id: continue
 				var id: String=str(note.input).trim_prefix("spice:")
-				var units: int=roundi(float(note.get("hold_beats",1))*(60.0/float(chart.bpm))*float(group.get("pour_rate_per_sec",.2))*1000)
+				var units: int=roundi(float(note.get("hold_beats",1))*(60.0/float(chart.bpm))*TDBeatSheet.measured_pour_rate(group,float(chart.bpm))*1000)
 				needed[id]=int(needed.get(id,0))+units
 		elif group.parameters.has("ingredient_id"):
 			var id: String=str(group.parameters.ingredient_id)
@@ -275,7 +275,7 @@ func _compile_plan(entry: Dictionary, legacy: bool) -> TDOutcome:
 		if not made.has(group.operation): return TDOutcome.new(false,"INCOMPLETE_PLAN","完成全部工序后才能保存营业方案。")
 	if precise.is_empty() or precise.size()>3: return TDOutcome.new(false,"INCOMPLETE_PLAN","至少实际加入一份调料后保存方案。")
 	var note: int=0
-	var pour_rate: float=float(chart.groups.season.get("pour_rate_per_sec",.2))
+	var pour_rate: float=TDBeatSheet.measured_pour_rate(chart.groups.season,float(chart.bpm))
 	var beat_shift: float=0
 	for row: Dictionary in chart.beats:
 		row.t=float(row.t)+beat_shift
@@ -296,6 +296,7 @@ func _compile_plan(entry: Dictionary, legacy: bool) -> TDOutcome:
 		if shape=="whole": return TDOutcome.new(false,"INCOMPLETE_PLAN","先完成有效备菜再保存方案。")
 		preparations[ingredient]={"slice":"service.slice","strip":"service.strips","chunk":"prepare","dice":"service.dice"}[shape]
 	for sheet_id: String in preparations.values(): additions[sheet_id]=data.pc_operations.document_sheets[sheet_id].duplicate(true)
+	recipe["art_recipe_id"] = recipe.id
 	recipe.id=entry.id; recipe.name=entry.name; recipe.version=int(entry.version); recipe.is_custom=true
 	recipe.guided_profile=entry.id; recipe.preparation_sheets=preparations
 	return TDOutcome.new(true,"COMPILED","",{"recipe":recipe,"sheets":additions})
@@ -339,7 +340,7 @@ func _compile_cuisine_plan(entry: Dictionary, recipe: Dictionary, chart: Diction
 			if index>=sequence.size(): row.lanes.erase("mouse");row.rest=row.lanes.is_empty();continue
 			var note: Dictionary=row.lanes.mouse
 			note.input="spice:"+str(sequence[index]);note.form="hold"
-			note.hold_beats=float(amounts[index])/float(group.get("pour_rate_per_sec",.2))/(60.0/float(chart.bpm))
+			note.hold_beats=float(amounts[index])/TDBeatSheet.measured_pour_rate(group,float(chart.bpm))/(60.0/float(chart.bpm))
 		group.parameters.ingredient_id=sequence[0]
 	chart.id=entry.id;chart.dish=entry.name
 	var preparations: Dictionary={}
@@ -355,6 +356,7 @@ func _compile_cuisine_plan(entry: Dictionary, recipe: Dictionary, chart: Diction
 		preparations[ingredient]=cut.id;sheets[cut.id]=cut
 	var sheet_check:=TDBeatSheet.new().configure(chart,data.operations,data.pc_operations.document_rules.assistance)
 	if not sheet_check.ok: return sheet_check
+	recipe["art_recipe_id"] = recipe.id
 	recipe.id=entry.id;recipe.name=entry.name;recipe.version=int(entry.version);recipe.is_custom=true
 	recipe.guided_profile=entry.id;recipe.preparation_sheets=preparations
 	return TDOutcome.new(true,"COMPILED","",{"recipe":recipe,"sheets":sheets})

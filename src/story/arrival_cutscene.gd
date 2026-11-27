@@ -51,7 +51,7 @@ func sample_segment(id: String, elapsed_seconds: float) -> void:
 
 func _build_map() -> void:
 	_map_root=Node2D.new();_map_root.name="MapRoot";add_child(_map_root)
-	var name_label:=Label.new();name_label.name="TownName";name_label.text="河口镇"
+	var name_label:=Label.new();name_label.name="TownName";name_label.text="臻味港"
 	name_label.position=Vector2(-60,-20);name_label.add_theme_color_override("font_color",Color("724229"))
 	name_label.add_theme_font_size_override("font_size",38);_map_root.add_child(name_label)
 	name_label.add_theme_color_override("font_outline_color",Color("f4e6bf"));name_label.add_theme_constant_override("outline_size",7)

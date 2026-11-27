@@ -34,7 +34,7 @@ func test_actual_map_services_open_the_same_shop_and_return_from_the_diner() -> 
 	add_child_autofree(app)
 	var shell := app.game_shell
 	shell.automatic_time=false
-	assert_true(shell.create_game("slot-01","江南地图测试").ok)
+	assert_true(shell.create_game("slot-01","江南地图测试",false).ok)
 	shell.guide.dialogue.finish_now()
 	shell.profile.story.beat="done"
 	var town := shell.town
@@ -67,7 +67,7 @@ func test_reference_bridges_guide_routes_and_buildable_grass() -> void:
 	add_child_autofree(app)
 	var shell := app.game_shell
 	shell.automatic_time = false
-	assert_true(shell.create_game("slot-01").ok)
+	assert_true(shell.create_game("slot-01","小镇食堂",false).ok)
 	shell.guide.dialogue.finish_now()
 	var town := shell.town
 	var unit := TDPlannedTown.REFERENCE_PIXELS_PER_CELL

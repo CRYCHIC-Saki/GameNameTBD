@@ -14,20 +14,6 @@ func after_each() -> void:
 	await wait_process_frames(2)
 
 func qualify() -> void:
-	# Use the real reward and calendar paths with a profitable daily report fixture.
-	while p.menu_supply.level()<p.menu_supply.UNLOCK_LEVEL:
-		var before: Dictionary=p.progression.snapshot().baselines[HOME]
-		var day:=int(p.shop.snapshot().day)
-		var row:={"store_id":HOME,"scale_milli":1000,"profit_cents":99999999,
-			"popularity_before":before.popularity,"popularity_after":before.popularity,
-			"awareness_before":before.awareness,"awareness_after":before.awareness}
-		var award:=p.progression.settle({"day":day,"stores":[row]})
-		assert_true(award.ok,award.code)
-		if not award.ok: return
-		for reward: Dictionary in award.data.rewards:
-			p.research.grant_inspiration(reward.grant_id,int(reward.inspiration))
-		assert_true(p.shop.close_for_night().ok)
-		assert_true(p.next_day().ok)
 	assert_true(p.menu_supply.set_enabled(true).ok)
 
 func sleep() -> void:
@@ -36,7 +22,9 @@ func sleep() -> void:
 	assert_true(result.ok,result.code)
 
 func test_planning_ui_delivery_prices_actual_ingredients_and_idempotent_save() -> void:
-	assert_false(p.menu_supply.set_enabled(true).ok)
+	p.require_revised_unlocks=true
+	assert_eq(p.menu_supply.set_enabled(true).code,"STORY_LOCKED")
+	p.require_revised_unlocks=false
 	qualify()
 	assert_false(p.menu_supply.book(HOME,{DISH:10}).ok)
 	p.characters.clock.minute=18*60

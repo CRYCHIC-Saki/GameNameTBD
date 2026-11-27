@@ -160,6 +160,9 @@ func begin(request: TDRequest) -> TDOutcome:
 		var stock := _take_materials(request.operation_id,{str(args.ingredient_id):roundi(float(args.get("amount",1))*1000)})
 		if not stock.ok: return stock
 		if stock.data.get("expires_on") is Dictionary: args.expires_on=int(stock.data.expires_on.get(str(args.ingredient_id),0))
+		if stock.data.has("stock_day"):
+			args.stock_day=int(stock.data.stock_day)
+			args.stock_value_cents=int(stock.data.inventory_values.get(str(args.ingredient_id),0))
 	_operation_id = request.operation_id
 	var before: Dictionary = _derive().attributes
 	_revision += 1
@@ -244,6 +247,8 @@ func _validate(kind: String, args: Dictionary) -> TDOutcome:
 		if not args.get("instance_id") is String or not _ingredients.has(args.instance_id):
 			return _error("INVALID_TARGET")
 		var item: Dictionary = _ingredients[args.instance_id]
+		if _document_rules and float(item.fine)>0.0:
+			return _error("ALREADY_PREPARED", "这份食材已经切好，可以直接入锅。")
 		if "cuttable" not in item.special or (not _pc_controls and not _config.cut_shapes.has(args.get("shape", ""))):
 			return _error("INVALID_SHAPE")
 		if _pc_controls and (not _finite(args.get("beats", 2), 1, 12) or int(args.get("beats", 2)) != args.get("beats", 2)): return _error("INVALID_PARAMETERS")
@@ -461,6 +466,8 @@ func _add(args: Dictionary) -> String:
 		"amount": float(args.get("amount", 1)), "batch_id": batch, "shape": "whole", "fine": 0.0, "temperature_c": float(definition.temperature_c), "texture": definition.texture.duplicate(true), "flavor": flavor, "aroma": definition.aroma.duplicate(true), "special": definition.special.duplicate(), "region": definition.region.duplicate(), "history": [], "heat_dose": 0.0, "exposure_sec": 0.0, "reaction_exposure": {}, "reactions": []}
 	_ingredients[id].local_id = "ingredient_%d" % _instance_counter
 	_ingredients[id].expires_on = int(args.get("expires_on",0))
+	_ingredients[id].stock_day = int(args.get("stock_day",0))
+	_ingredients[id].stock_value_cents = int(args.get("stock_value_cents",0))
 	var pot: float = _batches[batch].temperature_c
 	if pot > float(_config.rules.room_temperature_c):
 		_ingredients[id].temperature_c = maxf(float(definition.temperature_c), float(definition.temperature_c) + (pot - float(definition.temperature_c)) * float(_config.rules.preheat_transfer))
@@ -886,15 +893,19 @@ func _parallel_allowed(kind: String) -> bool:
 	var other: String = _jobs.values()[0].operation
 	return (kind in ["heat", "boil"] and other in ["stir", "season", "starch"]) or (other in ["heat", "boil"] and kind in ["stir", "season", "starch"])
 
+static func shape_from_cuts(directions: Array) -> String:
+	match directions.size():
+		0: return "whole"
+		1: return "slice"
+		2: return "strip" if directions[0] == directions[1] else "chunk"
+		_: return "dice"
+
 func _cut_from_hits(id: String, directions: Array, quality: float) -> void:
 	var item: Dictionary = _ingredients[id]
 	var previous: Array = item.get("cut_directions", []).duplicate()
 	previous.append_array(directions)
 	var count: int = previous.size()
-	var shape: String = "whole"
-	if count == 1: shape = "slice"
-	elif count == 2: shape = "strip" if previous[0] == previous[1] else "chunk"
-	elif count >= 3: shape = "dice"
+	var shape := shape_from_cuts(previous)
 	var old: float = item.fine
 	var fine: float = minf(1, float(count) / float(_config.pc_operations.max_fine_steps))
 	var diagonal: float = 1 + float(previous.count(2)) / maxf(1, count) * float(_config.pc_operations.diagonal_release_bonus)
@@ -998,7 +1009,13 @@ func portable_data() -> TDOutcome:
 		cuts.append({"directions":history[index].get("successful_directions",[]).duplicate(),"quality":step.quality,"elapsed_sec":step.elapsed_sec,"operation_id":step.operation_id})
 	var attributes: Dictionary={}
 	for field: String in ["temperature_c","exposure_sec","reaction_exposure","reactions","flavor","texture","aroma","history"]: attributes[field]=item[field]
-	return TDOutcome.new(true,"PORTABLE","",{"schema_version":1,"id":item.id,"ingredient_id":item.ingredient_id,"amount":item.amount,"expires_on":int(item.get("expires_on",0)),"cuts":cuts,"cut_san_spent":float(item.get("cut_san_spent",0)),"reaction_harmony":float(item.get("reaction_harmony_contribution",0)),"processing_state":attributes.duplicate(true)})
+	var food := {"schema_version":1,"id":item.id,"ingredient_id":item.ingredient_id,"amount":item.amount,
+		"expires_on":int(item.get("expires_on",0)),"cuts":cuts,"cut_san_spent":float(item.get("cut_san_spent",0)),
+		"reaction_harmony":float(item.get("reaction_harmony_contribution",0)),"processing_state":attributes.duplicate(true)}
+	if int(item.get("stock_day",0))>0:
+		food.stock_day=item.stock_day
+		food.stock_value_cents=item.stock_value_cents
+	return TDOutcome.new(true,"PORTABLE","",food)
 
 func restore_portable(raw: Variant) -> TDOutcome:
 	if not is_cold() or not _ingredients.is_empty(): return _error("BUSY")
@@ -1013,10 +1030,14 @@ func restore_portable(raw: Variant) -> TDOutcome:
 			if not _finite(direction,0,2) or int(direction)!=direction: return _error("INVALID_PORTABLE")
 	if raw.has("processing_state") and not _valid_cold_state(raw.processing_state,raw.cuts): return _error("INVALID_PORTABLE")
 	if raw.has("expires_on") and (not _finite(raw.expires_on,0,1000001000) or float(raw.expires_on)!=floorf(float(raw.expires_on))): return _error("INVALID_PORTABLE")
+	for field: String in ["stock_day","stock_value_cents"]:
+		if not _finite(raw.get(field,0),0,1000000000) or float(raw.get(field,0))!=floorf(float(raw.get(field,0))): return _error("INVALID_PORTABLE")
 	# Restore only validated raw identity and actual cut inputs, never arbitrary saved attributes.
 	var generated: String=_add({"ingredient_id":raw.ingredient_id,"amount":raw.amount,"batch_id":"main"})
 	var item: Dictionary=_ingredients[generated]; _ingredients.erase(generated); item.id=raw.id; _ingredients[raw.id]=item
 	item.expires_on=int(raw.get("expires_on",0))
+	item.stock_day=int(raw.get("stock_day",0))
+	item.stock_value_cents=int(raw.get("stock_value_cents",0))
 	_consumed[0].instance_id=raw.id
 	_plan.append({"operation":"add","parameters":{"ingredient_id":raw.ingredient_id,"amount":raw.amount,"batch_id":"main","local_id":item.local_id}})
 	var random_before: float=_prepared_random; _prepared_random=1.0

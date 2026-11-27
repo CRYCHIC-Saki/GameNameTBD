@@ -80,10 +80,13 @@ func _run() -> void:
 	app=load("res://src/app/main.tscn").instantiate() as TDApplication
 	app.settings_path="res://artifacts/test-storage/shop-visual-settings.json"
 	app.shop_save_path="res://artifacts/test-storage/shop-visual-%d.json" % Time.get_ticks_usec()
-	root.add_child(app); await capture("menu"); app.enter_shop(); view=app.shop_view; kitchen=view.kitchen; kitchen.auto_advance=false
+	root.add_child(app); await capture("menu")
+	app._phase3()
+	if not app.research.inherit_legacy(["steamed_egg"]).ok: quit(1); return
+	app.enter_shop(); view=app.shop_view; kitchen=view.kitchen; kitchen.auto_advance=false
 	await capture("planning")
 	for i: int in 3: view.buy_kit("service.tomato_egg",false)
-	view.buy_kit("service.beef_noodles"); view.buy_kit("service.qiguoji")
+	view.shop.receive_supply({"beef":1000},"probe-beef"); view.shop.receive_supply(view.shop.offer("study.steamed_egg").stock,"probe-steam")
 	await capture("purchased")
 	view.open_day(); kitchen=view.kitchen; kitchen.auto_advance=false
 	for lane: TDCookingLane in kitchen.lanes+[kitchen.prep]: lane.beat_offset_sec=0
@@ -112,9 +115,9 @@ func _run() -> void:
 	view.next_day(); await capture("next-day")
 	var continued: bool=view.shop.snapshot().day==2 and view.shop.snapshot().phase=="PREPARE"
 	view.open_day(); kitchen=view.kitchen; kitchen.auto_advance=false
-	for food: String in ["chicken","mushroom"]: view.pick_ingredient(food); station("kitchen.steamer")
+	for food: String in ["egg","water"]: view.pick_ingredient(food); station("kitchen.steamer")
 	station("kitchen.steamer",KEY_F); await play(40); await capture("steamed-unlocked")
-	var unlocked: bool=view.shop.is_unlocked("service.qiguoji")
+	var unlocked: bool=view.shop.is_unlocked("study.steamed_egg")
 	view.pick_stored(beef_id); station("kitchen.stove.left"); station("kitchen.stove.left",KEY_F); await play(85)
 	await capture("failed-dish"); var failed: bool=kitchen.lanes[0].snapshot().get("failed_dish",false) and kitchen.lanes[0].snapshot().state=="plated"
 	station("kitchen.stove.left"); station("kitchen.trash"); await capture("trash-cleared")

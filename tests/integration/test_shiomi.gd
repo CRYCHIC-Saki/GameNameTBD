@@ -10,6 +10,30 @@ func before_each() -> void:
 func after_each() -> void:
 	profile.close()
 
+func test_packed_materials_repeat_without_light_borders() -> void:
+	var sheet := preload("res://assets/town/shiomi-ground-v1.png").get_image()
+	for band: int in 12:
+		var offset := band * 96
+		var matched := true
+		var brightness_jump := 0.0
+		for i: int in 96:
+			matched = matched and sheet.get_pixel(offset + i, 0) == sheet.get_pixel(offset + i, 95)
+			matched = matched and sheet.get_pixel(offset, i) == sheet.get_pixel(offset + 95, i)
+			brightness_jump += sheet.get_pixel(offset + i, 0).get_luminance() - sheet.get_pixel(offset + i, 1).get_luminance()
+		assert_true(matched, "Both axes repeat for swatch %d" % band)
+		assert_lt(brightness_jump / 96.0, .08, "No bright border in swatch %d" % band)
+
+func test_harbor_tubs_display_the_complete_separate_sprite() -> void:
+	var scene := TDShiomiArt.instance()
+	autofree(scene)
+	for name_of_tub: String in ["DockTubs1334", "DockTubs1161", "DockTubs1320"]:
+		var tub := scene.get_node(name_of_tub) as Sprite2D
+		assert_not_null(tub, name_of_tub)
+		if tub == null: continue
+		assert_eq(tub.texture.resource_path, "res://assets/town/shiomi-water-tub.png")
+		assert_eq(tub.texture.get_size(), Vector2(48,38))
+		assert_eq(tub.get_rect().end.y, 0.0, "Place from the foot of the tub")
+
 func test_ingredient_shop_uses_regional_stock_without_booking_freight() -> void:
 	var economy:=profile.commerce
 	var shop:=profile.shop

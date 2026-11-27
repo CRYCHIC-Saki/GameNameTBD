@@ -4,11 +4,11 @@ extends AudioStreamPlayer
 ## Continuous sample clock for QTE; legacy clicks remain only in calibration tests.
 var scheduled_beats: Array[float] = []
 var estimated_delay_sec: float = 0.0
-# The authored cooking WAV has a 120 BPM groove and a trailing fade / rest.
-# Loop the first 48 complete 4/4 bars, on the same downbeat as both kitchen lanes.
-const RECORDING_BPM := 120.0
+# Cooking uses the supplied casual track at original pitch.
+# Both lanes follow the shared 140 BPM chart; the full song loops.
+const RECORDING_BPM := 140.0
 const LOOP_BARS := 48
-const LOOP_SEC := LOOP_BARS * 4.0 * 60.0 / RECORDING_BPM
+const LOOP_SEC := 166.2946485260771
 const PHASE_TOLERANCE_SEC := .065
 var _checked_at_usec := -1000000
 static var _feedback_tracks: Dictionary = {}
@@ -17,6 +17,11 @@ func play_feedback(grade: String, module: String = "", reason: String = "") -> v
 	var family := "wood" if module=="M1" else ("glass" if module=="M6" else "metal")
 	if grade=="miss": family="mute"
 	if reason=="HOLD_STARTED": family="touch"
+	stream = _feedback_track(family,grade)
+	volume_db = -7
+	play()
+
+static func _feedback_track(family: String, grade: String) -> AudioStreamWAV:
 	var key := family+":"+grade
 	if not _feedback_tracks.has(key):
 		var rate := 22050
@@ -33,7 +38,7 @@ func play_feedback(grade: String, module: String = "", reason: String = "") -> v
 		var track := AudioStreamWAV.new()
 		track.format=AudioStreamWAV.FORMAT_16_BITS;track.mix_rate=rate;track.data=pcm
 		_feedback_tracks[key]=track
-	stream=_feedback_tracks[key];volume_db=-7;play()
+	return _feedback_tracks[key]
 
 func prepare(config: Dictionary) -> void:
 	stop()
@@ -79,9 +84,13 @@ func prepare_loop(bpm: float) -> void:
 
 func prepare_cooking_music(bpm:float) -> void:
 	stop();scheduled_beats.clear()
-	var track:=TDGameMusic.loop_track("cooking")
+	for family: String in ["wood","glass","metal"]:
+		for grade: String in ["good","perfect"]: _feedback_track(family,grade)
+	_feedback_track("mute","miss")
+	_feedback_track("touch","good")
+	var track:=TDGameMusic.loop_track("casual")
 	track.loop_end = roundi(LOOP_SEC*track.mix_rate)
-	pitch_scale = bpm/RECORDING_BPM
+	pitch_scale = 1.0 # Preserve the original track pitch and tempo.
 	stream = track
 	_checked_at_usec = -1000000
 

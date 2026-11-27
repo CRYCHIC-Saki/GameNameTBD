@@ -7,3 +7,4 @@
 doc/source/** -text -whitespace
 # Keep the vendored dependency's original formatting.
 addons/gut/** -whitespace
+/assets/audio/boss.wav filter=lfs diff=lfs merge=lfs -text

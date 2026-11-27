@@ -7,16 +7,18 @@ func test_beat_cells_compile_to_exact_timestamps_including_rest_and_parallel() -
 	var sheet:=TDBeatSheet.new()
 	assert_true(sheet.configure(data.pc_operations.document_sheets.tomato_egg,data.operations).ok)
 	var events: Array=sheet.snapshot().events
+	var beat := 60.0 / 140.0
+	assert_eq(int(data.pc_operations.document_sheets.tomato_egg.bpm),140)
 	var cut:=TDBeatSheet.new(); cut.configure(data.pc_operations.document_sheets.prepare,data.operations)
-	assert_eq(cut.snapshot().events[0].settings.beat_times_sec,[2.0,3.0,4.0])
+	assert_eq(cut.snapshot().events[0].settings.beat_times_sec,[4*beat,6*beat,8*beat])
 	var stages: Array=[]
 	for event: Dictionary in events:
 		stages.append(event.group)
 		if event.group=="stir-a":
 			assert_eq(float(event.beat),26.0)
 			assert_eq(event.settings.sequence,["up","left","down","right","primary"])
-			assert_eq(event.settings.beat_times_sec,[2.0,3.0,4.0,5.0,6.0])
-		if event.group=="heat": assert_eq(float(event.settings.duration_sec),19.0)
+			assert_eq(event.settings.beat_times_sec,[4*beat,6*beat,8*beat,10*beat,12*beat])
+		if event.group=="heat": assert_almost_eq(float(event.settings.duration_sec),38*beat,.000001)
 	assert_eq(stages,["ignite","oil","load","stir-a","heat","stir-b","stir-c","season","starch","plate"])
 
 func test_invalid_tracks_unknown_groups_and_overlaps_rejected_before_play() -> void:
@@ -42,8 +44,9 @@ func test_configured_rest_does_not_create_a_chop_target() -> void:
 	var config: Dictionary=data.pc_operations.modules.cut.duplicate(true); config.merge(sheet.snapshot().events[0].settings,true)
 	var clock:=TDClock.new(); var request:=TDRequest.new("cut",0,"cut","cut",0); request.schema_version=3
 	var q:=TDCookingQTE.new(request,config,clock,TDBusinessRandom.new(1)); q.start()
-	clock.advance(2.5)
-	assert_eq(q.input(1,2.5,"primary",true).code,"OUTSIDE_WINDOW")
+	var rest := 5.0*60.0/float(data.pc_operations.document_sheets.prepare.bpm)
+	clock.advance(rest)
+	assert_eq(q.input(1,rest,"primary",true).code,"OUTSIDE_WINDOW")
 	assert_eq(q.update().data.cut_directions,[])
 
 func test_module_average_does_not_multiply_weight_for_many_stir_segments() -> void:
@@ -77,6 +80,8 @@ func test_adjacent_command_groups_preserve_input_beats_without_forcing_rest() ->
 		d.beats.append({"t":index+2,"lanes":{"hand":{"group":group,"op":"stir","input":commands[index],"form":"tap"}}})
 	var sheet:=TDBeatSheet.new(); assert_true(sheet.configure(d,data.operations).ok)
 	var events: Array=sheet.snapshot().events
+	var beat := 60.0 / 140.0
+	assert_eq(int(data.pc_operations.document_sheets.tomato_egg.bpm),140)
 	assert_eq(events.size(),2)
 	# Expected absolute input times are hand-calculated at 120 BPM.
 	for index: int in events.size():

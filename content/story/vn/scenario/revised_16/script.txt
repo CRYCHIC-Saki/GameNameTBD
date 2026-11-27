@@ -1,0 +1,5 @@
+# start
+@bg riverside-diner with instant 0
+// 原稿第 83 段
+narrator: 赫兹持续报道沿途的厨师与比试。随着节目传回臻味港，越来越多人知道了焰子的名字，罗厄也留意到了这位四处学艺的见习厨师。
+@end

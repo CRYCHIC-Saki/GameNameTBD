@@ -46,14 +46,14 @@ func run() -> void:
 	await purchase("market-main","pasta")
 	await purchase("market-neighborhood","tomato")
 	await bank()
-	if opened.ok and await approach(branch_id, "进店巡视"):
+	if opened.ok and await approach(branch_id):
 		var previous := shell.visiting.player.position
 		await press_e()
 		check(shell.location=="branch" and shell.branch_visit!=null and shell.branch_visit.store_id==branch_id, "E enters this funded European branch")
 		if shell.branch_visit!=null:
 			shell.exit_branch()
 			check(shell.location=="voyage" and shell.visiting.player.position.is_equal_approx(previous),"return to the same storefront")
-	if await approach("harbor", "乘船"):
+	if await approach("harbor"):
 		await press_e()
 		var sail := button("前往 "+str(TDTravelCatalog.info("tokyo").name))
 		if check(sail!=null,"ticket counter offers Shiomi"):
@@ -79,7 +79,7 @@ func run() -> void:
 	print("EGRET SERVICES ",checks," checks, ",failures," failures")
 	quit(1 if failures else 0)
 
-func approach(id: String, verb: String) -> bool:
+func approach(id: String) -> bool:
 	var visit := shell.visiting
 	var counter: Rect2
 	for entry: Dictionary in visit._buildings:
@@ -98,7 +98,7 @@ func approach(id: String, verb: String) -> bool:
 	Input.action_release("world_up")
 	await process_frame
 	if not check(visit._can_stand(visit.player.position) and start.distance_to(visit.player.position)>15 and visit.nearby().get("id")==id,id+" reached using movement input"): return false
-	check(visit._hint.text.contains(verb),id+" advertises "+verb)
+	check(visit._building_nameplate.visible and visit._target.id == id, id + " uses a nameplate above the facade")
 	return true
 
 func press_e() -> void:
@@ -119,7 +119,7 @@ func button(caption: String) -> Button:
 	return null
 
 func purchase(id: String, item: String) -> void:
-	if not await approach(id,"买菜"): return
+	if not await approach(id): return
 	await press_e()
 	var p := shell.profile
 	var rows := {}
@@ -144,7 +144,7 @@ func purchase(id: String, item: String) -> void:
 	shell._close_dialog()
 
 func bank() -> void:
-	if not await approach("commercial_street:bank","存取款"): return
+	if not await approach("commercial_street:bank"): return
 	await press_e()
 	var p := shell.profile
 	var cash := int(p.shop.snapshot().money_cents)

@@ -360,8 +360,8 @@ func test_player_collision_crosses_the_north_bridge_but_not_open_water() -> void
 	await get_tree().process_frame
 	var scale_factor := TDJiangnanReferenceArt.world_scale(profile.world.town_map, town.cell_size())
 	var to_world := func(pixel: Vector2) -> Vector2: return town._origin()+pixel*scale_factor
-	town._player.position = to_world.call(Vector2(885,267))
-	for pixel: Vector2 in [Vector2(916,258),Vector2(954,248),Vector2(990,254),Vector2(1044,270)]:
+	town._player.position = to_world.call(Vector2(879,262))
+	for pixel: Vector2 in [Vector2(921,250),Vector2(953,242),Vector2(990,247),Vector2(1048,269)]:
 		var next: Vector2 = to_world.call(pixel)
 		assert_true(town._feet_on_road(next), "Swept feet cross the actual curved stone deck")
 		town._player.position = next

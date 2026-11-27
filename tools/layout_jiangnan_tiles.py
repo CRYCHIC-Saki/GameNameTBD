@@ -564,11 +564,21 @@ def sprite_for(part):
 
 
 def place_polished_props(parts, edits):
+    services = {
+        "forge": "competitor:shop:0",
+        "dyers-and-tofu-makers": "competitor:shop:1",
+        "crafts-wood-shop": "competitor:shop:2",
+        "south-entrance-gate": "station",
+        "waterfront-show-stage": "amusement",
+        "waterfront-blue-kiosk": "waterfront_market",
+    }
     props = []
     for part in parts:
         if part["id"] in ("north-stone-bridge", "south-stone-bridge", "pavilion-wood-deck"):
             continue
         row = dict(part, sprite=sprite_for(part))
+        if part["id"] in services:
+            row["service"] = services[part["id"]]
         edit = edits.get(part["id"])
         if edit is not None:
             x,y,w,h = edit["pose"]
@@ -751,6 +761,16 @@ def map_props(masks, regions, streetscape):
         x,y=map(round,tree["foot"])
         if dry_grass[y,x]:
             item(f"blossom-underbrush-{i}","bank_shrub",(x+4,y+2),22)
+    offsets = polish.get("placement_offsets", {})
+    for prop in props:
+        if prop["id"] not in offsets:
+            continue
+        dx, dy = offsets[prop["id"]]
+        prop["foot"] = [prop["foot"][0] + dx, prop["foot"][1] + dy]
+        x, y, width, height = prop["rect"]
+        prop["rect"] = [x + dx, y + dy, width, height]
+        prop["bases"] = [[x + dx, y + dy, width, height]
+                         for x, y, width, height in prop["bases"]]
     shadows = contact_shadows(entries, props, regions, scenery, masks[0], streetscape["paved"])
     return props, paths, shadows, entries
 

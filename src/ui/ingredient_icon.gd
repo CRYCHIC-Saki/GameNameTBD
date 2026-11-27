@@ -11,6 +11,61 @@ static func make(id: String, side: int = 36) -> TDIngredientIcon:
 func _draw() -> void:
 	draw_on(self, item_id, Rect2(Vector2.ZERO, size))
 
+static func dish_item(dish: Dictionary) -> Dictionary:
+	return {"kind":"dish","id":dish.get("recipe_id",""),"art_id":dish.get("recipe",{}).get("art_recipe_id",dish.get("recipe_id","")),"name":dish.get("recipe_name","成品"),
+		"failed":dish.get("failed_dish",false)}
+
+static func draw_item(canvas: CanvasItem, item: Dictionary, rect: Rect2) -> void:
+	if item.is_empty(): return
+	var id := str(item.get("id",""))
+	if item.get("kind")=="dish":
+		var art := TDRedrawArt.dish(str(item.get("art_id",id)))
+		if art != null and not item.get("failed",false):
+			canvas.draw_texture_rect(art,TDStoryArt.fit(art,rect),false)
+			return
+		var plate := TDRedrawArt.serving_art(true)
+		var food := TDRedrawArt.serving_art()
+		var plate_rect := TDStoryArt.fit(plate,rect)
+		canvas.draw_texture_rect(plate,plate_rect,false)
+		var food_rect := Rect2(plate_rect.position+plate_rect.size*Vector2(.14,.06),plate_rect.size*.72)
+		canvas.draw_texture_rect(food,food_rect,false,Color("685244") if item.get("failed",false) else Color.WHITE)
+		if item.get("failed",false):
+			canvas.draw_string(TDUI.font(),rect.position+Vector2(0,rect.size.y*.8),str(item.get("name","失败的菜品")).left(4),HORIZONTAL_ALIGNMENT_CENTER,rect.size.x,10)
+		return
+	var ingredient := TDRedrawArt.ingredient(id)
+	var prepared := preload("res://src/kitchen/recipe_process_art.gd").cut(id,item.get("shape","whole"))
+	if prepared != null:
+		canvas.draw_texture_rect(prepared,TDStoryArt.fit(prepared,rect),false)
+		return
+	if item.get("shape","whole") in ["whole",""] or ingredient==null:
+		draw_on(canvas,id,rect)
+	else:
+		var whole := TDStoryArt.fit(ingredient,rect.grow(-2))
+		if item.get("shape") in ["chunk","dice","mince"]:
+			for row: int in 2:
+				for col: int in 2:
+					var offset := Vector2(col,row)
+					canvas.draw_texture_rect_region(ingredient,Rect2(whole.position+offset*(whole.size*.5+Vector2.ONE*2)-Vector2.ONE,whole.size*.5),Rect2(offset*ingredient.get_size()*.5,ingredient.get_size()*.5))
+			return
+		for i: int in 3:
+			var strip := Rect2(whole.position+Vector2(i*(whole.size.x/3+1)-1,i%2),whole.size*Vector2(1./3,1))
+			canvas.draw_texture_rect_region(ingredient,strip,Rect2(Vector2(ingredient.get_width()*i/3.,0),ingredient.get_size()*Vector2(1./3,1)))
+
+static func bubbles(canvas: CanvasItem, items: Array, at: Vector2, side: float=34) -> void:
+	for i: int in items.size():
+		var width := mini(5,items.size()-5*floori(i/5.0))
+		var center := at+Vector2((i%5-(width-1)*.5)*(side+3),-floori(i/5.0)*(side+3))
+		var box := Rect2(center-Vector2.ONE*side*.5,Vector2.ONE*side)
+		if i < 5:
+			var tip := Vector2(center.x,box.end.y+6)
+			canvas.draw_colored_polygon(PackedVector2Array([tip,tip+Vector2(-6,-7),tip+Vector2(6,-7)]),Color("534637"))
+		canvas.draw_rect(box.grow(2),Color("534637"))
+		canvas.draw_rect(box,Color("fff2d9"))
+		draw_item(canvas,items[i],box.grow(-2))
+		if int(items[i].get("count",1))>1:
+			canvas.draw_string_outline(TDUI.font(),box.end-Vector2(13,1),str(items[i].count),HORIZONTAL_ALIGNMENT_LEFT,-1,12,3,Color("332820"))
+			canvas.draw_string(TDUI.font(),box.end-Vector2(13,1),str(items[i].count),HORIZONTAL_ALIGNMENT_LEFT,-1,12)
+
 static func draw_on(canvas: CanvasItem, item_id: String, rect: Rect2, muted: bool = false) -> void:
 	if rect.size.x < 4.0 or rect.size.y < 4.0:
 		return

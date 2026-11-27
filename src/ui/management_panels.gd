@@ -54,7 +54,9 @@ class BasePanel extends VBoxContainer:
 		if result.ok: changed.emit()
 	func store_rows() -> Array[Dictionary]:
 		var rows: Array[Dictionary]=[{"id":"","name":"待岗"},{"id":"player_diner","name":"主店 · "+profile.title}]
-		for store: Dictionary in profile.branches.state.stores.values(): rows.append({"id":str(store.id),"name":str(store.name)})
+		for store: Dictionary in profile.branches.state.stores.values():
+			if profile.branches.can_support_store(str(store.id)):
+				rows.append({"id":str(store.id),"name":str(store.name)})
 		return rows
 
 class RelationshipPanel extends BasePanel:
@@ -64,7 +66,7 @@ class RelationshipPanel extends BasePanel:
 	func refresh() -> void:
 		clear();visible_ids.clear()
 		add_child(TDManagementPanels.text("镇上相识",TDUI.FONT_TITLE,TDManagementPanels.GOLD))
-		add_child(TDManagementPanels.text("记住每一位相识的街坊。聊天和一餐好饭，都能让彼此更亲近。",TDUI.FONT_BODY,TDManagementPanels.MUTED))
+		add_child(TDManagementPanels.text("在剧情中结识的居民会出现在这里。每天完成一次闲聊可提升好感。",TDUI.FONT_BODY,TDManagementPanels.MUTED))
 		var grid:=GridContainer.new();grid.columns=2;grid.add_theme_constant_override("h_separation",14);grid.add_theme_constant_override("v_separation",14);add_child(grid)
 		for id: String in profile.characters.definitions:
 			var relation:=profile.characters.relationship(id)
@@ -79,12 +81,13 @@ class RelationshipPanel extends BasePanel:
 			var details:=VBoxContainer.new();details.size_flags_horizontal=Control.SIZE_EXPAND_FILL;row.add_child(details)
 			details.add_child(TDManagementPanels.text(str(definition.name),TDUI.FONT_SECTION))
 			var affection: int=int(relation.affection)
-			details.add_child(TDManagementPanels.text("好感 %d / 100"%affection,TDUI.FONT_BODY,Color("764019")))
+			var stage: String = {"stranger":"初识","friend":"熟悉","close":"亲近"}[profile.characters.tier(id)]
+			details.add_child(TDManagementPanels.text("%s · 好感 %d / 100" % [stage,affection],TDUI.FONT_BODY,Color("764019")))
 			var meter:=ProgressBar.new();meter.max_value=100;meter.value=affection;meter.show_percentage=false;meter.custom_minimum_size.y=12;details.add_child(meter)
 			details.add_child(TDManagementPanels.text(" · ".join(definition.traits),TDUI.FONT_CAPTION,TDManagementPanels.MUTED))
 			box.add_child(TDManagementPanels.text(public_biography(str(definition.biography)),TDUI.FONT_BODY))
 		if visible_ids.is_empty():
-			add_child(TDManagementPanels.text("这里还没有记录。到小镇走走，向遇见的人打声招呼吧。",TDUI.FONT_SECTION,TDManagementPanels.MUTED))
+			add_child(TDManagementPanels.text("跟随主线结识居民后，这里会显示他们的资料。",TDUI.FONT_SECTION,TDManagementPanels.MUTED))
 	static func public_biography(value: String) -> String:
 		# Current authored biographies append production notes after the first sentence.
 		return value.split("。",false)[0]+"。" if value.contains("。") else value
@@ -221,10 +224,10 @@ class SupplierPanel extends BasePanel:
 		inputs.clear()
 		var contract := profile.menu_supply
 		var account := contract.state
-		var unlocked := contract.level()>=contract.UNLOCK_LEVEL
+		var unlocked := profile.story_feature_available("suppliers")
 		var header := TDManagementPanels.card(self)
 		toggle=CheckBox.new()
-		toggle.text="启用菜单供货" if unlocked else "品牌 %d 级解锁供货 · 当前 %d 级"%[contract.UNLOCK_LEVEL,contract.level()]
+		toggle.text="启用菜单供货" if unlocked else "供货随主线开放"
 		toggle.disabled=not unlocked
 		toggle.button_pressed=account.enabled
 		header.add_child(toggle)

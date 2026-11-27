@@ -6,6 +6,8 @@ signal back_requested
 signal pause_requested
 signal kitchen_requested
 signal object_requested(action: String)
+signal layout_changed
+signal status_reported(text: String)
 var player_mode: bool = false
 var business: TDShopSession
 var _business_guests: Dictionary = {}
@@ -92,6 +94,7 @@ var floor_service: bool = false
 var _talk_layer: CanvasLayer
 var _talk_view: TDDialogueView
 var _plate_order: String = ""
+var decoration_progression: TDLevelProgression
 var _decor_panel: TDDecorationPanel
 var _context_menu: Control
 var _delete_button: Button
@@ -102,24 +105,7 @@ var _drag_start := Vector2.ZERO
 var _drag_offset := Vector2.ZERO
 var _drag_cell := Vector2i(-1,-1)
 
-# A visited branch supplies its own player, camera and management UI. Both rooms
-# use the same guest seats, waiter movement and physical order handoff.
-func host_dining(floor_layout: TDRestaurantLayout, shop: TDShopSession, host_player: TDKitchenPlayer) -> void:
-	layout = floor_layout
-	business = shop
-	_player = host_player
-	player_mode = true
-	floor_service = true
-	_guests = Node2D.new()
-	add_child(_guests)
-	hide()
-	bind_dining_clock()
-
 func _ready() -> void:
-	if _guests != null:
-		set_process(false)
-		set_process_unhandled_input(false)
-		return
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	_theme = TDUI.theme()
@@ -189,7 +175,7 @@ func _ready() -> void:
 		if session != null and session.scaled_interior:
 			room = "店内按地图面积生成，%d×%d格。%s" % [layout.columns, layout.rows, room]
 		_set_status(room)
-	_pull_layout_staff()
+	if not player_mode or session != null: _pull_layout_staff()
 	if player_mode:
 		_set_status("")
 		_iso.interaction_markers=interaction_points()
@@ -197,7 +183,7 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if player_mode:
 		if not get_tree().paused and is_visible_in_tree(): _status_left=maxf(0.0,_status_left-delta)
-		if _bar!=null: _bar.visible=not _editing and _status_left>0 and not _status.text.is_empty()
+		if _bar!=null: _bar.visible=not player_mode and not _editing and _status_left>0 and not _status.text.is_empty()
 	if _player != null:
 		_player.z_index = int(_player.position.y)
 	for guest: TDRestaurantGuest in guest_nodes(): guest.frozen=story_frozen or (_talk_open() and str(_talk_view.talk.context.get("ticket_id",""))==guest.ticket_id)
@@ -232,6 +218,8 @@ func _process(delta: float) -> void:
 		_iso.pass_point = Vector2(-1, -1)
 		_iso.hatch_plates = _hatch_plate_count()
 		_iso.held_label = _held_caption()
+		_iso.pass_items = business.table_service.pass_items() if _physical_service() else []
+		_iso.player_plate = business.table_service.held_item(_plate_order) if _physical_service() else {}
 		_iso.crew_people = _crew_points(0.0 if get_tree().paused or story_frozen or unified_dining_clock else delta)
 		_iso.sync(_player, guest_nodes(),get_tree().paused or story_frozen)
 		if player_mode: _iso.nearby_action=str(nearby_object().get("action",""))
@@ -398,6 +386,14 @@ func player_position() -> Vector2:
 
 func _feet_inside_room(proposed: Vector2) -> bool:
 	return layout != null and layout.feet_inside(proposed)
+
+func _npc_clear_step(proposed: Vector2) -> bool:
+	if _editing: return true
+	for guest: TDRestaurantGuest in guest_nodes():
+		if guest.visible and not TDInteractionRange.npc_clear(_player.position,proposed,guest.position,24.0): return false
+	for waiter: Waiter in _waiters.values():
+		if not TDInteractionRange.npc_clear(_player.position,proposed,waiter.feet,24.0): return false
+	return true
 
 func _standing_inside_solid(cell: Vector2i) -> bool:
 	if layout == null:
@@ -632,6 +628,7 @@ func _build_world() -> void:
 	_player.collision_mask = 4
 	_player.walk_speed=180.0
 	_player.vertical_stride_multiplier=1.6
+	_player.npc_step_clear=_npc_clear_step
 	_player.motion_transform=Transform2D(Vector2(TDRestaurantIsoView.HALF_W,TDRestaurantIsoView.HALF_H)/layout.cell_px,Vector2(-TDRestaurantIsoView.HALF_W,TDRestaurantIsoView.HALF_H)/layout.cell_px,Vector2.ZERO).affine_inverse()
 	_player.input_transform=Transform2D.IDENTITY
 	var sprite := Sprite2D.new()
@@ -661,6 +658,7 @@ func _build_status_bar() -> void:
 	panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	panel.add_theme_stylebox_override("panel",TDUI.wood(TDUI.Surface.CARD,0))
 	_bar = panel
+	panel.visible = not player_mode
 	layer.add_child(panel)
 	get_viewport().size_changed.connect(_fit_bar)
 	_observe_banner = Label.new()
@@ -757,7 +755,9 @@ func _build_status_bar() -> void:
 func _build_decoration_ui(layer: CanvasLayer) -> void:
 	_decor_panel=TDDecorationPanel.new();_decor_panel.name="DecorationCatalog"
 	_decor_panel.catalog=catalog;_decor_panel.culture=_culture;_decor_panel.tier=_tier
+	_decor_panel.progression=decoration_progression
 	layer.add_child(_decor_panel);_decor_panel.hide()
+	_decor_panel.minimum_size_changed.connect(_fit_bar,CONNECT_DEFERRED)
 	_decor_panel.item_chosen.connect(_choose_decoration)
 	_decor_panel.category_changed.connect(_cancel_decoration)
 	_decor_panel.done.connect(_toggle_edit)
@@ -798,6 +798,8 @@ func _cancel_decoration() -> void:
 
 func _choose_decoration(id: String, finish: bool) -> void:
 	var choice: Dictionary={} if finish else _decor_panel.furniture_choice(id)
+	var reward_id := id if finish else str(choice.get("kind",id))
+	if decoration_progression!=null and not decoration_progression.decoration_unlocked(reward_id): return
 	if not finish and choice.is_empty(): return
 	_reset_drag()
 	_selected="";_context_menu.hide()
@@ -829,7 +831,7 @@ func _position_context() -> void:
 	if extent.x<80: point.x-=(80-extent.x)*.5;extent.x=80
 	var view:=get_viewport().get_visible_rect().size
 	_context_menu.size=extent
-	_context_menu.position=Vector2(clampf(point.x,18,maxf(18,view.x-extent.x-18)),clampf(point.y,18,maxf(18,view.y-TDDecorationPanel.PANEL_HEIGHT-extent.y-18)))
+	_context_menu.position=Vector2(clampf(point.x,18,maxf(18,view.x-extent.x-18)),clampf(point.y,18,maxf(18,view.y-_decor_panel.size.y-extent.y-18)))
 	_delete_button.position=Vector2(-16,-16)
 	_rotate_button.position=Vector2(extent.x-16,-16)
 
@@ -935,6 +937,7 @@ func _apply(result: TDOutcome) -> TDOutcome:
 			_selected = String(result.data["id"])
 		_clear_guests()
 		_rebuild()
+		layout_changed.emit()
 	return _note(result)
 
 func _nearest_piece() -> Dictionary:
@@ -992,8 +995,9 @@ func _toggle_edit() -> void:
 	_decoration_backdrop.visible = _editing
 	_order_plate.visible = not _editing and player_mode and not _covered and business != null and str(business.snapshot().phase) in ["OPEN", "DRAINING"]
 	_edit_box.hide()
-	_bar.visible=not _editing
+	_bar.visible=not player_mode and not _editing
 	_decor_panel.visible=_editing
+	if _editing: _decor_panel.refresh_cards()
 	_selected="";_context_menu.hide()
 	for button: Button in _service_buttons:
 		button.visible = not _editing and not player_mode
@@ -1235,16 +1239,18 @@ func _add_service_button(row: HFlowContainer, text: String, action: Callable) ->
 	_service_buttons.append(button)
 
 func _fit_bar() -> void:
-	if _bar == null:
-		return
+	if _closed or not is_inside_tree() or _bar==null: return
 	if _drag_candidate: _reset_drag()
-	var height := TDDecorationPanel.PANEL_HEIGHT if _editing else (68.0 if player_mode else 168.0)
 	var view_size := get_viewport().get_visible_rect().size
+	var decor_height := TDDecorationPanel.PANEL_HEIGHT
+	if _decor_panel!=null:
+		_decor_panel.size=Vector2(view_size.x,decor_height)
+		decor_height=_decor_panel.size.y
+		_decor_panel.position=Vector2(0,view_size.y-decor_height)
+	if _iso!=null: _iso.decoration_panel_height=decor_height
+	var height := decor_height if _editing else (68.0 if player_mode else 168.0)
 	_bar.size = Vector2(view_size.x, height)
 	_bar.position = Vector2(0, view_size.y - height)
-	if _decor_panel!=null:
-		_decor_panel.position=Vector2(0,view_size.y-TDDecorationPanel.PANEL_HEIGHT)
-		_decor_panel.size=Vector2(view_size.x,TDDecorationPanel.PANEL_HEIGHT)
 	_position_context()
 	if _bar_box != null:
 		_bar_box.size = Vector2(view_size.x - 20, height - 16)
@@ -1294,6 +1300,7 @@ func _note(result: TDOutcome) -> TDOutcome:
 
 func _set_status(text: String) -> void:
 	if _decor_panel!=null and _editing: _decor_panel.show_info(text)
+	elif player_mode and is_visible_in_tree() and not text.is_empty(): status_reported.emit(text)
 	if _status != null:
 		_status.text = text
 		_status_left=4.0 if not text.is_empty() else 0.0
@@ -1545,7 +1552,7 @@ func _on_talk_closed(last_text: String, _picks: Array) -> void:
 	if characters!=null and context.get("kind")=="resident":
 		characters.hold(str(context.character_id),false)
 		characters.complete_chat(context,_talk_view.last_completed,_picks)
-	if last_text != "":
+	if not player_mode and not last_text.is_empty():
 		_set_status(last_text)
 	_lock_player()
 
@@ -1854,7 +1861,7 @@ func _crew_points(delta: float) -> Array:
 		var at_wall := waiting and waiter.feet.is_equal_approx(destination)
 		people.append({"point":waiter.feet, "actor_id":server.id, "role":"waiter",
 			"cuisine_id":server.get("cuisine_id","cn"), "appearance_variant":server.get("appearance_variant",0),
-			"carrying":waiter.plate != "", "moving":not previous.is_equal_approx(waiter.feet),
+			"held":business.table_service.held_item(waiter.plate) if physical else {}, "carrying":waiter.plate != "", "moving":not previous.is_equal_approx(waiter.feet),
 			"at_wall":at_wall, "idle_lift":TDEmployeeArt.breath_lift(_visit_seconds,index) if at_wall else 0.0,
 			"label":"%s %s%d" % [verb, server.name, server.get("level",1)], "color":Color("#2f7a68")})
 	var active := _session() if not player_mode else null
@@ -2001,9 +2008,12 @@ func nearby_object() -> Dictionary:
 		if gap<distance or (is_equal_approx(gap,distance) and str(entry.action)<str(nearest.get("action","~"))): nearest=entry;distance=gap
 	return nearest
 
+func kitchen_door_cell() -> Vector2i:
+	return Vector2i(layout.columns-2,layout.rows-2)
+
 func interaction_points() -> Array[Dictionary]:
 	if layout==null: return []
-	var cashier:=layout.piece_by_kind("cashier")
+	var cashier:=layout.counter()
 	var ledger_cell:=Vector2(maxi(2,layout.columns/3),0)
 	var ledger_bounds:=Rect2(ledger_cell,Vector2.ONE)
 	if not cashier.is_empty():
@@ -2014,7 +2024,7 @@ func interaction_points() -> Array[Dictionary]:
 		{"action":"menu","name":"营业牌","cell":Vector2(0,3)},
 		{"action":"ledger","name":"账本","cell":ledger_cell,"bounds":ledger_bounds,"on_counter":not cashier.is_empty()},
 		{"action":"decorate","name":"装修图板","cell":Vector2(0,layout.rows-3)},
-		{"action":"kitchen","name":"后厨","cell":Vector2(layout.columns-2,layout.rows-2)}]
+		{"action":"kitchen","name":"后厨","cell":Vector2(kitchen_door_cell())}]
 
 func bind_dining_clock() -> void:
 	if business==null: return
@@ -2041,7 +2051,7 @@ func next_dining_boundary(maximum: float) -> float:
 		elif guest.has_meta("settled_at") and guest.phase in ["eat","pay"]:
 			var age: float=_visit_seconds-float(guest.get_meta("settled_at"))
 			var target: float=TDGuestVisit.EAT_SEC if guest.phase=="eat" else TDGuestVisit.EAT_SEC+TDGuestVisit.PAY_SEC
-			if age<target: next=minf(next,target-age)
+			if age<target: next=minf(next,maxf(.0000001,target-age))
 	return next
 
 # Stop the shared clock at real pickup/handoff, even when advancing a large span off screen.

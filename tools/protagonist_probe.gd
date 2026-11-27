@@ -12,7 +12,7 @@ class AtlasBoard extends Node2D:
 		var faces: Array[Vector2i] = [Vector2i.DOWN,Vector2i.UP,Vector2i.LEFT,Vector2i.RIGHT,Vector2i(1,1),Vector2i(-1,1),Vector2i(-1,-1),Vector2i(1,-1)]
 		var names := ["S","N","W","E","SE","SW","NW","NE"]
 		var font := ThemeDB.fallback_font
-		draw_string(font,Vector2(30,32),"ORIGINAL PROPORTIONS / EIGHT DIRECTIONS",HORIZONTAL_ALIGNMENT_LEFT,-1,24,Color.WHITE)
+		draw_string(font,Vector2(30,32),"MAP SPRITES / EIGHT DIRECTIONS",HORIZONTAL_ALIGNMENT_LEFT,-1,24,Color.WHITE)
 		for column: int in 8:
 			draw_string(font,Vector2(60+column*155,66),names[column],HORIZONTAL_ALIGNMENT_LEFT,-1,20,Color.WHITE)
 			for row: int in 5:
@@ -37,7 +37,7 @@ func capture(label: String) -> void:
 func check_pose(body: TDKitchenPlayer, label: String) -> void:
 	verify(body.facing==Vector2i(1,1),label+": diagonal face")
 	var texture := body.animation_texture() as AtlasTexture
-	verify(texture.atlas.resource_path==TDChefArt.DIAGONAL_FRONT_PATH,label+": new atlas")
+	verify(texture.atlas.resource_path==TDCoarseSpriteArt.DIAGONAL_PATH,label+": map atlas")
 	var size := body._sprite.scale * texture.get_size()
 	verify(size.is_equal_approx(TDChefArt.render_size(Vector2i.DOWN,-1,body.sprite_height)),label+": matches cardinal standing scale")
 	verify(absf(body._sprite.position.y+texture.get_height()*body._sprite.scale.y*.5)<.001,label+": grounded feet")

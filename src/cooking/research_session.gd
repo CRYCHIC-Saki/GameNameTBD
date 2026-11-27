@@ -110,9 +110,33 @@ func grant_inspiration(event_id: String, amount: int) -> TDOutcome:
 	if amount<1 or amount>10000: return TDOutcome.new(false,"INVALID_REWARD")
 	return _event(event_id,{"kind":"inspiration","amount":amount})
 
+func learn_story(event_id: String, cuisine: String, recipes: Array) -> TDOutcome:
+	if not _active.is_empty(): return TDOutcome.new(false,"BUSY")
+	if not event_id.begins_with("story:") or cuisine not in ["cn","eu","jp"] or recipes.is_empty():
+		return TDOutcome.new(false,"INVALID_STORY_LESSON")
+	if _state.events.has(event_id): return TDOutcome.new(true,"ALREADY_APPLIED")
+	var pending := recipes.duplicate()
+	var taught: Array[String] = []
+	while not pending.is_empty():
+		var id: String = pending.pop_front()
+		if id in taught: continue
+		var entry := catalog.node(id)
+		if entry.get("cuisine_id")!=cuisine or catalog.runtime_id(id).is_empty():
+			return TDOutcome.new(false,"INVALID_STORY_RECIPE")
+		taught.append(id)
+		pending.append_array(entry.prerequisites)
+	var candidate := snapshot()
+	if cuisine not in candidate.cuisines: candidate.cuisines.append(cuisine)
+	for id: String in taught:
+		if id not in candidate.unlocked: candidate.unlocked.append(id)
+	candidate.events[event_id]={"kind":"story_lesson","cuisine":cuisine,"recipes":taught}
+	return _commit(candidate)
+
 func record_cooking(day: int, recipe_id: String, score: float) -> TDOutcome:
-	if day<1 or recipe_id.is_empty() or not is_finite(score) or score<80 or score>100: return TDOutcome.new(false,"NO_REWARD")
-	return grant_inspiration("cooking:%d:%s"%[day,recipe_id],1)
+	if day<1 or recipe_id.is_empty() or not is_finite(score) or score<75 or score>100: return TDOutcome.new(false,"NO_REWARD")
+	var id := "cooking:%d:%s"%[day,recipe_id]
+	if _state.events.has(id): return TDOutcome.new(true,"ALREADY_APPLIED")
+	return grant_inspiration(id,2)
 
 func _event(id: String, payload: Dictionary) -> TDOutcome:
 	if id.is_empty() or id.length()>160: return TDOutcome.new(false,"INVALID_EVENT")
@@ -151,6 +175,7 @@ func inherit_legacy(runtime_ids: Array) -> TDOutcome:
 	var candidate:=snapshot()
 	for runtime: Variant in runtime_ids:
 		if not runtime is String or runtime.is_empty(): return TDOutcome.new(false,"INVALID_LEGACY")
+		if runtime in TDRetiredRecipes.WORLD_IDS or runtime in TDRetiredRecipes.SERVICE_IDS: continue
 		if runtime not in candidate.legacy_ids: candidate.legacy_ids.append(runtime)
 		var id:=catalog.atlas_id(runtime)
 		if id!="" and id not in candidate.unlocked:
@@ -161,7 +186,10 @@ func restore(raw: Variant) -> TDOutcome:
 	var valid:=validate_save(raw)
 	if not valid.ok: return valid
 	if not _active.is_empty(): return TDOutcome.new(false,"BUSY")
-	_state=raw.duplicate(true); load_error=""; changed.emit()
+	_state = raw.duplicate(true)
+	_state.legacy_ids = _state.legacy_ids.filter(func(id: String) -> bool:
+		return id not in TDRetiredRecipes.WORLD_IDS and id not in TDRetiredRecipes.SERVICE_IDS)
+	load_error=""; changed.emit()
 	return TDOutcome.new(true,"RESTORED")
 
 func _commit(candidate: Dictionary) -> TDOutcome:
@@ -192,16 +220,22 @@ func validate_save(raw: Variant) -> TDOutcome:
 	if "cn" not in raw.cuisines: return TDOutcome.new(false,"INVALID_CUISINES")
 	for id:String in raw.grandfathered:
 		if id not in raw.unlocked or catalog.runtime_id(id) not in raw.legacy_ids: return TDOutcome.new(false,"INVALID_INHERITANCE")
-	var debug_ids: Array[String]=[]
+	var awarded: Array[String]=[]
 	if raw.get("events") is Dictionary:
 		for event_id: Variant in raw.events:
 			var event: Variant=raw.events[event_id]
-			if not event is Dictionary or event.get("kind")!="debug_unlock": continue
+			if not event is Dictionary: continue
+			if event.get("kind")=="story_lesson":
+				if not event_id is String or not event_id.begins_with("story:") or event.get("cuisine") not in raw.cuisines or not event.get("recipes") is Array or event.recipes.is_empty() or event.recipes.size()>20: return TDOutcome.new(false,"INVALID_STORY_LESSON")
+				for id: Variant in event.recipes:
+					if not id is String or id not in raw.unlocked or catalog.node(id).get("cuisine_id")!=event.cuisine: return TDOutcome.new(false,"INVALID_STORY_RECIPE")
+					awarded.append(id)
+			if event.get("kind")!="debug_unlock": continue
 			if not event_id is String or not event.get("recipe") is String or event_id!="debug:recipe:"+event.recipe or not catalog.nodes.has(event.recipe) or event.recipe not in raw.unlocked or event.keys().size()!=2: return TDOutcome.new(false,"INVALID_DEBUG_UNLOCK")
-			debug_ids.append(event.recipe)
+			awarded.append(event.recipe)
 	for id:String in raw.unlocked:
 		if id in raw.grandfathered: continue
-		if id not in catalog.data.unlock_rules.initial_unlocked_ids and id not in debug_ids:
+		if id not in catalog.data.unlock_rules.initial_unlocked_ids and id not in awarded:
 			if id not in raw.licensed or not raw.get("best") is Dictionary or not TDResearchCatalog.number(raw.best.get(id)) or raw.best[id]<float(catalog.data.settings.pass_score): return TDOutcome.new(false,"INVALID_UNLOCK")
 		if catalog.node(id).cuisine_id not in raw.cuisines: return TDOutcome.new(false,"INVALID_UNLOCK")
 		for parent:String in catalog.node(id).prerequisites:
@@ -222,7 +256,8 @@ func validate_save(raw: Variant) -> TDOutcome:
 		elif row.get("kind")=="inspiration":
 			if not TDResearchCatalog.integer(row.get("amount"),1,10000): return TDOutcome.new(false,"INVALID_EVENT")
 		elif row.get("kind")=="debug_unlock":
-			if row.get("recipe") not in debug_ids: return TDOutcome.new(false,"INVALID_DEBUG_UNLOCK")
+			if row.get("recipe") not in awarded: return TDOutcome.new(false,"INVALID_DEBUG_UNLOCK")
+		elif row.get("kind")=="story_lesson": pass
 		else: return TDOutcome.new(false,"INVALID_EVENT")
 	if not raw.get("world_time") is Dictionary or not TDResearchCatalog.integer(raw.world_time.get("day"),1,1000000) or raw.world_time.get("phase") not in ["morning","evening"] or not TDResearchCatalog.number(raw.world_time.get("spent")) or raw.world_time.spent<0 or raw.world_time.spent>24: return TDOutcome.new(false,"INVALID_WORLD_TIME")
 	if not TDResearchCatalog.number(raw.get("input_offset_sec")) or absf(float(raw.input_offset_sec))>.2: return TDOutcome.new(false,"INVALID_OFFSET")

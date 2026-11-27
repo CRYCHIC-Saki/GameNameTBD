@@ -10,19 +10,19 @@
   "initial_routes": [],
   "towns": {
     "chengdu": {
-      "name": "火锅市 · 成都",
+      "name": "臻味港",
       "cuisine_id": "cn",
       "culture": "chinese",
       "source_id": "tianfu"
     },
     "paris": {
-      "name": "可颂市 · 巴黎",
+      "name": "稀味郡",
       "cuisine_id": "eu",
       "culture": "continental",
       "source_id": "guangcheng"
     },
     "tokyo": {
-      "name": "江户 · 东京",
+      "name": "和味道",
       "cuisine_id": "jp",
       "culture": "japanese",
       "source_id": "edo"
@@ -80,9 +80,9 @@
     "max_lead_days": 3
   },
   "fees": {
-    "opening_cents": 120,
-    "guest_cents": 12,
-    "cooking_second_cents": 0.7
+    "opening_cents": 80,
+    "guest_cents": 8,
+    "cooking_second_cents": 0.5
   },
   "npc": {
     "stores_per_town": 3,

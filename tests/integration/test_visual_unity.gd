@@ -7,7 +7,7 @@ func before_each() -> void:
 	app=load("res://src/app/main.tscn").instantiate()
 	app.settings_path="res://artifacts/visual-unity/slots-%d/settings.json"%Time.get_ticks_usec()
 	add_child_autofree(app);shell=app.game_shell;shell.automatic_time=false
-	assert_true(shell.create_game("slot-01").ok);shell.guide.dialogue.finish_now()
+	assert_true(shell.create_game("slot-01","小镇食堂",false).ok);shell.guide.dialogue.finish_now()
 	await get_tree().process_frame
 
 func after_each() -> void:
@@ -77,7 +77,7 @@ func test_spacious_projection_and_function_markers_preserve_layout_and_reachabil
 	room.teleport_player(Vector2i(cashier.approach_x,cashier.approach_y));driver.tap(KEY_E)
 	assert_not_null(shell._modal_box);shell._close_dialog()
 	assert_eq(shell.profile.snapshot(),before,"Visual space expansion never reallocates saved furniture or money")
-	assert_eq(room._iso._camera.zoom,Vector2.ONE)
+	assert_eq(room._iso._camera.zoom,Vector2(1.18,1.18))
 
 func test_ledger_follows_moved_rotated_counter_and_survives_removal() -> void:
 	shell.travel("restaurant");var room:=shell.restaurant;var layout:=room.layout

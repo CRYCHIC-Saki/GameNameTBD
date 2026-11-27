@@ -18,24 +18,46 @@ func test_expression_changes_keep_one_canvas_and_pose_while_actions_do_not_repla
 	for who: String in ["hero","aling","chen","luo"]:
 		var seen: Dictionary={}
 		var neutral:=TDStoryArt.portrait(who) as AtlasTexture
-		for mood: String in TDRedrawArt.EMOTIONS:
+		for mood: String in ["calm","happy","angry","proud","cry","puzzled","troubled","speechless"]:
 			var art:=TDStoryArt.portrait(who,mood) as AtlasTexture
 			assert_eq(art.get_size(),neutral.get_size(),who+" stationary canvas")
 			assert_same(art,TDStoryArt.portrait(who,mood,"握住锅柄"))
 			assert_true(Rect2(Vector2.ZERO,art.atlas.get_size()).encloses(art.region))
-			seen[art.region.position]=true
-		assert_eq(seen.size(),6)
+			seen[art.atlas.resource_path]=true
+		assert_eq(seen.size(),8)
 
 func test_vn_portraits_are_behind_the_full_width_text_panel_and_expression_refreshes() -> void:
 	var view:=TDDialogueView.new();add_child_autofree(view)
 	var talk:=TDDialogue.new();talk.story_layout("焰子","aling")
 	talk.add_line("焰子","hero","测试。","happy");talk.add_line("焰子","hero","下一句。","sad")
 	view.present(talk);view.set_process(false)
+	await wait_process_frames(2)
 	assert_gt(view._panel.z_index,view._portrait.z_index)
 	assert_gt(view._panel.z_index,view._right_portrait.z_index)
-	assert_eq(view._body.position.x,36.0)
+	assert_gt(view._vn_stage.dialog.background_box.size.x,1100.0)
 	assert_eq(view._portrait.offset_bottom,0.0)
-	talk.click();talk.click();view._refresh()
-	assert_eq(view._portrait.emotion,"sad")
+	await wait_process_frames(2)
+	view._vn_stage.dialog._reveal_to_end();view._vn_stage.dialog._advance_dialog()
+	await wait_process_frames(2)
+	var actor := view._vn_stage.runner.ctx.characters.active_sprites.hero as VNEngineCharacterSprite
+	assert_eq((actor.sprite.texture as AtlasTexture).region,(TDStoryArt.portrait("hero","sad") as AtlasTexture).region)
 	view.finish_now()
+	await wait_process_frames(2)
 
+
+func test_active_dish_slots_preserve_original_art_identity_after_region_filtering() -> void:
+	var index := TDRedrawArt.catalog()
+	for id: String in index.dish_ids:
+		if index.standalone_dishes.has(id): continue
+		var slot: int = int(index.dish_slots[id])
+		assert_eq(index.dishes[id].path, "res://assets/redraw-v1/dishes-%d.png" % (slot / 20), id)
+		assert_eq(index.dishes[id].index, slot % 20, id)
+		assert_not_null(TDRedrawArt.dish(id), id)
+	var soup_icon := TDRedrawArt.dish("E21") as AtlasTexture
+	var soup_plate := TDRedrawArt.cooking_food("study.e21") as AtlasTexture
+	assert_not_null(soup_icon)
+	assert_not_null(soup_plate)
+	if soup_icon!=null and soup_plate!=null:
+		assert_eq(soup_icon.atlas.resource_path,"res://assets/kitchen/mushroom-soup.png")
+		assert_same(soup_plate.atlas,soup_icon.atlas)
+		assert_ne(soup_plate.region,soup_icon.region)

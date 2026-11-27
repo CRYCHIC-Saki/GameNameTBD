@@ -37,7 +37,7 @@ static func lot(key: String) -> Rect2i:
 static func facility(map: TDTownMap) -> Dictionary:
 	if map.layout_version != 2 or not map.region_id.is_empty(): return {}
 	var booth := lot("booth")
-	return {"id":ID, "kind":"harbor", "name":"河口港 · 海港客运",
+	return {"id":ID, "kind":"harbor", "name":"臻味港客运站",
 		"x":booth.position.x, "y":booth.position.y, "w":booth.size.x, "h":booth.size.y,
 		"approach_x":ARRIVAL.x, "approach_y":ARRIVAL.y, "enabled":true}
 

@@ -2,7 +2,7 @@ class_name TDKitchenLink
 extends RefCounted
 
 const STIR_CHART := "service.tomato_egg"
-const STEAM_CHART := "service.qiguoji"
+const STEAM_CHART := "service.legacy_steam"
 
 static func install(service: TDServiceCatalog, dishes: Array) -> Array[String]:
 	var ids: Array[String] = []
@@ -27,7 +27,8 @@ static func _ensure(service: TDServiceCatalog, dish: Dictionary) -> String:
 		return recipe_id
 	var kitchen: Dictionary = dish.get("kitchen", {})
 	var chart_id := String(kitchen.get("chart", ""))
-	var template := service.cooking.recipe_data(chart_id)
+	var template_id := "kitchen.unknown_steam" if chart_id == STEAM_CHART else chart_id
+	var template := service.cooking.recipe_data(template_id)
 	if template.is_empty() or chart_id not in [STIR_CHART, STEAM_CHART]:
 		return ""
 	var sheet := service.cooking.sheet_data(chart_id)
@@ -38,6 +39,9 @@ static func _ensure(service: TDServiceCatalog, dish: Dictionary) -> String:
 	if service.cooking.sheet_data(cut).is_empty() or primary.size() != 2:
 		return ""
 	var recipe := template
+	if chart_id == STEAM_CHART:
+		recipe.required_steps = ["steam", "season", "plate"]
+		recipe.ideal_temperature = [75, 100]
 	recipe["id"] = recipe_id
 	recipe["name"] = String(dish.get("name", recipe_id))
 	recipe["initially_unlocked"] = false

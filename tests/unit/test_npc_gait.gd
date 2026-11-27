@@ -12,13 +12,13 @@ func test_distance_cycle_pause_stop_teleport_and_instance_isolation() -> void:
 	a.sample(Vector2(2000,1990));assert_eq(a.facing,Vector2i.UP);assert_gte(a.frame,0)
 	a.sample(Vector2(2000,1980),false,true);assert_eq(a.frame,-1,"Sitting overrides displacement")
 
-func test_named_actors_keep_original_idle_and_have_distinct_opposite_strides() -> void:
+func test_named_actors_have_distinct_idle_and_opposite_strides() -> void:
 	for who: String in ["aling","chen"]:
 		for face: Vector2i in [Vector2i.DOWN,Vector2i.UP,Vector2i.LEFT,Vector2i.RIGHT]:
 			var idle:=TDStoryArt.sprite(who,face)
 			assert_same(TDStoryArt.sprite(who,face,1),idle);assert_same(TDStoryArt.sprite(who,face,3),idle)
 			var a:=TDStoryArt.sprite(who,face,0);var b:=TDStoryArt.sprite(who,face,2)
 			assert_ne(a.get_image().get_data(),b.get_image().get_data())
-			assert_same((idle as AtlasTexture).atlas,TDStoryArt.ALING if who=="aling" else TDStoryArt.CHEN)
-			assert_same((a as AtlasTexture).atlas,TDStoryArt.ALING_WALK if who=="aling" else TDStoryArt.CHEN_WALK)
-			assert_gt(a.get_height(),300);assert_same(TDStoryArt.sprite(who,face,0),a)
+			assert_eq((idle as AtlasTexture).atlas.resource_path,"res://assets/characters/coarse-pixel-v1/%s.png" % who)
+			assert_same((a as AtlasTexture).atlas,(idle as AtlasTexture).atlas)
+			assert_eq(a.get_height(),idle.get_height());assert_same(TDStoryArt.sprite(who,face,0),a)

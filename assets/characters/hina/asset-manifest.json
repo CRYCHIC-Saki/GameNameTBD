@@ -1,0 +1,210 @@
+{
+  "schema": 1,
+  "character_id": "hina",
+  "display_name": "日奈",
+  "date": "2026-11-26",
+  "status": "DELIVERED_LOCAL_ARCHIVED_ART_REVIEW_PENDING",
+  "generator": "built-in image_gen",
+  "scope": "日奈四向静态像素小人创作并归档；8张表情原图原样归档。",
+  "references": [
+    {
+      "path": "doc/source/characters/hina/expressions/得意.png",
+      "sha256": "ded2a4a5eb794e487efe0962f280322e29cca20b6cecba64165d38280bb0a12f",
+      "size": [
+        2560,
+        2560
+      ],
+      "role": "用户原表情归档"
+    },
+    {
+      "path": "doc/source/characters/hina/expressions/高兴.png",
+      "sha256": "bfa2476edb1d7589e10c55e0ef66a28e5bc85e661854394d0b811f4b85df14b6",
+      "size": [
+        2560,
+        2560
+      ],
+      "role": "用户原表情归档"
+    },
+    {
+      "path": "doc/source/characters/hina/expressions/哭哭.png",
+      "sha256": "9a7fff39e07f833e736521522c651938c2edd54a1b4d159bff1d544f91952c8b",
+      "size": [
+        2560,
+        2560
+      ],
+      "role": "用户原表情归档"
+    },
+    {
+      "path": "doc/source/characters/hina/expressions/困扰.png",
+      "sha256": "c7cc265a036dbd859a3e602417c8c8e26d5edb2f2d0df9f1c4bf50aa10fbba49",
+      "size": [
+        2560,
+        2560
+      ],
+      "role": "用户原表情归档"
+    },
+    {
+      "path": "doc/source/characters/hina/expressions/生气.png",
+      "sha256": "79468ffc9d14461b7127a2dfb993feedd411a75b9ac9da80f0fb0f379d72f698",
+      "size": [
+        2560,
+        2560
+      ],
+      "role": "用户原表情归档"
+    },
+    {
+      "path": "doc/source/characters/hina/expressions/通常.png",
+      "sha256": "b52915847aefea07e5f34d87aab973a693c089bc86b346b35c3e697c6a87b57a",
+      "size": [
+        2560,
+        2560
+      ],
+      "role": "生成的主身份参考"
+    },
+    {
+      "path": "doc/source/characters/hina/expressions/无语.png",
+      "sha256": "5c58b3b6c38d3a7d4a047d697371115e596b5f3c499cace3f73232c1bec2be52",
+      "size": [
+        2560,
+        2560
+      ],
+      "role": "用户原表情归档"
+    },
+    {
+      "path": "doc/source/characters/hina/expressions/疑惑.png",
+      "sha256": "ffac5b057e49e7ef4f55cab711608a4c2f4f35591ef52c26e54fdd0718b9f60f",
+      "size": [
+        2560,
+        2560
+      ],
+      "role": "用户原表情归档"
+    }
+  ],
+  "style_references": [
+    {
+      "path": "assets/characters/vito/archive/2026-11-26/vito-idle-four-directions.png",
+      "sha256": "c7abf5a05eb97b6852cd24d3545d98b9a6b2a9a0a14835343ff8d9f8627c9b58",
+      "role": "已确认四向小人的粗像素颗粒、比例和布局"
+    },
+    {
+      "path": "assets/characters/ash-priest/archive/2026-10-29/ash-priest-idle-four-directions.png",
+      "sha256": "7b9875c2015d61af28f8cca325e951b16b41c11532ab2d9c7587c8fe4d7e4273",
+      "role": "已确认四向小人的色块层次和轮廓"
+    }
+  ],
+  "identity_elements": [
+    "白发浅粉阴影、弯曲呆毛、左侧单马尾及虾形发饰",
+    "金橙红眼睛、柔和圆脸",
+    "红领白衣、金色小领结、露肩红边与白色红内衬宽袖",
+    "右胸红色小牌与左胸虾形饰物",
+    "深灰紫斜摆围裙、红色褶裙、左腰金黄蝴蝶结",
+    "右手棕柄银色锅铲",
+    "白袜、红色鞋带及棕色木底鞋"
+  ],
+  "sprite_atlas": {
+    "file": "hina-idle-four-directions-v1.png",
+    "sha256": "f834bf1f7d6ef1079cbb002f14a87c4bad511f0c2d3a75faad5f44249d14acb9",
+    "size": [
+      1254,
+      1254
+    ],
+    "pixel_format": "Format32bppArgb",
+    "corner_alpha": [
+      0,
+      0,
+      1,
+      0
+    ],
+    "layout": [
+      2,
+      2
+    ],
+    "cell_size": [
+      627,
+      627
+    ],
+    "frames_per_direction": 1,
+    "animation": "idle_static",
+    "directions": [
+      {
+        "id": "front",
+        "facing": "down",
+        "region_xywh": [
+          0,
+          0,
+          627,
+          627
+        ]
+      },
+      {
+        "id": "back",
+        "facing": "up",
+        "region_xywh": [
+          627,
+          0,
+          627,
+          627
+        ]
+      },
+      {
+        "id": "left",
+        "facing": "left",
+        "region_xywh": [
+          0,
+          627,
+          627,
+          627
+        ]
+      },
+      {
+        "id": "right",
+        "facing": "right",
+        "region_xywh": [
+          627,
+          627,
+          627,
+          627
+        ]
+      }
+    ],
+    "filter_recommendation": "nearest",
+    "pivot_note": "依据各朝向脚底确定锚点；避免按整格或马尾边界计算中心。"
+  },
+  "archive": {
+    "date": "2026-11-26",
+    "status": "ARCHIVED_AS_REQUESTED",
+    "files": [
+      {
+        "role": "sprite",
+        "file": "archive/2026-11-26/hina-idle-four-directions.png",
+        "source_file": "hina-idle-four-directions-v1.png",
+        "sha256": "f834bf1f7d6ef1079cbb002f14a87c4bad511f0c2d3a75faad5f44249d14acb9",
+        "size": [
+          1254,
+          1254
+        ],
+        "pixel_format": "Format32bppArgb",
+        "byte_identical_to_generated_file": true
+      }
+    ],
+    "record": "archive/2026-11-26/archive-record.json"
+  },
+  "source_archive_record": "doc/source/characters/hina/source-archive-record.json",
+  "generation_record": "generation-prompts.json",
+  "art_assumptions": [
+    "小人延续2×2四向站姿格式，每向一帧，不含行走帧。",
+    "背侧视角依据原稿左右结构补绘；大色块简化发丝、褶皱和虾饰细节。",
+    "素材名称采用用户给定的日奈，hina仅作本目录标签；本轮没有修改运行时希娜/澄奈等已有角色名称或绑定。"
+  ],
+  "verification": {
+    "source_byte_identity": "PASS_8_OF_8",
+    "generated_copy_identity": "PASS",
+    "archive_byte_identity": "PASS",
+    "png_metadata": "PASS",
+    "visual_inspection": "已核对四向、左侧马尾/虾饰/腰结及右手锅铲方向、红白宽袖和双层裙摆。",
+    "human_art_acceptance": "PENDING_NEW_GENERATION",
+    "runtime_integration": "NOT_DONE",
+    "engine_tests": "NOT_RUN_ASSET_ONLY"
+  },
+  "alpha_note": "保留生成器原RGBA与半透明边缘；四角alpha为[0,0,1,0]。未通过脚本重绘、缩放、量化或阈值清理。"
+}

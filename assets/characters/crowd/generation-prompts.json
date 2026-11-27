@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "character_id": "crowd",
+  "date": "2026-11-26",
+  "generator": "built-in image_gen",
+  "generations": [
+    {
+      "role": "four_direction_initial",
+      "prompt": "Use case: stylized-concept.\nAsset: a transparent 2x2 four-direction idle pixel sprite atlas for the original minimalist crowd NPC from this RPG.\nInput 1 is the sole identity reference, the neutral original illustration. It is the same intentionally abstract little grey cook silhouette: a nearly circular bare head with TWO simple BLACK VERTICAL DASH eyes in front and no mouth, a large crooked chef toque leaning toward screen LEFT, and a single armless A-line chef smock with TWO pointed collar tips and TWO small vertically stacked buttons. The smock ends in a simple rounded continuous hem that serves as the sprite's feet/base. Retain the minimal pawn-like design from the reference: no visible arms, hands, legs, footwear, human features, hair, ears, nose, smile, blush, props, badges, or additions. The chef hat is a smooth softly tilted oblong dome with a lower narrow band, no scalloped lobes. Original pale warm gray monochrome, deep charcoal-brown outlines, restrained gray shading, one subtle broad shadow cluster per large shape. Keep the hat asymmetry, correct on the same anatomical side in all views.\nInput 2 is the existing pixel style/layout reference ONLY. Match its stepped block edges and bold large color clusters, not its character, colorful palette, costume, details or proportions. Keep this original crowd NPC's clean simpler silhouette, no bright or colored accents.\nExactly four isolated full silhouettes on a square transparent PNG with even 2x2 cells: TOP LEFT toward viewer/FRONT (two simple vertical eyes, two collar tips and two buttons); TOP RIGHT directly away/BACK (featureless round back of head and plain smock back, no eyes or front buttons); BOTTOM LEFT exact profile facing screen LEFT; BOTTOM RIGHT exact profile facing screen RIGHT (one near-side thin vertical black eye toward leading edge, no far-side eye, a sliver of collar only at the front-facing edge). The views all have a cohesive shape, equal visual heights and level bases, arranged with ample clear gutters. All four hats and lower hems fully in frame. Tiny game-sprite appearance as if each figure is 54–64 source pixels high, displayed upscaled with nearest-neighbor. Bold crisp 1-source-pixel stair-step dark contours, large visibly square pixels, clean contour steps, no antialias, outline glow, gradients, texture, dithering, glossy shading or more than a few muted gray tones. True alpha transparency, no canvas color, cast shadow, labels, decorations, dividers, text, or UI.",
+      "referenced_image_paths": [
+        "F:/MyGameTBD/doc/source/characters/crowd/expressions/通常.png",
+        "F:/MyGameTBD/assets/characters/hina/archive/2026-11-26/hina-idle-four-directions.png"
+      ],
+      "transparent_background": true,
+      "generated_file": "exec-e2c20b47-0bec-4a98-bb4b-ee7ccb0ed352.png"
+    },
+    {
+      "role": "four_direction_back_hat_correction",
+      "prompt": "Use case: precise-object-edit. Correct only the hat in the TOP RIGHT REAR view so the same anatomical tilt is consistent at a 180 degree turn. In that ONE rear view, mirror the hat horizontally across that rear sprite head's center so its dome visibly leans to SCREEN RIGHT, while front hat in top-left continues leaning SCREEN LEFT. Keep the identical gray palette, full hat shape, height, pixel size, near-black pixel outline and the same center for head and feet in rear cell. Preserve the rear featureless head and back of robe exactly. All other three sprites, 2x2 layout, positions, and genuine transparent background are invariants. Absolutely no reflections of the entire grid, no cropping/layout changes, no additional faces/limbs or objects.",
+      "referenced_image_paths": [
+        "C:/Users/Administrator/.codex/generated_images/01a17b72-580d-7c22-890d-2d1b45461a94/exec-e2c20b47-0bec-4a98-bb4b-ee7ccb0ed352.png"
+      ],
+      "transparent_background": true,
+      "generated_file": "C:\\Users\\Administrator\\.codex\\generated_images\\01a17b72-580d-7c22-890d-2d1b45461a94\\exec-73c90d21-b437-4b45-afbd-4651ce071daf.png",
+      "archive_file": "archive/2026-11-26/crowd-idle-four-directions.png"
+    },
+    {
+      "role": "eight_front_expressions",
+      "prompt": "Use case: stylized-concept. Create a new horizontal sprite sheet, EXACTLY 4 columns x 2 rows, of EIGHT FRONT-FACING pixel expressions of the SAME grey cook NPC. Input 1 is the pixel sprite master: copy the sprite design of its UPPER LEFT front pose ONLY; match its exact large pixels, outline weight, warm gray palette, angular highlights, armless uninterrupted A-line robe, pointed collar, exactly two chest buttons, and big oblong chef hat tilted to screen-left. These must look like model-sheet expressions of one identical sprite, not eight redesigned characters. Images 2–5 are original face FX references only (happy, proud, crying, speechless respectively). Do not use the source's smooth lines; translate them into crisp chunky pixels.\nLayout is fixed using eight equal-size cells with generous gutters and no crossing decorations. EACH cell shows one full grey figure, from tilted hat to rounded coat hem, same scale and baseline within each row. All eight FRONT views. Leave breathing room at sides for compact FX no more than a few logical pixels beyond the head, keep graphics within each cell. No captions, text, cell borders, UI, numbers, shadows, backgrounds or emblems. True alpha transparency.\nOrder and changes, top row left to right:\n1. Neutral / 通常: two plain black vertical lines for eyes, no emoticon.\n2. Happy / 高兴: two upward arcs like ^ ^, tiny gold triangle rays at left and two tiny pink flowers at right.\n3. Angry / 生气: keep vertical eyes and add two sharp inward slant brows and a small four-notch comic anger mark at the right temple.\n4. Proud / 得意: two U-shaped closed eyes, two tiny dark music-note sprites at the right.\nBottom row left to right:\n5. Crying / 哭哭: two U-shaped closed eyes, a single conspicuous large white/light-blue outward tear on each cheek as in reference.\n6. Puzzled / 疑惑: vertical eyes with mismatched bent brows, one charcoal pixel question symbol near the upper right.\n7. Troubled / 困扰: vertical eyes and two worried sloping eyebrows, one tiny bandage-like comic cross with a short loose curved trail at upper right, no tear.\n8. Speechless / 无语: two upward closed-eye curves, gray-black dotted ellipsis and one big white sweat droplet on the right as in original.\nHold the hue of all gray bodies identical. No mouths, nose, ears, hair, arms, legs, fingers or feet; this specific abstract NPC has none. Keep background genuinely transparent. The largest visible pixel unit and blocky contour style should match the first input, with minimal shades and no smooth antialiased rendering.",
+      "referenced_image_paths": [
+        "C:/Users/Administrator/.codex/generated_images/01a17b72-580d-7c22-890d-2d1b45461a94/exec-e2c20b47-0bec-4a98-bb4b-ee7ccb0ed352.png",
+        "F:/MyGameTBD/doc/source/characters/crowd/expressions/高兴.png",
+        "F:/MyGameTBD/doc/source/characters/crowd/expressions/得意.png",
+        "F:/MyGameTBD/doc/source/characters/crowd/expressions/哭哭.png",
+        "F:/MyGameTBD/doc/source/characters/crowd/expressions/无语.png"
+      ],
+      "transparent_background": true,
+      "generated_file": "C:\\Users\\Administrator\\.codex\\generated_images\\01a17b72-580d-7c22-890d-2d1b45461a94\\exec-9efeb049-c784-45c9-bda1-43f28d6b17f8.png",
+      "archive_file": "archive/2026-11-26/crowd-front-expressions.png"
+    }
+  ]
+}

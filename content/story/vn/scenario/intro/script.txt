@@ -1,36 +1,57 @@
-# arrival_film
-@td_cg arrival
+// D078: intro; source: opening.json / homecoming.json. Visual presentation only.
+# start
+@bg harbor with instant 0
 
-# hero_arrival
-@bg arrival-coast-v1 with instant 0
-@show hero happy at left with instant
+# beat_0
+@hide hero with instant
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@bg harbor with instant 0
+narrator: 长途车驶走。玩家背着锅，展开一张边角磨白的美食地图。\n地图上的河口镇被圈了三遍，旁边写着：“百国商船汇聚，天下千味之港。”\n郑重地踏过镇口的白线。
+
+# beat_1
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
 hero: 终于到了。吾之舌啊，准备迎接万国料理的洗礼！
 
-# hungry_film
-@td_cg hungry
+# beat_2
+@hide hero with instant
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@bg harbor with instant 0
+narrator: 肚子响了一声。他把手按在胃上。
 
-# hero_hungry
-@show hero calm at left with instant
+# beat_3
+@show hero calm at td:0.268170:1.464197:2.150000 with instant
 hero: ……封印已经撑不住了。
 
-# offscreen_call
+# beat_4
 aling: 背锅的旅人，止步！
 
-# messenger_film
-@td_cg messenger
+# beat_5
+@hide hero with instant
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@bg harbor with instant 0
+narrator: 少女站在一只木箱上，披风被海风吹得猎猎作响。她翻开账本。
 
-# messenger_intro
-@show aling calm at right with fade
+# beat_6
+@hide chen with instant
+@hide luo with instant
+@show aling calm at td:0.740000:1.555701:2.150000 with instant
 aling: 夜鸦密使阿铃，奉命截获一名携带黑铁重器的异乡人。报上你的真名与来意！
 
-# name_input
+# beat_7
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
 @td_name hero
-
-# hero_name
-@show hero happy at left with instant
 hero: 见习厨师，{$hero}。为尝遍此地美食而来！
 
-# invitation
+# beat_8
+@hide chen with instant
+@hide luo with instant
+@show aling calm at td:0.740000:1.555701:2.150000 with instant
 aling: 原来是巡礼者。命运的指针恰好指向陈司祭的食材铺，他今日正在分赐圣餐。随我来，趁你的封印还没彻底破裂。
 
 # finish

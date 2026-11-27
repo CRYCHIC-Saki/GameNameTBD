@@ -7,7 +7,7 @@ func before_each() -> void:
 	app.settings_path="res://artifacts/travel/tests/%d/settings.json"%Time.get_ticks_usec()
 	add_child_autofree(app);shell=app.game_shell;shell.automatic_time=false
 	await wait_process_frames(1)
-	assert_true(shell.create_game("slot-01","航线测试").ok)
+	assert_true(shell.create_game("slot-01","航线测试",false).ok)
 	shell.guide.dialogue.finish_now();shell.profile.story.beat="done"
 	shell.travel("town");shell.town.spawn_at_harbor()
 
@@ -213,7 +213,10 @@ func test_street_buildings_keep_human_scale_including_narrow_residential_frontag
 			assert_true(rect.encloses(wall) and not visit._can_stand(wall.get_center()))
 			player.position=Vector2(wall.get_center().x,wall.end.y+visit.FOOT_RADIUS+2)
 			assert_true(visit._can_stand(player.position))
-			assert_eq(visit.nearby().get("id"),plot_id)
+			if plot_id.begins_with("residences-"):
+				assert_ne(visit.nearby().get("id"),plot_id)
+			else:
+				assert_eq(visit.nearby().get("id"),plot_id)
 		player.position=(Vector2(TDTravelCatalog.port(id))+Vector2.ONE*.5)*visit.cell_size
 		shell.show_world_map()
 		var maps:=shell._modal_box.find_children("*","Control",true,false)
@@ -340,12 +343,16 @@ func test_saved_branch_footprints_are_same_on_travel_map() -> void:
 func test_facade_ownership_and_civic_landmarks_across_all_five_towns() -> void:
 	for town: String in TDTravelCatalog.IDS:
 		var map := TDTravelCatalog.map_for(shell.profile,town)
-		var brand := TDTravelCatalog.facade(town,{"id":"branch", "kind":"player_diner", "branch_id":"branch"}) as AtlasTexture
+		var branch := {"id":"branch", "kind":"player_diner", "branch_id":"branch"}
+		var brand := TDTravelCatalog.facade(town, branch)
+		assert_eq(brand, TDTravelCatalog.BRANCH_EXTERIORS[town])
+		branch.construction = true
+		assert_eq(TDTravelCatalog.facade(town, branch), TDTravelCatalog.BRANCH_CONSTRUCTION)
 		var civic := {}
 		for parcel: Dictionary in map.plots:
 			var kind := str(parcel.kind)
 			var art := TDTravelCatalog.facade(town,parcel) as AtlasTexture
-			if kind != "player_diner": assert_ne(art.atlas,brand.atlas,town + ":" + kind)
+			if kind != "player_diner": assert_ne(art.atlas,brand,town + ":" + kind)
 			if kind in ["hotel","bank","market","plaza","landmark","urban_village"]:
 				civic[kind] = str(art.atlas.resource_path) + str(art.region)
 		assert_eq(civic.size(),6,town)
@@ -354,7 +361,7 @@ func test_facade_ownership_and_civic_landmarks_across_all_five_towns() -> void:
 		for kind: String in civic:
 			assert_eq(civic.values().count(civic[kind]),1,town + ":" + kind)
 
-func test_shiomi_counter_opens_from_the_shop_door_and_sells_from_both_shelves() -> void:
+func test_shiomi_counter_opens_from_the_shop_door_and_sells_local_unlocked_ingredients() -> void:
 	assert_true(shell.voyage("tokyo").ok)
 	var world:=shell.visiting
 	var fronts:=world._buildings.filter(func(entry:Dictionary)->bool:return entry.plot.id=="market-neighborhood")
@@ -368,25 +375,35 @@ func test_shiomi_counter_opens_from_the_shop_door_and_sells_from_both_shelves() 
 	world._unhandled_input(interact)
 	assert_not_null(shell._modal_box)
 	if shell._modal_box==null: return
+	assert_false(shell._modal_box.find_children("*","TDIngredientIcon",true,false).any(
+		func(icon: TDIngredientIcon) -> bool: return icon.item_id == "udon"))
+	shell._close_dialog()
+	assert_true(shell.profile.research.learn_story("story:local_market_test","jp",["J03"]).ok)
+	world._unhandled_input(interact)
 	var tabs:=shell._modal_box.find_children("*","TabBar",true,false)
 	assert_eq(tabs.size(),1)
 	if tabs.is_empty(): return
 	var rows: Dictionary={}
 	for icon: TDIngredientIcon in shell._modal_box.find_children("*","TDIngredientIcon",true,false):
 		rows[icon.item_id]=icon.get_parent()
-	assert_eq(rows.size(),shell.profile.shop.market_ids("tokyo").size())
-	assert_does_not_have(rows,"miso")
+	assert_eq(rows.size(),shell.profile.shop.local_market_ids("tokyo").size())
 	assert_does_not_have(rows,"tortilla")
 	for id: String in ["udon","salt"]:
 		assert_has(rows,id)
 		if not rows.has(id): return
 		(tabs[0] as TabBar).current_tab=0 if id=="udon" else 1
 		assert_true((rows[id] as Control).is_visible_in_tree(),id)
-		var before:=shell.profile.shop.available(id)
+		var branches := shell.profile.branches
+		var store_id := branches.preset_in("tokyo")
+		assert_false(store_id.is_empty())
+		if store_id.is_empty(): return
+		var before := int(branches.state.stores[store_id].inventory.get(id,0))
+		var main_stock := shell.profile.shop.available(id)
 		var button: Button=rows[id].find_children("*","Button",true,false).back()
 		assert_eq(button.text,"购买")
 		button.pressed.emit()
-		assert_eq(shell.profile.shop.available(id),before+1000)
+		assert_eq(int(branches.state.stores[store_id].inventory.get(id,0)),before+1000)
+		assert_eq(shell.profile.shop.available(id),main_stock)
 
 func test_service_can_leave_but_procurement_policy_stays_separate() -> void:
 	assert_true(shell.kitchen_view.buy_kit("service.tomato_egg").ok)
@@ -396,12 +413,13 @@ func test_service_can_leave_but_procurement_policy_stays_separate() -> void:
 	assert_false(shell.profile.can_leave_shop()) # existing purchase boundary, not travel permission
 	assert_true(shell.kitchen_view.staff_status().contains("缺厨师"))
 
-func test_night_forces_return_from_foreign_town_and_rejects_stale_travel() -> void:
+func test_night_brings_the_player_to_local_lodging_and_rejects_stale_travel() -> void:
 	assert_true(shell.voyage("paris").ok)
 	shell.advance_world_time(TDWorldDayClock.END_MINUTE-shell.profile.characters.clock.minute)
-	assert_null(shell.visiting)
-	assert_eq(shell.location,"town") # new slot: homecoming story precedes the locked cottage
-	assert_eq(shell.visiting_town,"chengdu")
+	assert_not_null(shell.visiting)
+	assert_eq(shell.location,"voyage")
+	assert_eq(shell.visiting_town,"paris")
+	assert_eq(shell.visiting.nearby().kind,"hotel")
 	assert_eq(shell.profile.characters.clock.closed_day,shell.profile.characters.clock.day)
 	assert_eq(shell.voyage("tokyo").code,"NIGHT_CLOSED")
 
@@ -521,26 +539,34 @@ func test_world_map_five_towns_wheel_anchor_drag_and_limits() -> void:
 	assert_eq(view.zoom,5.0)
 	view.reset_view();assert_eq(view.zoom,1.0);assert_eq(view.pan,Vector2.ZERO)
 	assert_eq(shell.visiting_town,"chengdu","atlas never teleports")
+	assert_eq(view.focused_town(),"")
+	for id: String in TDTravelCatalog.IDS:
+		view.focus_town(id)
+		assert_eq(view.focused_town(),id,"Live local map is separate from world illustration")
+	view.reset_view()
+	assert_eq(view.focused_town(),"")
 
-func test_interrupted_migration_write_keeps_old_bytes_and_live_profile_then_retries() -> void:
+func test_regional_migration_keeps_old_bytes_until_the_next_checkpoint() -> void:
 	var p:=shell.profile
+	# This fixture predates the supplied regional storefronts and their surveyed lots.
+	p.branches.state.stores.clear()
+	p.branches.state.serial=0
 	p.region_layout_version=1
 	for id: String in TDRegionalLayout.IDS: p.commerce.expansion.state.parcels.erase(id)
 	p._wire_commerce()
-	assert_true(shell.save_game().ok)
+	assert_true(shell.profile.save().ok)
 	var path:=shell.slots.path_for("slot-01");var bytes:=FileAccess.get_file_as_bytes(path)
-	var before:=p.snapshot()
 	shell.slots.interrupt_at="after_temp"
-	assert_eq(shell.load_game("slot-01").code,"INTERRUPTED")
-	assert_same(shell.profile,p,"failed candidate is never activated")
-	assert_eq(p.snapshot(),before)
-	assert_eq(FileAccess.get_file_as_bytes(path),bytes)
-	assert_eq(FileAccess.get_file_as_bytes(path+".before-region-v2.bak"),bytes)
-	shell.slots.interrupt_at=""
 	assert_true(shell.load_game("slot-01").ok)
 	assert_true(shell.profile.region_migrated_on_load)
-	assert_eq(int(shell.slots.load_slot("slot-01").data.region_layout_version),11)
-	var revision:=shell.profile.revision
+	assert_eq(FileAccess.get_file_as_bytes(path),bytes,"Loading the migrated profile never rewrites the original")
+	assert_eq(shell.profile.branches.state.stores.size(),2,"new storefronts are added after migration")
+	shell.slots.interrupt_at=""
+	shell.guide.dialogue.finish_now()
+	shell._sleep("chengdu",0)
+	var daily := shell.slots.load_slot("slot-01",TDProfileStore.DAILY)
+	assert_true(daily.ok,daily.code)
+	assert_eq(int(daily.data.region_layout_version),TDEgretLayout.CURRENT_VERSION)
+	assert_eq(FileAccess.get_file_as_bytes(path),bytes)
 	assert_true(shell.load_game("slot-01").ok)
 	assert_false(shell.profile.region_migrated_on_load)
-	assert_eq(shell.profile.revision,revision,"migration does not save repeatedly")

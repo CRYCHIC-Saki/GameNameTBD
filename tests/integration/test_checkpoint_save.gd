@@ -12,10 +12,10 @@ func before_each() -> void:
 	var base: String="res://artifacts/d059/save-tests/%d"%Time.get_ticks_usec()
 	shell.profile_root=base+"/profiles";shell.preferences_path=base+"/settings.json"
 	shell.automatic_time=false;add_child_autofree(shell)
-	assert_true(shell.create_game("slot-01").ok);shell.guide.dialogue.finish_now()
+	assert_true(shell.create_game("slot-01","小镇食堂",false).ok);shell.guide.dialogue.finish_now()
 	shell.profile.story.beat="done"
 	shell.profile.residence.stage="door";assert_true(shell.profile.unlock_residence().ok)
-	assert_true(shell.save_game().ok)
+	assert_true(shell.profile.save().ok) # Seed a legacy snapshot for rollback tests.
 	await wait_process_frames(2)
 
 func after_each() -> void:
@@ -47,11 +47,12 @@ func test_return_without_save_rolls_back_all_domains_to_one_checkpoint() -> void
 	button("确认返回主菜单").pressed.emit()
 	assert_eq(FileAccess.get_file_as_bytes(path),bytes)
 	assert_true(shell.load_game("slot-01").ok)
-	assert_eq(shell.location,"cottage")
+	assert_eq(shell.location,"town","The legacy slot resumes at the revised opening")
 	assert_eq(shell.profile.characters.clock.minute, 480.0)
 	var restored:=shell.profile.snapshot()
-	for key: String in ["layout","research","shop","economy","story"]:
+	for key: String in ["layout","research","shop","economy"]:
 		assert_true(TDLevelProgression.same_value(restored[key],baseline[key]),key+" restored together")
+	assert_eq(shell.profile.story.revised.cursor,0)
 
 func test_quit_offer_cannot_write_and_returns_to_morning() -> void:
 	var path := shell.slots.path_for("slot-01")
@@ -73,12 +74,18 @@ func test_open_close_do_not_checkpoint_but_sleep_saves_the_next_morning() -> voi
 	change_live_progress()
 	var path:=shell.slots.path_for("slot-01");var bytes:=FileAccess.get_file_as_bytes(path)
 	assert_true(shell.start_day().ok)
+	var start_xp := int(shell.profile.progression.progress().total_xp)
 	assert_true(shell.profile.shop.close_early().ok)
 	await wait_process_frames(3)
 	assert_eq(FileAccess.get_file_as_bytes(path),bytes,"Opening and ordinary settlement are not saves")
+	assert_eq(shell.slots.load_slot("slot-01",TDProfileStore.DAILY).code,"NOT_FOUND")
+	assert_eq(int(shell.profile.progression.progress().total_xp),start_xp)
+	assert_eq(shell.save_game().code,"AUTO_SAVE_ONLY")
+	shell.profile.use_revised_mainline()
 	shell._close_dialog();assert_true(shell.travel("cottage",true).ok)
 	shell.show_rest();button("休息到明天").pressed.emit()
 	assert_eq(int(shell.profile.shop.snapshot().day),2)
+	assert_true(shell.slots.load_slot("slot-01",TDProfileStore.DAILY).ok)
 	shell.go_title();assert_true(shell.load_game("slot-01").ok)
 	assert_eq(int(shell.profile.shop.snapshot().day),2)
 	assert_has(shell.profile.research.snapshot().licensed,"C03")
@@ -90,14 +97,16 @@ func test_midnight_waits_for_sleep_and_failed_write_retries_same_morning() -> vo
 	shell.profile.characters.clock.minute=1560
 	assert_true(shell.finish_night().ok)
 	assert_eq(FileAccess.get_file_as_bytes(path),bytes,"02:00 is not a checkpoint")
-	shell.profile.persistence=func(_slot: String,_data: Dictionary)->TDOutcome: return TDOutcome.new(false,"INTERRUPTED")
+	shell.slots.interrupt_at="after_temp"
 	shell.show_rest();button("休息到明天").pressed.emit()
 	assert_eq(FileAccess.get_file_as_bytes(path),bytes)
 	assert_eq(shell.profile.characters.clock.day,2)
+	var levels := shell.profile.progression.snapshot()
 	assert_true(get_tree().paused)
-	shell.profile.persistence=shell.slots.save_slot
+	shell.slots.interrupt_at=""
 	button("重试保存").pressed.emit()
-	var saved:=shell.slots.load_slot("slot-01").data
+	var saved:=shell.slots.load_slot("slot-01",TDProfileStore.DAILY).data
+	assert_eq(shell.profile.progression.snapshot(),levels,"Retry only writes, without awarding experience again")
 	assert_has(saved.research.licensed,"C03")
 	assert_eq(saved.shop.phase,"PREPARE")
 	assert_eq(saved.story.hero_name,"未保存的昵称")
@@ -106,10 +115,53 @@ func test_midnight_waits_for_sleep_and_failed_write_retries_same_morning() -> vo
 
 func test_legacy_preparation_save_loads_at_morning_without_rewriting_file() -> void:
 	shell.profile.characters.clock.minute = 710.0
-	assert_true(shell.save_game().ok)
+	assert_true(shell.profile.save().ok)
 	var path := shell.slots.path_for("slot-01")
 	var bytes := FileAccess.get_file_as_bytes(path)
 	shell.go_title()
 	assert_true(shell.load_game("slot-01").ok)
 	assert_eq(shell.profile.characters.clock.minute, 480.0)
 	assert_eq(FileAccess.get_file_as_bytes(path), bytes)
+
+func test_story_checkpoint_and_hotel_checkpoint_are_independent() -> void:
+	var boundaries := [1,4,7,12,17,20,22,25]
+	for cursor: int in range(27):
+		assert_eq(TDRevisedMainline.finished_chapter({"cursor":cursor}),boundaries.filter(func(end: int)->bool: return end<=cursor).size())
+	shell.go_title()
+	assert_true(shell.create_game("slot-02","临海食堂").ok)
+	assert_eq(shell.slots.load_slot("slot-02").code,"NOT_FOUND")
+	var view := shell.guide.dialogue
+	var input := preload("res://tools/test_support/kitchen_input.gd").new()
+	input.viewport = get_tree().root
+	await preload("res://tools/test_support/native_dialogue.gd").finish(view,get_tree())
+	for id: String in shell.guide.journey.ARRIVAL_SHOPS:
+		shell.town.spawn_at_plot(id)
+		input.tap(KEY_E)
+	assert_eq(shell.guide.journey.arrival_checked_count(),shell.guide.journey.ARRIVAL_SHOPS.size())
+	shell.town.spawn_at_harbor()
+	await wait_process_frames(3)
+	assert_true(shell.guide.presenting())
+	await preload("res://tools/test_support/native_dialogue.gd").finish(view,get_tree())
+	await wait_process_frames(3)
+	var story := shell.slots.load_slot("slot-02",TDProfileStore.STORY)
+	assert_true(story.ok,story.code)
+	if not story.ok: return
+	assert_eq(int(story.data.story.revised.cursor),1)
+	var story_path := shell.slots.path_for("slot-02",TDProfileStore.STORY)
+	var bytes := FileAccess.get_file_as_bytes(story_path)
+	shell._offer_rest("旅馆","chengdu")
+	var rest := button("支付 ¥6.00 并休息")
+	assert_not_null(rest)
+	if rest==null: return
+	rest.pressed.emit()
+	var daily := shell.slots.load_slot("slot-02",TDProfileStore.DAILY)
+	assert_true(daily.ok,daily.code)
+	assert_eq(int(daily.data.shop.day),2)
+	assert_eq(daily.data.rest_town,"chengdu")
+	assert_eq(FileAccess.get_file_as_bytes(story_path),bytes)
+	assert_eq(shell.slots.load_slot("slot-02").data.checkpoint,TDProfileStore.DAILY)
+	assert_true(shell.load_game("slot-02",TDProfileStore.STORY).ok)
+	assert_eq(shell.profile.characters.clock.day,1)
+	assert_true(shell.load_game("slot-02",TDProfileStore.DAILY).ok)
+	assert_eq(shell.profile.characters.clock.day,2)
+	assert_eq(shell.location,"town")

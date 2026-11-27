@@ -10,8 +10,10 @@ config_version=5
 
 [application]
 
-config/name="小镇食堂 · 烹饪厨房"
-run/main_scene="res://src/app/main.tscn"
+config/name="幻境臻味焰 ~ Fight for the best taste!"
+run/main_scene="res://src/app/startup.tscn"
+boot_splash/bg_color=Color(0.314, 0.114, 0.114, 1)
+boot_splash/image="res://assets/title/加载界面.png"
 config/use_custom_user_dir=true
 config/custom_user_dir_name="TownDinerPhase0"
 config/features=PackedStringArray("4.7", "GL Compatibility")
@@ -45,6 +47,10 @@ suppliers_menu={
 "deadzone": 0.2,
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":16,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":85,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
 ]
+}
+challenge_menu={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":67)]
 }
 relationships_menu={
 "deadzone": 0.2,

@@ -96,7 +96,7 @@ const SCRIPTS: Dictionary = {
 }
 
 
-static var external_names: PackedStringArray = ["td_cg", "td_name"] # Host commands, also known during export baking.
+static var external_names: PackedStringArray = ["td_cg", "td_name", "td_pick"] # Host commands, also known during export baking.
 
 static func known_names() -> PackedStringArray:
 	return NAMES + external_names

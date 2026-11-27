@@ -10,7 +10,7 @@ func test_editable_timeline_exact_shots_and_independent_initialization() -> void
 	for row: Array in [["arrival",0,1],["arrival",4,2],["arrival",8,3],["arrival",11,4],["hungry",0,5],["hungry",3,6],["messenger",0,7],["messenger",4,8],["messenger",7,9]]:
 		scene.sample_segment(row[0],row[1]);assert_eq(scene.shot_index,row[2])
 	scene.sample_segment("arrival",8.5)
-	assert_eq(scene.get_node("MapRoot/TownName").text,"河口镇")
+	assert_eq(scene.get_node("MapRoot/TownName").text,"臻味港")
 	assert_eq(scene.get_node("MapRoot/Caption").text,"百国商船汇聚，天下千味之港。")
 	assert_eq(scene.get_node("MapRoot").find_children("RedCircle*","Line2D",true,false).size(),3)
 	scene.sample_segment("arrival",12);assert_lt(scene.hero_position.x,540.0)
@@ -19,15 +19,16 @@ func test_editable_timeline_exact_shots_and_independent_initialization() -> void
 	scene.sample_segment("messenger",10);assert_true(scene.aling_visible);assert_eq(scene.aling_pose,4);assert_eq(scene.hero_pose,7)
 	scene.sample_segment("arrival",0);assert_false(scene.aling_visible);assert_true(scene.bus_visible);assert_eq(scene.hero_pose,0);assert_eq(scene.detail_mode,0)
 
-func test_new_slot_shows_film_first_then_harbor_once_and_load_remains_cottage() -> void:
+func test_legacy_intro_then_harbor_once_and_load_migrates_to_revised_story() -> void:
 	var app:=load("res://src/app/main.tscn").instantiate() as TDApplication
 	app.settings_path="res://artifacts/arrival-coast/tests/%d/settings.json"%Time.get_ticks_usec()
 	add_child_autofree(app)
 	var shell:=app.game_shell;shell.automatic_time=false
-	assert_true(shell.create_game("slot-01").ok)
+	assert_true(shell.create_game("slot-01","小镇食堂",false).ok)
 	var view:=shell.guide.dialogue;view.set_process(false)
 	await get_tree().process_frame;await get_tree().process_frame
-	assert_eq(view.talk.cg_id,"arrival");assert_false(shell.town.visible);assert_false(shell._hud_layer.visible)
+	assert_true(view._native);assert_false(view._cg.visible)
+	assert_false(shell.town.visible);assert_false(shell._hud_layer.visible)
 	assert_false(shell.town._player.controls_enabled);assert_eq(shell.town._player_cell(),TDHarbor.ARRIVAL)
 	var minute:=shell.profile.characters.clock.minute
 	var ended: Array=[];view.closed.connect(func(_a:String,_b:Array)->void:ended.append(1))
@@ -42,18 +43,23 @@ func test_new_slot_shows_film_first_then_harbor_once_and_load_remains_cottage() 
 	assert_eq(shell.profile.story.hero_name,"海风");assert_eq(shell.profile.characters.clock.minute,minute)
 	assert_eq(shell.town._player_cell(),TDHarbor.ARRIVAL)
 	view._process(100);assert_eq(ended.size(),1)
-	assert_true(shell.save_game().ok);shell.go_title();assert_true(shell.load_game("slot-01").ok)
-	assert_eq(shell.location,"town");assert_eq(shell.town._player_cell(),TDHarbor.ARRIVAL);assert_false(shell.guide.presenting());assert_eq(shell.profile.story.hero_name,"海风")
+	assert_true(shell.profile.save().ok);shell.go_title();assert_true(shell.load_game("slot-01").ok)
+	assert_eq(shell.location,"town");assert_eq(shell.town._player_cell(),TDHarbor.ARRIVAL)
+	assert_true(shell.guide.presenting());assert_eq(shell.profile.story.revised.cursor,0)
+	assert_eq(shell.profile.story.hero_name,"焰子")
 	shell.go_title()
 	await get_tree().process_frame;await get_tree().process_frame
 
-func test_intro_pause_focus_skip_and_offscreen_call_do_not_leak_world_or_sound() -> void:
+func test_intro_native_pause_focus_and_offscreen_call_keep_story_input_isolated() -> void:
 	var view := TDDialogueView.new(); add_child_autofree(view)
 	view.present(TDOpeningScript.conversation("intro", "玩家", 80)); view.set_process(false)
 	await get_tree().process_frame
-	view._process(2); view.toggle_presentation_pause(); view._process(20)
-	assert_eq(view.talk.cg_elapsed, 2.0); assert_true(view._cg._paused)
-	view.toggle_presentation_pause(); view._process(12)
+	var first := view._vn_stage.runner.current_text
+	view.toggle_presentation_pause(); view._process(20)
+	assert_true(view._vn_stage._paused); assert_eq(view._vn_stage.runner.current_text, first)
+	assert_true(view._vn_stage.viewport.gui_disable_input)
+	view.toggle_presentation_pause()
+	view._vn_stage.dialog._reveal_to_end();view._vn_stage.dialog._advance_dialog()
 	await get_tree().process_frame
 	assert_eq(view.talk.display_kind, "line"); assert_false(view._cg.visible)
 	assert_true(view._vn_stage.runner.ctx.characters.active_sprites.has("hero"))
@@ -61,17 +67,12 @@ func test_intro_pause_focus_skip_and_offscreen_call_do_not_leak_world_or_sound()
 	view._notification(NOTIFICATION_APPLICATION_FOCUS_OUT)
 	assert_true(view.presentation_paused)
 	view.toggle_presentation_pause()
-	view._vn_stage.dialog._advance_dialog(); view._vn_stage.dialog._advance_dialog()
-	await get_tree().process_frame
-	assert_eq(view.talk.cg_id, "hungry")
-	view._skip_clip.pressed.emit()
-	await get_tree().process_frame
-	assert_false(view._cg._sound.playing)
-	view._vn_stage.dialog._advance_dialog(); view._vn_stage.dialog._advance_dialog()
-	await get_tree().process_frame
+	for i: int in 3:
+		view._vn_stage.dialog._reveal_to_end();view._vn_stage.dialog._advance_dialog()
+		await get_tree().process_frame
 	assert_eq(view._vn_stage.runner.current_text, "背锅的旅人，止步！")
 	assert_false(view._vn_stage.runner.ctx.characters.active_sprites.has("aling"))
-	view.finish_now(); assert_false(view.visible); assert_false(view._cg._sound.playing)
+	view.finish_now(); assert_false(view.visible); assert_false(view._cg.visible)
 	await get_tree().process_frame
 
 func test_seacoast_keeps_property_and_routes_but_pier_is_public() -> void:
@@ -108,11 +109,14 @@ func test_story_stops_and_escort_do_not_stack_and_reach_is_nearby() -> void:
 		profile.story.beat=leg;town._tick_escort(0)
 		assert_gte(town._escort.distance_to(town._chen_cell()),2.0)
 	profile.story.beat="soup";town.sync_characters(0)
-	var chen:=town._origin()+(Vector2(town._chen_cell())+Vector2(.5,.5))*town.cell_size()
+	var person: Dictionary = town._story_people().filter(func(row: Dictionary) -> bool: return row.id=="chen")[0]
+	var chen := town._person_feet(person)
 	for facing: Vector2i in [Vector2i.LEFT,Vector2i.RIGHT,Vector2i.UP,Vector2i.DOWN]:
 		town._player.position=chen+Vector2(0,40);town._player.face(facing);assert_eq(town._story_faced(),"chen")
 	town._player.position=chen+Vector2(0,town.PERSON_REACH+1);assert_ne(town._story_faced(),"chen")
 	var harbor:=TDHarbor.facility(profile.world.town_map);var rect:=TDInteractionRange.plot_bounds(harbor,town.cell_size(),town._origin())
 	town._player.position=Vector2(rect.get_center().x,rect.end.y+30);assert_eq(town.facing_plot().get("id"),TDHarbor.ID)
-	town._player.position=Vector2(rect.get_center().x,rect.end.y+town.BUILDING_REACH+1);assert_ne(town.facing_plot().get("id"),TDHarbor.ID)
+	town._player.position=Vector2(rect.get_center().x,rect.end.y+town.BUILDING_REACH+town.cell_size()*3)
+	assert_false(TDHarbor.is_near_departure(profile.world.town_map,(town._player.position-town._origin())/town.cell_size()))
+	assert_ne(town.facing_plot().get("id"),TDHarbor.ID)
 	profile.close()

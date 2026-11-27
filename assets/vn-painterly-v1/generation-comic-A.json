@@ -1,0 +1,102 @@
+[
+  {
+    "id": "town-china",
+    "path": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-8652d3cd-92b4-4335-8fff-188cea429f3d.png",
+    "prompt": "Redraw the supplied background as ONE finished wide 16:9 game background, keeping its camera and main composition: Chinese canal town lane, open teahouse on left with tea table, one large leafy tree left of center, stone lane leading toward a small arched bridge in the middle distance, canal along right, green-grey tiled roofs. Japanese TV anime background / visual novel scenery with CLEAN CEL SHADING. Thin clean colored outlines, simplified architectural shapes, large flat color masses, at most two cel shadow tones per surface. Minimal texture. Gentle muted warm pastels, soft pale blue sky. Clear stylized drawn foliage. Polished 2D anime, distinctly illustrated and non-realistic. IMPORTANT: This is a STYLE TRANSFORMATION, not an enhancement. Completely remove photorealistic lighting, photographic textures, detailed realistic stone/wood surfaces, realistic 3D rendering and dense watercolor realism. Preserve the same placement of all major landmarks so this image can be compared fairly against two other style options. Calm subdued saturation, readable open foreground for VN characters. No people, no text, no labels, no UI, no panel borders, no collage. Fill whole image.",
+    "width": 1672,
+    "height": 941,
+    "tool": "image_gen.imagegen",
+    "style": "A: clean anime cel shading, low/moderate saturation",
+    "sha256": "5296BAD7289EC757D6CCEA7797ADA2E4734AABE12C0F777928C197010F5E1F98"
+  },
+  {
+    "id": "town-japan",
+    "path": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-2cb8f56b-63e3-4fc6-bc7c-b08475f7de8a.png",
+    "prompt": "STYLE TRANSFER for a visual novel game. Reference image 1 is the APPROVED STYLE MASTER A. Reference image 2 is the TARGET SCENE to redraw. Create exactly ONE finished 16:9 landscape background showing the scene in image 2, but entirely redrawn in the clean ANIME CEL-SHADED style of image 1. Preserve image 2's scene identity, main objects, camera angle, foreground layout and cultural architecture; do NOT copy the Chinese canal setting into unrelated scenes. Closely match image 1's thin clean colored contour lines, simple large color blocks, flat illustrated materials, one or two cel shadow tones, low-to-moderate saturation, pale daylight palette and clean 2D anime visual novel finish. Simplify detailed stone, wood, plaster, foliage and water into graphic drawn forms. NO watercolor realism, no photorealistic textures, no photographic lighting, no gritty texture, no 3D render, no thick black comic hatching. For interiors keep the same clean cel shading and gently muted colors; for the black soup preserve its dark ominous broth but use crisp cel shaded food and drawn steam, and for the kitchen keep a small stylized cooking flame. No people, no characters, no captions, no Chinese text, no UI, no labels, no collage, no borders. Full bleed. Clear staging space for foreground VN character busts. Target scene ID: town-japan.",
+    "width": 1672,
+    "height": 941,
+    "tool": "image_gen.imagegen",
+    "style": "A: clean anime cel shading, low/moderate saturation",
+    "sha256": "3602AA21386408A66F0EABD9AAEC4B15F378983AB4899581D71F496403405066"
+  },
+  {
+    "id": "town-europe",
+    "path": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-c0ed1f4e-9021-442c-a047-4dabfaaa34e8.png",
+    "prompt": "STYLE TRANSFER for a visual novel game. Reference image 1 is the APPROVED STYLE MASTER A. Reference image 2 is the TARGET SCENE to redraw. Create exactly ONE finished 16:9 landscape background showing the scene in image 2, but entirely redrawn in the clean ANIME CEL-SHADED style of image 1. Preserve image 2's scene identity, main objects, camera angle, foreground layout and cultural architecture; do NOT copy the Chinese canal setting into unrelated scenes. Closely match image 1's thin clean colored contour lines, simple large color blocks, flat illustrated materials, one or two cel shadow tones, low-to-moderate saturation, pale daylight palette and clean 2D anime visual novel finish. Simplify detailed stone, wood, plaster, foliage and water into graphic drawn forms. NO watercolor realism, no photorealistic textures, no photographic lighting, no gritty texture, no 3D render, no thick black comic hatching. For interiors keep the same clean cel shading and gently muted colors; for the black soup preserve its dark ominous broth but use crisp cel shaded food and drawn steam, and for the kitchen keep a small stylized cooking flame. No people, no characters, no captions, no Chinese text, no UI, no labels, no collage, no borders. Full bleed. Clear staging space for foreground VN character busts. Target scene ID: town-europe.",
+    "width": 1672,
+    "height": 941,
+    "tool": "image_gen.imagegen",
+    "style": "A: clean anime cel shading, low/moderate saturation",
+    "sha256": "BBF90CF8A9C8A35170847BAD018E168E7D629B9DC3AFE2E10F8B3B64C71ACCB7"
+  },
+  {
+    "id": "town-mexico",
+    "path": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-5f1f3fb6-20ee-4422-9c31-45b860e3c837.png",
+    "prompt": "STYLE TRANSFER for a visual novel game. Reference image 1 is the APPROVED STYLE MASTER A. Reference image 2 is the TARGET SCENE to redraw. Create exactly ONE finished 16:9 landscape background showing the scene in image 2, but entirely redrawn in the clean ANIME CEL-SHADED style of image 1. Preserve image 2's scene identity, main objects, camera angle, foreground layout and cultural architecture; do NOT copy the Chinese canal setting into unrelated scenes. Closely match image 1's thin clean colored contour lines, simple large color blocks, flat illustrated materials, one or two cel shadow tones, low-to-moderate saturation, pale daylight palette and clean 2D anime visual novel finish. Simplify detailed stone, wood, plaster, foliage and water into graphic drawn forms. NO watercolor realism, no photorealistic textures, no photographic lighting, no gritty texture, no 3D render, no thick black comic hatching. For interiors keep the same clean cel shading and gently muted colors; for the black soup preserve its dark ominous broth but use crisp cel shaded food and drawn steam, and for the kitchen keep a small stylized cooking flame. No people, no characters, no captions, no Chinese text, no UI, no labels, no collage, no borders. Full bleed. Clear staging space for foreground VN character busts. Target scene ID: town-mexico.",
+    "width": 1672,
+    "height": 941,
+    "tool": "image_gen.imagegen",
+    "style": "A: clean anime cel shading, low/moderate saturation",
+    "sha256": "328AB30D887BD6EDE9B5E8C0ED76527305177E11C8C4DB016A55C53B57D74AF4"
+  },
+  {
+    "id": "town-seasia",
+    "path": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-5b9dd227-3c91-4acc-bc3e-9b6e5a35b5b0.png",
+    "prompt": "STYLE TRANSFER for a visual novel game. Reference image 1 is the APPROVED STYLE MASTER A. Reference image 2 is the TARGET SCENE to redraw. Create exactly ONE finished 16:9 landscape background showing the scene in image 2, but entirely redrawn in the clean ANIME CEL-SHADED style of image 1. Preserve image 2's scene identity, main objects, camera angle, foreground layout and cultural architecture; do NOT copy the Chinese canal setting into unrelated scenes. Closely match image 1's thin clean colored contour lines, simple large color blocks, flat illustrated materials, one or two cel shadow tones, low-to-moderate saturation, pale daylight palette and clean 2D anime visual novel finish. Simplify detailed stone, wood, plaster, foliage and water into graphic drawn forms. NO watercolor realism, no photorealistic textures, no photographic lighting, no gritty texture, no 3D render, no thick black comic hatching. For interiors keep the same clean cel shading and gently muted colors; for the black soup preserve its dark ominous broth but use crisp cel shaded food and drawn steam, and for the kitchen keep a small stylized cooking flame. No people, no characters, no captions, no Chinese text, no UI, no labels, no collage, no borders. Full bleed. Clear staging space for foreground VN character busts. Target scene ID: town-seasia.",
+    "width": 1672,
+    "height": 941,
+    "tool": "image_gen.imagegen",
+    "style": "A: clean anime cel shading, low/moderate saturation",
+    "sha256": "EFC416203EEE832B75A2269515BE4522571ED19EE78CF7E6D43A31F698F38E21"
+  },
+  {
+    "id": "harbor",
+    "path": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-529865bc-6f0f-4dbe-b448-044ad8b2bff1.png",
+    "prompt": "STYLE TRANSFER for a visual novel game. Reference image 1 is the APPROVED STYLE MASTER A. Reference image 2 is the TARGET SCENE to redraw. Create exactly ONE finished 16:9 landscape background showing the scene in image 2, but entirely redrawn in the clean ANIME CEL-SHADED style of image 1. Preserve image 2's scene identity, main objects, camera angle, foreground layout and cultural architecture; do NOT copy the Chinese canal setting into unrelated scenes. Closely match image 1's thin clean colored contour lines, simple large color blocks, flat illustrated materials, one or two cel shadow tones, low-to-moderate saturation, pale daylight palette and clean 2D anime visual novel finish. Simplify detailed stone, wood, plaster, foliage and water into graphic drawn forms. NO watercolor realism, no photorealistic textures, no photographic lighting, no gritty texture, no 3D render, no thick black comic hatching. For interiors keep the same clean cel shading and gently muted colors; for the black soup preserve its dark ominous broth but use crisp cel shaded food and drawn steam, and for the kitchen keep a small stylized cooking flame. No people, no characters, no captions, no Chinese text, no UI, no labels, no collage, no borders. Full bleed. Clear staging space for foreground VN character busts. Target scene ID: harbor.",
+    "width": 1672,
+    "height": 941,
+    "tool": "image_gen.imagegen",
+    "style": "A: clean anime cel shading, low/moderate saturation",
+    "sha256": "0778BA337A412763B4022391F1E4890B9F646EB84F7ECA09C69B1342AACF09C9"
+  },
+  {
+    "id": "restaurant",
+    "path": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-0b705b49-d5b0-4ad2-982c-97e42b186aee.png",
+    "prompt": "STYLE TRANSFER for a visual novel game. Reference image 1 is the APPROVED STYLE MASTER A. Reference image 2 is the TARGET SCENE to redraw. Create exactly ONE finished 16:9 landscape background showing the scene in image 2, but entirely redrawn in the clean ANIME CEL-SHADED style of image 1. Preserve image 2's scene identity, main objects, camera angle, foreground layout and cultural architecture; do NOT copy the Chinese canal setting into unrelated scenes. Closely match image 1's thin clean colored contour lines, simple large color blocks, flat illustrated materials, one or two cel shadow tones, low-to-moderate saturation, pale daylight palette and clean 2D anime visual novel finish. Simplify detailed stone, wood, plaster, foliage and water into graphic drawn forms. NO watercolor realism, no photorealistic textures, no photographic lighting, no gritty texture, no 3D render, no thick black comic hatching. For interiors keep the same clean cel shading and gently muted colors; for the black soup preserve its dark ominous broth but use crisp cel shaded food and drawn steam, and for the kitchen keep a small stylized cooking flame. No people, no characters, no captions, no Chinese text, no UI, no labels, no collage, no borders. Full bleed. Clear staging space for foreground VN character busts. Target scene ID: restaurant.",
+    "width": 1672,
+    "height": 941,
+    "tool": "image_gen.imagegen",
+    "style": "A: clean anime cel shading, low/moderate saturation",
+    "sha256": "67CCA5763B97194D7B05F545E26E74B2992AB906B08D3084AD07E3D7C03512E4"
+  },
+  {
+    "id": "home",
+    "path": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-4d2fb24f-14e5-4291-9f0e-ac1a3cdca745.png",
+    "prompt": "STYLE TRANSFER for a visual novel game. Reference image 1 is the APPROVED STYLE MASTER A. Reference image 2 is the TARGET SCENE to redraw. Create exactly ONE finished 16:9 landscape background showing the scene in image 2, but entirely redrawn in the clean ANIME CEL-SHADED style of image 1. Preserve image 2's scene identity, main objects, camera angle, foreground layout and cultural architecture; do NOT copy the Chinese canal setting into unrelated scenes. Closely match image 1's thin clean colored contour lines, simple large color blocks, flat illustrated materials, one or two cel shadow tones, low-to-moderate saturation, pale daylight palette and clean 2D anime visual novel finish. Simplify detailed stone, wood, plaster, foliage and water into graphic drawn forms. NO watercolor realism, no photorealistic textures, no photographic lighting, no gritty texture, no 3D render, no thick black comic hatching. For interiors keep the same clean cel shading and gently muted colors; for the black soup preserve its dark ominous broth but use crisp cel shaded food and drawn steam, and for the kitchen keep a small stylized cooking flame. No people, no characters, no captions, no Chinese text, no UI, no labels, no collage, no borders. Full bleed. Clear staging space for foreground VN character busts. Target scene ID: home.",
+    "width": 1672,
+    "height": 941,
+    "tool": "image_gen.imagegen",
+    "style": "A: clean anime cel shading, low/moderate saturation",
+    "sha256": "766E33B9D86BC653C1275FE4659A4AB6C80F62ECC8053D81A46847F7D567BDC7"
+  },
+  {
+    "id": "cg-black-soup",
+    "path": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-46ef8196-71cd-4ada-b5a3-90ae2f258e2b.png",
+    "prompt": "STYLE TRANSFER for a visual novel game. Reference image 1 is the APPROVED STYLE MASTER A. Reference image 2 is the TARGET SCENE to redraw. Create exactly ONE finished 16:9 landscape background showing the scene in image 2, but entirely redrawn in the clean ANIME CEL-SHADED style of image 1. Preserve image 2's scene identity, main objects, camera angle, foreground layout and cultural architecture; do NOT copy the Chinese canal setting into unrelated scenes. Closely match image 1's thin clean colored contour lines, simple large color blocks, flat illustrated materials, one or two cel shadow tones, low-to-moderate saturation, pale daylight palette and clean 2D anime visual novel finish. Simplify detailed stone, wood, plaster, foliage and water into graphic drawn forms. NO watercolor realism, no photorealistic textures, no photographic lighting, no gritty texture, no 3D render, no thick black comic hatching. For interiors keep the same clean cel shading and gently muted colors; for the black soup preserve its dark ominous broth but use crisp cel shaded food and drawn steam, and for the kitchen keep a small stylized cooking flame. No people, no characters, no captions, no Chinese text, no UI, no labels, no collage, no borders. Full bleed. Clear staging space for foreground VN character busts. Target scene ID: cg-black-soup.",
+    "width": 1672,
+    "height": 941,
+    "tool": "image_gen.imagegen",
+    "style": "A: clean anime cel shading, low/moderate saturation",
+    "sha256": "95EE2DFAC61DE29220C93E0BC286E30C4A22E9A8EE3DCB46A8486B48E6B8F09A"
+  },
+  {
+    "id": "cg-kitchen",
+    "path": "C:\\Users\\myzpw\\.codex\\generated_images\\01a1ca90-c01d-7342-9478-22737be801fd\\exec-707da10c-ad61-4733-a1dc-5bd353f0a150.png",
+    "prompt": "STYLE TRANSFER for a visual novel game. Reference image 1 is the APPROVED STYLE MASTER A. Reference image 2 is the TARGET SCENE to redraw. Create exactly ONE finished 16:9 landscape background showing the scene in image 2, but entirely redrawn in the clean ANIME CEL-SHADED style of image 1. Preserve image 2's scene identity, main objects, camera angle, foreground layout and cultural architecture; do NOT copy the Chinese canal setting into unrelated scenes. Closely match image 1's thin clean colored contour lines, simple large color blocks, flat illustrated materials, one or two cel shadow tones, low-to-moderate saturation, pale daylight palette and clean 2D anime visual novel finish. Simplify detailed stone, wood, plaster, foliage and water into graphic drawn forms. NO watercolor realism, no photorealistic textures, no photographic lighting, no gritty texture, no 3D render, no thick black comic hatching. For interiors keep the same clean cel shading and gently muted colors; for the black soup preserve its dark ominous broth but use crisp cel shaded food and drawn steam, and for the kitchen keep a small stylized cooking flame. No people, no characters, no captions, no Chinese text, no UI, no labels, no collage, no borders. Full bleed. Clear staging space for foreground VN character busts. Target scene ID: cg-kitchen.",
+    "width": 1672,
+    "height": 941,
+    "tool": "image_gen.imagegen",
+    "style": "A: clean anime cel shading, low/moderate saturation",
+    "sha256": "0BBD96359267B9AB6A4A38161B355600AFF5229CBDC327FA714053D663FC9769"
+  }
+]

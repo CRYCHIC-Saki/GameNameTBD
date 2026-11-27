@@ -7,7 +7,7 @@ func before_each() -> void:
 	app=load("res://src/app/main.tscn").instantiate()
 	app.settings_path="res://artifacts/vn-triggers-20261116/tests/%d/settings.json"%Time.get_ticks_usec()
 	add_child_autofree(app);shell=app.game_shell;shell.automatic_time=false
-	assert_true(shell.create_game("slot-01","触发测试").ok);shell.guide.dialogue.finish_now()
+	assert_true(shell.create_game("slot-01","触发测试",false).ok);shell.guide.dialogue.finish_now()
 	shell.profile.story.beat="done";shell.profile.residence.stage="door"
 	assert_true(shell.profile.unlock_residence().ok)
 	shell.guide.set_process(false)
@@ -41,7 +41,7 @@ func test_person_plays_real_native_chapter_cancel_then_success_and_reward_once()
 	assert_eq(view._vn_stage.runner.script_res.source_path,script_path)
 	assert_eq(view._chapter.text,"老陈的新对话")
 	assert_true(shell.town.external_story_frozen);assert_false(shell.town._player.controls_enabled)
-	assert_eq(shell.save_game().code,"STORY_PLAYING")
+	assert_eq(shell.profile.save().code,"STORY_PLAYING")
 	view.finish_now();assert_eq(shell.profile.story_events.counts,{})
 	assert_false("jp" in shell.profile.research.snapshot().cuisines)
 	assert_true(shell.town.authored_interaction.call("chen"));await wait_process_frames(2)
@@ -77,11 +77,13 @@ func test_original_opening_has_priority_and_world_pause_blocks_new_events() -> v
 	shell.go_title();assert_eq(profile.story_events.counts,{})
 	assert_true(profile.story_events.active.is_empty());assert_eq(profile.story_events.pending,[])
 
-func test_explicit_save_roundtrip_old_profiles_and_unsaved_exit() -> void:
+func test_sleep_checkpoints_authored_events_and_legacy_import_still_works() -> void:
 	assert_true(shell.town.authored_interaction.call("chen"));await wait_process_frames(2);await finish_real()
-	assert_eq(shell.slots.load_slot("slot-01").data.story_events.counts,{},"completion never writes implicitly")
-	var saved:=shell.save_game();assert_true(saved.ok,saved.code)
-	var stored:=shell.slots.load_slot("slot-01").data
+	assert_eq(shell.slots.load_slot("slot-01").code,"NOT_FOUND","Side conversations do not write a mainline checkpoint")
+	shell._sleep("chengdu",0)
+	var saved:=shell.slots.load_slot("slot-01",TDProfileStore.DAILY)
+	assert_true(saved.ok,saved.code)
+	var stored:=saved.data
 	assert_eq(stored.story_events.counts.keys(),["event_test"]);assert_eq(int(stored.story_events.counts.event_test),1)
 	var other:=TDGameProfile.new();assert_true(other.restore(stored).ok)
 	assert_eq(other.story_events.counts,{"event_test":1});assert_true("jp" in other.research.snapshot().cuisines)

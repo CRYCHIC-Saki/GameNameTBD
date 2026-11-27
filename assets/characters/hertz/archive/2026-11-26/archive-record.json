@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "character_id": "hertz",
+  "display_name": "赫兹",
+  "archived_on": "2026-11-26",
+  "request": "前面赫兹和维托的像素小人也归档",
+  "operation": "Byte-identical copy of the previously delivered v1 sprite sheet.",
+  "status": "USER_CONFIRMED_KEEP_V1",
+  "files": [
+    {
+      "role": "sprite",
+      "file": "archive/2026-11-26/hertz-idle-four-directions.png",
+      "source_file": "hertz-idle-four-directions-v1.png",
+      "sha256": "62430a99b22c27d818af281a169f6febe939f59ef8c8171341727e0c51723837",
+      "size": [
+        1254,
+        1254
+      ],
+      "pixel_format": "Format32bppArgb",
+      "byte_identical_to_selected_version": true
+    }
+  ],
+  "runtime_integration": "NOT_DONE"
+}

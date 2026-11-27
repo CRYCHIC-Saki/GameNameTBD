@@ -62,7 +62,13 @@ func pickup() -> void:
 
 func test_real_chef_hatch_player_table_and_once_only_payment() -> void:
 	cook();if plate_id.is_empty(): return
+	var visible_items := shop.table_service.pass_items()
+	assert_eq(visible_items.size(),1)
+	assert_eq(visible_items[0].id,shop.table_service.get_plate(plate_id).dish.recipe_id)
+	assert_not_null(TDRedrawArt.dish(visible_items[0].id))
 	var before:=shop.snapshot();pickup()
+	assert_eq(shop.table_service.pass_items().size(),0)
+	assert_eq(shop.table_service.held_item(plate_id).id,visible_items[0].id)
 	assert_eq(shop.snapshot(),before,"Taking food does not score or charge")
 	var guest:=room._guest_by_ticket(ticket)
 	assert_eq(room.hand_plate(guest).code,"TOO_FAR")

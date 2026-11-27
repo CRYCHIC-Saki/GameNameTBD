@@ -1,6 +1,9 @@
 shader_type canvas_item;
 
 varying vec2 world_position;
+uniform sampler2D continuous_grass : source_color, repeat_enable, filter_nearest;
+uniform sampler2D stone_sheet : source_color, repeat_disable, filter_nearest;
+uniform bool quay_face = false;
 
 float hash_position(vec2 p) {
 	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
@@ -18,6 +21,35 @@ void vertex() {
 }
 
 void fragment() {
+	// Atlas variants preserve their original alpha/corner masks. Their RGB must
+	// share map-space coordinates: random atlas selection cannot cut a grass patch.
+	vec2 atlas_size = 1.0 / TEXTURE_PIXEL_SIZE;
+	// TileMap runtime atlases pad every 8px cell with a pixel on each side.
+	// Sprite/editor previews use the original atlas; handle both representations.
+	if (abs(atlas_size.x - 900.0) < 0.5 || abs(atlas_size.x - 1280.0) < 0.5) {
+		atlas_size *= 0.8;
+	}
+	float atlas_y = UV.y * atlas_size.y;
+	bool grass_band = abs(atlas_size.x - 720.0) < 0.5 &&
+		(atlas_y < 48.0 || (atlas_y >= 288.0 && atlas_y < 336.0));
+	bool frontage_grass = abs(atlas_size.x - 1024.0) < 0.5 &&
+		abs(atlas_size.y - 496.0) < 0.5 && atlas_y < 392.0;
+	bool paving = abs(atlas_size.x - 1024.0) < 0.5 && abs(atlas_size.y - 136.0) < 0.5;
+	if (grass_band || frontage_grass) {
+		COLOR.rgb = texture(continuous_grass, floor(world_position / 2.0) / 256.0).rgb;
+		if (grass_band && atlas_y >= 288.0) COLOR.rgb *= vec3(0.88, 0.92, 0.88);
+	}
+	if (paving || quay_face) {
+		// Sample the full, tileable stone material from the 12-swatch sheet.
+		// Keep the atlas tile's alpha to preserve each road and quay outline.
+		vec2 texel = mod(floor(world_position / 1.6), 96.0) + vec2(96.5, 0.5);
+		COLOR.rgb = texture(stone_sheet, texel / vec2(1152.0, 96.0)).rgb * vec3(1.15, 1.08, 1.0);
+		if (quay_face) {
+			COLOR.rgb *= vec3(0.69, 0.73, 0.74);
+		} else if (atlas_y >= 48.0 && atlas_y < 96.0) {
+			COLOR.rgb *= vec3(0.92, 0.96, 0.98);
+		}
+	}
 	vec2 pixel = floor(world_position * 0.4) / 0.4;
 	float patches = light_noise(pixel / 265.0) * 0.82 + light_noise(pixel / 87.0) * 0.18;
 	COLOR.rgb *= mix(vec3(0.81, 0.88, 0.81), vec3(1.10, 1.06, 0.96), patches);

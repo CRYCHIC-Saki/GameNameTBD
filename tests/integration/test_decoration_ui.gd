@@ -23,7 +23,8 @@ func test_categories_show_all_existing_items_and_do_not_change_layout() -> void:
 		assert_gt(room._decor_panel._cards.get_child_count(),0)
 		for card: TDDecorationPanel.Card in room._decor_panel._cards.get_children():
 			if not card.piece.is_empty(): seen[card.piece.kind]=true;assert_true(card.details.contains("×"))
-	for kind: String in room.catalog.kinds(): assert_true(seen.has(kind),kind)
+	for kind: String in room.catalog.kinds():
+		assert_eq(seen.has(kind),kind not in ["order_counter","welcome_desk"],kind)
 	assert_eq(room.layout.to_dict(),before)
 
 func test_real_card_input_ghost_rotation_cancel_and_invalid_preview_are_readonly() -> void:
@@ -101,7 +102,9 @@ func test_table_four_corner_rotations_keep_center_footprint_and_restore() -> voi
 	assert_eq(room.layout.piece(id),original)
 
 func test_failed_rotation_from_menu_keeps_layout_and_reports_reason() -> void:
-	assert_true(room.place_kind("welcome_desk",8,7).ok)
+	var placed := room.place_kind("booth",8,7)
+	assert_true(placed.ok,placed.code)
+	if not placed.ok: return
 	var id:=room._selected
 	assert_true(room.place_kind("stool",8,8).ok)
 	room._select_furniture(id);await wait_process_frames(4)
@@ -113,6 +116,10 @@ func test_failed_rotation_from_menu_keeps_layout_and_reports_reason() -> void:
 	assert_true(room._decor_panel._info.text.contains("重叠"))
 
 func test_catalog_resize_category_cancel_and_pause_input() -> void:
+	# A taller system font can grow the panel past its nominal height.
+	room._decor_panel._info.add_theme_font_size_override("font_size",42)
+	await wait_process_frames(3)
+	assert_gt(room._decor_panel.size.y,TDDecorationPanel.PANEL_HEIGHT)
 	for dimensions: Vector2i in [Vector2i(1024,720),Vector2i(1600,1000)]:
 		viewport.size=dimensions;await wait_process_frames(4)
 		var rect:=room._decor_panel.get_global_rect()
@@ -132,7 +139,9 @@ func test_catalog_resize_category_cancel_and_pause_input() -> void:
 	get_tree().paused=false
 
 func test_move_preview_is_readonly_and_preserves_identity_and_style() -> void:
-	assert_true(room.place_kind("welcome_desk",8,7).ok)
+	var placed := room.place_kind("booth",8,7)
+	assert_true(placed.ok,placed.code)
+	if not placed.ok: return
 	var id:=room._selected
 	assert_true(room.layout.restyle_piece(id,"japanese","high").ok)
 	var before:=room.layout.to_dict()

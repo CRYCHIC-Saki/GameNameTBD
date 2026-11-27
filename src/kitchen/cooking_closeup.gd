@@ -1,45 +1,32 @@
 extends RefCounted
 ## Layered, read-only artwork. Coordinates use the guided view's 1280×800 canvas.
-static var _art: Texture2D
-static var _techniques: Texture2D
-const HOME_WALL := preload("res://assets/kitchen/kitchen-background-v2.png")
-const TIMBER := preload("res://assets/ui-wood-v1/wood-light.png")
-const PARTS := {
-	"wok":Rect2(14,95,354,216), "food":Rect2(377,69,337,253), "turner":Rect2(745,38,328,313),
-	"burner":Rect2(1122,66,280,266), "basket":Rect2(20,386,320,316), "lid":Rect2(384,418,316,250),
-	"board":Rect2(732,405,350,277), "knife":Rect2(1108,400,328,291), "plate":Rect2(5,775,352,256),
-	"jug":Rect2(413,761,248,245), "soup":Rect2(711,745,355,300), "grill":Rect2(1088,745,360,302)
-}
-const TECHNIQUE_PARTS := {
-	"bowl":Rect2(8,44,432,393), "paddle":Rect2(462,51,392,365),
-	"oven":Rect2(877,8,451,435), "fryer":Rect2(1336,8,436,438),
-	"mat":Rect2(0,513,441,308), "roll":Rect2(452,496,423,344),
-	"comal":Rect2(877,515,464,322), "cream":Rect2(1371,503,379,336)
-}
+const PROCESS_ART := preload("res://src/kitchen/recipe_process_art.gd")
+const HOME_WALL := preload("res://assets/redraw-v1/kitchen.png")
+const REGIONAL_WALLS := preload("res://assets/kitchen/closeup-regions-v2.png")
+const EQUIPMENT_ALIASES := {"soup":"pot","cream":"bowl","comal":"skillet"}
 
 static func backdrop(view: Control, area: Rect2, cuisine: String) -> void:
-	var wall: Texture2D = HOME_WALL
-	var region := Rect2(100,8,1380,254)
-	if TDRegionalInterior.regional(cuisine):
-		wall = TDRegionalInterior.source(TDRegionalInterior.BACKGROUNDS)
-		region = TDRegionalInterior.kitchen_regions(cuisine)[0]
-	var frame := Rect2(area.position + Vector2(4,4), Vector2(area.size.x-8,309))
-	view.draw_texture_rect_region(wall,frame,region,Color("80775d"))
-	view.draw_rect(Rect2(frame.position,Vector2(frame.size.x,76)),Color("171e19ba"))
-	# Low shelf lip puts the vessel in front of the wall. Keep the note lane quiet.
-	view.draw_texture_rect_region(TIMBER,Rect2(frame.position+Vector2(0,241),Vector2(frame.size.x,68)),
-			Rect2(Vector2.ZERO,TIMBER.get_size()*Vector2(1.0,.38)),Color("897252"))
-	for y: int in [242,246,274,275,303,307]:
-		view.draw_line(frame.position+Vector2(0,y),frame.position+Vector2(frame.size.x,y),Color("796044") if y%2==0 else Color("3b362b"),2)
+	var size := HOME_WALL.get_size()
+	var frame := Rect2(area.position+Vector2(4,4),Vector2(area.size.x-8,318))
+	var grade := Color("a69c8b")
+	if cuisine in ["jp","eu"]:
+		var region_size := REGIONAL_WALLS.get_size()
+		var row := region_size.y*.5
+		var region := Rect2(0.,1. if cuisine=="eu" else row+1.,region_size.x,row-2.)
+		view.draw_texture_rect_region(REGIONAL_WALLS,frame,region,grade)
+	else:
+		view.draw_texture_rect_region(HOME_WALL,frame,Rect2(size*Vector2(.035,.008),size*Vector2(.93,.34)),grade)
+		var counter := Rect2(frame.position+Vector2(0,232),Vector2(frame.size.x,86))
+		view.draw_texture_rect_region(HOME_WALL,counter,Rect2(size*Vector2(.08,.19),size*Vector2(.84,.144)),grade)
+	view.draw_rect(Rect2(frame.position,Vector2(frame.size.x,77)),Color("191f1ac2"))
 
 static func part(view: Control, id: String, center: Vector2, width: float, angle: float = 0.0) -> void:
-	var source: Rect2 = PARTS[id] if PARTS.has(id) else TECHNIQUE_PARTS[id]
-	var size := source.size * (width / source.size.x)
+	var texture := PROCESS_ART.lookup(EQUIPMENT_ALIASES.get(id,id))
+	if texture == null: return
+	var size := texture.get_size() * (width/texture.get_width())
 	var scale := view.size / Vector2(1280,800)
 	view.draw_set_transform(center.round()*scale,angle,scale)
-	if _art == null: _art = load("res://assets/kitchen/cooking-closeups-v1.png") as Texture2D
-	if not PARTS.has(id) and _techniques == null: _techniques = load("res://assets/kitchen/cooking-techniques-v1.png") as Texture2D
-	view.draw_texture_rect_region(_art if PARTS.has(id) else _techniques,Rect2(-size*.5,size),source)
+	view.draw_texture_rect(texture,Rect2(-size*.5,size),false)
 	view.draw_set_transform(Vector2.ZERO,0.0,scale)
 
 static func impulse(lane: TDCookingLane) -> float:
@@ -58,7 +45,24 @@ static func steam(view: Control, c: Vector2, s: float, beats: float, strength: f
 			var at := c+Vector2(x+sin(rise*6.0+j*.8)*4.5,-rise*71-j*5)*s
 			view.draw_rect(Rect2(at.round(),Vector2(5,7)*s),tint)
 
-static func action(view: Control, lane: TDCookingLane, p: Dictionary, module: String, c: Vector2, s: float, beats: float) -> void:
+static func action(view: Control, lane: TDCookingLane, p: Dictionary, module: String, c: Vector2, s: float, beats: float, dish: Dictionary = {}) -> void:
+	if dish.is_empty(): dish=lane.snapshot()
+	if lane.station_role == "board" or module == "M1":
+		_cutting(view,lane,dish,p,c,s,impulse(lane))
+		return
+	if lane.food_stage.contains(":"):
+		_authored_action(view,lane,p,c,s,beats,dish)
+		return
+	if p.is_empty():
+		if dish.get("state")=="plated":
+			TDIngredientIcon.draw_item(view,TDIngredientIcon.dish_item(dish),Rect2(c-Vector2(95,67)*s,Vector2(190,134)*s))
+		else:
+			var rest: String = {"board":"board","steamer":"basket","sushi":"mat","stockpot":"soup","claypot":"soup","oven":"oven","grill":"grill","fryer":"fryer","cold":"bowl"}.get(lane.station_role,"wok")
+			part(view,rest,c,219*s)
+			if not dish.ingredients.is_empty():
+				var food_center := c + (Vector2(-48,15) if rest=="wok" else Vector2(0,-7))*s
+				_meal(view,dish,food_center,107*s,lane.food_stage)
+		return
 	var hit := impulse(lane)
 	var phase := fposmod(beats,1.0)
 	var rebound := sin(PI*phase)
@@ -69,67 +73,53 @@ static func action(view: Control, lane: TDCookingLane, p: Dictionary, module: St
 		part(view,tool,c+Vector2(-96,-41)*s,136*s,-.3-hold*.6)
 		var pour := Vector2(-105,-45).lerp(Vector2(40,33),smoothstep(.16,.9,hold))
 		pour.y -= sin(hold*PI)*31
-		part(view,"food",c+pour*s,(57.0+39.0*hold)*s)
-		return
-	if lane.station_role=="board" or module=="M1":
-		part(view,"board",c,267*s)
-		var ingredients: Array = lane.snapshot().ingredients.values()
-		if ingredients.is_empty(): return
-		var cuts := mini(5,int(p.get("cut_hits",0)))
-		var food_id := str(ingredients[0].ingredient_id)
-		var bounds := Rect2(c+Vector2(-82,-32)*s,Vector2.ONE*87*s)
-		var art := TDRedrawArt.ingredient(food_id)
-		if art==null or cuts==0:
-			TDIngredientIcon.draw_on(view,food_id,bounds)
-		else:
-			var whole := TDStoryArt.fit(art,bounds)
-			var count := cuts+1
-			for i: int in count:
-				var portion := float(i)/count
-				var strip := Rect2(whole.position+Vector2(whole.size.x*portion+i*5*s,i%2*3*s),whole.size*Vector2(1.0/count,1))
-				var source := Rect2(Vector2(art.get_width()*portion,0),art.get_size()*Vector2(1.0/count,1))
-				view.draw_texture_rect_region(art,strip,source)
-		var turn: float = [-.12, .44, .16][int(p.get("cut_direction",0))]
-		part(view,"knife",c+Vector2(23,-49+28*hit)*s,111*s,turn-hit*.09)
+		_meal(view,dish,c+pour*s,(70.0+62.0*hold)*s)
 		return
 	if module!="M6" and (lane.station_role=="steamer" or p.get("kind")=="steam"):
 		part(view,"basket",c+Vector2(0,19)*s,184*s)
 		var lift := (1.0-hold)*26.0+rebound*4.0+hit*10.0
+		_meal(view,dish,c+Vector2(0,-7)*s,116*s)
 		part(view,"lid",c+Vector2(19,-25-lift)*s,181*s,-.12+hold*.1)
 		steam(view,c+Vector2(-12,-25)*s,s,beats,.70)
 		return
 	if module=="M6" and lane.station_role not in ["wok","skillet","stove","tamago"]:
 		var vessel: String = {"oven":"oven","grill":"grill","fryer":"fryer","sushi":"mat","comal":"comal","cold":"bowl","stockpot":"soup","claypot":"soup","steamer":"basket"}.get(lane.station_role,"bowl")
 		part(view,vessel,c+Vector2(0,22)*s,211*s)
-		_pour(view,c,s,beats,hit,int(p.get("hold_index",-1))>=0)
+		_meal(view,dish,c,117*s)
+		if int(p.get("hold_index",-1))>=0: _pour(view,c,s,beats,hit,str(p.get("hold_action","")).trim_prefix("spice:"))
 		return
 	if lane.active_technique in ["mix","fold"]:
 		part(view,"cream" if lane.station_role=="oven" else "bowl",c+Vector2(0,25)*s,200*s)
+		_meal(view,dish,c+Vector2(0,1)*s,122*s)
 		part(view,"paddle",c+Vector2(28+sin(beats*PI)*32,-25+cos(beats*PI)*16-hit*10)*s,95*s,sin(beats*PI)*.3)
 		return
 	if lane.active_technique in ["shape","roll"] or lane.station_role=="sushi":
 		part(view,"mat" if lane.station_role=="sushi" else "board",c+Vector2(0,18)*s,258*s)
-		var shaped := "roll" if lane.station_role=="sushi" else "food"
-		part(view,shaped,c+Vector2(-9,rebound*13-hit*8)*s,115*s,sin(beats*PI)*.1)
+		_meal(view,dish,c+Vector2(-9,rebound*13-hit*8)*s,128*s)
 		return
 	if lane.station_role=="oven" or lane.active_technique=="bake":
 		part(view,"oven",c+Vector2(0,8)*s,208*s)
+		_meal(view,dish,c+Vector2(0,17)*s,96*s)
 		steam(view,c-Vector2(0,42)*s,s,beats,.36)
 		return
 	if lane.station_role=="comal":
 		part(view,"comal",c+Vector2(0,10)*s,253*s)
+		_meal(view,dish,c+Vector2(0,-8)*s,139*s)
 		part(view,"turner",c+Vector2(62,-46-hit*16)*s,81*s,-.36+rebound*.25)
 		return
 	if lane.station_role=="fryer" or lane.active_technique=="fry":
 		part(view,"fryer",c+Vector2(0,16-rebound*3-hit*6)*s,207*s,-hit*.035)
+		_meal(view,dish,c+Vector2(0,-5)*s,108*s)
 		steam(view,c-Vector2(14,23)*s,s,beats,.52)
 		return
 	if lane.station_role=="grill" or lane.active_technique=="grill":
 		part(view,"grill",c+Vector2(0,13-hit*4)*s,243*s)
+		_meal(view,dish,c+Vector2(0,-1)*s,153*s)
 		steam(view,c-Vector2(0,37)*s,s,beats,.4)
 		return
 	if lane.station_role in ["stockpot","claypot"] and module!="M6":
 		part(view,"soup",c+Vector2(0,10)*s,221*s)
+		_meal(view,dish,c+Vector2(0,-8)*s,142*s)
 		steam(view,c-Vector2(0,41)*s,s,beats,.62)
 		return
 	var stirring: bool = module=="M3" and p.get("kind","")=="stir"
@@ -137,11 +127,12 @@ static func action(view: Control, lane: TDCookingLane, p: Dictionary, module: St
 	part(view,"burner",c+Vector2(-24,45)*s,144*s)
 	var wok := c+Vector2(13,-12-lift*.36)*s
 	part(view,"wok",wok,318*s,-.05-lift*.006)
-	if module!="M2":
-		var food := wok+Vector2(-48,-6-lift)*s
-		part(view,"food",food,(114.0+lift*.28)*s,lift*.009)
+	if not dish.ingredients.is_empty():
+		var food := wok+Vector2(-52,17-lift)*s
+		_meal(view,dish,food,(130.0+lift*.28)*s,lane.food_stage)
 		if module=="M6" or p.get("kind","") in ["season","starch"]:
-			_pour(view,wok,s,beats,hit,int(p.get("hold_index",-1))>=0 or module=="M3")
+			if module=="M3" or int(p.get("hold_index",-1))>=0:
+				_pour(view,wok,s,beats,hit,str(p.get("hold_action","")).trim_prefix("spice:"))
 		elif stirring:
 			part(view,"turner",wok+Vector2(10+29*sin(beats*TAU),-48-12*rebound)*s,99*s,-.24+rebound*.4)
 			for i: int in 5:
@@ -150,14 +141,106 @@ static func action(view: Control, lane: TDCookingLane, p: Dictionary, module: St
 				var garnish := wok+Vector2(-88+travel*89,-16-arc*(22+i*4+hit*40))*s
 				var tint: Color = [Color("7c9b43"),Color("edb64f"),Color("d87b43")][i%3]
 				view.draw_line(garnish,(garnish+Vector2(4+arc*3,-2)*s).round(),tint,3*s)
-		steam(view,food-Vector2(0,24)*s,s,beats,.35)
+		if lane.food_stage not in ["empty","oil"]:
+			steam(view,food-Vector2(0,24)*s,s,beats,.35)
 
-static func _pour(view: Control, c: Vector2, s: float, beats: float, hit: float, pouring: bool) -> void:
-	part(view,"jug",c+Vector2(65,-69)*s,65*s,-.12-hit*.2)
-	if pouring:
-		for i: int in 5:
-			var f := fposmod(beats*1.4+i*.2,1.0)
-			view.draw_rect(Rect2(c+Vector2(34-43*f,-48+49*f*f)*s,Vector2(4,5)*s),Color("fbd290"))
+# The kitchen atlas contains only food. The pass and carrier bubbles show the plated version.
+static func _meal(view: Control, dish: Dictionary, at: Vector2, width: float, food_stage: String = "") -> void:
+	if food_stage=="empty": return
+	if food_stage=="oil":
+		# A thin pool follows the bowl of the wok even between input phrases.
+		var pool := PackedVector2Array()
+		for i: int in 22:
+			var angle := TAU*i/22.0
+			pool.append((at+Vector2(cos(angle)*.34,sin(angle)*.13)*width).round())
+		view.draw_colored_polygon(pool,Color("dba647a8"))
+		view.draw_polyline(pool.slice(2,9),Color("ffe8a6"),maxf(1,width*.014))
+		return
+	var id := str(dish.get("recipe",{}).get("art_recipe_id",dish.recipe_id))
+	var texture := TDRedrawArt.scrambled_egg() if food_stage=="scrambled_egg" else TDRedrawArt.cooking_food(id)
+	var size := Vector2(width,width*.75)
+	var bounds := Rect2(at-size*.5,size)
+	if texture==null: texture=TDRedrawArt.serving_art()
+	view.draw_texture_rect(texture,bounds,false,Color("685244") if dish.get("failed_dish",false) else Color.WHITE)
+
+static func _cutting(view: Control,lane: TDCookingLane,dish: Dictionary,p: Dictionary,c: Vector2,s: float,hit: float) -> void:
+	part(view,"board",c,267*s)
+	var items: Array = dish.ingredients.values()
+	if items.is_empty(): return
+	var item: Dictionary = dish.ingredients.get(lane.cut_target,items[0])
+	var shape: String = item.shape
+	var directions: Array = item.get("cut_directions",[]).duplicate()
+	directions.append_array(p.get("cut_directions",[]))
+	if not directions.is_empty(): shape = TDCookingModel.shape_from_cuts(directions)
+	var texture := PROCESS_ART.cut(item.ingredient_id,shape)
+	var center := c + Vector2(-28,4)*s
+	if texture != null: PROCESS_ART.show_texture(view,texture,center,123*s)
+	else: TDIngredientIcon.draw_item(view,{"kind":"ingredient","id":item.ingredient_id,"shape":shape},Rect2(center-Vector2.ONE*49*s, Vector2.ONE*98*s))
+	if not p.is_empty():
+		var turn: float = [-.12,.44,.16][int(p.get("cut_direction",0))]
+		part(view,"knife",c+Vector2(23,-49+28*hit)*s,111*s,turn-hit*.09)
+
+static func _authored_action(view: Control,lane: TDCookingLane,p: Dictionary,c: Vector2,s: float,beats: float,dish: Dictionary) -> void:
+	var stage := lane.food_stage.split(":")
+	var vessel := stage[0]
+	if dish.get("state") == "plated":
+		TDIngredientIcon.draw_item(view,TDIngredientIcon.dish_item(dish),Rect2(c-Vector2(100,70)*s,Vector2(200,140)*s))
+		return
+	var progress := lane.food_progress()
+	if vessel == "plate":
+		var serving := c+Vector2(46,39)*s
+		var source: String = lane.plating_source.get_slice(":",0)
+		var source_layout: Array = PROCESS_ART.SURFACES.get(source,PROCESS_ART.SURFACES.wok)
+		var vessel_at := c+Vector2(-103,-36)*s
+		var transfer := smoothstep(.30,.94,progress)
+		part(view,"plate",serving,204*s)
+		part(view,source if PROCESS_ART.SURFACES.has(source) else "wok",vessel_at,float(source_layout[2])*.55*s,-.42*transfer)
+		var from := vessel_at+Vector2(source_layout[0])*.55*s
+		var food_at := from.lerp(serving,transfer)+Vector2(0,-26*sin(transfer*PI))*s
+		_meal(view,dish,food_at,lerpf(float(source_layout[1])*.55,125.,transfer)*s)
+		return
+	var layout: Array = PROCESS_ART.SURFACES[vessel]
+	var hit := impulse(lane)
+	var stirring: bool = p.get("kind","") == "stir" and vessel in ["wok","skillet","bowl","clay","pot","tamago"]
+	var toss := sin(beats*PI)*3.+hit*8. if stirring else 0.
+	var base := c + Vector2(0,8.-toss*.3)*s
+	if vessel in ["board","mat","wok"]:
+		if vessel == "wok": part(view,"burner",c+Vector2(-23,55)*s,144*s)
+		part(view,vessel,base,float(layout[2])*s,-toss*.004)
+	else:
+		PROCESS_ART.show_texture(view,PROCESS_ART.lookup(vessel),base,float(layout[2])*s)
+	var center: Vector2 = base + (Vector2(layout[0])-Vector2(0,toss))*s
+	var food_width: float = float(layout[1])*s
+	if lane.active_technique == "flip" and not p.is_empty():
+		# Lift and turn the food about its centre on the same beat as the input.
+		var lift := sin(progress*PI)
+		center.y -= (lift*20.+hit*8.)*s
+		var scale := view.size / Vector2(1280,800)
+		view.draw_set_transform(center.round()*scale,0.,scale*Vector2(1.,maxf(.13,absf(cos(progress*PI)))))
+		PROCESS_ART.transition(view,stage[1],dish,Vector2.ZERO,food_width,progress)
+		view.draw_set_transform(Vector2.ZERO,0.,scale)
+	else:
+		PROCESS_ART.transition(view,stage[1],dish,center,food_width,progress)
+	if vessel == "basket" and stage[1] != "empty":
+		var lift := 54.+sin(beats*PI)*2.+(1.-progress)*13.
+		part(view,"lid",base+Vector2(26,-lift)*s,137*s,-.18)
+	if stage[1] not in ["empty","oil"] and vessel in ["wok","pot","basket","oven","grill","clay","fryer","skillet","tamago"]:
+		steam(view,center-Vector2(0,18)*s,s,beats,.36)
+	if p.get("kind") in ["season","starch"] and int(p.get("hold_index",-1)) >= 0:
+		_pour(view,center,s,beats,hit,str(p.get("hold_action","")).trim_prefix("spice:"))
+	elif stirring:
+		part(view,"paddle" if vessel == "bowl" else "turner",center+Vector2(40+sin(beats*PI)*15.,-33.-hit*9.)*s,82*s,-.22+sin(beats*PI)*.16)
+
+static func _pour(view: Control, c: Vector2, s: float, beats: float, hit: float, spice: String) -> void:
+	var at := c+Vector2(65,-69)*s
+	var art := TDRedrawArt.ingredient(spice)
+	if art != null:
+		PROCESS_ART.show_texture(view,art,at,61*s)
+	else: part(view,"jug",at,65*s,-.12-hit*.2)
+	var tint: Color = {"salt":Color("fff2da"),"sugar":Color("fff2da"),"soy_sauce":Color("b5693d"),"pepper":Color("947257")}.get(spice,Color("fbd290"))
+	for i: int in 5:
+		var f := fposmod(beats*1.4+i*.2,1.0)
+		view.draw_rect(Rect2(c+Vector2(34-43*f,-48+49*f*f)*s,Vector2(4,5)*s),tint)
 
 static func impact(view: Control, lane: TDCookingLane, center: Vector2, s: float) -> void:
 	var burst := impulse(lane)

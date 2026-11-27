@@ -17,22 +17,50 @@ func create_profile(id: String="slot-01") -> TDGameProfile:
 	profile.slot_id=id;profile.persistence=store.save_slot
 	return profile
 
-func finish_day(profile: TDGameProfile) -> void:
-	# Real finite-demand day with no prepared meals. It loses money but can gain shop
-	# awareness. This fixture does not fake cooking scores or arbitrary XP awards.
+func stock_sale(profile: TDGameProfile) -> void:
+	var recipe := "service.tomato_egg"
+	assert_true(profile.buy(profile.shop.offer(recipe).stock).ok)
+	assert_true(profile.shop.set_menu(recipe, true, 250).ok)
+
+func serve_one_order(shop: TDShopSession) -> void:
+	# Start at the plated dish boundary. The economic order is generated, scored and paid normally.
+	for tick: int in 180:
+		shop.advance(2)
+		var orders := shop.active_orders()
+		if orders.is_empty(): continue
+		var order: Dictionary = orders[0]
+		var source := TDCookingSession.new(shop.day_namespace() + "reputation-fixture", 1,
+			shop.catalog.cooking.for_recipe(order.recipe_id), {"pc_controls": true})
+		var dish := source.snapshot().to_dict()
+		dish.state = "delivered"
+		dish.dish_id = order.id + ":dish"
+		dish.dish_attributes.completion = 100.0
+		dish.dish_attributes.harmony = 100.0
+		dish.dish_attributes.temperature_c = 60.0
+		dish.dish_attributes.flavor[1][1] = 40.0
+		dish.base_reasons = []
+		var served := shop.deliver(order.id, dish)
+		assert_true(served.ok, served.code)
+		assert_gt(int(shop.order(order.id).prepaid_cents), 0)
+		assert_eq(int(shop.order(order.id).refunded_cents), 0)
+		return
+	fail_test("No customer arrived for the paid-order fixture")
+
+func finish_day(profile: TDGameProfile, with_sale: bool = false) -> void:
+	if with_sale: stock_sale(profile)
 	assert_true(profile.shop.open_day().ok)
+	if with_sale: serve_one_order(profile.shop)
 	assert_true(profile.shop.advance(360).ok)
 	for order: Dictionary in profile.shop.active_orders(): profile.shop.cancel_order(order.id)
 	profile.shop.advance(1000)
 	assert_eq(profile.shop.snapshot().phase,"SETTLED")
-	assert_true(profile.progression_error.ok,profile.progression_error.code)
 
 func reach_level_two(profile: TDGameProfile) -> void:
 	for day: int in range(1,9):
-		finish_day(profile)
-		if profile.progression.progress().level>=2: return
+		finish_day(profile, true)
 		assert_true(profile.next_day().ok)
-	fail_test("Actual awareness growth did not reach level two within eight days")
+		if profile.progression.progress().level>=2: return
+	fail_test("Paid orders did not reach level two within eight days")
 
 func test_real_profit_and_store_metrics_exclude_bank_cash_menu_and_recipe_fame() -> void:
 	var profile:=create_profile()
@@ -47,9 +75,12 @@ func test_real_profit_and_store_metrics_exclude_bank_cash_menu_and_recipe_fame()
 	assert_true(report.ok);assert_eq(report.data.stores.size(),1)
 	assert_eq(report.data.stores[0].profit_cents,profile.shop.day_summary().economy.profit_cents)
 	assert_lt(report.data.stores[0].profit_cents,0)
+	assert_eq(profile.progression.snapshot(),before,"Business closure does not award experience")
+	assert_true(profile.next_day().ok)
 	var growth:Dictionary=profile.progression.snapshot().recent.back()
 	assert_eq(growth.profit_xp,0);assert_eq(growth.store_count,1);assert_eq(growth.scale_milli,1000)
-	assert_gt(growth.awareness_xp,0);assert_eq(growth.popularity_xp,0)
+	assert_eq(report.data.stores[0].awareness_before, report.data.stores[0].awareness_after)
+	assert_eq(growth.awareness_xp,0);assert_eq(growth.popularity_xp,0)
 
 func test_wages_reduce_store_profit_once_across_settlement_and_reload() -> void:
 	var profile:=create_profile()
@@ -76,11 +107,14 @@ func test_multi_day_level_reward_and_six_slot_package_are_idempotent() -> void:
 	var initial_points:=int(profile.research.snapshot().points)
 	reach_level_two(profile)
 	assert_eq(profile.progression.progress().level,2)
-	assert_eq(int(profile.research.snapshot().points),initial_points+2)
-	assert_eq(other.progression.progress().level,1);assert_eq(int(other.research.snapshot().points),initial_points)
 	var levels:=profile.progression.snapshot();var research:=profile.research.snapshot()
+	var cooking_points := 0
+	for event_id: String in research.events:
+		if event_id.begins_with("cooking:"): cooking_points += int(research.events[event_id].amount)
+	assert_eq(int(research.points), initial_points + cooking_points + 2)
+	assert_eq(other.progression.progress().level,1);assert_eq(int(other.research.snapshot().points),initial_points)
 	assert_false(profile.shop.settle_day().ok)
-	assert_eq(profile.settle_progression().code,"ALREADY_APPLIED")
+	assert_eq(profile.settle_progression().code,"NOT_DUE")
 	assert_true(profile.save().ok);assert_true(profile.save().ok)
 	assert_eq(profile.progression.snapshot(),levels);assert_eq(profile.research.snapshot(),research)
 	var loaded:=store.load_slot("slot-01");assert_true(loaded.ok,loaded.code)
@@ -91,8 +125,8 @@ func test_multi_day_level_reward_and_six_slot_package_are_idempotent() -> void:
 	assert_true(TDLevelProgression.same_value(restored.research.snapshot(),profile.snapshot().research))
 	for key: String in research:
 		if key!="world_time": assert_true(TDLevelProgression.same_value(restored.research.snapshot()[key],research[key]),key)
-	assert_eq(restored.settle_progression().code,"ALREADY_APPLIED")
-	assert_true(restored.next_day().ok);assert_true(restored.save().ok)
+	assert_eq(restored.settle_progression().code,"NOT_DUE")
+	assert_true(restored.save().ok)
 	assert_eq(restored.progression.progress().total_xp,profile.progression.progress().total_xp)
 
 func test_interrupted_upgrade_write_preserves_complete_old_package_and_retry_once() -> void:
@@ -101,9 +135,10 @@ func test_interrupted_upgrade_write_preserves_complete_old_package_and_retry_onc
 	var old:Dictionary={}
 	for day: int in range(1,9):
 		old=store.load_slot("slot-01").data
-		finish_day(profile)
+		finish_day(profile, true)
+		assert_true(profile.next_day().ok)
 		if profile.progression.progress().level==2: break
-		assert_true(profile.save().ok);assert_true(profile.next_day().ok);assert_true(profile.save().ok)
+		assert_true(profile.save().ok)
 	assert_eq(profile.progression.progress().level,2)
 	var current:=profile.snapshot()
 	store.interrupt_at="partial_write"
@@ -128,7 +163,11 @@ func test_interrupted_upgrade_write_preserves_complete_old_package_and_retry_onc
 func test_legacy_profiles_migrate_without_backfill_and_invalid_new_data_do_not_mutate() -> void:
 	var profile:=create_profile();finish_day(profile)
 	for version: int in [1,2]:
-		var old:=profile.snapshot();old.schema_version=version;old.erase("progression")
+		var old:=profile.snapshot();old.schema_version=version
+		for reward: Dictionary in old.progression.rewards:
+			old.research.points-=int(reward.inspiration)
+			old.research.events.erase(reward.grant_id)
+		old.erase("progression")
 		if version==1: old.erase("economy")
 		var migrated:=create_profile("slot-02")
 		var result:=migrated.restore(old);assert_true(result.ok,result.code)
@@ -137,7 +176,8 @@ func test_legacy_profiles_migrate_without_backfill_and_invalid_new_data_do_not_m
 		assert_true(migrated.progression.progress().migrated)
 		assert_true(migrated.save().ok)
 		assert_eq(migrated.progression.progress().total_xp,0)
-		assert_true(migrated.next_day().ok);finish_day(migrated)
+		assert_true(migrated.next_day().ok);finish_day(migrated, true)
+		assert_true(migrated.next_day().ok)
 		assert_gt(migrated.progression.progress().total_xp,0)
 	var snapshot:=profile.snapshot()
 	for kind: String in ["missing","version","cursor","reward"]:
@@ -146,7 +186,7 @@ func test_legacy_profiles_migrate_without_backfill_and_invalid_new_data_do_not_m
 			"missing": bad.erase("progression")
 			"version": bad.progression.schema_version=99
 			"cursor": bad.progression.last_day=500
-			"reward": bad.research.events["level:v1:2:inspiration"]={"kind":"inspiration","amount":2}
+			"reward": bad.research.events["level:v1:2:inspiration"]={"kind":"inspiration","amount":3}
 		assert_false(profile.restore(bad).ok)
 		assert_eq(profile.snapshot(),snapshot)
 
@@ -172,7 +212,7 @@ func test_real_main_ledger_reward_page_is_readonly_and_returns_controls() -> voi
 	var app:TDApplication=load("res://src/app/main.tscn").instantiate()
 	app.settings_path=store.root.path_join("scene/settings.json");layer.add_child(app)
 	var shell:=app.game_shell;shell.automatic_time=false
-	assert_true(shell.create_game("slot-01").ok);shell.guide.dialogue.finish_now();shell.travel("restaurant")
+	assert_true(shell.create_game("slot-01","小镇食堂",false).ok);shell.guide.dialogue.finish_now();shell.travel("restaurant")
 	var driver:=DRIVER.new();driver.viewport=get_tree().root
 	var point:Dictionary=shell.restaurant.interaction_points().filter(func(item:Dictionary)->bool:return item.action=="ledger")[0]
 	shell.restaurant.teleport_player(Vector2i(point.cell));driver.tap(KEY_E)
@@ -191,24 +231,27 @@ func test_real_main_ledger_reward_page_is_readonly_and_returns_controls() -> voi
 	driver.tap(KEY_ESCAPE);assert_null(shell._modal)
 	shell.go_title()
 
-func test_real_daily_transition_displays_upgrade_and_reloads_same_reward() -> void:
+func test_real_sleep_awards_levels_and_reloads_same_reward() -> void:
 	var layer:=CanvasLayer.new();layer.layer=140;add_child_autofree(layer)
 	var app:TDApplication=load("res://src/app/main.tscn").instantiate()
 	app.settings_path=store.root.path_join("upgrade/settings.json");layer.add_child(app)
 	var shell:=app.game_shell;shell.automatic_time=false
-	assert_true(shell.create_game("slot-01").ok);shell.guide.dialogue.finish_now()
+	assert_true(shell.create_game("slot-01","小镇食堂",false).ok);shell.guide.dialogue.finish_now()
+	shell.profile.shop.table_service_enabled = false
 	for day: int in range(1,9):
 		# Use formal day transition; the shell sees OPEN before SETTLED.
+		stock_sale(shell.profile)
 		assert_true(shell.start_day().ok);shell._process(0)
+		serve_one_order(shell.profile.shop)
 		shell.profile.shop.advance(360)
 		for order:Dictionary in shell.profile.shop.active_orders(): shell.profile.shop.cancel_order(order.id)
 		shell.profile.shop.advance(1000);shell._process(0)
+		assert_eq(int(shell.profile.progression.progress().level),1)
+		shell._sleep("chengdu",0)
+		assert_true(shell.slots.load_slot("slot-01",TDProfileStore.DAILY).ok)
 		if shell.profile.progression.progress().level==2: break
-		assert_true(shell.profile.next_day().ok);shell._process(0)
 	assert_eq(shell.profile.progression.progress().level,2)
-	assert_not_null(shell._modal_box.find_child("LevelRewardsView",true,false))
 	var points:=int(shell.profile.research.snapshot().points)
-	assert_true(shell.save_game().ok) # D059: ordinary daily settlement no longer writes the slot.
 	shell.go_title();assert_true(shell.load_game("slot-01").ok)
 	assert_eq(shell.profile.progression.progress().level,2)
 	assert_eq(int(shell.profile.research.snapshot().points),points)

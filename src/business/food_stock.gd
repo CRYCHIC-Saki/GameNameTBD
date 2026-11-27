@@ -34,6 +34,23 @@ static func add(lots: Dictionary, id: String, units: int, day: int, life: int) -
 static func first_expiry(lots: Dictionary, id: String) -> int:
 	return int(lots[id][0].expires_on) if lots.has(id) and not lots[id].is_empty() else 0
 
+static func cost_of(basis: Dictionary, units: int) -> int:
+	var stock := int(basis.get("units",0))
+	var value := int(basis.get("value_cents",0))
+	return value if units>=stock else roundi(float(value)*units/maxi(1,stock))
+
+static func record_add(lots: Dictionary, id: String, units: int, day: int, life: int, extra: Dictionary) -> void:
+	var expiry := int(extra.get("expires_on",0))
+	if expiry<=day:
+		add(lots,id,units,day,life)
+		return
+	for lot: Dictionary in lots.get(id,[]):
+		if int(lot.expires_on)==expiry:
+			lot.units=int(lot.units)+units
+			return
+	var original_day := clampi(expiry-life,1,day)
+	add(lots,id,units,original_day,expiry-original_day)
+
 static func take(lots: Dictionary, id: String, units: int) -> void:
 	var remaining: int = units
 	for lot: Dictionary in lots.get(id,[]):

@@ -16,21 +16,15 @@ func make_view(request_name: bool = true) -> TDDialogueView:
 	return view
 
 func advance(view: TDDialogueView) -> void:
-	view._vn_stage.dialog._advance_dialog()
+	view._vn_stage.dialog._reveal_to_end()
 	view._vn_stage.dialog._advance_dialog()
 	await get_tree().process_frame
 
 func to_name(view: TDDialogueView) -> void:
-	view._process(14.0)
-	await get_tree().process_frame
-	await advance(view)
-	view._process(6.0)
-	await get_tree().process_frame
-	await advance(view)
-	await advance(view)
-	view._process(10.0)
-	await get_tree().process_frame
-	await advance(view)
+	for _i: int in 18:
+		if view.awaiting_name(): return
+		await advance(view)
+
 
 func test_real_plugin_runtime_and_native_scenario_drive_opening() -> void:
 	var view := await make_view()
@@ -41,20 +35,22 @@ func test_real_plugin_runtime_and_native_scenario_drive_opening() -> void:
 	assert_true(stage.runner.ctx.background is VNEngineBackgroundSystem)
 	assert_true(stage.runner.script_res.source_path.ends_with("scenario/intro/script.txt"))
 	assert_false(stage.runner.script_res.has_errors())
-	assert_eq(stage.blocked, "td_cg")
-	assert_true(view._cg.visible)
+	assert_eq(stage.blocked, "")
+	assert_false(view._cg.visible)
+	var caption := stage.runner.current_text
 	view._process(14.0)
-	await get_tree().process_frame
+	assert_eq(stage.runner.current_text, caption, "no timed film advancement")
+	await advance(view)
 	assert_false(view._cg.visible)
 	assert_eq(stage.runner.current_text, "终于到了。吾之舌啊，准备迎接万国料理的洗礼！")
 	assert_eq(stage.dialog.speaker_label.text, "？？？")
-	assert_eq(stage.runner.ctx.background.current_layer.texture.resource_path, "res://content/story/vn/backgrounds/arrival-coast-v1.tres")
+	assert_eq(stage.runner.ctx.background.current_layer.texture.resource_path, "res://content/story/vn/backgrounds/harbor.tres")
 	var background := stage.runner.ctx.background.current_layer.texture as AtlasTexture
 	assert_not_null(background)
-	assert_eq(background.atlas.resource_path, "res://assets/redraw-v1/backgrounds.png")
+	assert_eq(background.atlas.resource_path, "res://assets/vn-painterly-v1/harbor.png")
 	var hero := stage.runner.ctx.characters.active_sprites["hero"] as VNEngineCharacterSprite
 	var portrait := hero.sprite.texture as AtlasTexture
-	assert_eq(portrait.atlas.resource_path, "res://assets/ui-wood-v1/portrait-hero-v2.png")
+	assert_eq(portrait.atlas.resource_path, (TDStoryArt.portrait("hero","happy") as AtlasTexture).atlas.resource_path)
 	assert_true(stage.dialog.background_box.get_theme_stylebox("panel") is StyleBoxTexture)
 	assert_true(stage.runner.ctx.characters.active_sprites.has("hero"))
 	assert_false(stage.runner.ctx.characters.active_sprites.has("aling"))
@@ -67,8 +63,6 @@ func test_cg_name_blocks_survive_auto_skip_and_duplicate_completion() -> void:
 	view.hero_named.connect(func(value: String) -> void: names.append(value))
 	view.closed.connect(func(_text: String, _picks: Array) -> void: ended.append(view.last_completed))
 	var index := stage.runner.current_index
-	stage.runner.next_node(); stage.dialog._on_auto_timer_timeout()
-	assert_eq(stage.runner.current_index, index, "real runner cannot bypass CG")
 	await to_name(view)
 	assert_true(view.awaiting_name())
 	assert_true(stage.runner.ctx.characters.active_sprites.has("aling"))
@@ -109,7 +103,7 @@ func test_host_has_no_secondary_save_or_rollback_authority() -> void:
 func test_pause_cancel_restart_discards_old_resume_and_template_name() -> void:
 	var view := await make_view()
 	view._process(2.0); view.toggle_presentation_pause(); view._process(99.0)
-	assert_eq(view.talk.cg_elapsed, 2.0)
+	assert_eq(view.talk.cg_elapsed, 0.0)
 	assert_eq(view._vn_stage.main.process_mode, Node.PROCESS_MODE_DISABLED)
 	var generation := view._vn_stage._generation
 	view.finish_now()
@@ -119,9 +113,9 @@ func test_pause_cancel_restart_discards_old_resume_and_template_name() -> void:
 	view.present(conversation); view.set_process(false)
 	await get_tree().process_frame
 	view._vn_stage._resume(generation)
-	assert_eq(view._vn_stage.blocked, "td_cg")
+	assert_eq(view._vn_stage.blocked, "")
 	assert_eq(view.talk.cg_elapsed, 0.0)
-	assert_eq((load("res://content/story/vn/config/characters/_characters.tres") as VNEngineCast).display_name_of("hero"), "？？？")
+	assert_eq((load("res://content/story/vn/config/characters/_characters.tres") as VNEngineCast).display_name_of("hero"), "焰子")
 	view.dismiss()
 	assert_null(VNEngineMain.instance())
 	var daily := TDDialogue.new(); daily.add_line("老陈", "chen", "来，坐下聊聊。")
@@ -131,7 +125,7 @@ func test_pause_cancel_restart_discards_old_resume_and_template_name() -> void:
 	assert_true(view._skip.visible, "ordinary conversation controls restored")
 	view.finish_now()
 
-func test_native_source_preserves_all_opening_dialogue_and_three_films() -> void:
+func test_native_source_preserves_all_opening_beats_as_static_pages() -> void:
 	var script := VNEngineScenarioLoader.load_script("res://content/story/vn/scenario/intro/script.txt", null)
 	assert_false(script.has_errors())
 	var texts: Array = []; var films: Array = []; var names: int = 0
@@ -143,9 +137,9 @@ func test_native_source_preserves_all_opening_dialogue_and_three_films() -> void
 	var source: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://content/story/opening.json"))
 	var expected: Array = []
 	for beat: Dictionary in source.scenes.intro:
-		if beat.kind == "line": expected.append(beat.text)
+		expected.append(beat.text)
 	assert_eq(texts, expected)
-	assert_eq(films, ["arrival", "hungry", "messenger"])
+	assert_eq(films, [])
 	assert_eq(names, 1)
 
 func test_cancel_before_deferred_plugin_start_does_not_hijack_replay() -> void:
@@ -155,7 +149,7 @@ func test_cancel_before_deferred_plugin_start_does_not_hijack_replay() -> void:
 	view.present(TDOpeningScript.conversation("intro", "乙", 80)); view.set_process(false)
 	await get_tree().process_frame; await get_tree().process_frame
 	assert_eq(VNEngineMain.instance(), view._vn_stage.main)
-	assert_eq(view._vn_stage.blocked, "td_cg")
+	assert_eq(view._vn_stage.blocked, "")
 	assert_eq(view._vn_stage.hero_name, "乙")
 	view.finish_now()
 

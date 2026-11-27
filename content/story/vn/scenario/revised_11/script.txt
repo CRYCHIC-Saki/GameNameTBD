@@ -1,0 +1,25 @@
+# start
+@bg knight-hall with instant 0
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide hertz with instant
+@hide hina with instant
+// 原稿第 64 段 【困扰】维托
+@show vito troubled at td:0.772680:1.496877:2.150000 with instant
+vito: 你的酱汁收得比我好，面条也正合适……我每天路过广场，都能闻到你那口锅里的番茄味，原来是在练着赢我啊。
+// 原稿第 65 段 【无语】焰子
+@show hero speechless at td:0.268170:1.464197:2.150000 with instant
+hero: 我都说了要挑战你呀，你现在才发现吗？之前总是面煮好了，酱汁还没做好，这几天总算把它们练到能一起出锅啦。
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide hertz with instant
+@hide hina with instant
+// 原稿第 66 段 【高兴】维托
+@show vito happy at td:0.772680:1.496877:2.150000 with instant
+vito: 这场比赛是你赢了。我的料理笔记也送给你，路上可以接着练。下次见面，我们再好好比一场。
+// 原稿第 67 段 【高兴】焰子
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 谢谢你！等我学会其他地方的料理，也会带回来做给你吃的！
+@end

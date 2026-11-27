@@ -23,10 +23,16 @@ const RESTAURANTS: Dictionary = {
 	"tokyo": preload("res://assets/town/restaurant-japanese-v1.png"),
 	"paris": preload("res://assets/town/restaurant-european-v1.png"),
 }
+const BRANCH_EXTERIORS := {
+	"chengdu": preload("res://assets/town/player-branches/harbor.png"),
+	"tokyo": preload("res://assets/town/player-branches/island.png"),
+	"paris": preload("res://assets/town/player-branches/riverside.png"),
+}
+const BRANCH_CONSTRUCTION := preload("res://assets/town/player-branches/construction.png")
 const REGIONS := {
- "chengdu":{"name":"河口镇 · 中式", "row":0,"grass":"748655","road":"b3aa90","water":"4d8995","leaf":"47734d","caption":"石板街、青瓦巷和东岸海港。食堂与小屋都在这里。"},
- "tokyo":{"name":"潮见町 · 日本", "row":0,"grass":"84977a","road":"9b9da0","water":"537f9d","leaf":"d58fab","caption":"以东京湾沿岸为灵感：湾岸码头、木造町屋、暖帘食铺与樱花参道。"},
- "paris":{"name":"白鹭河镇 · 欧洲", "row":1,"grass":"80936e","road":"c2b7a1","water":"6b9195","leaf":"64825a","caption":"沿彩石喷泉广场逛露天市集，从麦田风车走到白鹭河客港。"},
+ "chengdu":{"name":"臻味港", "row":0,"grass":"748655","road":"b3aa90","water":"4d8995","leaf":"47734d","caption":"石板街、青瓦巷和东岸海港。食堂与小屋都在这里。"},
+ "tokyo":{"name":"和味道", "row":0,"grass":"84977a","road":"9b9da0","water":"537f9d","leaf":"d58fab","caption":"沿着湾岸码头和樱花参道漫步，路边是木造町屋和挂着暖帘的食铺。"},
+ "paris":{"name":"稀味郡", "row":1,"grass":"80936e","road":"c2b7a1","water":"6b9195","leaf":"64825a","caption":"从彩石喷泉广场和露天市集出发，经过麦田风车，就能走到稀味客港。"},
 }
 static var _sprites: Dictionary={}
 static var _atlas_image: Image
@@ -100,10 +106,17 @@ static func _district_sprite(town: String, sheet: String, column: int) -> AtlasT
 		_sprites[key] = tile
 	return _sprites[key]
 
+static func native_frontage_feet(lot: Rect2) -> Vector2:
+	return Vector2(lot.get_center().x, lot.end.y - .12)
+
 ## Both the walkable world and the atlas use the parcel's purpose to select its facade.
-static func facade(town: String, plot: Dictionary, variation: int = 0) -> Texture2D:
+static func facade(town: String, plot: Dictionary, variation: int = 0, branch_skin: bool = true) -> Texture2D:
 	var kind := str(plot.get("kind", ""))
+	if branch_skin and plot.has("branch_id") and not plot.get("preset_storefront", false):
+		if plot.get("construction", false): return BRANCH_CONSTRUCTION
+		return BRANCH_EXTERIORS.get(town, BRANCH_EXTERIORS.chengdu)
 	if plot.get("construction", false): return TDTownArt.sprite(12)
+	if plot.get("preset_storefront", false): return TDJiangnanReferenceArt.diner_facade().art
 	if kind == "player_diner" and (plot.get("id", "") == "player_diner" or plot.has("branch_id")):
 		return TDEnvironmentArt.diner() if town == "chengdu" else _restaurant(town)
 	if town == "chengdu":
@@ -203,6 +216,32 @@ static func prop(town: String, decoration: bool) -> Texture2D:
 		var texture:=AtlasTexture.new();texture.atlas=PROPS;texture.filter_clip=true
 		texture.region=Rect2(region.position+used.position,used.size);_sprites[key]=texture
 	return _sprites[key]
+
+const SIGHT_KINDS := ["landmark","plaza","amusement","zoo","public_walk"]
+const SIGHT_DESCRIPTIONS := {
+	"chengdu": {
+		"landmark": "临水的亭子底下常有人歇脚。潮水涨上来时，在这里能看见货船隔着石桥缓缓转弯。",
+		"plaza": "临着客港的石砖广场，是等船和碰头的地方。海风一吹，卖热饼的摊子先飘来香气。",
+		"amusement": "木戏台朝着一片开阔地。起锣前，来早的街坊会从家里搬来小凳，把最前一排占满。",
+		"zoo": "园路从叠石和花草间绕过，沿着矮墙走一圈，能听见河水拍着石沿。",
+	},
+	"tokyo": {
+		"landmark": "穿过樱树间的鸟居，就能看见屋檐下挂着的天妇罗木牌。每逢祭日，街坊会带来新炸的天妇罗，祈求灶火平顺、四季丰收。",
+		"plaza": "浅色砂地围着椭圆形能舞台。演出前，观众顺着砂纹两侧入座，把舞台正面留给演员。",
+		"office": "面向港湾的办公楼记录进出客船。渔民也会来这里问潮位，再决定几点把船解缆。",
+		"watch": "值班人从望塔上能看见岛外水道。夜里，塔灯给开往和味道的船指路。",
+		"onsen": "温泉沿山石露天而设，水汽沿木栏往上飘。从这里能听见瀑布落进下方的潭水。",
+	},
+	"paris": {
+		"landmark": "钟楼高过沿岸的尖顶。河面起雾时，赶集的人靠钟声辨时，船夫也听得见。",
+		"plaza": "石雕喷泉是街坊常用的碰头处。水落进石槽的声音穿过广场，周围小馆也爱把桌子摆到这里。",
+		"mill": "河岸风车把谷物磨成面粉。风稳的日子，风轮转得轻快，磨坊门口堆着刚装好的面粉袋。",
+	},
+}
+
+static func sight_description(plot: Dictionary, town: String) -> String:
+	var descriptions: Dictionary = SIGHT_DESCRIPTIONS.get(town,{})
+	return str(descriptions.get(plot.get("id",""),descriptions.get(plot.get("kind",""),"沿街的石阶和树荫把这里连到主路。早晚经过时，常能遇见出来散步的街坊。")))
 
 static func label(plot: Dictionary, town: String) -> String:
 	if plot.has("branch_id"): return str(plot.name)+(" · 施工中" if plot.get("construction",false) else "")

@@ -1,0 +1,53 @@
+// D078: awaken; source: opening.json / homecoming.json. Visual presentation only.
+# start
+@bg restaurant with instant 0
+
+# beat_0
+@hide hero with instant
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@bg cg-kitchen with instant 0
+narrator: 四张两人桌，一只旧冰箱，一口灶。阿铃把罩布猛地掀开，灰尘在阳光里翻涌。
+
+# beat_1
+@hide chen with instant
+@hide luo with instant
+@show aling calm at td:0.740000:1.555701:2.150000 with instant
+aling: 家里闲置的摊位。炉火仍在等待继承者。
+
+# beat_2
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 回应我吧，沉睡的赤焰！
+
+# beat_3
+@hide chen with instant
+@hide luo with instant
+@show aling calm at td:0.740000:1.555701:2.150000 with instant
+aling: 排烟结界，展开！夜鸦拒绝被油烟吞噬！
+
+# beat_4
+@hide hero with instant
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@bg cg-kitchen with instant 0
+narrator: 老陈跟来，将番茄、鸡蛋和调料放上桌。
+
+# beat_5
+@hide aling with instant
+@hide luo with instant
+@show chen happy at td:0.789020:1.503413:2.150000 with instant
+chen: 挑战者的第一份粮秣，由灰烬司祭供给。让我见识你的异端之火！
+
+# beat_6
+narrator: 获得试做食材一份。番茄炒蛋为主角已掌握的基础菜谱，本段无需研发。
+
+# beat_7
+@hide chen with instant
+@hide luo with instant
+@show aling calm at td:0.740000:1.555701:2.150000 with instant
+aling: 听好，赤焰之手。我要大块番茄、嫩鸡蛋，略带甜味。若你把它献祭成焦炭，夜鸦会如实记入史书。
+
+# finish
+@end

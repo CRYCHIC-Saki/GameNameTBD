@@ -69,8 +69,8 @@ func _initialize() -> void:
 	if novel:
 		script=script.replace("res://artifacts/vn-runtime-20261113/gpu",folder+"/screenshots")
 		script=script.replace('func _initialize() -> void:\n\tcall_deferred("run")','func _ready() -> void:\n\troot=get_tree().root\n\tcall_deferred("run")')
-		script=script.replace("await create_timer(","await get_tree().create_timer(")
 	script=script.replace("await process_frame","await get_tree().process_frame")
+	script=script.replace("await create_timer(","await get_tree().create_timer(")
 	if chef: script=script.replace("res://artifacts/chef-workflow-20261114/gpu",folder+"/screenshots")
 	if hud: script=script.replace("res://artifacts/quiet-hud-20261115/gpu",folder+"/screenshots")
 	if protagonist: script=script.replace("res://artifacts/protagonist-diagonal-r1-20261116/gpu",folder+"/screenshots")

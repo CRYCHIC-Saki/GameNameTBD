@@ -1067,8 +1067,6 @@ def dock_props(ground,deck,quay,regions,solid):
         nodes.extend(cropped_prop(name,regions[kind],outline,x,y,w))
         brush.rounded_rectangle((round(x-w*.39),y-depth,round(x+w*.39),y-1),
                                 radius=min(3,depth//2),fill=1)
-    tub=[(.125,.54),(.17,.46),(.27,.435),(.38,.48),(.41,.53),(.397,.80),
-         (.37,.85),(.23,.875),(.15,.84),(.128,.79)]
     box=[(.70,.49),(.825,.39),(.99,.42),(.99,.84),(.86,.90),(.705,.85)]
     post=[(.40,.81),(.435,.73),(.442,.28),(.437,.2),(.441,.135),(.429,.12),(.431,.035),
           (.457,.005),(.51,.005),(.558,.032),(.56,.13),(.545,.145),(.55,.72),(.59,.79),
@@ -1082,7 +1080,13 @@ def dock_props(ground,deck,quay,regions,solid):
           (.371,.80),(.383,.849),(.374,.94),(.31,.988),(.18,1),(.08,.97),(.013,.924)]
     for name,x,y,w in [("DockTubs1334",1334,531,25),("DockTubs1161",1160,529,19),
                        ("DockTubs1320",1315,523,17)]:
-        place_solid(name,"tubs",tub,x,y,w,round(w*.30))
+        nodes.extend([f'[node name="{name}" type="Sprite2D" parent="."]',
+                      f'position = Vector2({x},{y})', f'scale = Vector2({w/48:.7f},{w/48:.7f})',
+                      'texture = ExtResource("water_tub")', 'offset = Vector2(0,-19)',
+                      'metadata/art = "water_tub"'])
+        depth=round(w*.30)
+        brush.rounded_rectangle((round(x-w*.39),y-depth,round(x+w*.39),y-1),
+                                radius=min(3,depth//2),fill=1)
     for x,y,w in [(1145,572,17),(1158,575,14),(1446,601,22)]:
         place_solid(f'DockCargo{x}',"cargo",box,x,y,w,round(w*.38))
     nodes+=cropped_prop("SeineWithFloats",regions["tubs"],net,1207,569,37)

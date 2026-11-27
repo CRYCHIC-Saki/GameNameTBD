@@ -559,16 +559,44 @@ func sync_costs(ledger: Array) -> void:
 			if quantity>0:
 				var value: int=left_cost if int(additions[item])==remaining_weight else roundi(float(left_cost)*float(additions[item])/maxi(1,remaining_weight))
 				stock.units+=quantity;stock.value_cents+=value;left_cost-=value;remaining_weight-=int(additions[item])
+				if event.kind=="stock_return" and int(event.day)==int(state.day):
+					var field := "after_hours_cost_cents" if int(state.last_settled_day)==int(state.day) else "cost_consumed"
+					state[field]=maxi(0,int(state.get(field,0))-value)
 			elif quantity<0:
 				var used:=mini(-quantity,int(stock.units))
-				var spent:=int(stock.value_cents) if used==int(stock.units) else roundi(float(stock.value_cents)*used/maxi(1,int(stock.units)))
+				var spent:=TDFoodStock.cost_of(stock,used)
 				stock.units-=used;stock.value_cents-=spent
 				if int(event.day)==int(state.day):
 					if int(state.last_settled_day)==int(state.day): state.after_hours_cost_cents=int(state.get("after_hours_cost_cents",0))+spent
 					else: state.cost_consumed+=spent
 	state.cost_cursor=ledger.size()
 
-func settle(ledger: Array, receipts: int, opened_today: bool = true) -> Dictionary:
+static func popularity_after_service(previous: float, completed: int, satisfaction_total: float, allow_decline: bool = true) -> float:
+	var satisfaction := satisfaction_total / maxi(1, completed)
+	var volume := 100.0 * completed / (completed + 8.0)
+	# A 60-point average preserves the volume target. Better or worse meals move it.
+	var target := minf(100.0, volume * (0.4 + satisfaction))
+	var updated := lerpf(previous, target, 0.2)
+	return updated if allow_decline else maxf(previous, updated)
+
+static func awareness_after_sales(previous: float, paid_orders: int) -> float:
+	return lerpf(previous, 1.0, 1.0 - exp(-paid_orders * 0.004))
+
+func _settle_store_reputation(orders: Array) -> void:
+	var completed := 0
+	var paid_orders := 0
+	var satisfaction_total := 0.0
+	for order: Dictionary in orders:
+		if order.status != "SERVED": continue
+		completed += 1
+		satisfaction_total += clampf(float(order.score.satisfaction) / 100.0, 0.0, 1.0)
+		if int(order.prepaid_cents) > int(order.refunded_cents): paid_orders += 1
+	var profile := player_branches.owner_profile() if player_branches != null else null
+	var allow_decline := profile == null or profile.allows_popularity_decline()
+	state.popularity = popularity_after_service(float(state.popularity), completed, satisfaction_total, allow_decline)
+	state.awareness = awareness_after_sales(float(state.awareness), paid_orders)
+
+func settle(ledger: Array, receipts: int, opened_today: bool = true, orders: Array = []) -> Dictionary:
 	if int(state.last_settled_day)==int(state.day): return state.books.back().duplicate(true) if not state.books.is_empty() else {}
 	sync_costs(ledger)
 	var bank_day:=society.bank.accrue(int(state.day))
@@ -595,9 +623,7 @@ func settle(ledger: Array, receipts: int, opened_today: bool = true) -> Dictiona
 	state.tax_due_cents+=tax
 	var expense:=utility+rent+tax
 	state.debt_cents+=expense
-	var completed: int=int(state.day_stats.completed)
-	state.popularity=lerpf(float(state.popularity),100.0*completed/(completed+8.0),0.2)
-	state.awareness=clampf(float(state.awareness)*0.995+(1.0-float(state.awareness))*(1.0-exp(-float(state.day_stats.opportunities)*0.004)),0,1)
+	_settle_store_reputation(orders)
 	var visits: Array=state.day_stats.reviews.values()
 	if not visits.is_empty():
 		var average: float=0

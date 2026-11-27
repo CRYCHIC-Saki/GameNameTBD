@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "character_id": "vito",
+  "display_name": "维托",
+  "archived_on": "2026-11-26",
+  "request": "前面赫兹和维托的像素小人也归档",
+  "operation": "Byte-identical copy of the previously delivered v1 sprite sheet.",
+  "status": "USER_CONFIRMED_KEEP_V1",
+  "files": [
+    {
+      "role": "sprite",
+      "file": "archive/2026-11-26/vito-idle-four-directions.png",
+      "source_file": "vito-idle-four-directions-v1.png",
+      "sha256": "c7abf5a05eb97b6852cd24d3545d98b9a6b2a9a0a14835343ff8d9f8627c9b58",
+      "size": [
+        1254,
+        1254
+      ],
+      "pixel_format": "Format32bppArgb",
+      "byte_identical_to_selected_version": true
+    }
+  ],
+  "runtime_integration": "NOT_DONE"
+}

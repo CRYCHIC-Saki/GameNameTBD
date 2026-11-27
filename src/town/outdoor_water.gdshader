@@ -4,14 +4,23 @@ uniform float game_minute = 720.0;
 uniform vec2 map_origin;
 uniform vec2 world_per_pixel = vec2(1.0);
 uniform bool river = false;
+uniform bool resample_surface = false;
+uniform sampler2D continuous_surface : source_color, repeat_enable, filter_nearest;
 varying vec2 map_pixel;
+varying vec3 surface_tint;
 
 void vertex() {
 	map_pixel = ((MODEL_MATRIX * vec4(VERTEX, 0.0, 1.0)).xy - map_origin) / world_per_pixel;
+	surface_tint = COLOR.rgb;
 }
 
 void fragment() {
 	vec2 p = floor(map_pixel);
+	if (resample_surface) {
+		// Water cells retain their shoreline mask and sample one continuous world surface.
+		COLOR.rgb = texture(continuous_surface, floor(map_pixel * 2.0) / 256.0).rgb;
+		COLOR.rgb *= surface_tint * vec3(.82,.92,.97);
+	}
 	float t = game_minute;
 	// Short glints gather and separate on differently spaced rows of crests.
 	float row = floor((p.y + t * (river ? 1.9 : .65)) / 10.0);

@@ -8,7 +8,7 @@ func before_each() -> void:
 	app=load("res://src/app/main.tscn").instantiate()
 	app.settings_path="res://artifacts/habitat-tests/%d/settings.json"%Time.get_ticks_usec()
 	add_child_autofree(app);shell=app.game_shell;shell.automatic_time=false
-	assert_true(shell.create_game("slot-01").ok);shell.guide.dialogue.finish_now()
+	assert_true(shell.create_game("slot-01","小镇食堂",false).ok);shell.guide.dialogue.finish_now()
 	# These regressions exercise an already acquired cottage; new-slot gating has dedicated tests.
 	shell.profile.residence.stage="door";assert_true(shell.profile.unlock_residence().ok)
 	driver=DRIVER.new();driver.viewport=get_tree().root;driver.kitchen=shell.kitchen_view.kitchen
@@ -66,6 +66,7 @@ func test_four_faces_nearby_building_and_cottage_is_a_real_room() -> void:
 
 func test_bed_saves_next_day_once_and_loads_there_with_existing_progress() -> void:
 	assert_eq(shell.location,"town")
+	preload("res://tools/test_support/native_dialogue.gd").completed_mainline(shell.profile)
 	shell.profile.shop.open_day();shell.profile.shop.close_early()
 	assert_eq(shell.profile.shop.snapshot().phase,"SETTLED")
 	shell.travel("cottage",true);driver.tap(KEY_E)
@@ -76,9 +77,11 @@ func test_bed_saves_next_day_once_and_loads_there_with_existing_progress() -> vo
 	var before:=shell.profile.snapshot()
 	shell.go_title();assert_true(shell.load_game("slot-01").ok)
 	assert_eq(shell.location,"cottage");assert_eq(shell.cottage.target(),"rest")
-	assert_true(TDLevelProgression.same_value(shell.profile.snapshot(),before))
+	var reloaded := shell.profile.snapshot()
+	for field: String in before:
+		assert_true(TDLevelProgression.same_value(reloaded[field],before[field]),"Reload preserves " + field)
 	assert_false(shell.restaurant.interaction_points().any(func(p:Dictionary)->bool:return p.action=="rest"))
-	var old:=before.duplicate(true);old.schema_version=3;old.erase("residence")
+	var old:=before.duplicate(true);old.schema_version=3;old.erase("residence");old.erase("branches")
 	var migrated:=TDGameProfile.new();var result:=migrated.restore(old)
 	assert_true(result.ok,result.code);assert_eq(migrated.snapshot().schema_version,9)
 	assert_true(TDLevelProgression.same_value(migrated.research.snapshot(),shell.profile.research.snapshot()));migrated.close()
@@ -88,13 +91,13 @@ func test_bed_saves_next_day_once_and_loads_there_with_existing_progress() -> vo
 
 func test_bed_write_failure_preserves_last_good_slot_and_retry_commits_once() -> void:
 	shell.profile.shop.open_day();shell.profile.shop.close_early();shell.travel("cottage",true)
-	assert_true(shell.save_game().ok)
+	assert_true(shell.profile.save().ok)
 	var path:=shell.slots.path_for("slot-01");var bytes:=FileAccess.get_file_as_bytes(path)
-	shell.profile.persistence=func(_id:String,_data:Dictionary)->TDOutcome:return TDOutcome.new(false,"INJECTED_WRITE_FAILURE")
+	shell.slots.interrupt_at="after_temp"
 	driver.tap(KEY_E);button("休息到明天").pressed.emit()
 	assert_eq(shell.profile.shop.snapshot().day,2);assert_eq(shell.profile.shop.snapshot().phase,"PREPARE")
 	assert_eq(FileAccess.get_file_as_bytes(path),bytes);assert_true(get_tree().paused)
-	shell.profile.persistence=shell.slots.save_slot
+	shell.slots.interrupt_at=""
 	button("重试保存").pressed.emit();assert_eq(shell.profile.shop.snapshot().day,2)
 	assert_eq(int(shell.slots.load_slot("slot-01").data.shop.day),2)
 	shell.profile.shop.open_day();assert_true(shell.travel("cottage").ok)
@@ -122,8 +125,9 @@ func test_music_context_hidden_kitchen_pause_and_real_qte() -> void:
 	await get_tree().process_frame;await get_tree().process_frame
 	assert_true(driver.kitchen.music_audible());assert_eq(shell.music.context,"silent")
 	var cooking_track := driver.kitchen.beat_audio.stream as AudioStreamWAV
-	assert_eq(cooking_track.loop_end,96*cooking_track.mix_rate,"48 full bars stay on the original recording beat across every loop")
-	assert_lt(cooking_track.loop_end,source_pcm_frames("res://assets/audio/cooking.wav"),"Exclude the off-grid trailing fade")
+	assert_eq(cooking_track.data,TDGameMusic.TRACKS.casual.data,"The live QTE plays the everyday track")
+	assert_eq(cooking_track.loop_end,source_pcm_frames("res://assets/audio/casual.wav"),"Cooking loops the full everyday track")
+	assert_eq(driver.kitchen.beat_audio.pitch_scale,1.0)
 	var stream:AudioStream=driver.kitchen.beat_audio.stream
 	shell._pause(true);assert_true(driver.kitchen.beat_audio.stream_paused)
 	shell._pause(false);assert_same(driver.kitchen.beat_audio.stream,stream)

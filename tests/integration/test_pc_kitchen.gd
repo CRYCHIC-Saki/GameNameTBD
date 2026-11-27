@@ -101,7 +101,7 @@ func test_real_world_pick_prepare_move_cook_plate_carry_and_serve_once() -> void
 	assert_null(lane.thermal_qte)
 	assert_true(lane.perform("plate").ok)
 	key(KEY_SPACE); kitchen.advance(1); key(KEY_SPACE,false)
-	assert_eq(lane.snapshot().state,"plated")
+	assert_eq(lane.snapshot().state,"plated",lane._status.text)
 	kitchen.close_bench(); station("kitchen.stove.left")
 	assert_eq(kitchen.handling.hand_kind,"dish")
 	station("kitchen.serve")
@@ -147,32 +147,23 @@ func test_simmer_keeps_advancing_while_player_prepares_other_food_and_pause_free
 	assert_gt(float(lane.thermal_progress.elapsed_sec),2.0)
 	assert_eq(kitchen.handling.hand_kind,"ingredient")
 
-func test_dual_shared_mouse_and_space_do_not_mix_sessions() -> void:
-	load_pot(); kitchen.set_dual(true)
-	var left: TDCookingLane = kitchen.lanes[0]; var right: TDCookingLane = kitchen.lanes[1]
-	right.perform("add",{"ingredient_id":"egg"})
-	left.perform("heat"); right.perform("heat")
-	left.perform("stir"); right.perform("stir")
-	await get_tree().process_frame; await get_tree().process_frame
-	var area: Rect2 = left.temperature_view.bar_rect(); mouse(area.position+area.size*.5,true)
-	assert_gt(float(left.thermal_progress.attraction),0.0); assert_gt(float(right.thermal_progress.attraction),0.0)
-	var times: Array = left.progress.beat_times_sec.duplicate()
-	for index: int in 5:
-		kitchen.advance(maxf(0,float(times[index])-float(left.progress.elapsed_sec)))
-		if index == 4: tap(KEY_SPACE)
-		else:
-			tap([KEY_W,KEY_A,KEY_S,KEY_D][index]); tap([KEY_UP,KEY_LEFT,KEY_DOWN,KEY_RIGHT][index])
-	assert_null(left.qte); assert_null(right.qte)
-	assert_eq(float(left.progress.quality),1.0); assert_eq(float(right.progress.quality),1.0)
-	var other: Dictionary = right.snapshot()
+func test_space_and_mouse_control_one_pot() -> void:
+	load_pot()
+	var left := kitchen.lanes[0]; var right := kitchen.lanes[1]
+	assert_eq(right.perform("add",{"ingredient_id":"egg"}).code,"OTHER_POT_IN_USE")
+	assert_true(left.perform("heat").ok)
+	await get_tree().process_frame
+	mouse(left.temperature_view.bar_rect().get_center(),true)
+	assert_gt(float(left.thermal_progress.attraction),0.0)
+	assert_null(right.thermal_qte)
 	left.cancel_operation(); left.new_session("tomato_egg")
-	assert_eq(other,right.snapshot())
+	assert_true(right.perform("add",{"ingredient_id":"egg"}).ok)
 
 func test_beat_sheet_no_input_produces_misses_but_reaches_plate_without_fake_success() -> void:
 	load_pot(); var lane: TDCookingLane = kitchen.lanes[0]
 	assert_true(lane.start_sheet("stir_fry").ok)
 	kitchen.advance(35)
-	assert_eq(lane.snapshot().state,"plated")
+	assert_eq(lane.snapshot().state,"plated",lane._status.text)
 	assert_false(lane.sheet.running)
 	assert_eq(lane.snapshot().steps.size(),7)
 	assert_lt(float(lane.snapshot().dish_attributes.completion),50.0)

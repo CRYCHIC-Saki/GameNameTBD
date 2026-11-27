@@ -2,6 +2,8 @@
 [ext_resource type="Script" path="res://src/town/outdoor_atmosphere.gd" id="outdoors"]
 [ext_resource type="TileSet" path="res://src/town/shiomi_tiles.tres" id="tiles"]
 [ext_resource type="Texture2D" path="res://assets/town/shiomi-sprites-v1.png" id="sheet"]
+[ext_resource type="Texture2D" path="res://assets/town/shiomi-tempura-sign.png" id="tempura_sign"]
+[ext_resource type="Texture2D" path="res://assets/town/shiomi-water-tub.png" id="water_tub"]
 [ext_resource type="Script" path="res://src/town/shiomi_ambience.gd" id="ambience"]
 [ext_resource type="Texture2D" path="res://assets/town/shiomi-detail-tiles.png" id="detail_sheet"]
 [sub_resource type="TileSetAtlasSource" id="finish_source"]
@@ -3934,6 +3936,10 @@ metadata/art = "shrine"
 metadata/plot_id = "landmark"
 metadata/base = Rect2(-37.41,-13.82,74.82,13.82)
 metadata/grass_footing = true
+[node name="TempuraSign" type="Sprite2D" parent="Shrine000"]
+position = Vector2(0, -100)
+texture = ExtResource("tempura_sign")
+
 [node name="Torii001" type="Sprite2D" parent="."]
 position = Vector2(255,292)
 scale = Vector2(0.4837398,0.4837398)
@@ -10371,21 +10377,24 @@ region_enabled = true
 region_rect = Rect2(1152,1392,24,24)
 offset = Vector2(0,-9)
 metadata/art = "fallen_block"
-[node name="DockTubs1334" type="Polygon2D" parent="."]
+[node name="DockTubs1334" type="Sprite2D" parent="."]
 position = Vector2(1334,531)
-texture = ExtResource("sheet")
-polygon = PackedVector2Array(-12.500,-17.730,-8.553,-21.964,0.219,-23.287,9.868,-20.906,12.500,-18.259,11.360,-3.969,8.991,-1.323,-3.289,0.000,-10.307,-1.852,-12.237,-4.499)
-uv = PackedVector2Array(1296.750,1880.640,1312.860,1863.360,1348.660,1857.960,1388.040,1867.680,1398.780,1878.480,1394.126,1936.800,1384.460,1947.600,1334.340,1953.000,1305.700,1945.440,1297.824,1934.640)
-[node name="DockTubs1161" type="Polygon2D" parent="."]
+scale = Vector2(0.5208333,0.5208333)
+texture = ExtResource("water_tub")
+offset = Vector2(0,-19)
+metadata/art = "water_tub"
+[node name="DockTubs1161" type="Sprite2D" parent="."]
 position = Vector2(1160,529)
-texture = ExtResource("sheet")
-polygon = PackedVector2Array(-9.500,-13.475,-6.500,-16.693,0.167,-17.698,7.500,-15.888,9.500,-13.877,8.633,-3.017,6.833,-1.006,-2.500,0.000,-7.833,-1.408,-9.300,-3.419)
-uv = PackedVector2Array(1296.750,1880.640,1312.860,1863.360,1348.660,1857.960,1388.040,1867.680,1398.780,1878.480,1394.126,1936.800,1384.460,1947.600,1334.340,1953.000,1305.700,1945.440,1297.824,1934.640)
-[node name="DockTubs1320" type="Polygon2D" parent="."]
+scale = Vector2(0.3958333,0.3958333)
+texture = ExtResource("water_tub")
+offset = Vector2(0,-19)
+metadata/art = "water_tub"
+[node name="DockTubs1320" type="Sprite2D" parent="."]
 position = Vector2(1315,523)
-texture = ExtResource("sheet")
-polygon = PackedVector2Array(-8.500,-12.056,-5.816,-14.936,0.149,-15.835,6.711,-14.216,8.500,-12.416,7.725,-2.699,6.114,-0.900,-2.237,0.000,-7.009,-1.260,-8.321,-3.059)
-uv = PackedVector2Array(1296.750,1880.640,1312.860,1863.360,1348.660,1857.960,1388.040,1867.680,1398.780,1878.480,1394.126,1936.800,1384.460,1947.600,1334.340,1953.000,1305.700,1945.440,1297.824,1934.640)
+scale = Vector2(0.3541667,0.3541667)
+texture = ExtResource("water_tub")
+offset = Vector2(0,-19)
+metadata/art = "water_tub"
 [node name="DockCargo1145" type="Polygon2D" parent="."]
 position = Vector2(1145,572)
 texture = ExtResource("sheet")

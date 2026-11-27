@@ -5032,7 +5032,7 @@ texture = ExtResource("cobbles")
 texture_repeat = 2
 [node name="BankForecourt1074" type="Polygon2D" parent="."]
 z_index = -6
-polygon = PackedVector2Array(659.62, 422.71, 729.68, 422.71, 738.72, 360.56, 650.58, 360.56)
+polygon = PackedVector2Array(597.47, 422.71, 667.53, 422.71, 676.57, 360.56, 588.43, 360.56)
 texture = ExtResource("cobbles")
 texture_repeat = 2
 [node name="MillCartTrack" type="Sprite2D" parent="."]
@@ -5417,7 +5417,7 @@ offset = Vector2(0,-25.5)
 metadata/art = "bollard"
 metadata/base = Rect2(-4.00,-4.00,8.00,4.00)
 [node name="TownHall" type="Sprite2D" parent="."]
-position = Vector2(694.65,360.56)
+position = Vector2(632.50,360.56)
 scale = Vector2(0.5043478,0.5230461)
 texture = ExtResource("sprites")
 region_enabled = true
@@ -5428,7 +5428,7 @@ metadata/base = Rect2(-90.48,-75.69,180.96,75.69)
 metadata/plot_id = "commercial_street:bank"
 [node name="GroundShade1116" type="Polygon2D" parent="."]
 z_index = -2
-polygon = PackedVector2Array(813.28, 353.25, 807.34, 350.07, 797.70, 347.13, 784.71, 344.56, 768.89, 342.45, 750.84, 340.89, 731.26, 339.92, 710.89, 339.59, 690.52, 339.92, 670.94, 340.89, 652.89, 342.45, 637.07, 344.56, 624.08, 347.13, 614.44, 350.07, 608.50, 353.25, 606.49, 356.56, 608.50, 359.87, 614.44, 363.05, 624.08, 365.99, 637.07, 368.56, 652.89, 370.67, 670.94, 372.23, 690.52, 373.20, 710.89, 373.52, 731.26, 373.20, 750.84, 372.23, 768.89, 370.67, 784.71, 368.56, 797.70, 365.99, 807.34, 363.05, 813.28, 359.87, 815.29, 356.56)
+polygon = PackedVector2Array(751.13, 353.25, 745.19, 350.07, 735.55, 347.13, 722.56, 344.56, 706.74, 342.45, 688.69, 340.89, 669.11, 339.92, 648.74, 339.59, 628.37, 339.92, 608.79, 340.89, 590.74, 342.45, 574.92, 344.56, 561.93, 347.13, 552.29, 350.07, 546.35, 353.25, 544.34, 356.56, 546.35, 359.87, 552.29, 363.05, 561.93, 365.99, 574.92, 368.56, 590.74, 370.67, 608.79, 372.23, 628.37, 373.20, 648.74, 373.52, 669.11, 373.20, 688.69, 372.23, 706.74, 370.67, 722.56, 368.56, 735.55, 365.99, 745.19, 363.05, 751.13, 359.87, 753.14, 356.56)
 color = Color(0.2235,0.2039,0.1490,0.2706)
 [node name="Chapel" type="Sprite2D" parent="."]
 position = Vector2(2046.13,300.67)
@@ -5604,8 +5604,8 @@ texture = ExtResource("sprites")
 region_enabled = true
 region_rect = Rect2(1459,529,350,285)
 offset = Vector2(0,-142.5)
-flip_h = true
 metadata/art = "twins"
+flip_h = true
 metadata/base = Rect2(-32.76,-24.07,65.52,24.07)
 [node name="GroundShade1129" type="Polygon2D" parent="."]
 z_index = -2
@@ -5644,8 +5644,8 @@ texture = ExtResource("sprites")
 region_enabled = true
 region_rect = Rect2(1160,529,295,363)
 offset = Vector2(0,-181.5)
-flip_h = true
 metadata/art = "gable"
+flip_h = true
 metadata/base = Rect2(-35.88,-38.28,71.76,38.28)
 [node name="GroundShade1132" type="Polygon2D" parent="."]
 z_index = -2
@@ -5723,8 +5723,8 @@ texture = ExtResource("sprites")
 region_enabled = true
 region_rect = Rect2(1160,529,295,363)
 offset = Vector2(0,-181.5)
-flip_h = true
 metadata/art = "gable"
+flip_h = true
 metadata/base = Rect2(-39.39,-28.13,78.78,28.13)
 [node name="Fountain" type="Sprite2D" parent="."]
 position = Vector2(1156.82,533.16)
@@ -9095,8 +9095,8 @@ metadata/art = "daisies"
 flip_h = true
 z_index = -4
 [node name="Daisies387" type="Sprite2D" parent="."]
-position = Vector2(1739.00,912.00)
-scale = Vector2(0.0270206,0.0268693)
+position = Vector2(694.00,361.00)
+scale = Vector2(0.0379163,0.0377040)
 texture = ExtResource("sprites")
 region_enabled = true
 region_rect = Rect2(1618,2048,339,150)
@@ -9105,6 +9105,16 @@ metadata/art = "daisies"
 flip_h = true
 z_index = -4
 [node name="Daisies388" type="Sprite2D" parent="."]
+position = Vector2(1824.00,402.00)
+scale = Vector2(0.0376512,0.0374404)
+texture = ExtResource("sprites")
+region_enabled = true
+region_rect = Rect2(1618,2048,339,150)
+offset = Vector2(0,-75.0)
+metadata/art = "daisies"
+flip_h = true
+z_index = -4
+[node name="Daisies389" type="Sprite2D" parent="."]
 position = Vector2(1342.00,877.00)
 scale = Vector2(0.0221923,0.0220680)
 texture = ExtResource("sprites")
@@ -9113,7 +9123,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies389" type="Sprite2D" parent="."]
+[node name="Daisies390" type="Sprite2D" parent="."]
 position = Vector2(443.00,277.00)
 scale = Vector2(0.0488490,0.0485754)
 texture = ExtResource("sprites")
@@ -9123,7 +9133,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies390" type="Sprite2D" parent="."]
+[node name="Daisies391" type="Sprite2D" parent="."]
 position = Vector2(1577.00,5.00)
 scale = Vector2(0.0447379,0.0444874)
 texture = ExtResource("sprites")
@@ -9132,7 +9142,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies391" type="Sprite2D" parent="."]
+[node name="Daisies392" type="Sprite2D" parent="."]
 position = Vector2(1207.00,1084.00)
 scale = Vector2(0.0288850,0.0287233)
 texture = ExtResource("sprites")
@@ -9142,7 +9152,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies392" type="Sprite2D" parent="."]
+[node name="Daisies393" type="Sprite2D" parent="."]
 position = Vector2(1113.00,1009.00)
 scale = Vector2(0.0508235,0.0505389)
 texture = ExtResource("sprites")
@@ -9152,7 +9162,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies393" type="Sprite2D" parent="."]
+[node name="Daisies394" type="Sprite2D" parent="."]
 position = Vector2(1811.00,230.00)
 scale = Vector2(0.0375098,0.0372997)
 texture = ExtResource("sprites")
@@ -9162,7 +9172,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies394" type="Sprite2D" parent="."]
+[node name="Daisies395" type="Sprite2D" parent="."]
 position = Vector2(2063.00,623.00)
 scale = Vector2(0.0275056,0.0273516)
 texture = ExtResource("sprites")
@@ -9171,7 +9181,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies395" type="Sprite2D" parent="."]
+[node name="Daisies396" type="Sprite2D" parent="."]
 position = Vector2(1144.00,895.00)
 scale = Vector2(0.0268861,0.0267356)
 texture = ExtResource("sprites")
@@ -9181,7 +9191,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies396" type="Sprite2D" parent="."]
+[node name="Daisies397" type="Sprite2D" parent="."]
 position = Vector2(1644.00,76.00)
 scale = Vector2(0.0311474,0.0309729)
 texture = ExtResource("sprites")
@@ -9190,7 +9200,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies397" type="Sprite2D" parent="."]
+[node name="Daisies398" type="Sprite2D" parent="."]
 position = Vector2(1855.00,969.00)
 scale = Vector2(0.0246761,0.0245379)
 texture = ExtResource("sprites")
@@ -9200,7 +9210,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies398" type="Sprite2D" parent="."]
+[node name="Daisies399" type="Sprite2D" parent="."]
 position = Vector2(334.00,85.00)
 scale = Vector2(0.0268816,0.0267310)
 texture = ExtResource("sprites")
@@ -9209,7 +9219,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies399" type="Sprite2D" parent="."]
+[node name="Daisies400" type="Sprite2D" parent="."]
 position = Vector2(1505.00,932.00)
 scale = Vector2(0.0513163,0.0510290)
 texture = ExtResource("sprites")
@@ -9219,7 +9229,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies400" type="Sprite2D" parent="."]
+[node name="Daisies401" type="Sprite2D" parent="."]
 position = Vector2(436.00,324.00)
 scale = Vector2(0.0314333,0.0312573)
 texture = ExtResource("sprites")
@@ -9228,7 +9238,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies401" type="Sprite2D" parent="."]
+[node name="Daisies402" type="Sprite2D" parent="."]
 position = Vector2(1041.00,912.00)
 scale = Vector2(0.0226459,0.0225191)
 texture = ExtResource("sprites")
@@ -9238,7 +9248,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies402" type="Sprite2D" parent="."]
+[node name="Daisies403" type="Sprite2D" parent="."]
 position = Vector2(2202.00,331.00)
 scale = Vector2(0.0305771,0.0304059)
 texture = ExtResource("sprites")
@@ -9247,7 +9257,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies403" type="Sprite2D" parent="."]
+[node name="Daisies404" type="Sprite2D" parent="."]
 position = Vector2(814.00,152.00)
 scale = Vector2(0.0495336,0.0492562)
 texture = ExtResource("sprites")
@@ -9256,7 +9266,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies404" type="Sprite2D" parent="."]
+[node name="Daisies405" type="Sprite2D" parent="."]
 position = Vector2(717.00,864.00)
 scale = Vector2(0.0521671,0.0518750)
 texture = ExtResource("sprites")
@@ -9266,7 +9276,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies405" type="Sprite2D" parent="."]
+[node name="Daisies406" type="Sprite2D" parent="."]
 position = Vector2(1304.00,735.00)
 scale = Vector2(0.0342703,0.0340784)
 texture = ExtResource("sprites")
@@ -9276,7 +9286,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies406" type="Sprite2D" parent="."]
+[node name="Daisies407" type="Sprite2D" parent="."]
 position = Vector2(794.00,589.00)
 scale = Vector2(0.0504723,0.0501897)
 texture = ExtResource("sprites")
@@ -9286,7 +9296,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies407" type="Sprite2D" parent="."]
+[node name="Daisies408" type="Sprite2D" parent="."]
 position = Vector2(2138.00,957.00)
 scale = Vector2(0.0208467,0.0207300)
 texture = ExtResource("sprites")
@@ -9295,7 +9305,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies408" type="Sprite2D" parent="."]
+[node name="Daisies409" type="Sprite2D" parent="."]
 position = Vector2(1892.00,218.00)
 scale = Vector2(0.0290590,0.0288962)
 texture = ExtResource("sprites")
@@ -9305,7 +9315,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies409" type="Sprite2D" parent="."]
+[node name="Daisies410" type="Sprite2D" parent="."]
 position = Vector2(870.00,56.00)
 scale = Vector2(0.0389936,0.0387752)
 texture = ExtResource("sprites")
@@ -9314,7 +9324,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies410" type="Sprite2D" parent="."]
+[node name="Daisies411" type="Sprite2D" parent="."]
 position = Vector2(1022.00,239.00)
 scale = Vector2(0.0401228,0.0398981)
 texture = ExtResource("sprites")
@@ -9324,7 +9334,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies411" type="Sprite2D" parent="."]
+[node name="Daisies412" type="Sprite2D" parent="."]
 position = Vector2(700.00,529.00)
 scale = Vector2(0.0393176,0.0390974)
 texture = ExtResource("sprites")
@@ -9333,7 +9343,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies412" type="Sprite2D" parent="."]
+[node name="Daisies413" type="Sprite2D" parent="."]
 position = Vector2(1225.00,685.00)
 scale = Vector2(0.0350931,0.0348966)
 texture = ExtResource("sprites")
@@ -9343,7 +9353,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies413" type="Sprite2D" parent="."]
+[node name="Daisies414" type="Sprite2D" parent="."]
 position = Vector2(2013.00,1040.00)
 scale = Vector2(0.0514435,0.0511554)
 texture = ExtResource("sprites")
@@ -9352,7 +9362,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies414" type="Sprite2D" parent="."]
+[node name="Daisies415" type="Sprite2D" parent="."]
 position = Vector2(1287.00,866.00)
 scale = Vector2(0.0416170,0.0413840)
 texture = ExtResource("sprites")
@@ -9362,7 +9372,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies415" type="Sprite2D" parent="."]
+[node name="Daisies416" type="Sprite2D" parent="."]
 position = Vector2(301.00,41.00)
 scale = Vector2(0.0383097,0.0380952)
 texture = ExtResource("sprites")
@@ -9372,7 +9382,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies416" type="Sprite2D" parent="."]
+[node name="Daisies417" type="Sprite2D" parent="."]
 position = Vector2(900.00,521.00)
 scale = Vector2(0.0375024,0.0372924)
 texture = ExtResource("sprites")
@@ -9382,7 +9392,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies417" type="Sprite2D" parent="."]
+[node name="Daisies418" type="Sprite2D" parent="."]
 position = Vector2(972.00,128.00)
 scale = Vector2(0.0264662,0.0263180)
 texture = ExtResource("sprites")
@@ -9391,7 +9401,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies418" type="Sprite2D" parent="."]
+[node name="Daisies419" type="Sprite2D" parent="."]
 position = Vector2(1803.00,701.00)
 scale = Vector2(0.0409003,0.0406713)
 texture = ExtResource("sprites")
@@ -9400,7 +9410,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies419" type="Sprite2D" parent="."]
+[node name="Daisies420" type="Sprite2D" parent="."]
 position = Vector2(1817.00,541.00)
 scale = Vector2(0.0281052,0.0279478)
 texture = ExtResource("sprites")
@@ -9409,7 +9419,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies420" type="Sprite2D" parent="."]
+[node name="Daisies421" type="Sprite2D" parent="."]
 position = Vector2(1435.00,1047.00)
 scale = Vector2(0.0373854,0.0371760)
 texture = ExtResource("sprites")
@@ -9419,7 +9429,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies421" type="Sprite2D" parent="."]
+[node name="Daisies422" type="Sprite2D" parent="."]
 position = Vector2(1957.00,626.00)
 scale = Vector2(0.0507880,0.0505036)
 texture = ExtResource("sprites")
@@ -9429,7 +9439,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies422" type="Sprite2D" parent="."]
+[node name="Daisies423" type="Sprite2D" parent="."]
 position = Vector2(1668.00,603.00)
 scale = Vector2(0.0348510,0.0346558)
 texture = ExtResource("sprites")
@@ -9439,7 +9449,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies423" type="Sprite2D" parent="."]
+[node name="Daisies424" type="Sprite2D" parent="."]
 position = Vector2(1651.00,442.00)
 scale = Vector2(0.0367495,0.0365437)
 texture = ExtResource("sprites")
@@ -9449,7 +9459,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies424" type="Sprite2D" parent="."]
+[node name="Daisies425" type="Sprite2D" parent="."]
 position = Vector2(564.00,393.00)
 scale = Vector2(0.0511649,0.0508784)
 texture = ExtResource("sprites")
@@ -9458,7 +9468,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies425" type="Sprite2D" parent="."]
+[node name="Daisies426" type="Sprite2D" parent="."]
 position = Vector2(765.00,969.00)
 scale = Vector2(0.0385338,0.0383180)
 texture = ExtResource("sprites")
@@ -9468,7 +9478,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies426" type="Sprite2D" parent="."]
+[node name="Daisies427" type="Sprite2D" parent="."]
 position = Vector2(309.00,139.00)
 scale = Vector2(0.0345135,0.0343203)
 texture = ExtResource("sprites")
@@ -9478,7 +9488,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies427" type="Sprite2D" parent="."]
+[node name="Daisies428" type="Sprite2D" parent="."]
 position = Vector2(742.00,987.00)
 scale = Vector2(0.0425671,0.0423287)
 texture = ExtResource("sprites")
@@ -9488,7 +9498,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies428" type="Sprite2D" parent="."]
+[node name="Daisies429" type="Sprite2D" parent="."]
 position = Vector2(710.00,438.00)
 scale = Vector2(0.0413313,0.0410999)
 texture = ExtResource("sprites")
@@ -9498,7 +9508,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies429" type="Sprite2D" parent="."]
+[node name="Daisies430" type="Sprite2D" parent="."]
 position = Vector2(1019.00,764.00)
 scale = Vector2(0.0524058,0.0521123)
 texture = ExtResource("sprites")
@@ -9507,7 +9517,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies430" type="Sprite2D" parent="."]
+[node name="Daisies431" type="Sprite2D" parent="."]
 position = Vector2(2050.00,928.00)
 scale = Vector2(0.0384108,0.0381957)
 texture = ExtResource("sprites")
@@ -9517,7 +9527,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies431" type="Sprite2D" parent="."]
+[node name="Daisies432" type="Sprite2D" parent="."]
 position = Vector2(1895.00,870.00)
 scale = Vector2(0.0476881,0.0474211)
 texture = ExtResource("sprites")
@@ -9527,7 +9537,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies432" type="Sprite2D" parent="."]
+[node name="Daisies433" type="Sprite2D" parent="."]
 position = Vector2(604.00,624.00)
 scale = Vector2(0.0207977,0.0206812)
 texture = ExtResource("sprites")
@@ -9536,7 +9546,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies433" type="Sprite2D" parent="."]
+[node name="Daisies434" type="Sprite2D" parent="."]
 position = Vector2(603.00,29.00)
 scale = Vector2(0.0370430,0.0368356)
 texture = ExtResource("sprites")
@@ -9545,7 +9555,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies434" type="Sprite2D" parent="."]
+[node name="Daisies435" type="Sprite2D" parent="."]
 position = Vector2(1082.00,929.00)
 scale = Vector2(0.0267443,0.0265945)
 texture = ExtResource("sprites")
@@ -9554,7 +9564,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies435" type="Sprite2D" parent="."]
+[node name="Daisies436" type="Sprite2D" parent="."]
 position = Vector2(825.00,42.00)
 scale = Vector2(0.0447917,0.0445409)
 texture = ExtResource("sprites")
@@ -9564,7 +9574,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies436" type="Sprite2D" parent="."]
+[node name="Daisies437" type="Sprite2D" parent="."]
 position = Vector2(2144.00,1023.00)
 scale = Vector2(0.0446132,0.0443634)
 texture = ExtResource("sprites")
@@ -9573,7 +9583,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies437" type="Sprite2D" parent="."]
+[node name="Daisies438" type="Sprite2D" parent="."]
 position = Vector2(1866.00,544.00)
 scale = Vector2(0.0417361,0.0415024)
 texture = ExtResource("sprites")
@@ -9582,7 +9592,16 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies438" type="Sprite2D" parent="."]
+[node name="Daisies439" type="Sprite2D" parent="."]
+position = Vector2(759.00,262.00)
+scale = Vector2(0.0421867,0.0419504)
+texture = ExtResource("sprites")
+region_enabled = true
+region_rect = Rect2(1618,2048,339,150)
+offset = Vector2(0,-75.0)
+metadata/art = "daisies"
+z_index = -4
+[node name="Daisies440" type="Sprite2D" parent="."]
 position = Vector2(2207.00,288.00)
 scale = Vector2(0.0263888,0.0262410)
 texture = ExtResource("sprites")
@@ -9592,7 +9611,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies439" type="Sprite2D" parent="."]
+[node name="Daisies441" type="Sprite2D" parent="."]
 position = Vector2(1370.00,853.00)
 scale = Vector2(0.0383529,0.0381381)
 texture = ExtResource("sprites")
@@ -9601,7 +9620,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies440" type="Sprite2D" parent="."]
+[node name="Daisies442" type="Sprite2D" parent="."]
 position = Vector2(812.00,756.00)
 scale = Vector2(0.0336672,0.0334787)
 texture = ExtResource("sprites")
@@ -9610,7 +9629,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies441" type="Sprite2D" parent="."]
+[node name="Daisies443" type="Sprite2D" parent="."]
 position = Vector2(775.00,425.00)
 scale = Vector2(0.0368128,0.0366066)
 texture = ExtResource("sprites")
@@ -9619,7 +9638,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies442" type="Sprite2D" parent="."]
+[node name="Daisies444" type="Sprite2D" parent="."]
 position = Vector2(499.00,188.00)
 scale = Vector2(0.0274607,0.0273069)
 texture = ExtResource("sprites")
@@ -9628,7 +9647,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies443" type="Sprite2D" parent="."]
+[node name="Daisies445" type="Sprite2D" parent="."]
 position = Vector2(1913.00,850.00)
 scale = Vector2(0.0212076,0.0210888)
 texture = ExtResource("sprites")
@@ -9638,7 +9657,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies444" type="Sprite2D" parent="."]
+[node name="Daisies446" type="Sprite2D" parent="."]
 position = Vector2(795.00,796.00)
 scale = Vector2(0.0475923,0.0473258)
 texture = ExtResource("sprites")
@@ -9647,7 +9666,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies445" type="Sprite2D" parent="."]
+[node name="Daisies447" type="Sprite2D" parent="."]
 position = Vector2(750.00,1081.00)
 scale = Vector2(0.0420638,0.0418282)
 texture = ExtResource("sprites")
@@ -9656,7 +9675,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies446" type="Sprite2D" parent="."]
+[node name="Daisies448" type="Sprite2D" parent="."]
 position = Vector2(1770.00,966.00)
 scale = Vector2(0.0521914,0.0518991)
 texture = ExtResource("sprites")
@@ -9665,7 +9684,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies447" type="Sprite2D" parent="."]
+[node name="Daisies449" type="Sprite2D" parent="."]
 position = Vector2(746.00,758.00)
 scale = Vector2(0.0326662,0.0324833)
 texture = ExtResource("sprites")
@@ -9675,7 +9694,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies448" type="Sprite2D" parent="."]
+[node name="Daisies450" type="Sprite2D" parent="."]
 position = Vector2(308.00,282.00)
 scale = Vector2(0.0213475,0.0212279)
 texture = ExtResource("sprites")
@@ -9685,7 +9704,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies449" type="Sprite2D" parent="."]
+[node name="Daisies451" type="Sprite2D" parent="."]
 position = Vector2(1775.00,8.00)
 scale = Vector2(0.0256309,0.0254873)
 texture = ExtResource("sprites")
@@ -9694,7 +9713,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies450" type="Sprite2D" parent="."]
+[node name="Daisies452" type="Sprite2D" parent="."]
 position = Vector2(2069.00,333.00)
 scale = Vector2(0.0297742,0.0296075)
 texture = ExtResource("sprites")
@@ -9704,7 +9723,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies451" type="Sprite2D" parent="."]
+[node name="Daisies453" type="Sprite2D" parent="."]
 position = Vector2(1760.00,540.00)
 scale = Vector2(0.0305374,0.0303664)
 texture = ExtResource("sprites")
@@ -9713,7 +9732,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies452" type="Sprite2D" parent="."]
+[node name="Daisies454" type="Sprite2D" parent="."]
 position = Vector2(903.00,83.00)
 scale = Vector2(0.0421670,0.0419308)
 texture = ExtResource("sprites")
@@ -9722,7 +9741,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies453" type="Sprite2D" parent="."]
+[node name="Daisies455" type="Sprite2D" parent="."]
 position = Vector2(2004.00,389.00)
 scale = Vector2(0.0337755,0.0335864)
 texture = ExtResource("sprites")
@@ -9732,7 +9751,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies454" type="Sprite2D" parent="."]
+[node name="Daisies456" type="Sprite2D" parent="."]
 position = Vector2(1996.00,923.00)
 scale = Vector2(0.0444317,0.0441829)
 texture = ExtResource("sprites")
@@ -9742,7 +9761,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies455" type="Sprite2D" parent="."]
+[node name="Daisies457" type="Sprite2D" parent="."]
 position = Vector2(1550.00,29.00)
 scale = Vector2(0.0511627,0.0508762)
 texture = ExtResource("sprites")
@@ -9752,7 +9771,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies456" type="Sprite2D" parent="."]
+[node name="Daisies458" type="Sprite2D" parent="."]
 position = Vector2(1231.00,679.00)
 scale = Vector2(0.0430596,0.0428185)
 texture = ExtResource("sprites")
@@ -9761,7 +9780,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies457" type="Sprite2D" parent="."]
+[node name="Daisies459" type="Sprite2D" parent="."]
 position = Vector2(1809.00,375.00)
 scale = Vector2(0.0332801,0.0330938)
 texture = ExtResource("sprites")
@@ -9771,7 +9790,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies458" type="Sprite2D" parent="."]
+[node name="Daisies460" type="Sprite2D" parent="."]
 position = Vector2(1781.00,911.00)
 scale = Vector2(0.0217341,0.0216124)
 texture = ExtResource("sprites")
@@ -9781,7 +9800,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies459" type="Sprite2D" parent="."]
+[node name="Daisies461" type="Sprite2D" parent="."]
 position = Vector2(1244.00,1074.00)
 scale = Vector2(0.0380299,0.0378169)
 texture = ExtResource("sprites")
@@ -9791,7 +9810,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies460" type="Sprite2D" parent="."]
+[node name="Daisies462" type="Sprite2D" parent="."]
 position = Vector2(880.00,962.00)
 scale = Vector2(0.0349218,0.0347262)
 texture = ExtResource("sprites")
@@ -9801,7 +9820,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies461" type="Sprite2D" parent="."]
+[node name="Daisies463" type="Sprite2D" parent="."]
 position = Vector2(2157.00,810.00)
 scale = Vector2(0.0240428,0.0239082)
 texture = ExtResource("sprites")
@@ -9811,7 +9830,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies462" type="Sprite2D" parent="."]
+[node name="Daisies464" type="Sprite2D" parent="."]
 position = Vector2(1604.00,484.00)
 scale = Vector2(0.0384134,0.0381983)
 texture = ExtResource("sprites")
@@ -9820,7 +9839,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies463" type="Sprite2D" parent="."]
+[node name="Daisies465" type="Sprite2D" parent="."]
 position = Vector2(764.00,865.00)
 scale = Vector2(0.0310301,0.0308563)
 texture = ExtResource("sprites")
@@ -9830,7 +9849,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies464" type="Sprite2D" parent="."]
+[node name="Daisies466" type="Sprite2D" parent="."]
 position = Vector2(1025.00,230.00)
 scale = Vector2(0.0471990,0.0469347)
 texture = ExtResource("sprites")
@@ -9840,7 +9859,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies465" type="Sprite2D" parent="."]
+[node name="Daisies467" type="Sprite2D" parent="."]
 position = Vector2(342.00,248.00)
 scale = Vector2(0.0408902,0.0406612)
 texture = ExtResource("sprites")
@@ -9850,7 +9869,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies466" type="Sprite2D" parent="."]
+[node name="Daisies468" type="Sprite2D" parent="."]
 position = Vector2(258.00,768.00)
 scale = Vector2(0.0278013,0.0276456)
 texture = ExtResource("sprites")
@@ -9859,7 +9878,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies467" type="Sprite2D" parent="."]
+[node name="Daisies469" type="Sprite2D" parent="."]
 position = Vector2(1656.00,1004.00)
 scale = Vector2(0.0329724,0.0327878)
 texture = ExtResource("sprites")
@@ -9869,7 +9888,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies468" type="Sprite2D" parent="."]
+[node name="Daisies470" type="Sprite2D" parent="."]
 position = Vector2(1526.00,921.00)
 scale = Vector2(0.0213016,0.0211823)
 texture = ExtResource("sprites")
@@ -9879,7 +9898,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies469" type="Sprite2D" parent="."]
+[node name="Daisies471" type="Sprite2D" parent="."]
 position = Vector2(611.00,989.00)
 scale = Vector2(0.0423303,0.0420933)
 texture = ExtResource("sprites")
@@ -9889,7 +9908,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies470" type="Sprite2D" parent="."]
+[node name="Daisies472" type="Sprite2D" parent="."]
 position = Vector2(1790.00,942.00)
 scale = Vector2(0.0365252,0.0363207)
 texture = ExtResource("sprites")
@@ -9898,7 +9917,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies471" type="Sprite2D" parent="."]
+[node name="Daisies473" type="Sprite2D" parent="."]
 position = Vector2(907.00,957.00)
 scale = Vector2(0.0513370,0.0510495)
 texture = ExtResource("sprites")
@@ -9908,7 +9927,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies472" type="Sprite2D" parent="."]
+[node name="Daisies474" type="Sprite2D" parent="."]
 position = Vector2(621.00,886.00)
 scale = Vector2(0.0256288,0.0254853)
 texture = ExtResource("sprites")
@@ -9918,7 +9937,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies473" type="Sprite2D" parent="."]
+[node name="Daisies475" type="Sprite2D" parent="."]
 position = Vector2(1140.00,1002.00)
 scale = Vector2(0.0456293,0.0453738)
 texture = ExtResource("sprites")
@@ -9927,7 +9946,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies474" type="Sprite2D" parent="."]
+[node name="Daisies476" type="Sprite2D" parent="."]
 position = Vector2(1944.00,955.00)
 scale = Vector2(0.0258806,0.0257357)
 texture = ExtResource("sprites")
@@ -9936,7 +9955,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies475" type="Sprite2D" parent="."]
+[node name="Daisies477" type="Sprite2D" parent="."]
 position = Vector2(529.00,516.00)
 scale = Vector2(0.0238006,0.0236673)
 texture = ExtResource("sprites")
@@ -9945,7 +9964,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies476" type="Sprite2D" parent="."]
+[node name="Daisies478" type="Sprite2D" parent="."]
 position = Vector2(1625.00,843.00)
 scale = Vector2(0.0450377,0.0447855)
 texture = ExtResource("sprites")
@@ -9954,7 +9973,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies477" type="Sprite2D" parent="."]
+[node name="Daisies479" type="Sprite2D" parent="."]
 position = Vector2(1383.00,42.00)
 scale = Vector2(0.0275009,0.0273469)
 texture = ExtResource("sprites")
@@ -9964,7 +9983,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies478" type="Sprite2D" parent="."]
+[node name="Daisies480" type="Sprite2D" parent="."]
 position = Vector2(1506.00,940.00)
 scale = Vector2(0.0496477,0.0493697)
 texture = ExtResource("sprites")
@@ -9973,7 +9992,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies479" type="Sprite2D" parent="."]
+[node name="Daisies481" type="Sprite2D" parent="."]
 position = Vector2(891.00,454.00)
 scale = Vector2(0.0306595,0.0304878)
 texture = ExtResource("sprites")
@@ -9983,7 +10002,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies480" type="Sprite2D" parent="."]
+[node name="Daisies482" type="Sprite2D" parent="."]
 position = Vector2(2171.00,1052.00)
 scale = Vector2(0.0294112,0.0292465)
 texture = ExtResource("sprites")
@@ -9993,7 +10012,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies481" type="Sprite2D" parent="."]
+[node name="Daisies483" type="Sprite2D" parent="."]
 position = Vector2(945.00,872.00)
 scale = Vector2(0.0395869,0.0393652)
 texture = ExtResource("sprites")
@@ -10003,7 +10022,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies482" type="Sprite2D" parent="."]
+[node name="Daisies484" type="Sprite2D" parent="."]
 position = Vector2(1771.00,203.00)
 scale = Vector2(0.0523431,0.0520500)
 texture = ExtResource("sprites")
@@ -10012,7 +10031,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies483" type="Sprite2D" parent="."]
+[node name="Daisies485" type="Sprite2D" parent="."]
 position = Vector2(1209.00,745.00)
 scale = Vector2(0.0489663,0.0486921)
 texture = ExtResource("sprites")
@@ -10022,7 +10041,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies484" type="Sprite2D" parent="."]
+[node name="Daisies486" type="Sprite2D" parent="."]
 position = Vector2(1466.00,1078.00)
 scale = Vector2(0.0290032,0.0288408)
 texture = ExtResource("sprites")
@@ -10032,7 +10051,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies485" type="Sprite2D" parent="."]
+[node name="Daisies487" type="Sprite2D" parent="."]
 position = Vector2(851.00,331.00)
 scale = Vector2(0.0274787,0.0273248)
 texture = ExtResource("sprites")
@@ -10041,7 +10060,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies486" type="Sprite2D" parent="."]
+[node name="Daisies488" type="Sprite2D" parent="."]
 position = Vector2(1444.00,620.00)
 scale = Vector2(0.0417657,0.0415318)
 texture = ExtResource("sprites")
@@ -10051,7 +10070,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies487" type="Sprite2D" parent="."]
+[node name="Daisies489" type="Sprite2D" parent="."]
 position = Vector2(537.00,466.00)
 scale = Vector2(0.0382622,0.0380480)
 texture = ExtResource("sprites")
@@ -10060,7 +10079,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies488" type="Sprite2D" parent="."]
+[node name="Daisies490" type="Sprite2D" parent="."]
 position = Vector2(1643.00,68.00)
 scale = Vector2(0.0427275,0.0424882)
 texture = ExtResource("sprites")
@@ -10069,7 +10088,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies489" type="Sprite2D" parent="."]
+[node name="Daisies491" type="Sprite2D" parent="."]
 position = Vector2(371.00,407.00)
 scale = Vector2(0.0477500,0.0474826)
 texture = ExtResource("sprites")
@@ -10078,7 +10097,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies490" type="Sprite2D" parent="."]
+[node name="Daisies492" type="Sprite2D" parent="."]
 position = Vector2(1780.00,408.00)
 scale = Vector2(0.0316609,0.0314836)
 texture = ExtResource("sprites")
@@ -10088,7 +10107,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies491" type="Sprite2D" parent="."]
+[node name="Daisies493" type="Sprite2D" parent="."]
 position = Vector2(570.00,66.00)
 scale = Vector2(0.0508370,0.0505523)
 texture = ExtResource("sprites")
@@ -10098,7 +10117,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies492" type="Sprite2D" parent="."]
+[node name="Daisies494" type="Sprite2D" parent="."]
 position = Vector2(229.00,808.00)
 scale = Vector2(0.0508509,0.0505661)
 texture = ExtResource("sprites")
@@ -10108,7 +10127,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies493" type="Sprite2D" parent="."]
+[node name="Daisies495" type="Sprite2D" parent="."]
 position = Vector2(1622.00,886.00)
 scale = Vector2(0.0209779,0.0208604)
 texture = ExtResource("sprites")
@@ -10117,7 +10136,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies494" type="Sprite2D" parent="."]
+[node name="Daisies496" type="Sprite2D" parent="."]
 position = Vector2(1638.00,12.00)
 scale = Vector2(0.0528992,0.0526030)
 texture = ExtResource("sprites")
@@ -10126,7 +10145,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies495" type="Sprite2D" parent="."]
+[node name="Daisies497" type="Sprite2D" parent="."]
 position = Vector2(1906.00,86.00)
 scale = Vector2(0.0466770,0.0464156)
 texture = ExtResource("sprites")
@@ -10136,7 +10155,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies496" type="Sprite2D" parent="."]
+[node name="Daisies498" type="Sprite2D" parent="."]
 position = Vector2(581.00,625.00)
 scale = Vector2(0.0232444,0.0231143)
 texture = ExtResource("sprites")
@@ -10146,7 +10165,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies497" type="Sprite2D" parent="."]
+[node name="Daisies499" type="Sprite2D" parent="."]
 position = Vector2(1474.00,30.00)
 scale = Vector2(0.0396679,0.0394458)
 texture = ExtResource("sprites")
@@ -10156,7 +10175,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies498" type="Sprite2D" parent="."]
+[node name="Daisies500" type="Sprite2D" parent="."]
 position = Vector2(965.00,157.00)
 scale = Vector2(0.0347736,0.0345789)
 texture = ExtResource("sprites")
@@ -10166,7 +10185,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies499" type="Sprite2D" parent="."]
+[node name="Daisies501" type="Sprite2D" parent="."]
 position = Vector2(605.00,1012.00)
 scale = Vector2(0.0207335,0.0206174)
 texture = ExtResource("sprites")
@@ -10175,7 +10194,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies500" type="Sprite2D" parent="."]
+[node name="Daisies502" type="Sprite2D" parent="."]
 position = Vector2(724.00,644.00)
 scale = Vector2(0.0261995,0.0260528)
 texture = ExtResource("sprites")
@@ -10184,7 +10203,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies501" type="Sprite2D" parent="."]
+[node name="Daisies503" type="Sprite2D" parent="."]
 position = Vector2(1960.00,25.00)
 scale = Vector2(0.0380265,0.0378136)
 texture = ExtResource("sprites")
@@ -10194,7 +10213,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies502" type="Sprite2D" parent="."]
+[node name="Daisies504" type="Sprite2D" parent="."]
 position = Vector2(1143.00,1077.00)
 scale = Vector2(0.0237537,0.0236207)
 texture = ExtResource("sprites")
@@ -10203,7 +10222,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies503" type="Sprite2D" parent="."]
+[node name="Daisies505" type="Sprite2D" parent="."]
 position = Vector2(1968.00,783.00)
 scale = Vector2(0.0518287,0.0515385)
 texture = ExtResource("sprites")
@@ -10212,7 +10231,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies504" type="Sprite2D" parent="."]
+[node name="Daisies506" type="Sprite2D" parent="."]
 position = Vector2(876.00,28.00)
 scale = Vector2(0.0214503,0.0213302)
 texture = ExtResource("sprites")
@@ -10221,7 +10240,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies505" type="Sprite2D" parent="."]
+[node name="Daisies507" type="Sprite2D" parent="."]
 position = Vector2(970.00,34.00)
 scale = Vector2(0.0350253,0.0348291)
 texture = ExtResource("sprites")
@@ -10230,7 +10249,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies506" type="Sprite2D" parent="."]
+[node name="Daisies508" type="Sprite2D" parent="."]
 position = Vector2(1864.00,257.00)
 scale = Vector2(0.0284796,0.0283201)
 texture = ExtResource("sprites")
@@ -10239,7 +10258,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies507" type="Sprite2D" parent="."]
+[node name="Daisies509" type="Sprite2D" parent="."]
 position = Vector2(1458.00,208.00)
 scale = Vector2(0.0249537,0.0248140)
 texture = ExtResource("sprites")
@@ -10248,7 +10267,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies508" type="Sprite2D" parent="."]
+[node name="Daisies510" type="Sprite2D" parent="."]
 position = Vector2(1808.00,1076.00)
 scale = Vector2(0.0415941,0.0413612)
 texture = ExtResource("sprites")
@@ -10258,7 +10277,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies509" type="Sprite2D" parent="."]
+[node name="Daisies511" type="Sprite2D" parent="."]
 position = Vector2(1139.00,1027.00)
 scale = Vector2(0.0519827,0.0516916)
 texture = ExtResource("sprites")
@@ -10267,7 +10286,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies510" type="Sprite2D" parent="."]
+[node name="Daisies512" type="Sprite2D" parent="."]
 position = Vector2(1866.00,276.00)
 scale = Vector2(0.0357846,0.0355842)
 texture = ExtResource("sprites")
@@ -10276,7 +10295,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies511" type="Sprite2D" parent="."]
+[node name="Daisies513" type="Sprite2D" parent="."]
 position = Vector2(929.00,1043.00)
 scale = Vector2(0.0459911,0.0457335)
 texture = ExtResource("sprites")
@@ -10285,7 +10304,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies512" type="Sprite2D" parent="."]
+[node name="Daisies514" type="Sprite2D" parent="."]
 position = Vector2(1591.00,530.00)
 scale = Vector2(0.0236702,0.0235376)
 texture = ExtResource("sprites")
@@ -10295,7 +10314,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies513" type="Sprite2D" parent="."]
+[node name="Daisies515" type="Sprite2D" parent="."]
 position = Vector2(1699.00,662.00)
 scale = Vector2(0.0276122,0.0274576)
 texture = ExtResource("sprites")
@@ -10305,7 +10324,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies514" type="Sprite2D" parent="."]
+[node name="Daisies516" type="Sprite2D" parent="."]
 position = Vector2(821.00,568.00)
 scale = Vector2(0.0360831,0.0358811)
 texture = ExtResource("sprites")
@@ -10314,7 +10333,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies515" type="Sprite2D" parent="."]
+[node name="Daisies517" type="Sprite2D" parent="."]
 position = Vector2(889.00,452.00)
 scale = Vector2(0.0311065,0.0309323)
 texture = ExtResource("sprites")
@@ -10323,7 +10342,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies516" type="Sprite2D" parent="."]
+[node name="Daisies518" type="Sprite2D" parent="."]
 position = Vector2(1720.00,1014.00)
 scale = Vector2(0.0280276,0.0278707)
 texture = ExtResource("sprites")
@@ -10332,7 +10351,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies517" type="Sprite2D" parent="."]
+[node name="Daisies519" type="Sprite2D" parent="."]
 position = Vector2(1661.00,283.00)
 scale = Vector2(0.0340868,0.0338959)
 texture = ExtResource("sprites")
@@ -10342,7 +10361,7 @@ offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
 z_index = -4
-[node name="Daisies518" type="Sprite2D" parent="."]
+[node name="Daisies520" type="Sprite2D" parent="."]
 position = Vector2(1753.00,331.00)
 scale = Vector2(0.0379344,0.0377220)
 texture = ExtResource("sprites")
@@ -10351,7 +10370,7 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 z_index = -4
-[node name="Daisies519" type="Sprite2D" parent="."]
+[node name="Daisies521" type="Sprite2D" parent="."]
 position = Vector2(1263.00,234.00)
 scale = Vector2(0.0486123,0.0483400)
 texture = ExtResource("sprites")
@@ -10360,6 +10379,15 @@ region_rect = Rect2(1618,2048,339,150)
 offset = Vector2(0,-75.0)
 metadata/art = "daisies"
 flip_h = true
+z_index = -4
+[node name="Daisies522" type="Sprite2D" parent="."]
+position = Vector2(2219.00,396.00)
+scale = Vector2(0.0501509,0.0498701)
+texture = ExtResource("sprites")
+region_enabled = true
+region_rect = Rect2(1618,2048,339,150)
+offset = Vector2(0,-75.0)
+metadata/art = "daisies"
 z_index = -4
 [node name="Atmosphere" type="Node2D" parent="."]
 script = ExtResource("outdoors")

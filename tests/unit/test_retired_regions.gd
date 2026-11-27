@@ -7,6 +7,55 @@ func old_slot() -> Dictionary:
 	var bytes := FileAccess.get_file_as_bytes(BEFORE).decompress_dynamic(2000000, FileAccess.COMPRESSION_GZIP)
 	return JSON.parse_string(bytes.get_string_from_utf8())
 
+func test_old_three_town_slot_removes_retired_menu_without_changing_accounts() -> void:
+	var profile := TDGameProfile.new()
+	profile.slot_id = "slot-01"
+	assert_true(profile.shop.world_adjustment(300000,"fixture-funding","test").ok)
+	var opened := profile.branches.open_store("chengdu",[32,11,3,4],"cn","","legacy-branch")
+	assert_true(opened.ok,opened.code)
+	if not opened.ok:
+		profile.close()
+		return
+	var branch_id: String = opened.data.store_id
+	var original := profile.snapshot()
+	var shop: Dictionary = original.shop
+	for id: String in TDRetiredRecipes.SERVICE_IDS:
+		shop.menu[id] = {"enabled":true,"price_cents":1200}
+		shop.unlocked.append(id)
+		shop.fame[id] = 35
+		shop.mastery[id] = 400.0
+	original.research.legacy_ids.append_array(TDRetiredRecipes.WORLD_IDS)
+	original.world.pantry_dish = "qiguoji"
+	original.branches.stores[branch_id].menu = [{"id":"service.qiguoji","name":"汽锅鸡","price_cents":1200,"reference_cents":2000,"ingredients":{"mushroom":1000}}]
+	original.branches.stores[branch_id].paused = false
+	original.menu_supply.plans["player_diner"] = {"service.qiguoji":10,"service.tomato_egg":4}
+	original.menu_supply.plans[branch_id] = {"service.qiguoji":5}
+	original.menu_supply.portions["player_diner"] = {"service.pepper_pork":3}
+	var restored := profile.restore(original)
+	assert_true(restored.ok,restored.code)
+	if restored.ok:
+		var current := profile.snapshot()
+		for id: String in TDRetiredRecipes.SERVICE_IDS:
+			assert_does_not_have(current.shop.menu,id)
+			assert_does_not_have(current.shop.unlocked,id)
+			assert_does_not_have(current.shop.fame,id)
+			assert_does_not_have(current.shop.mastery,id)
+		assert_has(original.shop.menu,"service.qiguoji")
+		assert_eq(current.shop.inventory,shop.inventory)
+		assert_eq(current.shop.ledger,shop.ledger)
+		assert_eq(current.shop.money_cents,shop.money_cents)
+		assert_eq(current.research.legacy_ids,[])
+		assert_eq(current.world.pantry_dish,"mapodoufu")
+		assert_eq(current.branches.stores[branch_id].menu,[])
+		assert_true(current.branches.stores[branch_id].paused)
+		assert_eq(current.branches.stores[branch_id].construction,original.branches.stores[branch_id].construction)
+		assert_does_not_have(current.menu_supply.plans,branch_id)
+		assert_eq(current.menu_supply.plans["player_diner"],{"service.tomato_egg":4})
+		assert_eq(current.menu_supply.portions,{})
+		assert_true(profile.restore(current).ok)
+		assert_true(profile.branches.configure_store(branch_id,[{"id":"service.tomato_egg","price_cents":1800}],10000).ok)
+	profile.close()
+
 func test_three_towns_share_travel_recruitment_supply_and_research() -> void:
 	var profile := TDGameProfile.new()
 	assert_true(profile.error.ok,profile.error.code)
@@ -16,7 +65,7 @@ func test_three_towns_share_travel_recruitment_supply_and_research() -> void:
 		assert_has(profile.suppliers.config.towns,town)
 		assert_false(profile.employees.market_rows(town,"manager").is_empty())
 	assert_eq(profile.commerce.state.markets.size(),3)
-	assert_eq(profile.research.catalog.nodes.size(),60)
+	assert_eq(profile.research.catalog.nodes.size(),61)
 	for town: String in ["bangkok","mexico_city"]:
 		assert_false(profile.commerce.open_route(town,"retired:"+town).ok)
 		assert_false(profile.suppliers.quote(town,"player_diner",{"salt":1000}).ok)
@@ -97,7 +146,8 @@ func test_load_menu_backs_up_original_and_three_passenger_ports_work() -> void:
 		assert_true(reopened.ok,reopened.code)
 		assert_eq(int(shell.profile.shop.snapshot().money_cents),330000)
 		shell.guide.dialogue.finish_now()
-		shell.profile.story.beat="done"
+		assert_false(shell.voyage("tokyo").ok,"The migrated slot starts before overseas travel is unlocked")
+		preload("res://tools/test_support/native_dialogue.gd").completed_mainline(shell.profile)
 		shell.travel("town")
 		shell.town.spawn_at_harbor()
 		assert_false(shell.voyage("bangkok").ok)

@@ -1,12 +1,10 @@
 [gd_resource type="Resource" script_class="VNEngineCast" format=3]
-
-[ext_resource type="Script" path="res://addons/vn_engine/src/defs/cast_member.gd" id="1_ler6f"]
-[ext_resource type="Script" path="res://addons/vn_engine/src/defs/cast.gd" id="2_3bajk"]
-
-[sub_resource type="Resource" id="Resource_enigh"]
-script = ExtResource("1_ler6f")
+[ext_resource type="Script" path="res://addons/vn_engine/src/defs/cast_member.gd" id="member"]
+[ext_resource type="Script" path="res://addons/vn_engine/src/defs/cast.gd" id="cast"]
+[sub_resource type="Resource" id="cast_hero"]
+script = ExtResource("member")
 id = "hero"
-display_name = "？？？"
+display_name = "焰子"
 default_outfit = "base"
 default_pose = "base"
 default_expression = "calm"
@@ -14,8 +12,8 @@ sprite_scale = 0.64
 side_image = false
 blip = "off"
 
-[sub_resource type="Resource" id="Resource_b4t32"]
-script = ExtResource("1_ler6f")
+[sub_resource type="Resource" id="cast_aling"]
+script = ExtResource("member")
 id = "aling"
 display_name = "阿铃"
 default_outfit = "base"
@@ -25,6 +23,67 @@ sprite_scale = 0.64
 side_image = false
 blip = "off"
 
+[sub_resource type="Resource" id="cast_chen"]
+script = ExtResource("member")
+id = "chen"
+display_name = "罗金娜"
+default_outfit = "base"
+default_pose = "base"
+default_expression = "calm"
+sprite_scale = 0.64
+side_image = false
+blip = "off"
+
+[sub_resource type="Resource" id="cast_luo"]
+script = ExtResource("member")
+id = "luo"
+display_name = "罗厄"
+default_outfit = "base"
+default_pose = "base"
+default_expression = "calm"
+sprite_scale = 0.64
+side_image = false
+blip = "off"
+
+[sub_resource type="Resource" id="cast_vito"]
+script = ExtResource("member")
+id = "vito"
+display_name = "维托"
+default_outfit = "base"
+default_pose = "base"
+default_expression = "calm"
+sprite_scale = 0.64
+side_image = false
+blip = "off"
+
+[sub_resource type="Resource" id="cast_hertz"]
+script = ExtResource("member")
+id = "hertz"
+display_name = "赫兹"
+default_outfit = "base"
+default_pose = "base"
+default_expression = "calm"
+sprite_scale = 0.64
+side_image = false
+blip = "off"
+
+[sub_resource type="Resource" id="cast_hina"]
+script = ExtResource("member")
+id = "hina"
+display_name = "日奈"
+default_outfit = "base"
+default_pose = "base"
+default_expression = "calm"
+sprite_scale = 0.64
+side_image = false
+blip = "off"
+
+[sub_resource type="Resource" id="cast_crowd"]
+script = ExtResource("member")
+id = "crowd"
+display_name = "居民"
+blip = "off"
+
 [resource]
-script = ExtResource("2_3bajk")
-characters = Array[ExtResource("1_ler6f")]([SubResource("Resource_enigh"), SubResource("Resource_b4t32")])
+script = ExtResource("cast")
+characters = Array[ExtResource("member")]([SubResource("cast_hero"), SubResource("cast_aling"), SubResource("cast_chen"), SubResource("cast_luo"), SubResource("cast_vito"), SubResource("cast_hertz"), SubResource("cast_hina"), SubResource("cast_crowd")])

@@ -7,7 +7,7 @@ var layout_version: int = 1
 var jiangnan_layout_revision: int = 2
 var shiomi := false
 var egret := false
-var egret_version := 11
+var egret_version := TDEgretLayout.CURRENT_VERSION
 var region_id: String = ""
 const CENTER := 20
 const FACTORY_SLOTS := 8
@@ -295,11 +295,11 @@ func is_road(x: int, y: int) -> bool:
 static var _economic_parcel_cache: Dictionary = {}
 
 func build_economic_layout(catalog: TDTownCatalog, seed_value: int, region_version: int = 2) -> TDOutcome:
-	if layout_version==2 and region_version in [4,5,6,7,8,9,10,11] and seed_value==seed_of("paris"):
+	if layout_version==2 and region_version in [4,5,6,7,8,9,10,11,TDEgretLayout.CURRENT_VERSION] and seed_value==seed_of("paris"):
 		return TDEgretLayout.populate(self,catalog,region_version)
-	if layout_version==2 and region_version in [3,4,5,6,7,8,9,10,11] and seed_value==seed_of("tokyo"):
+	if layout_version==2 and region_version in [3,4,5,6,7,8,9,10,11,TDEgretLayout.CURRENT_VERSION] and seed_value==seed_of("tokyo"):
 		return TDShiomiLayout.populate(self,catalog)
-	if layout_version==2 and region_version in [2,3,4,5,6,7,8,9,10,11]:
+	if layout_version==2 and region_version in [2,3,4,5,6,7,8,9,10,11,TDEgretLayout.CURRENT_VERSION]:
 		for id: String in TDRegionalLayout.IDS:
 			if seed_value==seed_of(id): return TDRegionalLayout.populate(self,catalog,id)
 	if layout_version==2 and region_version==1:

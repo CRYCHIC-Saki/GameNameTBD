@@ -29,7 +29,7 @@ func test_every_atlas_recipe_has_explicit_foods_regions_stock_and_preserved_iden
 	var atlas: Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://content/research/recipe_atlas.json"))
 	var manifest: Dictionary={}
 	for row: Dictionary in data.recipes: manifest[row.id]=row
-	assert_eq(manifest.size(),60);assert_eq(data.items.size(),113)
+	assert_eq(manifest.size(),61);assert_eq(data.items.size(),113)
 	for recipe: Dictionary in atlas.recipes:
 		assert_has(manifest,recipe.id)
 		assert_eq(manifest[recipe.id].cuisine_id,recipe.cuisine_id)
@@ -156,7 +156,7 @@ func test_every_material_is_in_runtime_catalogue_with_stock_metadata_and_no_test
 		assert_ne(definitions[id].scope,"TEST_ONLY")
 		assert_has(p.shop.stock_rules,id);assert_gt(int(p.shop.stock_info(id).shelf_days),0)
 		if p.shop.stock_info(id).condiment: assert_eq(definitions[id].category,"seasoning")
-	assert_eq(p.service.config.offers.size(),63,"Sixty authored recipes plus three service recipes.")
+	assert_eq(p.service.config.offers.size(),61,"Only the authored recipe catalogue is offered.")
 
 func test_runtime_cuisine_and_optional_palette_reject_bad_metadata() -> void:
 	var service:=TDServiceCatalog.new();assert_true(service.load_file().ok)

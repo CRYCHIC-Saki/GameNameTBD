@@ -6,6 +6,7 @@ const OFFSET := Vector2(0,19)
 const PITCH := 31.0
 # Keep house and hero proportions as the street grid expands.
 const WALK_CELL := PITCH * (40.0 / 24.0)
+const CURRENT_VERSION := 12
 const SCENE := preload("res://src/town/egret_map.tscn")
 const SURFACES := {".":"lawn","r":"stone","q":"quay","d":"pier","g":"square","w":"wheat","t":"earth","~":"sea"}
 const DISTRICTS := {"Q":"river_quays","N":"workers_quarter","C":"civic_square","F":"market_gardens",
@@ -28,6 +29,7 @@ const HISTORICAL := {
 	8: [SIZE, OFFSET, PITCH],
 	9: [SIZE, OFFSET, PITCH],
 	10: [SIZE, OFFSET, PITCH],
+	11: [SIZE, OFFSET, PITCH],
 }
 static var _surveys: Dictionary = {}
 static var _historic_feet: Dictionary = {}
@@ -39,7 +41,7 @@ static func geography(version: int) -> Dictionary:
 		_surveys[version] = JSON.parse_string(FileAccess.get_file_as_string("res://content/towns/egret_survey_v%d.json" % version))
 	return _surveys[version]
 
-static func port(version: int = 11) -> Vector2i:
+static func port(version: int = CURRENT_VERSION) -> Vector2i:
 	var at: Array = geography(version).arrival
 	return Vector2i(int(at[0]),int(at[1]))
 
@@ -73,7 +75,7 @@ static func can_stand(pixel: Vector2) -> bool:
 	var bit:=at.y*SIZE.x+at.x
 	return (_feet[bit>>3] & (1<<(bit&7)))!=0
 
-static func terrain(at: Vector2i, version: int = 11) -> Dictionary:
+static func terrain(at: Vector2i, version: int = CURRENT_VERSION) -> Dictionary:
 	var data := geography(version)
 	var inside:=Rect2i(0,0,73,73).has_point(at)
 	if data.has("districts") and (not inside or data.cells[at.y][at.x]=="_"):
@@ -128,7 +130,7 @@ static func route_minutes(at: Vector2i) -> Dictionary:
 		result[origin] = 2.0 + steps * (0.3 / 5.0) if steps >= 0 else 32.0
 	return result
 
-static func titles(version: int = 11) -> Array:
+static func titles(version: int = CURRENT_VERSION) -> Array:
 	var result: Array=[]
 	for r: Array in geography(version).titles:
 		var parts:=str(r[0]).split(":")
@@ -137,7 +139,7 @@ static func titles(version: int = 11) -> Array:
 			"approach_x":int(r[5]),"approach_y":int(r[6]),"tradable":not initial,"initial_store_index":int(parts[2]) if initial else -1,"capacity":12})
 	return result
 
-static func populate(map: TDTownMap,catalog: TDTownCatalog, version: int = 11) -> TDOutcome:
+static func populate(map: TDTownMap,catalog: TDTownCatalog, version: int = CURRENT_VERSION) -> TDOutcome:
 	var data := geography(version)
 	map.egret_version=version
 	map.region_id="paris"

@@ -11,12 +11,36 @@ const CHEF_SPRITE := preload("res://assets/redraw-v1/chef.png")
 
 var day_minute: float=720.0
 var nearby_action: String=""
+var _surfaces: Node2D
+var _lamp_key := -1
 
 func set_day_minute(value: float) -> void:
-	day_minute=value;self_modulate=TDDaylight.sample(value,true).tint;queue_redraw()
+	day_minute=value
+	var light := TDDaylight.sample(value,true)
+	self_modulate=light.tint
+	if _surfaces != null:
+		_surfaces.self_modulate = self_modulate
+		# The renderer stores eight-bit canvas colors. Rebuild lamp geometry only
+		# when the visible lamp strength or the tint used to compensate it changes.
+		var lamp_key := Color(self_modulate, light.lamps).to_rgba32() if light.lamps > 0.0 else 0
+		if _lamp_key != lamp_key:
+			_lamp_key = lamp_key
+			_surfaces.queue_redraw()
+	queue_redraw()
 
-var layout: TDRestaurantLayout
-var editing: bool = false
+var layout: TDRestaurantLayout:
+	set(next):
+		if layout != next:
+			if layout != null: layout.appearance_changed.disconnect(_surfaces_changed)
+			layout = next
+			if layout != null: layout.appearance_changed.connect(_surfaces_changed)
+		_surfaces_changed()
+var decoration_panel_height := TDDecorationPanel.PANEL_HEIGHT
+var editing: bool = false:
+	set(value):
+		if value == editing: return
+		editing = value
+		_surfaces_changed()
 var selected_id: String = ""
 var ghost_cell := Vector2i(-1, -1)
 var ghost_size := Vector2i.ZERO
@@ -32,10 +56,17 @@ var runner_visible: bool = false
 var runner_point := Vector2.ZERO
 var runner_label: String = ""
 var pass_point := Vector2(-1, -1)
+var pass_items: Array = []
+var player_plate: Dictionary = {}
 var hatch_plates: int = 0
 var held_label: String = ""
-var interaction_markers: Array[Dictionary] = []
+var interaction_markers: Array[Dictionary] = []:
+	set(value):
+		var wall_details_changed := interaction_markers.is_empty() != value.is_empty()
+		interaction_markers = value
+		if wall_details_changed: _surfaces_changed()
 var crew_people: Array = []
+var story_escort: Dictionary = {}
 var _camera: Camera2D
 var _chef_foot_ratio: float=1.0
 var _name_font: Font
@@ -52,6 +83,12 @@ func _staff_font() -> Font:
 func _ready() -> void:
 	z_index = 4
 	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	_surfaces = Node2D.new()
+	_surfaces.name = "RoomSurfaces"
+	_surfaces.show_behind_parent = true
+	_surfaces.self_modulate = self_modulate
+	_surfaces.draw.connect(_draw_room_surfaces)
+	add_child(_surfaces)
 	# Transparent texture padding must not shift the visible feet from the body origin.
 	_chef_foot_ratio=1.0
 	_camera = Camera2D.new()
@@ -87,11 +124,12 @@ func sync(player: Node2D, guests: Array, frozen: bool=false) -> void:
 		player_moving = player_walk_frame >= 0
 		if (follow_player or editing) and _camera!=null and layout!=null:
 			var grid:=player_point/float(layout.cell_px)
-			_camera.position=project(grid.x,grid.y)+Vector2(0,-70) if not editing else project(layout.columns*.5,layout.rows*.5)
+			_camera.position=project(grid.x,grid.y)+Vector2(0,-30) if not editing else project(layout.columns*.5,layout.rows*.5)
 			var view:=get_viewport_rect().size
-			var zoom: float=minf(1.0,minf((view.x-80)/((layout.columns+layout.rows)*HALF_W),maxf(200,view.y-TDDecorationPanel.PANEL_HEIGHT-82)/((layout.columns+layout.rows)*HALF_H+WALL_HEIGHT))) if editing else 1.0
+			var zoom: float=minf(1.0,minf((view.x-80)/((layout.columns+layout.rows)*HALF_W),maxf(200,view.y-decoration_panel_height-82)/((layout.columns+layout.rows)*HALF_H+WALL_HEIGHT))) if editing else 1.18
 			_camera.zoom=Vector2.ONE*zoom
-			if editing: _camera.position+=Vector2(0,(TDDecorationPanel.PANEL_HEIGHT*.5-9)/zoom)
+			if editing: _camera.position+=Vector2(0,(decoration_panel_height*.5-9)/zoom)
+			else: _camera.position.x+=56.0/zoom
 			# Context menus and pointer picking need the final camera transform this frame.
 			_camera.force_update_scroll()
 	actors = []
@@ -143,7 +181,11 @@ static func project(grid_x: float, grid_y: float) -> Vector2:
 static func wall_count(columns: int, rows: int) -> int:
 	return columns + rows
 
-func _draw() -> void:
+func _surfaces_changed() -> void:
+	if _surfaces != null: _surfaces.queue_redraw()
+	queue_redraw()
+
+func _draw_room_surfaces() -> void:
 	if layout == null:
 		return
 	for total in layout.columns + layout.rows:
@@ -157,6 +199,9 @@ func _draw() -> void:
 			if x == 0:
 				_wall(cell, false)
 			_floor_cell(cell)
+
+func _draw() -> void:
+	if layout == null: return
 	_draw_kitchen_bay()
 	if editing and ghost_size.x > 0 and ghost_size.y > 0:
 		_ghost()
@@ -176,7 +221,15 @@ func _draw() -> void:
 		entries.append({"kind":"furniture","data":item,"depth":float(item.x+item.y)+(item.w+item.h)*.5})
 	for marker: Dictionary in interaction_markers:
 		entries.append({"kind":"marker","data":marker,"depth":marker.cell.x+marker.cell.y+1.0})
-	entries.append(_person_entry(player_point,player_moving,Color("#d86b4a"),held_label,false))
+	var hero := _person_entry(player_point,player_moving,Color("#d86b4a"),held_label,false)
+	hero.held=player_plate
+	entries.append(hero)
+	if not story_escort.is_empty():
+		var escort := _person_entry(story_escort.point,story_escort.frame>=0,Color.WHITE,story_escort.caption,false)
+		escort.character_id="aling"
+		escort.frame=story_escort.frame
+		escort.facing=story_escort.facing
+		entries.append(escort)
 	for item: Variant in actors:
 		var actor: Dictionary = item
 		if bool(actor["gone"]):
@@ -204,6 +257,7 @@ func _draw() -> void:
 			staff.kind="regional_waiter"
 			staff.cuisine_id=person.cuisine_id
 			staff.appearance_variant=person.get("appearance_variant",0)
+			staff.held=person.get("held",{})
 			staff.carrying=person.get("carrying",false)
 			staff.idle_lift=person.get("idle_lift",0.0)
 		else: staff["depth"] = float(staff.depth) + 30.0
@@ -217,6 +271,9 @@ func _draw() -> void:
 			"person":
 				if entry.seated and not entry.get("seat",{}).is_empty(): _dining_person(entry)
 				else: _person(entry.point,entry.moving,entry.shirt,entry.caption,entry.seated,bool(entry.get("staff", false)),str(entry.get("character_id","")),int(entry.get("appearance_id",0)),int(entry.get("frame",-1)),entry.get("facing",Vector2i.DOWN))
+				if not entry.get("held",{}).is_empty():
+					var grid: Vector2 = entry.point / float(layout.cell_px)
+					TDIngredientIcon.bubbles(self,[entry.held],project(grid.x,grid.y)+Vector2(28,-PERSON_HEIGHT-22))
 
 	# Ghost is an explicit edit overlay, readable even at an invalid occupied spot.
 	if editing and not ghost_piece.is_empty():
@@ -235,11 +292,9 @@ func _draw_waiter(entry: Dictionary) -> void:
 	draw_circle(Vector2.ZERO,15,Color(0,0,0,.18))
 	draw_set_transform_matrix(Transform2D.IDENTITY)
 	draw_texture_rect(texture,TDEmployeeArt.pose_rect(foot,PERSON_HEIGHT,entry.idle_lift),false)
-	if entry.carrying:
-		draw_set_transform(foot+Vector2(15,-38),0,Vector2(1,.5))
-		draw_circle(Vector2.ZERO,13,Color("ece6d4"))
-		draw_circle(Vector2(0,-2),9,Color("d69151"))
-		draw_set_transform_matrix(Transform2D.IDENTITY)
+	if not entry.held.is_empty():
+		TDIngredientIcon.draw_item(self,entry.held,Rect2(foot+Vector2(6,-51),Vector2(26,22)))
+		TDIngredientIcon.bubbles(self,[entry.held],foot+Vector2(16,-PERSON_HEIGHT-48))
 	if not str(entry.caption).is_empty():
 		draw_string(_staff_font(),foot+Vector2(-30,-PERSON_HEIGHT-8),entry.caption,HORIZONTAL_ALIGNMENT_LEFT,-1,TDUI.FONT_MICRO,Color("fff4d2"))
 
@@ -285,22 +340,38 @@ func _marker(marker: Dictionary) -> void:
 		label_y=-78
 	elif marker.action in ["decorate","recipes"]:
 		# Wall-mounted boards/shelves use the existing wall collision, never an invisible floor table.
-		draw_rect(Rect2(point+Vector2(-27,-50),Vector2(54,40)),Color("79533a"))
-		draw_rect(Rect2(point+Vector2(-23,-46),Vector2(46,32)),Color("dfcc9f"))
+		var frame := Rect2(point+Vector2(-31,-61),Vector2(62,49))
+		draw_rect(Rect2(frame.position+Vector2(3,3),frame.size),Color(.17,.12,.08,.30))
+		draw_rect(frame,Color("563823"))
+		draw_rect(frame.grow(-3),Color("95633a"))
+		draw_rect(frame.grow(-7),Color("e8d2a0"))
+		for x: float in [frame.position.x+5,frame.end.x-5]:
+			draw_circle(Vector2(x,frame.position.y+5),1.5,Color("e5b867"))
 		if marker.action=="recipes":
 			for i: int in 5: draw_rect(Rect2(point+Vector2(-20+i*9,-43),Vector2(6,25)),[Color("9e5144"),Color("526d65"),Color("b9985c")][i%3])
 		else:
-			for i: int in 3: draw_rect(Rect2(point+Vector2(-18+i*13,-39),Vector2(10,18)),Color("8ea7a0"))
-		label_y=-65
+			var plan := Rect2(point+Vector2(-22,-49),Vector2(28,29))
+			draw_rect(plan,Color("f7e4b9"))
+			draw_rect(plan.grow(-3),Color("8a8873"),false,1)
+			for i: int in 3: draw_line(plan.position+Vector2(4,7+i*7),plan.position+Vector2(23,7+i*7),Color("b4a580"))
+			draw_rect(Rect2(point+Vector2(-13,-42),Vector2(11,10)),Color("749083"))
+			for i: int in 3: draw_rect(Rect2(point+Vector2(12,-47+10*i),Vector2(10,7)),[Color("94644c"),Color("658272"),Color("b49963")][i])
+		label_y=-72
 	elif marker.action=="hire":
 		draw_rect(Rect2(point+Vector2(-18,-42),Vector2(36,30)),Color("efe2c4"))
 		draw_rect(Rect2(point+Vector2(-18,-42),Vector2(36,30)),Color("6d5334"),false,2)
 		label_y=-58
 	elif marker.action=="menu":
-		draw_rect(Rect2(point+Vector2(-3,-29),Vector2(6,32)),Color("493c2c"))
-		draw_rect(Rect2(point+Vector2(-23,-64),Vector2(46,45)),Color("684d31"))
-		draw_rect(Rect2(point+Vector2(-20,-61),Vector2(40,39)),Color("272f2a"))
-		for line: int in 4: draw_rect(Rect2(point+Vector2(-12,-53+line*7),Vector2(24,2)),Color("dfd2a8"))
+		var board := Rect2(point+Vector2(-29,-66),Vector2(58,48))
+		draw_line(point+Vector2(-21,-20),point+Vector2(-24,2),Color("543b29"),5)
+		draw_line(point+Vector2(21,-20),point+Vector2(24,2),Color("543b29"),5)
+		draw_rect(board,Color("503420"))
+		draw_rect(board.grow(-2),Color("a87a47"))
+		draw_rect(board.grow(-5),Color("263b31"))
+		draw_string(TDUI.font(),board.position+Vector2(0,18),"今日营业",HORIZONTAL_ALIGNMENT_CENTER,58,12,Color("f8deb0"))
+		for line: int in 3:
+			draw_line(point+Vector2(-18,-42+line*6),point+Vector2(-1+line*4,-42+line*6),Color("d8d7b4"))
+			draw_circle(point+Vector2(15,-42+line*6),1.5,Color("dbb77b"))
 	var label_at := point+Vector2(-60,label_y)
 	if marker.action=="town":
 		var edge := _door_segment(Vector2i(int(marker.cell.x),int(marker.cell.y)))
@@ -318,26 +389,26 @@ func _floor_cell(cell: Vector2i) -> void:
 		color = TDRestaurantArt.finish_color(finish).lerp(color, 0.22)
 	if not finish_theme.is_empty(): color=TDRegionalInterior.floor_color(finish_theme,cell)
 	if finish=="" and layout.culture in ["chinese","french","japanese"]: color=TDRegionalInterior.floor_color(layout.culture,cell)
-	draw_colored_polygon(points, color)
+	_surfaces.draw_colored_polygon(points, color)
 	var floor_id := finish if TDRegionalInterior.FLOOR_INDEX.has(finish) else "floor_" + layout.culture
-	TDRegionalInterior.draw_floor(self,floor_id,points,cell)
-	var facility := layout.facility_zone(cell.x, cell.y)
+	TDRegionalInterior.draw_floor(_surfaces,floor_id,points,cell)
+	var facility := layout.facility_zone(cell.x, cell.y) if editing else ""
 	if editing and facility != "" and facility != "facade":
 		var mark := TDRestaurantArt.zone_color(layout.culture, layout.tier, facility, false)
-		draw_polyline(points + PackedVector2Array([points[0]]), mark, 2.4)
+		_surfaces.draw_polyline(points + PackedVector2Array([points[0]]), mark, 2.4)
 	elif floor_id in ["floor_chinese","floor_french"]:
-		draw_polyline(points + PackedVector2Array([points[0]]), color.darkened(0.16), 1.0)
+		_surfaces.draw_polyline(points + PackedVector2Array([points[0]]), color.darkened(0.16), 1.0)
 	if layout.is_entrance(cell.x, cell.y):
 		var edge := _sill_segment(cell)
 		var span := edge[1] - edge[0]
 		var sill_a := edge[0] + span * 0.18
 		var sill_b := edge[1] - span * 0.18
 		var inward := _door_inward(cell)
-		draw_colored_polygon(PackedVector2Array([sill_a, sill_b, sill_b + inward, sill_a + inward]), Color("8d8274"))
+		_surfaces.draw_colored_polygon(PackedVector2Array([sill_a, sill_b, sill_b + inward, sill_a + inward]), Color("8d8274"))
 		var step := _exit_step(cell)
 		if step == Vector2i(0, 1) or step == Vector2i(1, 0):
 			var door_edge := _door_segment(cell)
-			_door_in_wall(door_edge[0], door_edge[1], Vector2(0, -WALL_HEIGHT), _wall_paint(cell, true))
+			_door_in_wall(_surfaces, door_edge[0], door_edge[1], Vector2(0, -WALL_HEIGHT), _wall_paint(cell, true))
 
 func _ghost() -> void:
 	var points := _quad(ghost_cell.x, ghost_cell.y, ghost_size.x, ghost_size.y)
@@ -405,38 +476,38 @@ func _wall_paint(cell: Vector2i, along_north: bool) -> Color:
 		color = color.lightened(0.08)
 	return color
 
-func _slab(a: Vector2, b: Vector2, rise: Vector2, color: Color) -> void:
-	draw_colored_polygon(PackedVector2Array([a, b, b + rise, a + rise]), color)
+func _slab(canvas: Node2D, a: Vector2, b: Vector2, rise: Vector2, color: Color) -> void:
+	canvas.draw_colored_polygon(PackedVector2Array([a, b, b + rise, a + rise]), color)
 
-func _door_in_wall(start: Vector2, finish: Vector2, up: Vector2, wall: Color, theme: String="") -> void:
+func _door_in_wall(canvas: Node2D, start: Vector2, finish: Vector2, up: Vector2, wall: Color, theme: String="") -> void:
 	var span := finish - start
 	if theme.is_empty(): theme=layout.culture
 	var regional := TDRegionalInterior.regional(theme)
 	var wood := Color(TDRegionalInterior.WOODS.get(theme,"785035"))
 	var left_jamb := start + span * 0.18
 	var right_jamb := finish - span * 0.18
-	_slab(start, left_jamb, up, wall)
-	_slab(right_jamb, finish, up, wall)
+	_slab(canvas, start, left_jamb, up, wall)
+	_slab(canvas, right_jamb, finish, up, wall)
 	var lintel := up * 0.14
-	_slab(left_jamb + up - lintel, right_jamb + up - lintel, lintel, wall)
-	draw_line(start, left_jamb, wood.darkened(.25) if regional else Color("543723"), 5.0)
-	draw_line(right_jamb, finish, wood.darkened(.25) if regional else Color("543723"), 5.0)
-	draw_line(start + up, finish + up, wood if regional else Color("785035"), 5.0)
-	draw_line(left_jamb, left_jamb + up - lintel, wood.darkened(.3) if regional else Color("4a301c"), 3.0)
-	draw_line(right_jamb, right_jamb + up - lintel, wood.darkened(.3) if regional else Color("4a301c"), 3.0)
+	_slab(canvas, left_jamb + up - lintel, right_jamb + up - lintel, lintel, wall)
+	canvas.draw_line(start, left_jamb, wood.darkened(.25) if regional else Color("543723"), 5.0)
+	canvas.draw_line(right_jamb, finish, wood.darkened(.25) if regional else Color("543723"), 5.0)
+	canvas.draw_line(start + up, finish + up, wood if regional else Color("785035"), 5.0)
+	canvas.draw_line(left_jamb, left_jamb + up - lintel, wood.darkened(.3) if regional else Color("4a301c"), 3.0)
+	canvas.draw_line(right_jamb, right_jamb + up - lintel, wood.darkened(.3) if regional else Color("4a301c"), 3.0)
 	var leaf := up - lintel
 	var left := left_jamb + span * 0.02
 	var right := right_jamb - span * 0.02
 	var seam := (left + right) * 0.5
-	_slab(left, seam, leaf * 0.98, wood if regional else Color("8b5a34"))
-	_slab(seam, right, leaf * 0.98, wood.darkened(.12) if regional else Color("6d4528"))
+	_slab(canvas, left, seam, leaf * 0.98, wood if regional else Color("8b5a34"))
+	_slab(canvas, seam, right, leaf * 0.98, wood.darkened(.12) if regional else Color("6d4528"))
 	var panel := leaf * 0.62
 	var panel_at := leaf * 0.16
-	_slab(left + span * 0.03 + panel_at, seam - span * 0.015 + panel_at, panel, wood.darkened(.22) if regional else Color("5c3a22"))
-	_slab(seam + span * 0.015 + panel_at, right - span * 0.03 + panel_at, panel, wood.darkened(.3) if regional else Color("4a2e1b"))
-	draw_line(seam, seam + leaf * 0.98, Color("3a2416"), 2.0)
-	draw_circle(left.lerp(seam, 0.78) + leaf * 0.48, 2.2, Color("e2ba69"))
-	draw_circle(seam.lerp(right, 0.22) + leaf * 0.48, 2.2, Color("e2ba69"))
+	_slab(canvas, left + span * 0.03 + panel_at, seam - span * 0.015 + panel_at, panel, wood.darkened(.22) if regional else Color("5c3a22"))
+	_slab(canvas, seam + span * 0.015 + panel_at, right - span * 0.03 + panel_at, panel, wood.darkened(.3) if regional else Color("4a2e1b"))
+	canvas.draw_line(seam, seam + leaf * 0.98, Color("3a2416"), 2.0)
+	canvas.draw_circle(left.lerp(seam, 0.78) + leaf * 0.48, 2.2, Color("e2ba69"))
+	canvas.draw_circle(seam.lerp(right, 0.22) + leaf * 0.48, 2.2, Color("e2ba69"))
 
 func _service_window(start: Vector2, finish: Vector2, up: Vector2, wall: Color) -> void:
 	var span := finish - start
@@ -444,21 +515,17 @@ func _service_window(start: Vector2, finish: Vector2, up: Vector2, wall: Color) 
 	var right := finish - span * 0.08
 	var sill := 0.38
 	var lintel := 0.78
-	_slab(start, left, up, wall)
-	_slab(right, finish, up, wall)
-	_slab(left, right, up * sill, wall)
-	_slab(left + up * lintel, right + up * lintel, up * (1.0 - lintel), wall)
-	_slab(left + up * sill, right + up * sill, up * (lintel - sill), Color(0.16, 0.14, 0.12))
-	_slab(left + up * (sill - 0.05), right + up * (sill - 0.05), up * 0.07, Color("8b5a34"))
+	_slab(self, start, left, up, wall)
+	_slab(self, right, finish, up, wall)
+	_slab(self, left, right, up * sill, wall)
+	_slab(self, left + up * lintel, right + up * lintel, up * (1.0 - lintel), wall)
+	_slab(self, left + up * sill, right + up * sill, up * (lintel - sill), Color(0.16, 0.14, 0.12))
+	_slab(self, left + up * (sill - 0.05), right + up * (sill - 0.05), up * 0.07, Color("8b5a34"))
 	var font := TDUI.font()
 	var title := (left + right) * 0.5 + up * (lintel + 0.08)
 	if font != null:
 		draw_string(font, title + Vector2(-28, 0), "出餐口", HORIZONTAL_ALIGNMENT_LEFT, -1, TDUI.FONT_CAPTION, Color("fff4d2"))
-	var shown := mini(hatch_plates, 3)
-	for slot: int in shown:
-		var at := left.lerp(right, 0.35 + float(slot) * 0.15) + up * (sill + 0.04)
-		draw_circle(at, 5.2, Color("f4f0e4"))
-		draw_circle(at, 2.6, Color("d4573a"))
+	TDIngredientIcon.bubbles(self,pass_items,title+Vector2(0,-30))
 
 func _kitchen_door_segment() -> PackedVector2Array:
 	var x := float(layout.columns - 2)
@@ -480,12 +547,12 @@ func _draw_kitchen_bay() -> void:
 		var paint := _wall_paint(wall_cell, true)
 		var edge := PackedVector2Array([project(float(x), float(layout.rows)), project(float(x + 1), float(layout.rows))])
 		if dx == 0:
-			_door_in_wall(edge[0], edge[1], up, paint,_wall_style(wall_cell))
+			_door_in_wall(self, edge[0], edge[1], up, paint,_wall_style(wall_cell))
 			continue
 		if dx == -1:
 			_service_window(edge[0], edge[1], up, paint)
 			continue
-		_slab(edge[0], edge[1], up, paint)
+		_slab(self, edge[0], edge[1], up, paint)
 		var finish_id := layout.finish_at(wall_cell.x,wall_cell.y)
 		if finish_id.is_empty(): finish_id = "wall_" + layout.culture
 		if TDRegionalInterior.WALL_INDEX.has(finish_id):
@@ -510,31 +577,31 @@ func _wall(cell: Vector2i, along_north: bool) -> void:
 	var color := _wall_paint(cell, along_north)
 	if _wall_opens_for_door(cell, along_north):
 		var edge := _door_segment(layout.entrance())
-		_door_in_wall(edge[0], edge[1], up, color,_wall_style(cell))
+		_door_in_wall(_surfaces, edge[0], edge[1], up, color,_wall_style(cell))
 		return
 	var start := project(float(cell.x), float(cell.y))
 	var finish := project(float(cell.x + (1 if along_north else 0)), float(cell.y + (0 if along_north else 1)))
 	var quad := PackedVector2Array([start, finish, finish + up, start + up])
-	draw_colored_polygon(quad, color)
+	_surfaces.draw_colored_polygon(quad, color)
 	var finish_id := layout.finish_at(cell.x,cell.y)
 	if finish_id.is_empty(): finish_id = "wall_" + layout.culture
 	if TDRegionalInterior.WALL_INDEX.has(finish_id):
-		TDRegionalInterior.draw_wall(self,finish_id,start,finish,up,cell.x+cell.y,along_north)
+		TDRegionalInterior.draw_wall(_surfaces,finish_id,start,finish,up,cell.x+cell.y,along_north)
 		if finish_id == "wall_chinese" and (cell.x+cell.y)%3==0:
 			var lamp := start+up+Vector2(0,20)
-			draw_rect(Rect2(lamp-Vector2(5,6),Vector2(10,14)),Color("ae5437"))
-			draw_rect(Rect2(lamp-Vector2(2,5),Vector2(4,11)),Color("efaf59"))
-			TDDaylight.glow(self,lamp,float(TDDaylight.sample(day_minute,true).lamps),35)
+			_surfaces.draw_rect(Rect2(lamp-Vector2(5,6),Vector2(10,14)),Color("ae5437"))
+			_surfaces.draw_rect(Rect2(lamp-Vector2(2,5),Vector2(4,11)),Color("efaf59"))
+			TDDaylight.glow(_surfaces,lamp,float(TDDaylight.sample(day_minute,true).lamps),35)
 		return
 	if not interaction_markers.is_empty():
-		draw_line(start,finish,Color("543723"),7)
-		draw_line(start+up,finish+up,Color("785035"),6)
+		_surfaces.draw_line(start,finish,Color("543723"),7)
+		_surfaces.draw_line(start+up,finish+up,Color("785035"),6)
 		if (cell.x+cell.y)%3==0:
-			draw_line(start,start+up,Color("573b29"),5)
+			_surfaces.draw_line(start,start+up,Color("573b29"),5)
 			var lamp:=start+up+Vector2(0,20)
-			draw_rect(Rect2(lamp-Vector2(7,8),Vector2(14,18)),Color("b95335"))
-			draw_rect(Rect2(lamp-Vector2(3,6),Vector2(6,15)),Color("e9a354"))
-			TDDaylight.glow(self,lamp,float(TDDaylight.sample(day_minute,true).lamps),35)
+			_surfaces.draw_rect(Rect2(lamp-Vector2(7,8),Vector2(14,18)),Color("b95335"))
+			_surfaces.draw_rect(Rect2(lamp-Vector2(3,6),Vector2(6,15)),Color("e9a354"))
+			TDDaylight.glow(_surfaces,lamp,float(TDDaylight.sample(day_minute,true).lamps),35)
 
 func seat_is_occupied(id: String) -> bool:
 	for actor: Dictionary in actors:
@@ -583,12 +650,9 @@ func _person(point: Vector2, _moving: bool, shirt: Color, caption: String, seate
 		var body:=chef_rect(point)
 		# The protagonist shares the physics player's frame; no wall-clock bob during pause.
 		draw_texture_rect(TDChefArt.texture(player_facing, player_walk_frame),TDChefArt.facing_rect(body,player_facing),false)
-		if not caption.is_empty():
-			var dish_at:=ground+Vector2(16,-PERSON_HEIGHT*.40)
-			draw_set_transform(dish_at,0,Vector2(1,.48))
-			draw_circle(Vector2.ZERO,14,Color("836348"));draw_circle(Vector2(0,-3),13,Color("f4f0e4"))
-			draw_circle(Vector2(0,-4),9,Color("d4573a"));draw_circle(Vector2(-3,-6),4,Color("f4ca68"))
-			draw_set_transform_matrix(Transform2D.IDENTITY)
+		if not player_plate.is_empty():
+			var plate_rect := Rect2(ground + Vector2(2, -PERSON_HEIGHT * 0.4 - 13), Vector2(29, 24))
+			TDIngredientIcon.draw_item(self, player_plate, plate_rect)
 		if staff and caption != "":
 			var plate := Rect2(body.position + Vector2(-18, -24), Vector2(92, 22))
 			draw_rect(plate, Color(0.08, 0.12, 0.1, 0.88))

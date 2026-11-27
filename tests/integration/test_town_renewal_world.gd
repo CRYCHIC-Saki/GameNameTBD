@@ -16,7 +16,8 @@ func test_nearby_town_targets_all_directions_and_distinct_frontages() -> void:
 		var plot:=map._by_id(id)
 		town._player.position=town._origin()+(Vector2(plot.approach_x,plot.approach_y)+Vector2.ONE*.5)*town.cell_size()
 		assert_ne(town.facing_plot().get("id",""),id,"Supplier management is accessed from the HUD")
-	assert_lt(town._blockers.get_child_count(), map.extent * map.extent / 2,"solid terrain is merged into spans")
+	assert_eq(town._blockers.get_child_count(),town._solid_bases.size(),"TileMap terrain is sampled directly; only facade and prop shapes are instantiated")
+	assert_gt(town._solid_bases.size(),0)
 	town.set_day_minute(1320);assert_ne(town.self_modulate,Color.WHITE)
 	profile.close()
 
@@ -59,7 +60,7 @@ func simulate_real_clock(chunks: Array) -> Dictionary:
 	var app: TDApplication=load("res://src/app/main.tscn").instantiate()
 	app.settings_path="res://artifacts/town-renewal/clock-%d/settings.json"%Time.get_ticks_usec()
 	add_child(app);var shell:=app.game_shell;shell.automatic_time=false
-	assert_true(shell.create_game("slot-01").ok);shell.guide.dialogue.finish_now()
+	assert_true(shell.create_game("slot-01","小镇食堂",false).ok);shell.guide.dialogue.finish_now()
 	shell.profile.story.beat="done"
 	var kitchen:=shell.kitchen_view.kitchen
 	# Drive the actual cooking signal clock deterministically, without wall time.
@@ -85,23 +86,34 @@ func test_actual_clock_signal_long_frame_and_split_updates_agree() -> void:
 	assert_eq(large.opportunities,small.opportunities)
 	assert_eq(large.firms,small.firms,"same real background economic transactions")
 
-func test_real_load_migrates_only_after_backup_and_successful_write() -> void:
+func test_real_load_backs_up_selected_checkpoint_and_saves_at_next_boundary() -> void:
 	var helper: GutTest=load("res://tests/unit/test_town_renewal.gd").new()
 	var old: Dictionary=helper.legacy_snapshot();helper.free()
 	var app: TDApplication=load("res://src/app/main.tscn").instantiate()
 	app.settings_path="res://artifacts/town-renewal/load-%d/settings.json"%Time.get_ticks_usec()
 	add_child(app);var shell:=app.game_shell;shell.automatic_time=false
-	assert_true(shell.slots.save_slot("slot-01",old).ok)
-	var path:=shell.slots.path_for("slot-01");var checksum:=FileAccess.get_sha256(path)
+	assert_true(shell.slots.save_slot("slot-01",old,TDProfileStore.STORY).ok)
+	assert_true(shell.slots.save_slot("slot-01",old,TDProfileStore.DAILY).ok)
+	var untouched := shell.slots.path_for("slot-01",TDProfileStore.STORY)
+	var story_checksum := FileAccess.get_sha256(untouched)
+	var path := shell.slots.path_for("slot-01",TDProfileStore.DAILY)
+	var checksum := FileAccess.get_sha256(path)
 	shell.slots.interrupt_at="partial_write"
-	assert_false(shell.load_game("slot-01").ok);assert_null(shell.profile)
-	assert_eq(FileAccess.get_sha256(path),checksum)
-	assert_eq(FileAccess.get_sha256(path+".before-region-v2.bak"),checksum)
-	shell.slots.interrupt_at=""
-	assert_true(shell.load_game("slot-01").ok);assert_eq(shell.location,"cottage")
+	assert_true(shell.load_game("slot-01",TDProfileStore.DAILY).ok)
+	assert_eq(shell.location,"town","A legacy slot first enters the revised opening")
+	assert_true(shell.profile.has_residence(),"Migration preserves ownership of the cottage")
 	assert_eq(shell.profile.world.map_version,2)
-	assert_eq(int(shell.slots.load_slot("slot-01").data.schema_version),9)
+	assert_eq(FileAccess.get_sha256(path),checksum,"Loading never saves the migrated profile")
 	assert_eq(FileAccess.get_sha256(path+".before-region-v2.bak"),checksum)
+	shell.guide.dialogue.finish_now()
+	shell._sleep("chengdu",0)
+	assert_eq(FileAccess.get_sha256(path),checksum,"An interrupted checkpoint keeps the last complete one")
+	shell.slots.interrupt_at=""
+	shell._sleep("chengdu",0)
+	assert_eq(int(shell.slots.load_slot("slot-01",TDProfileStore.DAILY).data.schema_version),9)
+	assert_eq(FileAccess.get_sha256(path+".before-region-v2.bak"),checksum)
+	assert_eq(FileAccess.get_sha256(untouched),story_checksum,"A different checkpoint keeps its original bytes")
+	assert_false(FileAccess.file_exists(untouched+".before-region-v2.bak"))
 	var malformed:=shell.profile.snapshot();malformed.map_migration="bad"
 	assert_false(TDGameProfile.validate_save(malformed).ok)
 	shell.go_title();app.free()

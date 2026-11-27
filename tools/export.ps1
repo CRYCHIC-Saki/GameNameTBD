@@ -1,16 +1,56 @@
 #Requires -Version 7.2
 [CmdletBinding()]
-param([string]$GodotPath = $env:GODOT_BIN, [int]$CheckTimeoutSeconds = 1800, [string]$CheckSuite = 'all')
+param([string]$GodotPath = $env:GODOT_BIN, [int]$CheckTimeoutSeconds = 1800, [string]$CheckSuite = 'all', [int]$WaitForGameExitSeconds = 0)
 $ErrorActionPreference = 'Stop'
 $root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $lock = Get-Content -LiteralPath (Join-Path $root 'dependencies.lock.json') -Raw | ConvertFrom-Json
 if (-not $GodotPath) { $GodotPath = $lock.godot.local_path }
-& (Join-Path $PSScriptRoot 'check.ps1') -GodotPath $GodotPath -Suite $CheckSuite -TimeoutSeconds $CheckTimeoutSeconds -ReportName ('pre-export-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
-if ($LASTEXITCODE -ne 0) { exit 1 }
 $build = Join-Path $root 'build'
 New-Item -ItemType Directory -Force -Path $build | Out-Null
 $evidence = Join-Path $root 'artifacts/export'
 New-Item -ItemType Directory -Force -Path $evidence | Out-Null
+$candidate = Join-Path $build ('TownDiner.incoming-' + [guid]::NewGuid().ToString('N'))
+$target = Join-Path $build 'TownDiner'
+$members = @('.exe', '.pck', '.console.exe')
+
+function Find-RunningGame {
+  Get-Process -Name 'TownDiner','TownDiner.console' -ErrorAction SilentlyContinue | Where-Object {
+    -not $_.Path -or $_.Path -in @("$target.exe", "$target.console.exe")
+  }
+}
+
+function Publish-Bundle {
+  foreach ($part in $members) {
+    if (-not (Test-Path -LiteralPath "$candidate$part" -PathType Leaf)) { throw "Missing candidate file: $part" }
+  }
+  $until = [DateTime]::UtcNow.AddSeconds($WaitForGameExitSeconds)
+  while (Find-RunningGame) {
+    if ([DateTime]::UtcNow -ge $until) { throw 'TownDiner is still running. Close it before replacing the fixed build.' }
+    Start-Sleep -Seconds 1
+  }
+  $backups = [Collections.Generic.List[string]]::new()
+  $installed = [Collections.Generic.List[string]]::new()
+  try {
+    # Remove the launchers from the fixed path before swapping their companion PCK.
+    foreach ($part in @('.exe', '.console.exe', '.pck')) {
+      if (-not (Test-Path -LiteralPath "$target$part")) { continue }
+      if ($part -eq '.pck' -and (Find-RunningGame)) { throw 'TownDiner started during publication. Close it and retry.' }
+      [IO.File]::Move("$target$part", "$candidate.previous$part")
+      $backups.Add($part)
+    }
+    foreach ($part in @('.pck', '.console.exe', '.exe')) {
+      [IO.File]::Move("$candidate$part", "$target$part")
+      $installed.Add($part)
+    }
+  } catch {
+    foreach ($part in $installed) { [IO.File]::Move("$target$part", "$candidate$part") }
+    foreach ($part in @('.pck', '.console.exe', '.exe')) {
+      if ($part -in $backups) { [IO.File]::Move("$candidate.previous$part", "$target$part") }
+    }
+    throw
+  }
+  foreach ($part in $backups) { Remove-Item -LiteralPath "$candidate.previous$part" }
+}
 function Run-Process([string]$Exe, [string]$Name, [string[]]$Arguments) {
   $info = [Diagnostics.ProcessStartInfo]::new()
   $info.FileName = $Exe
@@ -35,22 +75,68 @@ function Run-Process([string]$Exe, [string]$Name, [string[]]$Arguments) {
   }
   Write-Host "$Name exit=0"
 }
+$rootHash = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData([Text.Encoding]::UTF8.GetBytes($root.ToLowerInvariant())))
+$exportLock = [Threading.Mutex]::new($false, "Global\TownDinerExport-$rootHash")
+try { $ownsExport = $exportLock.WaitOne(0) } catch [Threading.AbandonedMutexException] { $ownsExport = $true }
+if (-not $ownsExport) {
+  $exportLock.Dispose()
+  throw 'A Windows export is already running for this workspace.'
+}
 try {
-  Run-Process $GodotPath 'export' @('--headless','--path',$root,'--export-debug','Windows Framework Demo',(Join-Path $build 'TownDiner.exe'))
+  & (Join-Path $PSScriptRoot 'check.ps1') -GodotPath $GodotPath -Suite $CheckSuite -TimeoutSeconds $CheckTimeoutSeconds -ReportName ('pre-export-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
+  if ($LASTEXITCODE -ne 0) { throw 'Pre-export checks failed.' }
+  Run-Process $GodotPath 'export' @('--headless','--path',$root,'--export-debug','Windows Framework Demo',"$candidate.exe")
   Run-Process $GodotPath 'pack-manifest' @('--headless','--path',$root,'--export-pack','Windows Framework Demo',(Join-Path $evidence 'runtime.zip'))
   $archive = [IO.Compression.ZipFile]::OpenRead((Join-Path $evidence 'runtime.zip'))
   try {
     $names = @($archive.Entries | ForEach-Object { $_.FullName })
+    $challengeRules = 'src/challenge/challenge_rules.gd'
+    if ($challengeRules -notin $names -and ($challengeRules + '.remap') -notin $names) { throw 'Missing exported challenge rules' }
     $storyEvents = Get-Content -LiteralPath (Join-Path $root 'content/story/events.json') -Raw | ConvertFrom-Json
-    $storyScripts = @('content/story/vn/scenario/intro/script.txt.res') + @($storyEvents.events | Where-Object enabled | ForEach-Object { $_.script_path.Substring(6) + '.res' })
+    $presentation = Get-Content -LiteralPath (Join-Path $root 'content/story/vn/presentation.json') -Raw | ConvertFrom-Json
+    $storyScripts = @('content/story/vn/scenario/host/script.txt.res') + @($presentation.chapters.psobject.Properties | Where-Object Name -like 'revised_*' | ForEach-Object { $_.Value.path.Substring(6) + '.res' }) + @($storyEvents.events | Where-Object enabled | ForEach-Object { $_.script_path.Substring(6) + '.res' })
     foreach ($script in $storyScripts) { if ($script -notin $names) { throw "Missing registered VN scenario: $script" } }
+    foreach ($script in @('src/story/revised_mainline.gd','src/story/revised_journey.gd')) {
+      if ($script -notin $names -and ($script + '.remap') -notin $names) { throw "Missing playable mainline script: $script" }
+    }
+    $castSprites = @('hero','diagonal','aling','chen','luoe','hertz','vito','hina','crowd' | ForEach-Object { "assets/characters/coarse-pixel-v1/$_.png.import" })
+    $castSprites += 'assets/characters/coarse-pixel-v1/frames.json'
+    foreach ($asset in $castSprites) {
+      if ($asset -notin $names) { throw "Missing town character sprite: $asset" }
+    }
+    $spriteScript = 'src/world/coarse_sprite_art.gd'
+    if ($spriteScript -notin $names -and ($spriteScript + '.remap') -notin $names) { throw 'Missing town character sprite loader' }
+    $storyJourney = 'src/story/revised_journey.gd'
+    if ($storyJourney -notin $names -and ($storyJourney + '.remap') -notin $names) { throw 'Missing revised story journey' }
+    $crowdScript = 'src/town/crowd_stands.gd'
+    if ($crowdScript -notin $names -and ($crowdScript + '.remap') -notin $names) { throw 'Missing doorway crowd script' }
+    if ('assets/characters/crowd/crowd-original-neutral.png.import' -notin $names) { throw 'Missing original crowd battle portrait' }
+    foreach ($mood in @('calm','angry','happy','proud','cry','puzzled','troubled','speechless')) {
+      $image = "assets/characters/mainline-20261126/hina/$mood.png.import"
+      $registered = "content/story/vn/portraits/hina/hina_base_base_${mood}_mid.tres"
+      if ($image -notin $names -or ($registered -notin $names -and ($registered + '.remap') -notin $names)) { throw "Missing Hina expression: $mood" }
+    }
     foreach ($name in $names) {
+      if ($name -in $castSprites -or ($name + '.import') -in $castSprites) { continue }
+      if ($name -in @('assets/title/加载界面.png', 'assets/title/加载界面.png.import', 'assets/title/主界面.png.import')) { continue }
+      if ($name -match '^assets/town/player-branches/(construction|harbor|island|riverside)\.png\.import$') { continue }
       if ($name -match 'jiangnan-river-town\.png|src/town/river_street(_layout)?\.gd') { throw "Design reference or parallel map present in the game package: $name" }
-      if ($name -eq 'content/story/events.json' -or $name -in $storyScripts) { continue }
-      if ($name -notmatch '^(assets/characters/staff/regional-(portraits|walk)\.png(\.import)?$|assets/interiors/(regional-(kitchens|dining|props)|wall-finishes|floor-finishes|shared-accents|lounge-furniture)-v1\.png(\.import)?$|assets/story/imported/(bg_|actor_|expr_)[a-f0-9]{12}\.(png|jpg|jpeg|webp)(\.import)?$|assets/ui-wood-v1/[^/]+\.png(\.import)?$|assets/redraw-v1/([^/]+\.png(\.import)?|(index|icon-regions)\.json)$|content/story/vn/(config/.*\.tres(\.remap)?|(portraits|backgrounds)/.*\.tres(\.remap)?|scenario/intro/script\.txt\.res)$|addons/vn_engine/(src/(?!editor/|tools/|ui/dev_overlay|ui/scenes/dev_overlay)|LICENSE$)|src/|\.godot/|assets/characters/diners/diners-((four-directions|seated)-v1|isometric-seated-v2|occupied-seat-v4)\.png(\.import)?$|assets/characters/(aling/archive/2026-10-29/aling|ash-priest/archive/2026-10-29/ash-priest)-(idle-four-directions|dialogue-halfbody)\.png(\.import)?$|assets/characters/(aling/aling|ash-priest/ash-priest)-walk-four-directions-v1\.png(\.import)?$|assets/characters/protagonist/protagonist-((idle|walk)-four-directions-v1|diagonal-(front|back)-v2|dialogue-halfbody-pose-pixel-v7)\.png(\.import)?$|assets/audio/(casual|service|cooking)\.wav(\.import)?$|assets/(kitchen/(recipe-icons/)?|town/|story/|cottage/)[^/]+\.png(\.import)?$|content/(story/(opening|homecoming)|characters/roster|dev_samples|cooking_prototype|cooking_system|cuisine_recipes|service_content|employees|suppliers|culinary_materials|branches|restaurant|phase3_world|pantry|ingredient_index|research/recipe_atlas|research/runtime_recipes|town_economy/(economy|meal_schedule)|towns/(chinese_layout|chinese_layout_legacy|regions|egret_survey(?:_v(?:[4-9]|10))?|shiomi_survey|jiangnan_reference_geography|jiangnan_map_footprints)|markets/kitchen_stock|brand/progression)\.json$|project\.binary$)') { throw "Non-runtime resource exported: $name" }
+      if ($name -match '^assets/characters/mainline-20261126/[a-z]+/[a-z]+\.png(\.import)?$' -or $name -eq 'content/story/mainline-20261126.json' -or $name -eq 'assets/audio/boss.wav.import' -or $name -eq 'content/story/vn/presentation.json' -or $name -match '^assets/vn-painterly-v1/[a-z-]+\.png(\.import)?$' -or $name -eq 'content/story/events.json' -or $name -in $storyScripts) { continue }
+      if ($name -notmatch '^(assets/characters/staff/regional-(portraits|walk)\.png(\.import)?$|assets/interiors/(regional-(kitchens|dining|props)|wall-finishes|floor-finishes|shared-accents|lounge-furniture)-v1\.png(\.import)?$|assets/story/imported/(bg_|actor_|expr_)[a-f0-9]{12}\.(png|jpg|jpeg|webp)(\.import)?$|assets/ui-wood-v1/[^/]+\.png(\.import)?$|assets/redraw-v1/([^/]+\.png(\.import)?|(index|icon-regions)\.json)$|content/story/vn/(config/.*\.tres(\.remap)?|(portraits|backgrounds)/.*\.tres(\.remap)?|scenario/intro/script\.txt\.res)$|addons/vn_engine/(src/(?!editor/|tools/|ui/dev_overlay|ui/scenes/dev_overlay)|LICENSE$)|src/|\.godot/|assets/characters/crowd/crowd-original-neutral\.png(\.import)?$|assets/characters/diners/diners-((four-directions|seated)-v1|isometric-seated-v2|occupied-seat-v4)\.png(\.import)?$|assets/characters/(aling/archive/2026-10-29/aling|ash-priest/archive/2026-10-29/ash-priest)-dialogue-halfbody\.png(\.import)?$|assets/characters/protagonist/protagonist-dialogue-halfbody-pose-pixel-v7\.png(\.import)?$|assets/audio/(casual|service|cooking)\.wav(\.import)?$|assets/(kitchen/(recipe-icons/)?|town/|story/|cottage/)[^/]+\.png(\.import)?$|content/(story/(opening|homecoming)|characters/roster|dev_samples|cooking_prototype|cooking_system|cuisine_recipes|service_content|employees|suppliers|culinary_materials|branches|restaurant|phase3_world|pantry|ingredient_index|research/recipe_atlas|research/runtime_recipes|town_economy/(economy|meal_schedule)|towns/(chinese_layout|chinese_layout_legacy|regions|egret_survey(?:_v(?:[4-9]|10|11))?|shiomi_survey|jiangnan_reference_geography|jiangnan_map_footprints)|markets/kitchen_stock|brand/progression)\.json$|project\.binary$)') { throw "Non-runtime resource exported: $name" }
+    }
+    foreach ($retired in @('src/story/arrival_cutscene.gd','src/story/arrival_cutscene.tscn')) {
+      if ($retired -in $names -or ($retired + '.remap') -in $names) { throw "Retired animation exported: $retired" }
+    }
+    foreach ($background in $presentation.backgrounds.psobject.Properties) {
+      $image = $background.Value.image.Substring(6) + '.import'
+      if ($image -notin $names) { throw "Missing migrated background: $image" }
     }
     $names | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'runtime-manifest.json') -Encoding utf8
-	if ('content/story/vn/scenario/intro/script.txt.res' -notin $names) { throw 'Missing baked native VN scenario' }
+    foreach ($sheet in @('cooking-food','cooking-process','closeup-cookware-v2','closeup-regions-v2','ingredient-cuts')) {
+      if (("assets/kitchen/$sheet.png.import") -notin $names) { throw "Missing cooking artwork: $sheet" }
+    }
+    if ('assets/town/shiomi-water-tub.png.import' -notin $names) { throw 'Missing Shiomi harbor water tub artwork' }
+    if ($names -match '^content/story/((opening|homecoming)\.json$|vn/scenario/(intro|soup|after_taste|awaken|verdict_good|verdict_bad|setup|home_invite|home_late|home_door)/)') { throw 'Retired story scenario in the release package' }
       foreach ($vnResource in @('content/story/vn/config/game.tres','content/story/vn/config/asset_map/_asset_map.tres','content/story/vn/config/characters/_characters.tres','content/story/vn/portraits/hero/hero_base_base_happy_mid.tres','content/story/vn/portraits/hero/hero_base_base_calm_mid.tres','content/story/vn/portraits/aling/aling_base_base_calm_mid.tres','src/story/vn_host_screen.tscn','src/story/vn_host_command.gd','src/story/vn_layout.gd','src/story/vn_character_layer.gd','content/story/vn/backgrounds/blank.tres','content/story/vn/backgrounds/restaurant-v1.tres','content/story/vn/backgrounds/soup-stall-v1.tres','content/story/vn/backgrounds/dining-table-v1.tres')) {
         if ($vnResource -notin $names -and ($vnResource + '.remap') -notin $names) { throw "Missing native VN resource: $vnResource" }
       }
@@ -61,7 +147,7 @@ try {
       if ($resource -notin $names -and ($resource + '.remap') -notin $names) { throw "Missing Jiangnan map migration resource: $resource" }
     }
     if ('src/business/retired_regions.gd' -notin $names -and 'src/business/retired_regions.gd.remap' -notin $names) { throw 'Missing legacy profile converter' }
-    foreach ($resource in @('content/towns/egret_survey.json','content/towns/egret_survey_v4.json','content/towns/egret_survey_v5.json','content/towns/egret_survey_v6.json','content/towns/egret_survey_v7.json','content/towns/egret_survey_v8.json','content/towns/egret_survey_v9.json','content/towns/egret_survey_v10.json','assets/town/egret-cart-track.png.import','assets/town/egret-wharf.png.import','assets/town/egret-granite.png.import','assets/town/egret-bollard.png.import','assets/town/egret-passenger-station.png.import','src/town/egret_layout.gd','src/town/egret_map.tscn','assets/town/egret-cobbles.png.import','assets/town/egret-grass.png.import','assets/town/egret-quay.png.import','assets/town/egret-sea.png.import','assets/town/egret-sprites.png.import')) {
+    foreach ($resource in @('content/towns/egret_survey.json','content/towns/egret_survey_v4.json','content/towns/egret_survey_v5.json','content/towns/egret_survey_v6.json','content/towns/egret_survey_v7.json','content/towns/egret_survey_v8.json','content/towns/egret_survey_v9.json','content/towns/egret_survey_v10.json','content/towns/egret_survey_v11.json','assets/town/egret-cart-track.png.import','assets/town/egret-wharf.png.import','assets/town/egret-granite.png.import','assets/town/egret-bollard.png.import','assets/town/egret-passenger-station.png.import','src/town/egret_layout.gd','src/town/egret_map.tscn','assets/town/egret-cobbles.png.import','assets/town/egret-grass.png.import','assets/town/egret-quay.png.import','assets/town/egret-sea.png.import','assets/town/egret-sprites.png.import')) {
       if ($resource -notin $names -and ($resource + '.remap') -notin $names) { throw "Missing European port resource: $resource" }
     }
     foreach ($resource in @('content/towns/shiomi_survey.json','src/town/shiomi_art.gd','src/town/shiomi_layout.gd','src/town/shiomi_map.tscn','src/town/shiomi_tiles.tres','src/town/shiomi_ambience.gd','src/town/shiomi_windows.gdshader','src/town/shiomi_steam.gdshader','src/town/shiomi_shadow.gdshader','src/town/shiomi_waterside.gdshader','assets/town/shiomi-ground-v1.png.import','assets/town/shiomi-verges-v1.png.import','assets/town/shiomi-sprites-v1.png.import','assets/town/shiomi-detail-tiles.png.import')) {
@@ -93,17 +179,12 @@ try {
     if ($crewResource -notin $names -and ($crewResource + '.remap') -notin $names) { throw 'Missing exported restaurant crew script' }
     $guestResource = 'src/restaurant/guest_visit.gd'
     if ($guestResource -notin $names -and ($guestResource + '.remap') -notin $names) { throw 'Missing exported guest visit script' }
-    foreach ($resource in @('src/business/kitchen_staff.gd','src/world/kitchen_staff_actor.gd','src/business/table_service.gd','src/app/debug_commands.gd','content/story/homecoming.json','assets/characters/protagonist/protagonist-diagonal-front-v2.png.import','assets/characters/protagonist/protagonist-diagonal-back-v2.png.import','assets/cottage/furniture-v1.png.import','assets/story/arrival-props-v1.png.import','src/story/arrival_cutscene.gd','src/story/arrival_cutscene.tscn','assets/story/arrival-hero-v1.png.import','assets/story/arrival-aling-v2.png.import','assets/story/arrival-coast-v1.png.import','src/town/harbor.gd','assets/town/harbor-v1.png.import','src/story/story_guide.gd','src/story/cutscene_view.gd','src/story/quest_path.gd','src/story/quest_trail.gd','src/story/opening_script.gd','content/story/opening.json','assets/story/aling-emotions-corrections-v1.png.import','assets/story/cinematic-actors-v1.png.import','assets/story/hero-emotions-v1.png.import','assets/story/aling-emotions-v1.png.import','assets/story/chen-emotions-v1.png.import','assets/story/opening-actions-v1.png.import','assets/story/opening-actions-extra-v1.png.import','assets/story/opening-backgrounds-v1.png.import','assets/story/opening-props-v1.png.import','assets/characters/aling/aling-walk-four-directions-v1.png.import','assets/characters/ash-priest/ash-priest-walk-four-directions-v1.png.import','assets/town/town-sprites-v3.png.import','assets/town/residential-houses-v2.png.import','assets/town/ground-materials-v4.png.import','src/world/npc_gait.gd','assets/town/residential-houses-v1.png.import','src/town/residential_yard.gd','src/town/town_scenery.gd','src/town/river_bridge_art.gd','src/town/street_places.gd','src/town/public_square.gd','assets/town/plaza-inlays-v1.png.import','assets/town/greenbelt-flora-v1.png.import','assets/town/cultural-venues-v1.png.import','assets/town/market-stalls-v1.png.import','src/world/interaction_range.gd','assets/town/ground-materials-v3.png.import','src/town/planned_town.gd','src/town/map_migration.gd','src/platform/daylight.gd','src/world/environment_art.gd','content/towns/chinese_layout.json','content/town_economy/meal_schedule.json','assets/town/town-sprites-v2.png.import','assets/town/diner-props-v2.png.import','assets/kitchen/kitchen-background-v2.png.import','src/platform/day_clock.gd','src/characters/character_roster.gd','content/characters/roster.json','assets/characters/protagonist/protagonist-dialogue-halfbody-pose-pixel-v7.png.import','src/story/story_art.gd','src/story/opening.gd','src/ui/dialogue.gd','src/ui/dialogue_view.gd','src/kitchen/prep_guide.gd')) {
+    foreach ($resource in @('src/business/kitchen_staff.gd','src/world/kitchen_staff_actor.gd','src/business/table_service.gd','src/app/debug_commands.gd','assets/cottage/furniture-v1.png.import','assets/story/arrival-props-v1.png.import','assets/story/arrival-hero-v1.png.import','assets/story/arrival-aling-v2.png.import','assets/story/arrival-coast-v1.png.import','src/town/harbor.gd','assets/town/harbor-v1.png.import','src/story/story_guide.gd','src/story/cutscene_view.gd','src/story/quest_path.gd','src/story/quest_trail.gd','src/story/opening_script.gd','assets/story/aling-emotions-corrections-v1.png.import','assets/story/cinematic-actors-v1.png.import','assets/story/hero-emotions-v1.png.import','assets/story/aling-emotions-v1.png.import','assets/story/chen-emotions-v1.png.import','assets/story/opening-actions-v1.png.import','assets/story/opening-actions-extra-v1.png.import','assets/story/opening-backgrounds-v1.png.import','assets/story/opening-props-v1.png.import','assets/town/town-sprites-v3.png.import','assets/town/residential-houses-v2.png.import','assets/town/ground-materials-v4.png.import','src/world/npc_gait.gd','assets/town/residential-houses-v1.png.import','src/town/residential_yard.gd','src/town/town_scenery.gd','src/town/river_bridge_art.gd','src/town/street_places.gd','src/town/public_square.gd','assets/town/plaza-inlays-v1.png.import','assets/town/greenbelt-flora-v1.png.import','assets/town/cultural-venues-v1.png.import','assets/town/market-stalls-v1.png.import','src/world/interaction_range.gd','assets/town/ground-materials-v3.png.import','src/town/planned_town.gd','src/town/map_migration.gd','src/platform/daylight.gd','src/world/environment_art.gd','content/towns/chinese_layout.json','content/town_economy/meal_schedule.json','assets/town/town-sprites-v2.png.import','assets/town/diner-props-v2.png.import','assets/kitchen/kitchen-background-v2.png.import','src/platform/day_clock.gd','src/characters/character_roster.gd','content/characters/roster.json','assets/characters/protagonist/protagonist-dialogue-halfbody-pose-pixel-v7.png.import','src/story/story_art.gd','src/story/opening.gd','src/ui/dialogue.gd','src/ui/dialogue_view.gd','src/kitchen/prep_guide.gd')) {
       if ($resource -notin $names -and ($resource + '.remap') -notin $names) { throw "Missing exported story resource: $resource" }
     }
-    foreach ($pose in @('idle','walk')) {
-      if (('assets/characters/protagonist/protagonist-' + $pose + '-four-directions-v1.png.import') -notin $names) { throw "Missing exported protagonist $pose atlas" }
-    }
     foreach ($character in @('aling','ash-priest')) {
-      foreach ($kind in @('idle-four-directions','dialogue-halfbody')) {
-        $resource = "assets/characters/$character/archive/2026-10-29/$character-$kind.png.import"
-        if ($resource -notin $names) { throw "Missing selected story art: $resource" }
-      }
+      $resource = "assets/characters/$character/archive/2026-10-29/$character-dialogue-halfbody.png.import"
+      if ($resource -notin $names) { throw "Missing selected story portrait: $resource" }
     }
 	foreach ($resource in @('assets/characters/staff/regional-portraits.png.import','assets/characters/staff/regional-walk.png.import','src/restaurant/employee_art.gd','assets/interiors/regional-kitchens-v1.png.import','assets/interiors/regional-dining-v1.png.import','assets/interiors/regional-props-v1.png.import','src/restaurant/regional_interior.gd','content/cuisine_recipes.json','src/kitchen/cuisine_kitchen.gd','src/business/branch_kitchen_session.gd','src/business/employee_roster.gd','src/business/supplier_network.gd','src/ui/game_hud.gd','src/ui/management_panels.gd','content/employees.json','content/suppliers.json','src/business/branch_network.gd','src/business/branch_interior.gd','src/business/branch_panel.gd','content/branches.json','src/platform/game_music.gd','src/town/cottage_world.gd','src/world/chef_art.gd','assets/audio/casual.wav.import','assets/audio/service.wav.import','assets/audio/cooking.wav.import','content/brand/progression.json','src/business/level_progression.gd','src/ui/level_rewards_view.gd','content/markets/kitchen_stock.json','src/business/food_stock.gd','src/ui/ingredient_icon.gd')) {
 	  if ($resource -notin $names -and ($resource + '.remap') -notin $names) { throw "Missing exported stock resource: $resource" }
@@ -117,7 +198,7 @@ try {
   # --quit-after destroys the engine without running the game's quit handler.
   Run-Process $GodotPath 'startup-probe-pack' @('--headless','--path',$root,'--script','res://tools/pack_title_probe.gd','--','--startup-exit')
   $startup = Join-Path $evidence 'startup-probe'
-  Copy-Item -LiteralPath (Join-Path $build 'TownDiner.exe') -Destination (Join-Path $startup 'StartupProbe.exe')
+  Copy-Item -LiteralPath "$candidate.exe" -Destination (Join-Path $startup 'StartupProbe.exe')
   Copy-Item -LiteralPath (Join-Path $startup 'probe.pck') -Destination (Join-Path $startup 'StartupProbe.pck')
   foreach ($attempt in 1..3) {
     Run-Process (Join-Path $startup 'StartupProbe.exe') ('smoke-' + $attempt) @('--headless','--',('--probe-root=' + (Join-Path $startup ('storage-' + $attempt))))
@@ -128,12 +209,16 @@ try {
   # every production resource, replacing only the entry scene with the mouse driver.
   Run-Process $GodotPath 'title-probe-pack' @('--headless','--path',$root,'--script','res://tools/pack_title_probe.gd')
   $probe = Join-Path $evidence 'title-probe'
-  Copy-Item -LiteralPath (Join-Path $build 'TownDiner.exe') -Destination (Join-Path $probe 'TitleProbe.exe')
+  Copy-Item -LiteralPath "$candidate.exe" -Destination (Join-Path $probe 'TitleProbe.exe')
   Copy-Item -LiteralPath (Join-Path $probe 'probe.pck') -Destination (Join-Path $probe 'TitleProbe.pck')
   Run-Process (Join-Path $probe 'TitleProbe.exe') 'title-input' @('--headless','--',('--probe-root=' + $probe))
   $probeLog = Get-Content -LiteralPath (Join-Path $evidence 'title-input.log') -Raw
   if ($probeLog -notmatch 'TITLE_PROBE success=true checks=(\d+)' -or [int]$Matches[1] -lt 29) { throw 'Exported title and movement regression did not complete its checks' }
   $titleChecks = [int]$Matches[1]
+  Run-Process $GodotPath 'direct-pack-battle' @('--headless','--main-pack',"$candidate.pck",'--script',(Join-Path $root 'tools/title_input_probe.gd'),'--','--battle-only',("--probe-root=$evidence/direct-pack-battle"))
+  $battleLog = Get-Content -LiteralPath (Join-Path $evidence 'direct-pack-battle.log') -Raw
+  if ($battleLog -notmatch 'TITLE_PROBE success=true' -or $battleLog -notmatch 'PASS actual movement input works after dialogue') { throw 'The candidate PCK did not restore movement after the battle.' }
+  Publish-Bundle
   $summary = [ordered]@{status='PASS';check_suite=$CheckSuite;export_exit=0;smoke_exit=0;title_input_exit=0;title_input_checks=$titleChecks;runtime_files=$names.Count;package='build/TownDiner.exe + TownDiner.pck';kind='DEVELOPMENT_DEMO';human_playtest='PENDING';remote_ci='NOT_RUN'}
   $summary | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'summary.json') -Encoding utf8
   Write-Host "EXPORT PASS; evidence=$evidence"
@@ -142,4 +227,10 @@ try {
   [ordered]@{status='FAIL';reason=$_.Exception.Message} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'summary.json')
   Write-Host $_.Exception.Message
   exit 1
+} finally {
+  foreach ($part in $members) {
+    if (Test-Path -LiteralPath "$candidate$part") { Remove-Item -LiteralPath "$candidate$part" }
+  }
+  $exportLock.ReleaseMutex()
+  $exportLock.Dispose()
 }

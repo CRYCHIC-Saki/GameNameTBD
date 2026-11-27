@@ -51,7 +51,7 @@ func test_asset_and_wait_validation() -> void:
 
 func test_intro_handoffs_and_end_are_protected() -> void:
 	var original := FileAccess.get_file_as_string(Document.INTRO)
-	for changed: String in [original.replace("@td_name hero",""),original.replace("@td_cg hungry","@td_cg messenger"),original.replace("# hero_name","@end\n# hero_name"),original.replace("{$hero}","fixed")]:
+	for changed: String in [original.replace("@td_name hero",""),original.replace("@bg harbor with instant 0","@td_cg arrival"),original.replace("# beat_7","@end\n# beat_7"),original.replace("{$hero}","fixed")]:
 		var doc := Document.new(); doc.load_text(changed,Document.INTRO)
 		assert_false(doc.validate().is_empty())
 

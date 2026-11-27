@@ -69,10 +69,6 @@ static func install(service:TDServiceCatalog) -> TDOutcome:
 		cooking.recipes.append(item.recipe.duplicate(true))
 		if item.recipe.id not in cooking.active.recipes: cooking.active.recipes.append(item.recipe.id)
 		config.recipes.append(item.recipe.duplicate(true));config.offers.append(item.offer.duplicate(true))
-	for recipe: Dictionary in extension.get("extra_recipes",[]):
-		cooking.recipes=cooking.recipes.filter(func(r:Dictionary)->bool:return r.id!=recipe.id)
-		config.recipes=config.recipes.filter(func(r:Dictionary)->bool:return r.id!=recipe.id)
-		cooking.recipes.append(recipe.duplicate(true));config.recipes.append(recipe.duplicate(true))
 	cooking.pc_operations.document_sheets.merge(extension.sheets,true)
 	config.cuisine_revision=1
 	var checked:=TDCookingCatalog.new();var result:=checked.load_data(cooking,"D030 explicit runtime additions")

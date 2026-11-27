@@ -10,6 +10,7 @@ const FACING_SECTORS: Array[Vector2i] = [
 var controls_enabled: bool = true
 var body_lift: float = 47.0
 var confine_to: Callable = Callable()
+var npc_step_clear: Callable
 var facing := Vector2i.DOWN
 var motion_transform := Transform2D.IDENTITY
 var input_transform := Transform2D.IDENTITY
@@ -29,6 +30,7 @@ func _ready() -> void:
 	_sprite = $Sprite2D as Sprite2D
 	if directional_art:
 		body_lift=sprite_height*.5
+		_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		_apply_directional_pose()
 	_sprite_scale = _sprite.scale
 	texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
@@ -74,6 +76,12 @@ func _physics_process(delta: float) -> void:
 	face(direction)
 	var speed := walk_speed * (sprint_multiplier if controls_enabled and Input.is_action_pressed("world_sprint") else 1.0)
 	var motion := motion_transform.basis_xform(direction * speed)
+	if npc_step_clear.is_valid() and motion!=Vector2.ZERO and not npc_step_clear.call(position+motion*delta):
+		var across := Vector2(motion.x,0)
+		var along := Vector2(0,motion.y)
+		if across!=Vector2.ZERO and npc_step_clear.call(position+across*delta): motion=across
+		elif along!=Vector2.ZERO and npc_step_clear.call(position+along*delta): motion=along
+		else: motion=Vector2.ZERO
 	if confine_to.is_valid():
 		var travel := motion * delta
 		var proposed := position + travel

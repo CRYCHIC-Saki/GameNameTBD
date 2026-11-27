@@ -7,11 +7,14 @@ const ACTIONS: Array[Dictionary]=[
 	{"id":"employees","name":"雇员","key":"H"},{"id":"recipes","name":"菜谱","key":"B"},
 	{"id":"quests","name":"任务","key":"J"},{"id":"map","name":"地图","key":"M"},
 	{"id":"branches","name":"店铺","key":"G"},{"id":"suppliers","name":"供应商","key":"U"},
-	{"id":"relationships","name":"关系","key":"N"}]
+	{"id":"relationships","name":"关系","key":"N"},{"id":"challenge","name":"挑战","key":"C"}]
 const PAPER:=Color("30251b")
 const GOLD:=Color("764019")
 const JADE:=Color("30251b")
 const MUTED:=Color("65503a")
+const LOCKED_FILL:=Color("c2c7c6")
+const LOCKED_INK:=Color("444b4d")
+const LOCKED_KEYHOLE:=Color("dce0df")
 var buttons: Dictionary={}
 var values: Dictionary={}
 var _tiles: Dictionary={}
@@ -19,19 +22,26 @@ var _status: HBoxContainer
 var _actions: HBoxContainer
 var _toast: Label
 var _enabled: bool=true
+var _disabled_style: StyleBox
+var _locked_style: StyleBoxFlat
 
 class IconButton extends Button:
 	var action_id: String=""
 	var caption: String=""
 	var key_hint: String=""
+	var locked := false
 	func _draw() -> void:
 		var ink:=TDGameHUD.PAPER if not disabled else TDGameHUD.MUTED.darkened(.35)
-		TDGameHUD.draw_icon(self,action_id,Rect2(size.x*.5-12,7,24,24),ink)
+		if locked: ink=TDGameHUD.LOCKED_INK
+		TDGameHUD.draw_icon(self,action_id,Rect2(size.x*.5-12,7,24,24),ink,TDGameHUD.LOCKED_FILL if locked else Color("e9c28b"))
 		var font:=get_theme_font("font")
 		draw_string(font,Vector2(0,58),caption,HORIZONTAL_ALIGNMENT_CENTER,size.x,TDUI.FONT_CAPTION,ink)
 		var key_box:=Rect2(size.x-22,5,17,19)
-		draw_rect(key_box,Color("d6ad72"))
-		draw_string(font,key_box.position+Vector2(0,16),key_hint,HORIZONTAL_ALIGNMENT_CENTER,17,TDUI.FONT_MICRO,TDGameHUD.PAPER)
+		if locked:
+			TDGameHUD.draw_icon(self,"lock",key_box,ink)
+		else:
+			draw_rect(key_box,Color("d6ad72"))
+			draw_string(font,key_box.position+Vector2(0,16),key_hint,HORIZONTAL_ALIGNMENT_CENTER,17,TDUI.FONT_MICRO,TDGameHUD.PAPER)
 
 class StatTile extends Control:
 	var stat_id: String=""
@@ -61,14 +71,21 @@ func _build() -> void:
 		tile.name="Stat_"+str(spec[0]);tile.custom_minimum_size=Vector2(spec[2],68)
 		tile.mouse_filter=Control.MOUSE_FILTER_IGNORE;_status.add_child(tile);_tiles[spec[0]]=tile
 	_actions=HBoxContainer.new();_actions.add_theme_constant_override("separation",5);add_child(_actions)
+	_disabled_style=TDUI.wood(TDUI.Surface.CARD,4)
+	_locked_style=StyleBoxFlat.new()
+	_locked_style.bg_color=LOCKED_FILL
+	_locked_style.border_color=Color("777e80")
+	_locked_style.set_border_width_all(2)
+	_locked_style.set_corner_radius_all(4)
 	for action: Dictionary in ACTIONS:
 		var button:=IconButton.new();button.name="Action_"+str(action.id)
 		button.action_id=action.id;button.caption=action.name;button.key_hint=action.key
 		button.custom_minimum_size=Vector2(72,68);button.focus_mode=Control.FOCUS_NONE
 		button.tooltip_text="%s  [%s]"%[action.name,action.key]
 		button.disabled=not _enabled
-		for state: String in ["normal","hover","pressed","disabled"]:
+		for state: String in ["normal","hover","pressed"]:
 			button.add_theme_stylebox_override(state,TDUI.wood(TDUI.Surface.SELECTED if state in ["hover","pressed"] else TDUI.Surface.CARD,4))
+		button.add_theme_stylebox_override("disabled",_disabled_style)
 		button.pressed.connect(_request.bind(str(action.id)))
 		_actions.add_child(button);buttons[action.id]=button
 	_toast=TDUI.label("",TDUI.FONT_CAPTION,GOLD);_toast.mouse_filter=Control.MOUSE_FILTER_IGNORE
@@ -79,15 +96,22 @@ func _layout() -> void:
 	if _actions==null: return
 	var width: float=get_viewport_rect().size.x
 	_status.position=Vector2(14,12);_status.size=Vector2(554,68)
-	_actions.position=Vector2(maxf(576,width-548),12);_actions.size=Vector2(534,68)
+	var menu_width := _actions.get_combined_minimum_size().x
+	_actions.position=Vector2(width-menu_width-14,12);_actions.size=Vector2(menu_width,68)
 	_toast.position=Vector2(18,85);_toast.size=Vector2(maxf(500,width-36),28)
 
 func _request(id: String) -> void:
-	if _enabled: action_requested.emit(id)
+	var button: IconButton=buttons.get(id)
+	if button!=null and not button.disabled: action_requested.emit(id)
 
 func set_menu_enabled(value: bool) -> void:
+	if _enabled == value: return
 	_enabled=value
-	for button: Button in buttons.values(): button.disabled=not value;button.queue_redraw()
+	for button: IconButton in buttons.values(): _sync_button(button)
+
+func _sync_button(button: IconButton) -> void:
+	button.disabled=button.locked or not _enabled
+	button.queue_redraw()
 
 func button_for(id: String) -> Button:
 	return buttons.get(id) as Button
@@ -100,6 +124,18 @@ func reserved_bottom() -> float:
 
 func update_profile(profile: TDGameProfile, current: Dictionary={}) -> void:
 	if profile==null or profile.shop==null: return
+	for id: String in buttons:
+		if id!="challenge" and not TDRevisedMainline.EXPANSION_MILESTONES.has(id): continue
+		var button: IconButton=buttons.get(id)
+		var locked := not profile.story_feature_available(id)
+		if button==null or button.locked==locked: continue
+		button.locked=locked
+		button.tooltip_text="%s  [%s]" % [button.caption,button.key_hint]
+		if locked:
+			var hint := TDRevisedMainline.CHALLENGE_LOCK_HINT if id=="challenge" else TDRevisedMainline.expansion_hint(id)
+			button.tooltip_text="%s · 未开放\n%s" % [button.caption,hint]
+		button.add_theme_stylebox_override("disabled",_locked_style if locked else _disabled_style)
+		_sync_button(button)
 	var state: Dictionary=profile.shop.snapshot() if current.is_empty() else current
 	set_values({"day":str(state.day),"time":profile.characters.clock.label(),"level":str(profile.progression.progress().level),
 		"money":money_text(int(state.money_cents)),"popularity":str(roundi(float(state.popularity))),
@@ -107,7 +143,8 @@ func update_profile(profile: TDGameProfile, current: Dictionary={}) -> void:
 	if _tiles.has("money"): (_tiles.money as Control).tooltip_text="金币 %.2f"%(float(state.money_cents)/100.0)
 
 func set_values(next: Dictionary) -> void:
-	values=next.duplicate(true)
+	if values != next:
+		values=next.duplicate(true)
 	for id: String in _tiles:
 		var tile: StatTile=_tiles[id];var text: String=str(values.get(id,"—"))
 		if tile.value!=text: tile.value=text;tile.queue_redraw()
@@ -118,34 +155,43 @@ static func money_text(cents: int) -> String:
 	if absf(amount)>=1000000.0: return "%.2f万"%(amount/10000.0)
 	return "%.2f"%amount
 
-static func draw_icon(canvas: CanvasItem, id: String, rect: Rect2, ink: Color) -> void:
+static func draw_icon(canvas: CanvasItem, id: String, rect: Rect2, ink: Color, accent: Color=Color("e9c28b")) -> void:
 	# Deliberately drawn silhouettes: no emoji font or external raster dependency.
 	canvas.draw_set_transform(rect.position,0,rect.size/Vector2(24,24))
 	match id:
+		"lock":
+			canvas.draw_polyline(PackedVector2Array([Vector2(7,12),Vector2(7,6),Vector2(9,4),Vector2(15,4),Vector2(17,6),Vector2(17,12)]),ink,3)
+			canvas.draw_rect(Rect2(4,11,16,11),ink)
+			canvas.draw_rect(Rect2(11,14,2,5),LOCKED_KEYHOLE)
 		"employees":
 			canvas.draw_rect(Rect2(8,3,8,7),ink);canvas.draw_rect(Rect2(5,12,14,9),ink)
 			canvas.draw_rect(Rect2(2,6,4,5),ink.darkened(.3));canvas.draw_rect(Rect2(18,6,4,5),ink.darkened(.3))
 		"recipes":
 			canvas.draw_rect(Rect2(3,3,8,18),ink);canvas.draw_rect(Rect2(13,3,8,18),ink)
-			for y: int in [7,11,15]: canvas.draw_line(Vector2(5,y),Vector2(9,y),Color("e9c28b"),1);canvas.draw_line(Vector2(15,y),Vector2(19,y),Color("e9c28b"),1)
+			for y: int in [7,11,15]: canvas.draw_line(Vector2(5,y),Vector2(9,y),accent,1);canvas.draw_line(Vector2(15,y),Vector2(19,y),accent,1)
 		"quests":
 			canvas.draw_rect(Rect2(5,3,14,19),ink);canvas.draw_rect(Rect2(9,1,6,4),ink.darkened(.3))
-			for y: int in [8,12,16]: canvas.draw_rect(Rect2(8,y,2,2),Color("e9c28b"));canvas.draw_line(Vector2(12,y+1),Vector2(16,y+1),Color("e9c28b"),1)
+			for y: int in [8,12,16]: canvas.draw_rect(Rect2(8,y,2,2),accent);canvas.draw_line(Vector2(12,y+1),Vector2(16,y+1),accent,1)
 		"map":
 			canvas.draw_polyline(PackedVector2Array([Vector2(2,5),Vector2(8,2),Vector2(16,5),Vector2(22,2),Vector2(22,19),Vector2(16,22),Vector2(8,19),Vector2(2,22),Vector2(2,5)]),ink,2)
 			canvas.draw_line(Vector2(8,3),Vector2(8,19),ink,1);canvas.draw_line(Vector2(16,5),Vector2(16,21),ink,1)
 		"branches":
-			canvas.draw_rect(Rect2(4,9,16,12),ink);canvas.draw_rect(Rect2(9,14,6,7),Color("e9c28b"))
+			canvas.draw_rect(Rect2(4,9,16,12),ink);canvas.draw_rect(Rect2(9,14,6,7),accent)
 			canvas.draw_colored_polygon(PackedVector2Array([Vector2(1,9),Vector2(7,3),Vector2(17,3),Vector2(23,9)]),ink)
-			canvas.draw_line(Vector2(3,11),Vector2(21,11),Color("e9c28b"),2)
+			canvas.draw_line(Vector2(3,11),Vector2(21,11),accent,2)
 		"suppliers":
 			canvas.draw_rect(Rect2(3,8,18,13),ink);canvas.draw_rect(Rect2(2,5,20,4),ink.lightened(.15))
-			canvas.draw_line(Vector2(8,10),Vector2(8,19),Color("e9c28b"),2);canvas.draw_line(Vector2(16,10),Vector2(16,19),Color("e9c28b"),2)
+			canvas.draw_line(Vector2(8,10),Vector2(8,19),accent,2);canvas.draw_line(Vector2(16,10),Vector2(16,19),accent,2)
 		"relationships":
 			canvas.draw_colored_polygon(PackedVector2Array([Vector2(2,6),Vector2(6,3),Vector2(12,7),Vector2(18,3),Vector2(22,6),Vector2(22,12),Vector2(12,22),Vector2(2,12)]),ink)
+		"challenge":
+			canvas.draw_line(Vector2(4,21),Vector2(19,4),ink,3)
+			canvas.draw_line(Vector2(3,14),Vector2(11,21),ink,2)
+			canvas.draw_line(Vector2(20,21),Vector2(5,4),ink,3)
+			canvas.draw_line(Vector2(13,21),Vector2(21,14),ink,2)
 		"money":
 			canvas.draw_rect(Rect2(5,2,14,20),ink);canvas.draw_rect(Rect2(2,5,20,14),ink)
-			canvas.draw_rect(Rect2(9,8,6,8),Color("e9c28b"));canvas.draw_line(Vector2(5,5),Vector2(17,5),ink.lightened(.25),2)
+			canvas.draw_rect(Rect2(9,8,6,8),accent);canvas.draw_line(Vector2(5,5),Vector2(17,5),ink.lightened(.25),2)
 		"popularity":
 			canvas.draw_rect(Rect2(9,2,6,6),ink);canvas.draw_rect(Rect2(7,10,10,12),ink)
 			canvas.draw_rect(Rect2(1,7,4,5),ink);canvas.draw_rect(Rect2(19,7,4,5),ink)
@@ -161,5 +207,5 @@ static func draw_icon(canvas: CanvasItem, id: String, rect: Rect2, ink: Color) -
 			canvas.draw_rect(Rect2(7,14,4,4),ink)
 		"level":
 			canvas.draw_colored_polygon(PackedVector2Array([Vector2(12,1),Vector2(22,12),Vector2(12,23),Vector2(2,12)]),ink)
-			canvas.draw_polyline(PackedVector2Array([Vector2(8,14),Vector2(12,9),Vector2(16,14)]),Color("e9c28b"),2)
+			canvas.draw_polyline(PackedVector2Array([Vector2(8,14),Vector2(12,9),Vector2(16,14)]),accent,2)
 	canvas.draw_set_transform_matrix(Transform2D.IDENTITY)

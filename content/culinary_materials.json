@@ -3450,7 +3450,7 @@
         "temperature_c": 22,
         "max_amount": 10,
         "available": true,
-        "source": "towns.json qiguoji 菌香；菌菇用料、数量与矩阵为PROPOSED"
+        "source": "菌菇用料、数量与矩阵为PROPOSED"
       },
       "source_id": "shiitake",
       "culture_tags": [],
@@ -8226,6 +8226,16 @@
       ],
       "status": "PROPOSED_AI_079",
       "note": "显式建议材料组合；原文泛称按同菜系常见材料展开，不代表工序/用量已验收。"
+    },
+    {
+      "id": "E21",
+      "cuisine_id": "eu",
+      "name": "菌菇浓汤",
+      "source_text": "菌菇、清汤、奶油、黄油、盐",
+      "ingredients": ["mushroom", "stock"],
+      "seasonings": ["butter", "cream", "salt"],
+      "status": "PROPOSED_AI_079",
+      "note": "稀味郡经营教学菜谱。"
     }
   ],
   "palettes": {

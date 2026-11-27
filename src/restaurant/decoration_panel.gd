@@ -6,9 +6,10 @@ signal category_changed
 signal done
 
 const CATEGORIES: Array[String]=["地面","墙壁","陈设","餐桌","座椅","服务台"]
-const PANEL_HEIGHT: float=320.0
-const GROUPS: Dictionary={"陈设":["screen","kiosk"],"餐桌":["dining_table"],"座椅":["waiting_seat","booth","sofa","stool","child_seat"],"服务台":["welcome_desk","cashier","order_counter"]}
+const PANEL_HEIGHT: float=344.0
+const GROUPS: Dictionary={"陈设":["screen","kiosk"],"餐桌":["dining_table"],"座椅":["waiting_seat","booth","sofa","stool","child_seat"],"服务台":["cashier"]}
 var catalog: TDRestaurantCatalog
+var progression: TDLevelProgression
 var category: String="餐桌"
 var culture: String="chinese"
 var tier: String="low"
@@ -22,17 +23,20 @@ class Card extends Button:
 	var finish: String=""
 	var details: String=""
 	func _draw() -> void:
+		draw_rect(Rect2(12,8,size.x-24,92),Color("b69870"))
+		draw_rect(Rect2(14,10,size.x-28,88),Color("ead7b2"))
 		if not piece.is_empty():
 			var rect:=TDFurnitureModel.bounds(piece)
 			var scale_value: float=minf(130/rect.size.x,82/rect.size.y)
-			draw_set_transform(Vector2(size.x*.5,92),0,Vector2.ONE*scale_value)
+			draw_set_transform(Vector2(size.x*.5,86),0,Vector2.ONE*scale_value)
 			TDFurnitureModel.draw_model(self,piece)
 			draw_set_transform_matrix(Transform2D.IDENTITY)
 		else:
 			TDRegionalInterior.draw_finish_sample(self,finish,Rect2(25,14,size.x-50,70))
 		var font:=get_theme_font("font")
 		var lines:=details.split("\n")
-		for index in lines.size(): draw_string(font,Vector2(10,118+index*24),lines[index],HORIZONTAL_ALIGNMENT_LEFT,size.x-20,TDUI.FONT_CAPTION,TDUI.INK)
+		for index in lines.size():
+			draw_string(font,Vector2(14,122+index*22),lines[index],HORIZONTAL_ALIGNMENT_LEFT,size.x-28,TDUI.FONT_CAPTION,TDUI.INK)
 
 func _ready() -> void:
 	theme=TDUI.theme()
@@ -41,7 +45,9 @@ func _ready() -> void:
 	var margin:=MarginContainer.new()
 	for side: String in ["left","right","top","bottom"]: margin.add_theme_constant_override("margin_"+side,12)
 	add_child(margin)
-	var column:=VBoxContainer.new();margin.add_child(column)
+	var column:=VBoxContainer.new();column.add_theme_constant_override("separation",8);margin.add_child(column)
+	var heading := TDUI.label("餐厅布置",TDUI.FONT_SECTION,TDUI.INK)
+	column.add_child(heading)
 	var row:=HBoxContainer.new();column.add_child(row)
 	for title: String in CATEGORIES:
 		var tab:=Button.new();tab.text=title;tab.toggle_mode=true;tab.focus_mode=Control.FOCUS_NONE
@@ -79,10 +85,11 @@ func refresh_cards() -> void:
 		for theme_id: String in TDRegionalInterior.DECOR_STYLES:
 			if theme_id!=culture: ids.append(base+"__"+theme_id+"_"+tier)
 	for value: String in ids:
-		var card:=Card.new();card.name="Item_"+value;card.custom_minimum_size=Vector2(224,188);card.toggle_mode=true;card.button_pressed=selected==value;card.focus_mode=Control.FOCUS_NONE
 		var choice:=furniture_choice(value)
 		var definition:=catalog.furniture(str(choice.get("kind",value)))
 		var finish: bool=definition.is_empty()
+		if progression != null and not progression.decoration_unlocked(value if finish else str(definition.id)): continue
+		var card:=Card.new();card.name="Item_"+value;card.custom_minimum_size=Vector2(224,188);card.toggle_mode=true;card.button_pressed=selected==value;card.focus_mode=Control.FOCUS_NONE
 		if finish:
 			card.finish=value;card.details=TDRestaurantLayout.finish_name(value)+"\n整屋"+category+" · 点击替换\n仅改变外观"
 		else:

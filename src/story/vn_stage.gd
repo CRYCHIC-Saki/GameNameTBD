@@ -4,6 +4,7 @@ extends Control
 signal block_started(kind: String, args: String)
 signal line_started(speaker: String, text: String)
 signal completed
+signal failed
 const HOST_COMMAND := preload("res://src/story/vn_host_command.gd")
 var main: VNEngineMain
 var runner: VNEngineStoryRunner
@@ -15,6 +16,8 @@ var block_args: String = ""
 var hero_name: String = ""
 var needs_name: bool = false
 var event_chapter: Dictionary = {}
+var source_talk: TDDialogue
+var scenario_text: String = ""
 var chapter_id: String = "intro"
 var _dialog_layer: CanvasLayer
 var _generation: int = 0
@@ -34,14 +37,17 @@ func _ready() -> void:
 	hide()
 
 static func supports(talk: TDDialogue) -> bool:
-	return talk != null and talk.presentation == "story" and (str(talk.context.get("scene", "")) == "intro" or talk.context.get("kind") == "authored_event")
+	return talk != null and talk.presentation == "story"
 
-func start(name_value: String, request_name: bool) -> void:
+func start(name_value: String, request_name: bool) -> bool:
 	reset()
 	_completed = false
 	hero_name = name_value
 	needs_name = request_name
 	chapter_id = str(event_chapter.get("id","intro"))
+	var script_path := str(event_chapter.get("script_path",""))
+	if not event_chapter.is_empty() and scenario_text.is_empty() and not FileAccess.file_exists(script_path) and not ResourceLoader.exists(script_path + ".res"):
+		return false
 	container = SubViewportContainer.new()
 	container.stretch = true
 	add_child(container)
@@ -60,8 +66,11 @@ func start(name_value: String, request_name: bool) -> void:
 	main.set_meta("host", self)
 	main.chapter_finished.connect(_on_completed)
 	viewport.add_child(main)
+	var game := VNEngineMain.game()
+	if VNEngineMain.instance() != main or game == null or game.manifest == null or main.screen_stack == null:
+		reset()
+		return false
 	if not event_chapter.is_empty():
-		var game := VNEngineMain.game()
 		game.manifest = game.manifest.duplicate(true)
 		var chapter := VNEngineChapterDef.new()
 		chapter.id = chapter_id; chapter.title = event_chapter.title; chapter.script_path = event_chapter.script_path
@@ -69,15 +78,39 @@ func start(name_value: String, request_name: bool) -> void:
 		game.manifest.chapters.append(chapter)
 		main.play_chapter(chapter_id)
 	show()
+	return true
 
 func attach_stage(stage: VNEngineStageScreen) -> void:
 	runner = stage.story_runner
 	dialog = runner.ctx.dialog_ui
 	_dialog_layer = stage.get_node("CanvasLayer")
-	for cmd: String in ["td_cg", "td_name"]:
+	for cmd: String in ["td_cg", "td_name", "td_pick"]:
 		runner.bus.register(HOST_COMMAND.new(self, cmd))
+	if source_talk != null:
+		for beat: Dictionary in source_talk._beats:
+			_register_speaker(beat)
+			for option: Dictionary in beat.get("options", []): _register_speaker(option)
+		runner.state.flags["san_before"] = str(source_talk.context.get("san_before", 100))
+		runner.state.flags["san_after"] = str(source_talk.context.get("san_after", 95))
 	runner.dialog_started.connect(_on_line)
-	if not needs_name: _set_name(hero_name)
+	runner.parse_diagnostics_ready.connect(_on_diagnostics.bind(_generation))
+	_set_name("？？？" if needs_name else hero_name)
+
+func _register_speaker(beat: Dictionary) -> void:
+	var id := TDVNPresentation.speaker_id(beat)
+	if id == "narrator" or runner.ctx.characters.cast.get_entry(id) != null: return
+	var member := VNEngineCastMember.new()
+	member.id = id
+	member.display_name = str(beat.get("speaker", ""))
+	member.blip = "off"
+	runner.ctx.characters.cast.characters.append(member)
+
+func preparsed_script(path: String) -> VNEngineStoryScript:
+	if scenario_text.is_empty() or path != str(event_chapter.get("script_path", "")): return null
+	return VNEngineScenarioParser.parse_text(scenario_text, path)
+
+func record_pick(id: String) -> void:
+	if source_talk != null and not _completed: source_talk.picks.append(id)
 
 func begin_block(kind: String, args: String, context: VNEngineCommandContext) -> void:
 	if context.runner != runner or _completed: return
@@ -127,7 +160,7 @@ func _on_line(node: VNEngineStoryNode) -> void:
 		if str(actor.get_meta("td_layout", "")).is_empty():
 			actor.offset_top = -720.0
 			actor.offset_bottom = -115.0
-		if who == "aling" and not actor.sprite.has_node("LedgerTitle"):
+		if who == "aling" and not actor.sprite.has_node("LedgerTitle") and (source_talk == null or source_talk.context.get("kind") not in ["revised_mainline","revised_preview"]):
 			var title := LedgerTitle.new()
 			title.name = "LedgerTitle"
 			title.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -142,6 +175,13 @@ func _on_completed(chapter: String) -> void:
 
 func _emit_completed(generation: int) -> void:
 	if generation == _generation and _completed: completed.emit()
+
+func _on_diagnostics(diagnostics: Array, generation: int) -> void:
+	if generation != _generation or _completed: return
+	for item: VNEngineParseDiagnostic in diagnostics:
+		if item.severity == VNEngineParseDiagnostic.Severity.ERROR:
+			failed.emit()
+			return
 
 func set_paused(value: bool) -> void:
 	_paused = value

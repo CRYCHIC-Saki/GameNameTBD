@@ -1,0 +1,48 @@
+// D078: soup; source: opening.json / homecoming.json. Visual presentation only.
+# start
+@bg town-china with instant 0
+
+# beat_0
+@hide hero with instant
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@bg town-china with instant 0
+narrator: 老陈戴着围裙，双手举起汤勺。身后的金边画像上，至味卿罗厄以双刀交叉于胸前。\n摊前的居民端着碗，神情庄严。
+
+# beat_1
+@hide aling with instant
+@hide luo with instant
+@show chen happy at td:0.789020:1.503413:2.150000 with instant
+chen: 欢迎，饥饿的灵魂！此乃遵照至味卿圣典烹成的“黎明圣羹”！
+
+# beat_2
+@hide hero with instant
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@bg cg-black-soup with instant 0
+narrator: 他盛出一碗浓黑的汤。焦硬的蛋块浮在糖浆般的汤面上，碗边结着一圈盐。
+
+# beat_3
+@show hero puzzled at td:0.268170:1.464197:2.150000 with instant
+hero: 请教司祭，这里面……
+
+# beat_4
+@hide aling with instant
+@hide luo with instant
+@show chen happy at td:0.789020:1.503413:2.150000 with instant
+chen: 九勺盐，九勺糖！烈火煎至漆黑，再以冰水封存！九重苦难，方得一口升华！
+
+# beat_5
+@show hero puzzled at td:0.268170:1.464197:2.150000 with instant
+hero: 这套咒式，真的有必要施加在鸡蛋身上吗？
+
+# beat_6
+@hide chen with instant
+@hide luo with instant
+@show aling calm at td:0.740000:1.555701:2.150000 with instant
+aling: 莫被外表迷惑。夜鸦已连续七日接受此羹的试炼。
+
+# finish
+@end

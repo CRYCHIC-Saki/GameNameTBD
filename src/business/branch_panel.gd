@@ -1,6 +1,7 @@
 class_name TDBranchPanel
 extends VBoxContainer
 signal changed
+signal tab_viewed(store_id: String, tab: String)
 ## Store navigation and intents. Existing Shop/Branches/Roster remain the authorities.
 var profile: TDGameProfile
 var selected_id: String=""
@@ -26,10 +27,15 @@ var budget_input: SpinBox
 var pause_input: CheckBox
 var apply_button: Button
 var back_button: Button
+var _training_id := ""
 
 
-func configure(value: TDGameProfile) -> void:
+func configure(value: TDGameProfile, training_id: String = "") -> void:
 	profile=value; theme=TDManagementPanels.theme();add_theme_constant_override("separation",12); selected_town=str(profile.commerce.state.home)
+	_training_id=training_id
+	if not _training_id.is_empty():
+		manage(_training_id)
+		return
 	list_stores()
 
 func _clear() -> void:
@@ -99,13 +105,13 @@ func begin_site() -> void:
 		if id not in profile.research.snapshot().cuisines or profile.branches.recipes(id).is_empty(): continue
 		cuisine_ids.append(id); cuisines.add_item(str(TDPlayerBranches.TITLES[id]))
 	selected_cuisine=str(cuisine_ids[0]); cuisines.item_selected.connect(func(index:int)->void:selected_cuisine=str(cuisine_ids[index]); _update_quote())
-	var site_help:=TDUI.label("三镇均可开店。每边3–12格、最多108格，须临路且不占已有用地。",TDUI.FONT_CAPTION,TDUI.MUTED)
+	var site_help:=TDUI.label("可在已开放的小镇开店。每边3–12格、最多108格，须临路且不占已有用地。",TDUI.FONT_CAPTION,TDUI.MUTED)
 	add_child(site_help); _site_controls.append(site_help)
 	var navigation:=HBoxContainer.new(); add_child(navigation); _site_controls.append(navigation)
 	map_view=SiteMap.new(); map_view.configure(profile)
 	map_view.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	navigation.add_child(TDUI.button("世界全览",map_view.reset_view))
-	for id: String in TDTravelCatalog.IDS:
+	for id: String in map_view.maps:
 		navigation.add_child(TDUI.button(str(TDTravelCatalog.info(id).name),map_view.choose_town.bind(id)))
 	add_child(map_view)
 	map_view.town_selected.connect(func(id:String)->void:selected_town=id; selected_rect=[]; selected_manager=""; _update_quote())
@@ -155,11 +161,13 @@ func confirm() -> void:
 
 func manage(id: String) -> void:
 	if profile==null or not profile._alive: return
+	if not _training_id.is_empty() and id!=_training_id: return
 	if id!=HOME and not profile.branches.state.stores.has(id): list_stores();_notice("这家店已不存在。");return
 	selected_id=id;current_tab="menu";_detail()
 
 func select_tab(tab: String) -> void:
 	if tab not in ["menu","staff","management","books"]: return
+	if not _training_id.is_empty() and tab not in ["menu","books"]: return
 	current_tab=tab;_detail()
 
 func _automatic() -> bool:
@@ -169,14 +177,17 @@ func _detail() -> void:
 	if profile==null or not profile._alive: return
 	_clear();map_view=null;menu_rows.clear();tab_buttons.clear();budget_input=null;pause_input=null
 	var heading:=HBoxContainer.new();add_child(heading)
-	back_button=TDUI.button("‹ 全部店铺",list_stores);heading.add_child(back_button)
-	heading.add_child(TDManagementPanels.text(_store_name(selected_id)+(" · 主店" if _is_home() else (" · 分店" if profile.branches.funded(selected_id) else " · 待核对记录")),TDUI.FONT_TITLE,TDManagementPanels.GOLD))
+	if _training_id.is_empty():
+		back_button=TDUI.button("‹ 全部店铺",list_stores);heading.add_child(back_button)
+	var subtitle := " · 经营点" if not _training_id.is_empty() else (" · 主店" if _is_home() else (" · 分店" if profile.branches.funded(selected_id) else " · 待核对记录"))
+	heading.add_child(TDManagementPanels.text(_store_name(selected_id)+subtitle,TDUI.FONT_TITLE,TDManagementPanels.GOLD))
 	var manager:=profile.employees.manager_for(selected_id)
 	var manager_line:=HBoxContainer.new();add_child(manager_line)
 	if not manager.is_empty(): manager_line.add_child(TDManagementPanels.employee_portrait(manager,Vector2(40,45)))
 	manager_line.add_child(TDManagementPanels.text("店长："+("尚未派驻" if manager.is_empty() else str(manager.name)+"★".repeat(int(manager.stars)))+" · "+("经营托管已开启" if _automatic() else "手动管理"),TDUI.FONT_BODY,TDUI.MUTED))
 	var tabs:=HBoxContainer.new();add_child(tabs)
 	for pair: Array in [["menu","菜单与价格"],["staff","店员安排"],["management","托管与供货"],["books","账本与库存"]]:
+		if not _training_id.is_empty() and pair[0] not in ["menu","books"]: continue
 		var button:=TDUI.button(pair[1],select_tab.bind(pair[0]));button.toggle_mode=true;button.button_pressed=current_tab==pair[0];tabs.add_child(button);tab_buttons[pair[0]]=button
 	status_label=TDUI.label("",TDUI.FONT_BODY,TDUI.ORANGE);status_label.hide();add_child(status_label)
 	if not _is_home():
@@ -194,6 +205,7 @@ func _detail() -> void:
 		"staff": _staff_page()
 		"management": _management_page()
 		"books": _books_page()
+	tab_viewed.emit(selected_id,current_tab)
 	_scroll_top()
 
 func _fund_pending() -> void:
@@ -205,8 +217,11 @@ func _fund_pending() -> void:
 func _menu_page() -> void:
 	var data: Dictionary={} if _is_home() else profile.branches.state.stores[selected_id]
 	var choices: Array=profile.main_menu_rows() if _is_home() else profile.branches.recipes(data.cuisine_id)
-	var editable: bool=profile.at_boundary() and not _automatic()
-	add_child(TDUI.label("勾选当日上架菜品，右侧填写每份售价。" if not _automatic() else "店长会在筹备时选择菜单与价格；关闭经营托管后可手动修改。",TDUI.FONT_BODY,TDUI.MUTED))
+	var editable: bool=profile.at_boundary() and not _automatic() and not profile.branches.training_open(selected_id)
+	var guidance := "勾选当日上架菜品，右侧填写每份售价。"
+	if choices.is_empty() and not _is_home(): guidance = "学会一道本店菜系的菜谱后，就可以配置菜单。"
+	elif _automatic(): guidance = "店长会在筹备时选择菜单与价格；关闭经营托管后可手动修改。"
+	add_child(TDUI.label(guidance,TDUI.FONT_BODY,TDUI.MUTED))
 	for dish: Dictionary in choices:
 		var row:=HBoxContainer.new();row.add_theme_constant_override("separation",18);add_child(row)
 		var check:=CheckBox.new();check.text=dish.name;check.size_flags_horizontal=Control.SIZE_EXPAND_FILL;row.add_child(check)
@@ -215,18 +230,26 @@ func _menu_page() -> void:
 		var reference:=TDUI.label("参考价 %.2f"%(float(dish.reference_cents)/100),TDUI.FONT_CAPTION,TDUI.MUTED);reference.custom_minimum_size.x=140;row.add_child(reference)
 		var price:=SpinBox.new();price.min_value=.01;price.max_value=10000;price.step=.01;price.prefix="金币 ";price.value=float(dish.price_cents if _is_home() or current.is_empty() else current[0].price_cents)/100;price.custom_minimum_size=Vector2(190,44);price.editable=editable;row.add_child(price)
 		menu_rows[dish.id]={"check":check,"price":price}
-	if not _is_home():
+	if not _is_home() and _training_id.is_empty():
 		add_child(TDUI.label("每日采购预算",TDUI.FONT_BODY))
 		budget_input=SpinBox.new();budget_input.min_value=0;budget_input.max_value=100000;budget_input.step=1;budget_input.prefix="金币 ";budget_input.value=float(data.budget_cents)/100;budget_input.editable=profile.at_boundary();add_child(budget_input)
 		pause_input=CheckBox.new();pause_input.text="暂停营业（当日已发生工资及房租照常结算）";pause_input.button_pressed=data.paused;pause_input.disabled=not profile.at_boundary();add_child(pause_input)
-	apply_button=TDUI.button("应用菜单与价格" if _is_home() else "应用菜单、预算与营业安排",apply_menu);apply_button.disabled=not profile.at_boundary() or (choices.is_empty()) or (_is_home() and not editable);add_child(apply_button)
+		if data.has("rent_started") and not data.rent_started: pause_input.text = "暂停营业（首次启用后开始计租）"
+	var menu_only := _is_home() or not _training_id.is_empty()
+	apply_button=TDUI.button("应用菜单与价格" if menu_only else "应用菜单、预算与营业安排",apply_menu);apply_button.disabled=not editable or choices.is_empty();add_child(apply_button)
 
 func apply_menu() -> void:
 	if profile==null or not profile._alive: return
 	var chosen: Array=[]
 	for id: String in menu_rows:
 		if menu_rows[id].check.button_pressed: chosen.append({"id":id,"price_cents":roundi(menu_rows[id].price.value*100)})
-	var result:=profile.shop.configure_menu(chosen) if _is_home() else profile.branches.configure_store(selected_id,chosen,roundi(budget_input.value*100),pause_input.button_pressed)
+	var result: TDOutcome
+	if _is_home():
+		result=profile.shop.configure_menu(chosen)
+	elif not _training_id.is_empty():
+		result=profile.branches.configure_store(selected_id,chosen,int(profile.branches.state.stores[selected_id].budget_cents),true,true)
+	else:
+		result=profile.branches.configure_store(selected_id,chosen,roundi(budget_input.value*100),pause_input.button_pressed)
 	if result.ok: changed.emit()
 	_notice(result.message if not result.message.is_empty() else result.code)
 
@@ -265,8 +288,8 @@ func _management_page() -> void:
 	if _is_home() and profile.employees.manager_for(HOME).is_empty(): add_child(TDUI.label("店长缺位，自动配置暂停。请在“店员安排”中派驻店长。" if _automatic() else "请先在“店员安排”中为主店派驻店长。",TDUI.FONT_BODY,TDUI.ORANGE))
 	if _is_home(): add_child(TDUI.label("开门和打烊仍由你决定；厨师负责做菜，服务员负责传菜与收银。",TDUI.FONT_BODY,TDUI.MUTED))
 	var account := profile.menu_supply
-	var supply_status := "品牌 %d 级解锁"%account.UNLOCK_LEVEL
-	if account.level()>=account.UNLOCK_LEVEL:
+	var supply_status := "随主线开放"
+	if profile.story_feature_available("suppliers"):
 		supply_status = "欠款停供" if account.state.suspended else ("已开启" if account.state.enabled else "已关闭")
 	add_child(TDUI.label("菜单供货 · %s　按 U 查看账户与明日配送。"%supply_status,TDUI.FONT_BODY,TDUI.MUTED))
 
@@ -292,7 +315,7 @@ func _books_page() -> void:
 	for item: String in stock.inventory:
 		if int(stock.inventory[item])<=0: continue
 		lines.append("%s  %.2f · 第%d天到期"%[profile._factory_item(item).get("name",item),float(stock.inventory[item])/1000,TDFoodStock.first_expiry(lots,item)])
-	add_child(TDUI.label("\n".join(lines) if not lines.is_empty() else "暂无库存。按 U 查看次晨菜单供货。",TDUI.FONT_BODY))
+	add_child(TDUI.label("\n".join(lines) if not lines.is_empty() else "暂无库存，可到本地市集补货。",TDUI.FONT_BODY))
 
 static func main_report_text(book: Dictionary) -> String:
 	return "第%d天 · 净销售 %.2f · 净利润 %+.2f 金币\n耗料 %.2f / 工资 %.2f / 房租 %.2f / 水电 %.2f / 利息 %.2f / 税 %.2f"%[int(book.day),float(book.sales_net_cents)/100,float(book.profit_cents)/100,float(book.consumed_cost_cents)/100,float(book.get("wages_cents",0))/100,float(book.rent_cents)/100,float(book.utilities_cents)/100,float(book.get("interest_cents",0))/100,float(book.get("tax_cents",0))/100]
@@ -387,7 +410,7 @@ class SiteMap extends TDTravelMapView:
 		_preview=Rect2i(origin,Vector2i(absi(cell.x-_start.x)+1,absi(cell.y-_start.y)+1))
 
 	func caption_text() -> String:
-		if selected_town.is_empty(): return "三镇均可选址 · 开店与进口商路独立 · 道路、住房和既有建筑不可占用"
+		if selected_town.is_empty(): return "在已开放的小镇选址 · 道路、住房和既有建筑不可占用"
 		return str(TDTravelCatalog.info(selected_town).caption)
 
 	func _build_land() -> void:

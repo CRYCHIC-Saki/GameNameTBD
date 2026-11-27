@@ -2,6 +2,10 @@ class_name TDLevelProgression
 extends RefCounted
 ## Portfolio-wide daily growth. No wallet, scene, wall clock or random dependencies.
 const PATH := "res://content/brand/progression.json"
+const LEGACY_DAILY := {
+	"profit_reference_cents":3000, "profit_cap_xp":70, "popularity_cap_xp":15,
+	"awareness_cap_xp":15, "growth_xp_per_point":3, "max_xp":100,
+}
 var config: Dictionary = {}
 var error := TDOutcome.new(true)
 var _state: Dictionary = {}
@@ -42,12 +46,19 @@ static func same_value(a: Variant, b: Variant) -> bool:
 	return typeof(a)==typeof(b) and a==b
 
 static func validate_config(raw: Variant) -> TDOutcome:
-	if not raw is Dictionary or raw.get("schema_version") != 1 or raw.get("rules_version") != 1: return TDOutcome.new(false,"INVALID_LEVEL_CONFIG_VERSION")
+	if not raw is Dictionary or raw.get("schema_version") != 1 or not integer(raw.get("rules_version"),1,2): return TDOutcome.new(false,"INVALID_LEVEL_CONFIG_VERSION")
 	if not integer(raw.get("max_level"),2,100): return TDOutcome.new(false,"INVALID_LEVEL_CONFIG")
 	for field: String in ["curve","daily","rewards"]:
 		if not raw.get(field) is Dictionary: return TDOutcome.new(false,"INVALID_LEVEL_CONFIG",field)
 	for key: String in ["base_xp","linear_xp","quadratic_xp"]:
 		if not integer(raw.curve.get(key),1 if key=="base_xp" else 0,100000): return TDOutcome.new(false,"INVALID_LEVEL_CURVE")
+	if raw.rules_version==2:
+		for key: String in ["early_base_xp","early_linear_xp","early_last_level","full_curve_level"]:
+			if not integer(raw.curve.get(key),1,1000): return TDOutcome.new(false,"INVALID_EARLY_LEVEL_CURVE")
+		if int(raw.curve.early_last_level)>=int(raw.curve.full_curve_level): return TDOutcome.new(false,"INVALID_EARLY_LEVEL_CURVE")
+	if not raw.get("decoration",{}) is Dictionary: return TDOutcome.new(false,"INVALID_DECORATION_REWARDS")
+	for id: String in raw.get("decoration",{}):
+		if not identity(id) or not integer(raw.decoration[id],2,int(raw.max_level)): return TDOutcome.new(false,"INVALID_DECORATION_REWARD")
 	for key: String in ["profit_reference_cents","profit_cap_xp","popularity_cap_xp","awareness_cap_xp","growth_xp_per_point","max_xp"]:
 		if not integer(raw.daily.get(key),1,1000000): return TDOutcome.new(false,"INVALID_LEVEL_MAPPING")
 	if int(raw.daily.max_xp) > 1000 or int(raw.daily.max_xp) != int(raw.daily.profit_cap_xp)+int(raw.daily.popularity_cap_xp)+int(raw.daily.awareness_cap_xp): return TDOutcome.new(false,"INVALID_LEVEL_CAP")
@@ -60,24 +71,37 @@ static func validate_config(raw: Variant) -> TDOutcome:
 	return TDOutcome.new(true,"VALID")
 
 func start(day: int, baselines: Dictionary, migrated: bool = false) -> void:
-	_state={"schema_version":1,"rules_version":1,"level":1,"total_xp":0,"origin_day":day,"last_day":day-1,"migrated":migrated,"baselines":baselines.duplicate(true),"rewards":[],"events":{},"recent":[]}
+	_state={"schema_version":1,"rules_version":int(config.rules_version),"level":1,"total_xp":0,"origin_day":day,"last_day":day-1,"migrated":migrated,"baselines":baselines.duplicate(true),"rewards":[],"events":{},"recent":[]}
 
 func snapshot() -> Dictionary:
 	return _state.duplicate(true)
 
-func required_xp(level: int) -> int:
+func required_xp(level: int, rules: int = 0) -> int:
+	if rules == 0: rules = int(config.rules_version)
 	var n := maxi(0,level-1)
-	return int(config.curve.base_xp)+int(config.curve.linear_xp)*n+int(config.curve.quadratic_xp)*n*n
+	var curve: Dictionary = config.curve
+	var base := int(curve.base_xp)+int(curve.linear_xp)*n+int(curve.quadratic_xp)*n*n
+	if rules==1 or level>=int(curve.full_curve_level): return base
+	var early := mini(base,int(curve.early_base_xp)+int(curve.early_linear_xp)*n)
+	if level<=int(curve.early_last_level): return early
+	var blend := inverse_lerp(float(curve.early_last_level),float(curve.full_curve_level),float(level))
+	return roundi(lerpf(early,base,blend*blend))
 
-func threshold(level: int) -> int:
+func threshold(level: int, rules: int = 0) -> int:
 	var total := 0
-	for current: int in range(1,level): total += required_xp(current)
+	for current: int in range(1,level): total += required_xp(current,rules)
 	return total
 
-func level_for(total: int) -> int:
+func level_for(total: int, rules: int = 0) -> int:
 	var level := 1
-	while level<int(config.max_level) and total>=threshold(level+1): level+=1
+	while level<int(config.max_level) and total>=threshold(level+1,rules): level+=1
 	return level
+
+func decoration_level(id: String) -> int:
+	return int(config.get("decoration",{}).get(id,1))
+
+func decoration_unlocked(id: String) -> bool:
+	return int(_state.level)>=decoration_level(id)
 
 func reward_for(level: int) -> Dictionary:
 	var amount := int(config.rewards.inspiration)
@@ -102,7 +126,7 @@ func _report(raw: Variant) -> TDOutcome:
 	rows.sort_custom(func(a: Dictionary,b: Dictionary)->bool:return a.store_id<b.store_id)
 	return TDOutcome.new(true,"VALID","",{"day":int(raw.day),"stores":rows})
 
-func evaluate(raw: Variant) -> TDOutcome:
+func evaluate(raw: Variant, legacy: bool = false) -> TDOutcome:
 	if not error.ok: return error
 	var checked := _report(raw)
 	if not checked.ok: return checked
@@ -116,7 +140,7 @@ func evaluate(raw: Variant) -> TDOutcome:
 		awareness+=(float(row.awareness_after)-float(row.awareness_before))*int(row.scale_milli)
 	popularity/=scale;awareness/=scale
 	var normalized_profit: float=float(maxi(0,profit))*1000.0/scale
-	var daily: Dictionary=config.daily
+	var daily: Dictionary=LEGACY_DAILY if legacy and int(config.rules_version)==2 else config.daily
 	var income_xp := floori(float(daily.profit_cap_xp)*normalized_profit/(normalized_profit+int(daily.profit_reference_cents)))
 	var popularity_xp := mini(int(daily.popularity_cap_xp),floori(maxf(0,popularity)*int(daily.growth_xp_per_point)+0.0000001))
 	var awareness_xp := mini(int(daily.awareness_cap_xp),floori(maxf(0,awareness)*int(daily.growth_xp_per_point)+0.0000001))
@@ -139,6 +163,35 @@ func settle(raw: Variant) -> TDOutcome:
 	next.total_xp=mini(threshold(int(config.max_level)),int(next.total_xp)+int(evaluated.data.mapped_xp))
 	next.level=level_for(int(next.total_xp));next.last_day=day;next.baselines={}
 	for row: Dictionary in evaluated.data.input.stores: next.baselines[row.store_id]={"popularity":row.popularity_after,"awareness":row.awareness_after}
+	var gained := _grant_levels(next, old_level)
+	var record := evaluated.data.duplicate(true)
+	if int(config.rules_version)==2: record.xp_rules=2
+	record.xp=int(next.total_xp)-int(_state.total_xp);record.level_before=old_level;record.level_after=int(next.level);record.rewards=gained
+	next.recent.append(record)
+	while next.recent.size()>28: next.recent.pop_front()
+	_state=next
+	return TDOutcome.new(true,"LEVEL_SETTLED","",record.duplicate(true))
+
+func add_debug_xp(amount: int) -> TDOutcome:
+	if amount < 1 or amount > 100000 or int(_state.rules_version) < 2:
+		return TDOutcome.new(false, "INVALID_DEBUG_XP", "经验应为 1 至 100000 的整数。")
+	var next := snapshot()
+	var before := int(next.total_xp)
+	var old_level := int(next.level)
+	var gained := mini(amount, threshold(int(config.max_level)) - before)
+	if gained == 0:
+		return TDOutcome.new(true, "LEVEL_CAP", "", {"xp":0, "level_after":old_level, "rewards":[]})
+	# Record the console award between business days so it never rewrites a daily book.
+	var ledger: Dictionary = next.get_or_add("debug_xp", {})
+	var after_day := str(int(next.last_day))
+	ledger[after_day] = int(ledger.get(after_day, 0)) + gained
+	next.total_xp = before + gained
+	next.level = level_for(int(next.total_xp))
+	var rewards := _grant_levels(next, old_level)
+	_state = next
+	return TDOutcome.new(true, "DEBUG_XP_ADDED", "", {"xp":gained, "level_after":int(next.level), "rewards":rewards})
+
+func _grant_levels(next: Dictionary, old_level: int) -> Array:
 	var gained: Array=[]
 	for level: int in range(old_level+1,int(next.level)+1):
 		var reward := reward_for(level)
@@ -149,12 +202,7 @@ func settle(raw: Variant) -> TDOutcome:
 			if int(hook.level)!=level: continue
 			var id := "level:v1:hook:"+str(hook.id)
 			next.events[id]={"event_id":id,"level":level,"kind":str(hook.kind),"target_id":str(hook.target_id),"status":"pending"}
-	var record := evaluated.data.duplicate(true)
-	record.xp=int(next.total_xp)-int(_state.total_xp);record.level_before=old_level;record.level_after=int(next.level);record.rewards=gained
-	next.recent.append(record)
-	while next.recent.size()>28: next.recent.pop_front()
-	_state=next
-	return TDOutcome.new(true,"LEVEL_SETTLED","",record.duplicate(true))
+	return gained
 
 func pending_events() -> Array:
 	return _state.events.values().filter(func(event: Dictionary)->bool:return event.status=="pending").duplicate(true)
@@ -170,8 +218,9 @@ func has_entitlement(kind: String, target_id: String) -> bool:
 	return _state.events.values().any(func(event:Dictionary)->bool:return event.kind==kind and event.target_id==target_id)
 
 func validate_save(raw: Variant) -> TDOutcome:
-	if not raw is Dictionary or raw.get("schema_version")!=1 or raw.get("rules_version")!=1: return TDOutcome.new(false,"UNSUPPORTED_LEVEL_VERSION")
-	if not integer(raw.get("total_xp"),0,threshold(int(config.max_level))) or not integer(raw.get("level"),1,int(config.max_level)) or int(raw.level)!=level_for(int(raw.total_xp)): return TDOutcome.new(false,"INVALID_LEVEL_XP")
+	if not raw is Dictionary or raw.get("schema_version")!=1 or not integer(raw.get("rules_version"),1,int(config.rules_version)): return TDOutcome.new(false,"UNSUPPORTED_LEVEL_VERSION")
+	var rules := int(raw.rules_version)
+	if not integer(raw.get("total_xp"),0,threshold(int(config.max_level),rules)) or not integer(raw.get("level"),1,int(config.max_level)) or int(raw.level)!=level_for(int(raw.total_xp),rules): return TDOutcome.new(false,"INVALID_LEVEL_XP")
 	if not integer(raw.get("origin_day"),1,1000001) or not integer(raw.get("last_day"),0,1000000) or int(raw.last_day)<int(raw.origin_day)-1 or not raw.get("migrated") is bool: return TDOutcome.new(false,"INVALID_LEVEL_CURSOR")
 	if not raw.get("baselines") is Dictionary or raw.baselines.size()>1000 or not raw.get("recent") is Array or raw.recent.size()>28 or not raw.get("rewards") is Array or not raw.get("events") is Dictionary: return TDOutcome.new(false,"INVALID_LEVEL_STATE")
 	for id: Variant in raw.baselines:
@@ -197,22 +246,36 @@ func validate_save(raw: Variant) -> TDOutcome:
 		row.erase("status")
 		if not same_value(row,expected_events[id]): return TDOutcome.new(false,"INVALID_LEVEL_EVENT")
 	var previous: int = int(raw.last_day)-raw.recent.size()
+	var debug_xp: Variant = raw.get("debug_xp", {})
+	if not debug_xp is Dictionary or (rules == 1 and not debug_xp.is_empty()):
+		return TDOutcome.new(false, "INVALID_DEBUG_XP")
+	var all_debug_xp := 0
+	var recent_debug_xp := 0
+	for key: Variant in debug_xp:
+		if not key is String or not key.is_valid_int() or str(int(key)) != key or int(key) < int(raw.origin_day) - 1 or int(key) > int(raw.last_day) \
+			or not integer(debug_xp[key], 1, int(raw.total_xp)):
+			return TDOutcome.new(false, "INVALID_DEBUG_XP")
+		all_debug_xp += int(debug_xp[key])
+		if int(key) >= previous: recent_debug_xp += int(debug_xp[key])
 	var recent_xp := 0
 	for record: Variant in raw.recent:
 		if not record is Dictionary or not integer(record.get("day"),int(raw.origin_day),int(raw.last_day)) or int(record.day)!=previous+1 or not integer(record.get("xp"),0,int(config.daily.max_xp)): return TDOutcome.new(false,"INVALID_LEVEL_HISTORY")
-		var mapped := evaluate(record.get("input"))
+		var xp_rules: Variant = record.get("xp_rules",1)
+		if not integer(xp_rules,1,rules): return TDOutcome.new(false,"INVALID_LEVEL_HISTORY")
+		var mapped := evaluate(record.get("input"),xp_rules==1)
 		if not mapped.ok or mapped.data.day!=record.day: return TDOutcome.new(false,"INVALID_LEVEL_HISTORY")
 		for key: String in mapped.data:
 			if not record.has(key) or not same_value(record[key],mapped.data[key]): return TDOutcome.new(false,"INVALID_LEVEL_HISTORY",key)
 		if int(record.xp)>int(record.mapped_xp) or not integer(record.get("level_before"),1,int(raw.level)) or not integer(record.get("level_after"),int(record.level_before),int(raw.level)) or not record.get("rewards") is Array: return TDOutcome.new(false,"INVALID_LEVEL_HISTORY")
 		recent_xp+=int(record.xp);previous=int(record.day)
-	if raw.recent.size()!=mini(28,int(raw.last_day)-int(raw.origin_day)+1) or recent_xp>int(raw.total_xp): return TDOutcome.new(false,"INVALID_LEVEL_HISTORY")
-	if int(raw.last_day)-int(raw.origin_day)+1<=28 and recent_xp!=int(raw.total_xp): return TDOutcome.new(false,"INVALID_LEVEL_HISTORY")
-	var running_xp: int=int(raw.total_xp)-recent_xp
+	if raw.recent.size()!=mini(28,int(raw.last_day)-int(raw.origin_day)+1) or recent_xp+all_debug_xp>int(raw.total_xp): return TDOutcome.new(false,"INVALID_LEVEL_HISTORY")
+	if int(raw.last_day)-int(raw.origin_day)+1<=28 and recent_xp+all_debug_xp!=int(raw.total_xp): return TDOutcome.new(false,"INVALID_LEVEL_HISTORY")
+	var running_xp: int=int(raw.total_xp)-recent_xp-recent_debug_xp
 	for record: Dictionary in raw.recent:
-		if level_for(running_xp)!=int(record.level_before): return TDOutcome.new(false,"INVALID_LEVEL_HISTORY")
+		running_xp += int(debug_xp.get(str(int(record.day)-1), 0))
+		if level_for(running_xp,rules)!=int(record.level_before): return TDOutcome.new(false,"INVALID_LEVEL_HISTORY")
 		running_xp+=int(record.xp)
-		if level_for(running_xp)!=int(record.level_after): return TDOutcome.new(false,"INVALID_LEVEL_HISTORY")
+		if level_for(running_xp,rules)!=int(record.level_after): return TDOutcome.new(false,"INVALID_LEVEL_HISTORY")
 		var expected_rewards: Array=[]
 		for level: int in range(int(record.level_before)+1,int(record.level_after)+1): expected_rewards.append(reward_for(level))
 		if not same_value(record.rewards,expected_rewards): return TDOutcome.new(false,"INVALID_LEVEL_HISTORY")
@@ -221,6 +284,26 @@ func validate_save(raw: Variant) -> TDOutcome:
 		for row: Dictionary in raw.recent.back().input.stores: baselines[row.store_id]={"popularity":row.popularity_after,"awareness":row.awareness_after}
 		if not same_value(raw.baselines,baselines): return TDOutcome.new(false,"INVALID_LEVEL_BASELINE")
 	return TDOutcome.new(true,"VALID")
+
+func upgrade_balance() -> Array:
+	if int(_state.rules_version)==int(config.rules_version): return []
+	var prior_level := int(_state.level)
+	var historical_xp := 0
+	for record: Dictionary in _state.recent: historical_xp+=int(record.xp)
+	var cap := threshold(int(config.max_level))
+	var running := mini(cap,int(_state.total_xp)-historical_xp)
+	for record: Dictionary in _state.recent:
+		record.level_before=level_for(running)
+		record.xp=mini(cap-running,int(record.xp))
+		running+=int(record.xp)
+		record.level_after=level_for(running)
+		record.rewards=[]
+		for level: int in range(int(record.level_before)+1,int(record.level_after)+1):
+			record.rewards.append(reward_for(level))
+	_state.total_xp=running
+	_state.level=level_for(running)
+	_state.rules_version=int(config.rules_version)
+	return _grant_levels(_state, prior_level)
 
 func restore(raw: Variant) -> TDOutcome:
 	var valid := validate_save(raw)

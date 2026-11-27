@@ -20,8 +20,8 @@ func after_each() -> void:
 	for child:Node in get_children():
 		if child is TDResearchLesson and not child.is_queued_for_deletion(): child.dispose()
 
-func test_catalog_60_nodes_references_cycles_and_real_kitchen_charts() -> void:
-	var s:=make();assert_eq(s.catalog.nodes.size(),60)
+func test_catalog_nodes_references_cycles_and_real_kitchen_charts() -> void:
+	var s:=make();assert_eq(s.catalog.nodes.size(),61)
 	var bad:=s.catalog.data.duplicate(true);bad.recipes[0].prerequisites=["C05"]
 	assert_eq(TDResearchCatalog.new().load_data(bad).code,"CYCLIC_ATLAS")
 	bad=s.catalog.data.duplicate(true);bad.recipes[0].prerequisites=["NO"]
@@ -97,7 +97,10 @@ func test_story_and_inspiration_idempotency_and_unlock_validation() -> void:
 	assert_eq(s.recommend_cuisine("story.europe","eu").code,"ALREADY_APPLIED")
 	assert_eq(s.recommend_cuisine("story.europe","jp").code,"EVENT_CONFLICT")
 	assert_false(s.recommend_cuisine("x","unknown").ok)
-	s.record_cooking(1,"tomato_egg",80);s.record_cooking(1,"tomato_egg",100);assert_eq(s.snapshot().points,4)
+	var before := int(s.snapshot().points)
+	s.record_cooking(1,"tomato_egg",80)
+	s.record_cooking(1,"tomato_egg",100)
+	assert_eq(s.snapshot().points,before+2)
 	var bad:=s.snapshot();bad.unlocked.append("C03");assert_eq(s.restore(bad).code,"INVALID_UNLOCK")
 	bad=s.snapshot();bad.licensed.append("C03");bad.best.C03=100;bad.unlocked.append("C03");bad.study_hours=1
 	assert_eq(s.restore(bad).code,"INVALID_COUNTER")

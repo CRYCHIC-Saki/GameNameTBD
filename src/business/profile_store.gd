@@ -2,6 +2,9 @@ class_name TDProfileStore
 extends RefCounted
 ## Slot IDs are fixed identifiers, never display names or user-supplied paths.
 const SLOT_COUNT := 6
+const STORY := "story"
+const DAILY := "daily"
+const CHECKPOINTS := [STORY, DAILY, ""]
 var root: String
 var validator: Callable
 var interrupt_at: String = ""
@@ -18,19 +21,21 @@ func valid_id(id: String) -> bool:
 		if id==slot_id(index): return true
 	return false
 
-func path_for(id: String) -> String:
-	return root.path_join(id+".json") if valid_id(id) else ""
+func path_for(id: String, kind: String = "") -> String:
+	if not valid_id(id) or kind not in CHECKPOINTS: return ""
+	return root.path_join(id + ("." + kind if not kind.is_empty() else "") + ".json")
 
-func backend(id: String) -> TDResearchStore:
+func backend(id: String, kind: String = "") -> TDResearchStore:
 	# Bind identity into validation before any backup recovery or file replacement.
-	var store := TDResearchStore.new(path_for(id), _validate_slot.bind(id))
+	var store := TDResearchStore.new(path_for(id, kind), _validate_slot.bind(id, kind))
 	store.interrupt_at=interrupt_at
 	return store
 
-func _validate_slot(raw: Variant, id: String) -> TDOutcome:
+func _validate_slot(raw: Variant, id: String, kind: String) -> TDOutcome:
 	# The backend has already checked the on-disk checksum. Skip domain checks
 	# only for the same validated payload, even if the file was written again.
-	var previous: Dictionary = _validated_slots.get(id, {})
+	var key := path_for(id, kind)
+	var previous: Dictionary = _validated_slots.get(key, {})
 	if previous.get("validator") == validator and previous.get("payload") == raw:
 		return TDOutcome.new(true, "VALIDATED")
 	var result: TDOutcome = validator.call(raw)
@@ -38,37 +43,71 @@ func _validate_slot(raw: Variant, id: String) -> TDOutcome:
 		return result
 	if raw.slot_id != id:
 		return TDOutcome.new(false, "SLOT_MISMATCH")
-	_validated_slots[id] = {"validator": validator, "payload": raw.duplicate(true)}
+	if raw.get("checkpoint", "") != kind:
+		return TDOutcome.new(false, "CHECKPOINT_MISMATCH")
+	_validated_slots[key] = {"validator": validator, "payload": raw.duplicate(true)}
 	return result
 
-func load_slot(id: String) -> TDOutcome:
-	if not valid_id(id): return TDOutcome.new(false,"INVALID_SLOT")
+func load_slot(id: String, kind: String = "latest") -> TDOutcome:
+	if not valid_id(id) or (kind != "latest" and kind not in CHECKPOINTS):
+		return TDOutcome.new(false,"INVALID_SLOT")
 	var recovery:=_recover_deletion(id)
 	if not recovery.ok: return recovery
-	var result := backend(id).load_game()
-	if result.ok and result.data.slot_id!=id: return TDOutcome.new(false,"SLOT_MISMATCH")
-	return result
+	if kind != "latest": return backend(id, kind).load_game()
+	return _latest_checkpoint(_read_checkpoints(id))
 
-func save_slot(id: String, data: Dictionary) -> TDOutcome:
-	if not valid_id(id) or data.get("slot_id")!=id: return TDOutcome.new(false,"INVALID_SLOT")
+func _read_checkpoints(id: String) -> Dictionary:
+	var results := {}
+	for kind: String in CHECKPOINTS:
+		var result := backend(id, kind).load_game()
+		if result.code != "NOT_FOUND": results[kind] = result
+	return results
+
+func _latest_checkpoint(checkpoints: Dictionary) -> TDOutcome:
+	var latest := TDOutcome.new(false, "NOT_FOUND")
+	for result: TDOutcome in checkpoints.values():
+		if latest.code == "NOT_FOUND" or (result.ok and (not latest.ok or int(result.data.updated_at) > int(latest.data.updated_at))):
+			latest = result
+	return latest
+
+func save_slot(id: String, data: Dictionary, kind: String = "") -> TDOutcome:
+	if not valid_id(id) or data.get("slot_id")!=id or kind not in CHECKPOINTS:
+		return TDOutcome.new(false,"INVALID_SLOT")
 	var recovery:=_recover_deletion(id)
 	if not recovery.ok: return recovery
 	if DirAccess.make_dir_recursive_absolute(root)!=OK: return TDOutcome.new(false,"DIRECTORY_FAILED")
-	return backend(id).save_game(data)
+	var payload := data.duplicate()
+	if not kind.is_empty(): payload.checkpoint = kind
+	return backend(id, kind).save_game(payload)
 
-func recover_slot(id: String, temporary: bool = false) -> TDOutcome:
-	if not valid_id(id): return TDOutcome.new(false,"INVALID_SLOT")
-	return backend(id).recover(temporary)
+func recover_slot(id: String, temporary: bool = false, kind: String = "") -> TDOutcome:
+	if not valid_id(id) or kind not in CHECKPOINTS: return TDOutcome.new(false,"INVALID_SLOT")
+	return backend(id, kind).recover(temporary)
 
 func slots() -> Array[Dictionary]:
 	var rows: Array[Dictionary]=[]
 	for index: int in range(1,SLOT_COUNT+1):
-		var id:=slot_id(index);var result:=load_slot(id)
+		var id := slot_id(index)
+		var recovery := _recover_deletion(id)
+		var checkpoints := _read_checkpoints(id) if recovery.ok else {}
+		var result := _latest_checkpoint(checkpoints) if recovery.ok else recovery
 		var row: Dictionary={"slot_id":id,"ok":result.ok,"code":result.code,"empty":result.code=="NOT_FOUND"}
 		if result.ok:
 			var data:=result.data
 			row.merge({"title":data.title,"day":data.shop.day,"money_cents":data.shop.money_cents,"updated_at":data.updated_at,"unlocked":data.research.unlocked.size()})
 		else: row.merge(result.data)
+		var entries: Array[Dictionary] = []
+		for kind: String in checkpoints:
+			var checkpoint: TDOutcome = checkpoints[kind]
+			var entry := {"kind":kind, "ok":checkpoint.ok, "code":checkpoint.code}
+			if checkpoint.ok:
+				var data := checkpoint.data
+				var state: Dictionary = data.get("story", {}).get("revised", {})
+				entry.merge({"day":data.shop.day,"chapter":TDRevisedMainline.finished_chapter(state),
+					"story_title":TDRevisedMainline.checkpoint_title(state)})
+			else: entry.merge(checkpoint.data)
+			entries.append(entry)
+		row.checkpoints = entries
 		rows.append(row)
 	return rows
 
@@ -111,8 +150,12 @@ func archive_slot(id: String) -> TDOutcome:
 	return TDOutcome.new(true,"SLOT_DELETED","存档位已腾空。原文件保留在本机删除归档中。",{"archive":archive})
 
 func _slot_file(id: String, name: String) -> bool:
+	for kind: String in [STORY, DAILY]:
+		var checkpoint := path_for(id, kind).get_file()
+		if name in [checkpoint, checkpoint+".bak", checkpoint+".tmp"] or name.begins_with(checkpoint+".preserved-"):
+			return true
 	var prefix:=id+".json"
-	return name==prefix or name in [prefix+".bak",prefix+".tmp"] or name.begins_with(prefix+".preserved-") or name.begins_with(prefix+".before-map-v2") or name.begins_with(prefix+".before-region-v2") or name.begins_with(prefix+".before-jiangnan-v2") or name.begins_with(prefix+".before-shiomi-v3") or name.begins_with(prefix+".before-egret-v4") or name.begins_with(prefix+".before-egret-v5") or name.begins_with(prefix+".before-egret-v6") or name.begins_with(prefix+".before-egret-v7") or name.begins_with(prefix+".before-egret-v8") or name.begins_with(prefix+".before-egret-v9") or name.begins_with(prefix+".before-egret-v10") or name.begins_with(prefix+".before-egret-v11") or name.begins_with(prefix+".before-three-towns")
+	return name==prefix or name in [prefix+".bak",prefix+".tmp"] or name.begins_with(prefix+".preserved-") or name.begins_with(prefix+".before-map-v2") or name.begins_with(prefix+".before-region-v2") or name.begins_with(prefix+".before-jiangnan-v2") or name.begins_with(prefix+".before-shiomi-v3") or name.begins_with(prefix+".before-egret-v4") or name.begins_with(prefix+".before-egret-v5") or name.begins_with(prefix+".before-egret-v6") or name.begins_with(prefix+".before-egret-v7") or name.begins_with(prefix+".before-egret-v8") or name.begins_with(prefix+".before-egret-v9") or name.begins_with(prefix+".before-egret-v10") or name.begins_with(prefix+".before-egret-v11") or name.begins_with(prefix+".before-egret-v12") or name.begins_with(prefix+".before-three-towns")
 
 func _write_delete_manifest(directory: String, data: Dictionary) -> bool:
 	var path:=directory.path_join("manifest.json")
@@ -152,15 +195,15 @@ func _rollback_delete(archive: String, data: Dictionary) -> TDOutcome:
 	if DirAccess.remove_absolute(archive.path_join("manifest.json"))!=OK: return TDOutcome.new(false,"DELETE_RECOVERY_REQUIRED")
 	return TDOutcome.new(true,"DELETE_ROLLED_BACK")
 
-func backup_map_migration(id: String, regional: bool=false, jiangnan: bool=false, regions_retired: bool=false) -> TDOutcome:
-	if not valid_id(id): return TDOutcome.new(false,"INVALID_SLOT")
-	var source:=path_for(id)
-	var checked:=load_slot(id)
+func backup_map_migration(id: String, regional: bool=false, jiangnan: bool=false, regions_retired: bool=false, kind: String="") -> TDOutcome:
+	var source := path_for(id,kind)
+	if source.is_empty(): return TDOutcome.new(false,"INVALID_SLOT")
+	var checked := load_slot(id,kind)
 	if not checked.ok: return checked
 	var suffix: String=".before-region-v2" if regional else ".before-map-v2"
 	if regional and checked.data.get("region_layout_version",1)==2: suffix=".before-shiomi-v3"
 	if regional and checked.data.get("region_layout_version",1)==3: suffix=".before-egret-v4"
-	if regional and int(checked.data.get("region_layout_version",1)) in [4,5,6,7,8,9,10]: suffix=".before-egret-v11"
+	if regional and int(checked.data.get("region_layout_version",1)) in [4,5,6,7,8,9,10,11]: suffix=".before-egret-v12"
 	if jiangnan and not regional: suffix=".before-jiangnan-v2"
 	if regions_retired: suffix=".before-three-towns"
 	var destination:=source+suffix+".bak"

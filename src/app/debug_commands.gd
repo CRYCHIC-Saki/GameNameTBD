@@ -11,6 +11,7 @@ const HELP: Dictionary={
 	"give":"give <食材ID或完整名称> <份数> [店铺ID]：免费调试补料，单次0.001–1000标准份、最多三位小数；默认主店，例 give tomato 10。调料同样按标准份计，不是购买包装数。",
 	"stock":"stock [店铺ID] [关键词]：查库存；main为主店，分店ID用shop list查询。",
 	"inspiration":"inspiration add <1..10000>：增加灵感；不制造经营等级或研习分数。",
+	"xp":"xp：查看经营等级和经验。xp add <1..100000>：增加经营经验并结算相应等级奖励。",
 	"recipes":"recipes [ID或名称片段]：查菜谱ID、掌握状态与运行时映射。",
 	"recipe":"recipe unlock <菜谱ID或完整名称>：调试掌握该菜及前置、开放所属菜系。明确记录调试来源，不伪造挑战分数。例 recipe unlock C03。",
 	"cuisine":"cuisine open <cn|eu|jp>：开放菜系，菜谱仍独立掌握。",
@@ -23,7 +24,7 @@ const HELP: Dictionary={
 	"quest":"quest：当前剧情节点和目标；quest track on/off：切换任务追踪，不跳过任务或发奖。",
 	"open":"open <employees|shops|suppliers|recipes|quests|map|relationships>：打开现有管理界面。",
 	"goto":"goto <town|restaurant|kitchen|cottage|harbor>：到主镇对应场景；不解锁小屋，不带着食物跨场景。",
-	"save":"save：主动保存当前槽；仍要求合法时点、厨房整理完毕。其他命令不自动保存。",
+	"save":"进度在每场剧情结束、进入断章和睡下时自动保存。",
 	"tools":"tools：旧独立试验入口，不使用当前存档。",
 	"clear":"clear：清空控制台输出；不修改游戏或已记命令历史。"
 }
@@ -99,7 +100,7 @@ static func blocked(shell: TDGameShell, boundary: bool=true) -> String:
 
 static func help_text(topic: String="") -> String:
 	if not topic.is_empty(): return str(HELP.get(topic,"未知帮助主题；输入 help 查看分类。"))
-	return "输入 debug 启用。调试只改当前槽内存，主动 save 才保存。\n查询：status · check · items · stock · recipes · orders · supply · quest\n资源：money · give · inspiration · san\n经营：employee · shop · cuisine · recipe\n场景：time · goto · open · tools\n控制：help <命令> · clear · debug off · save\n快捷键：↑↓历史 · Tab补全 · Esc关闭。例：money add 10000；give tomato 10"
+	return "输入 debug 启用。剧情结束、进入断章和睡下时自动存档。\n查询：status · check · items · stock · recipes · orders · supply · quest\n资源：money · give · inspiration · xp · san\n经营：employee · shop · cuisine · recipe\n场景：time · goto · open · tools\n控制：help <命令> · clear · debug off\n快捷键：↑↓历史 · Tab补全 · Esc关闭。例：money add 10000；give tomato 10"
 
 static func execute(shell: TDGameShell, raw: String) -> String:
 	var parsed:=tokenize(raw)
@@ -121,7 +122,10 @@ static func execute(shell: TDGameShell, raw: String) -> String:
 	if p==null or not p._alive: return "没有活动存档，请先开始或载入游戏。"
 	var s:=p.shop.snapshot()
 	if cmd=="status" and w.size()==1:
-		return "%s · %s · 第%d天 %s · %s\n现金 %.2f 金币 · 人气%d · 店名气%.0f · SAN%d · 灵感%d\n店铺%d家 · 员工%d人 · 待单%d · 当前修改须主动保存"%[p.slot_id,shell.location,s.day,p.characters.clock.label(),s.phase,float(s.money_cents)/100,s.popularity,float(p.commerce.state.awareness)*100,p.world.san,p.research.snapshot().points,p.branches.paid_ids().size()+1,p.employees.roster_count(),p.shop.pending_orders().size()]
+		return "%s · %s · 第%d天 %s · %s\n现金 %.2f 金币 · 人气%d · 店名气%.0f · SAN%d · 灵感%d\n店铺%d家 · 员工%d人 · 待单%d · 等待下次自动存档"%[p.slot_id,shell.location,s.day,p.characters.clock.label(),s.phase,float(s.money_cents)/100,s.popularity,float(p.commerce.state.awareness)*100,p.world.san,p.research.snapshot().points,p.branches.paid_ids().size()+1,p.employees.roster_count(),p.shop.pending_orders().size()]
+	if cmd=="xp" and w.size()==1:
+		var level := p.progression.progress()
+		return "经营等级 Lv.%d · 当前经验 %d/%d · 累计 %d" % [level.level, level.current_xp, level.required_xp, level.total_xp]
 	if cmd=="check" and w.size()==1:
 		var result:=TDGameProfile.validate_save(p.snapshot());var audit:=p.commerce.cash_audit(int(s.money_cents))
 		return outcome(result)+"\n世界资金差额 %d 分 · 银行账差额 %d 分（均应为0）"%[int(audit.difference_cents),int(audit.bank_difference_cents)]
@@ -200,6 +204,11 @@ static func execute(shell: TDGameShell, raw: String) -> String:
 	if cmd=="inspiration" and w.size()==3 and w[1]=="add":
 		if not w[2].is_valid_int() or w[2].length()>6: return "灵感应为1至10000的整数。"
 		return outcome(p.research.grant_inspiration(token(p,"inspiration"),int(w[2])))
+	if cmd=="xp" and w.size()==3 and w[1]=="add":
+		if not w[2].is_valid_int() or w[2].length() > 7: return "经验应为 1 至 100000 的整数。"
+		var result := p.add_debug_xp(int(w[2]))
+		if not result.ok: return outcome(result)
+		return "获得 %d 经验 · 经营等级 Lv.%d" % [result.data.xp, result.data.level_after]
 	if cmd=="cuisine" and w.size()==3 and w[1]=="open": return outcome(p.research.recommend_cuisine(token(p,"cuisine"),w[2]))
 	if cmd=="recipe" and w.size()==3 and w[1]=="unlock":
 		var id:=resolve(p.research.catalog.nodes.values(),w[2])
@@ -253,7 +262,7 @@ static func execute(shell: TDGameShell, raw: String) -> String:
 static func complete(raw: String, p: TDGameProfile) -> PackedStringArray:
 	var suggestions: Array[String]=[]
 	for key: String in HELP: suggestions.append(key)
-	suggestions.append_array(["debug off","money add ","inspiration add ","cuisine open ","time set ","employee market ","employee owned","employee hire ","employee assign ","shop list","shop info ","shop auto ","quest track on","quest track off"])
+	suggestions.append_array(["debug off","money add ","inspiration add ","xp add ","cuisine open ","time set ","employee market ","employee owned","employee hire ","employee assign ","shop list","shop info ","shop auto ","quest track on","quest track off"])
 	for key: String in OPEN: suggestions.append("open "+key)
 	for id: String in ["cn","eu","jp"]: suggestions.append("cuisine open "+id)
 	for id: String in ["town","restaurant","kitchen","cottage","harbor"]: suggestions.append("goto "+id)

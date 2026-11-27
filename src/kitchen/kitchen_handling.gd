@@ -28,8 +28,11 @@ func pick(ingredient_id: String, recipe_id: String = "tomato_egg", amount: float
 	return TDOutcome.new(true, "PICKED", "已拿起食材，走到菜板或灶台按 E。")
 
 func put_board() -> TDOutcome:
+	if hand_kind == "dish": return TDOutcome.new(false,"DISH_IN_HAND","请将成品端到出餐口。")
 	if hand == null or hand_kind != "ingredient": return TDOutcome.new(false, "NO_INGREDIENT", "先去料箱拿食材。")
 	if board != null: return TDOutcome.new(false, "BOARD_OCCUPIED", "菜板上还有一份食材。")
+	var food: Dictionary = hand.snapshot().to_dict().ingredients.values()[0]
+	if float(food.fine) > 0.0: return TDOutcome.new(false,"ALREADY_PREPARED","这份食材已经切好，可以直接入锅。")
 	board = hand; hand = null; hand_kind = ""
 	return TDOutcome.new(true, "ON_BOARD")
 
@@ -41,6 +44,7 @@ func take_board() -> TDOutcome:
 	return TDOutcome.new(true, "PICKED", "备料已拿起，走到灶台按 E 入锅。")
 
 func put_pot(destination: TDCookingSession) -> TDOutcome:
+	if hand_kind == "dish": return TDOutcome.new(false,"DISH_IN_HAND","请将成品端到出餐口。")
 	if hand == null or hand_kind != "ingredient": return TDOutcome.new(false, "NO_INGREDIENT")
 	var food: Dictionary = hand.snapshot().to_dict().ingredients
 	if food.is_empty(): return TDOutcome.new(false, "NO_INGREDIENT")
@@ -83,7 +87,13 @@ func display() -> Dictionary:
 	var held: Dictionary = {}
 	if hand != null:
 		var dish: Dictionary = hand.snapshot().to_dict()
-		held = {"kind":hand_kind,"session_id":dish.session_id,"name":dish.recipe_name if hand_kind == "dish" else dish.ingredients.values()[0].name,"shape":"成品" if hand_kind == "dish" else dish.ingredients.values()[0].shape}
+		if hand_kind=="dish":
+			held = TDIngredientIcon.dish_item(dish)
+			held.shape = "成品"
+		else:
+			var food: Dictionary = dish.ingredients.values()[0]
+			held = {"kind":"ingredient","id":food.ingredient_id,"name":food.name,"shape":food.shape}
+		held.session_id = dish.session_id
 	return {"hand":held,"board_occupied":board != null}
 
 func close() -> void:

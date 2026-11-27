@@ -11,24 +11,52 @@ func profile_case() -> TDGameProfile:
 	assert_true(profile.error.ok,profile.error.code)
 	return profile
 
-func test_hud_has_seven_distinct_actions_and_does_not_emit_when_locked() -> void:
+func test_hud_has_eight_distinct_actions_and_does_not_emit_when_locked() -> void:
 	var hud:=TDGameHUD.new();add_child_autofree(hud)
 	var received: Array[String]=[]
 	hud.action_requested.connect(func(id:String)->void:received.append(id))
-	assert_eq(hud.buttons.size(),7)
+	assert_eq(hud.buttons.size(),8)
 	var keys: Array[String]=[]
 	for action: Dictionary in TDGameHUD.ACTIONS:
 		var button:=hud.button_for(str(action.id))
 		assert_not_null(button);assert_true(button.tooltip_text.contains("["+str(action.key)+"]"))
 		assert_false(str(action.key) in keys);keys.append(str(action.key))
 		button.pressed.emit()
-	assert_eq(received,["employees","recipes","quests","map","branches","suppliers","relationships"] as Array[String])
+	assert_eq(received,["employees","recipes","quests","map","branches","suppliers","relationships","challenge"] as Array[String])
 	hud.set_menu_enabled(false)
 	for button: Button in hud.buttons.values():
 		assert_true(button.disabled);button.pressed.emit()
-	assert_eq(received.size(),7)
-	hud.set_menu_enabled(true);hud.button_for("recipes").pressed.emit()
 	assert_eq(received.size(),8)
+	hud.set_menu_enabled(true);hud.button_for("recipes").pressed.emit()
+	assert_eq(received.size(),9)
+
+func test_story_locks_have_gray_style_and_restore_independently() -> void:
+	var profile:=profile_case()
+	profile.story.revised=TDRevisedMainline.initial()
+	var hud:=TDGameHUD.new();add_child_autofree(hud)
+	var received: Array[String]=[]
+	hud.action_requested.connect(func(id:String)->void:received.append(id))
+	hud.update_profile(profile)
+	for id: String in ["employees","suppliers","branches","challenge"]:
+		var button:=hud.button_for(id) as TDGameHUD.IconButton
+		assert_true(button.locked and button.disabled,id)
+		assert_eq(button.get_theme_stylebox("disabled"),hud._locked_style,id)
+		assert_true(button.tooltip_text.contains("未开放"),id)
+		button.pressed.emit()
+	assert_true(received.is_empty())
+	assert_false(hud.button_for("map").disabled)
+	hud.set_menu_enabled(false)
+	TDRevisedMainline.mark(profile.story.revised,"employees")
+	hud.update_profile(profile)
+	assert_false((hud.button_for("employees") as TDGameHUD.IconButton).locked)
+	assert_true(hud.button_for("employees").disabled,"Global menu pause still applies")
+	hud.set_menu_enabled(true)
+	assert_false(hud.button_for("employees").disabled)
+	assert_true(hud.button_for("employees").tooltip_text.contains("[H]"))
+	assert_true(hud.button_for("suppliers").disabled)
+	assert_true(hud.button_for("branches").disabled)
+	hud.button_for("employees").pressed.emit()
+	assert_eq(received,["employees"] as Array[String])
 
 func test_status_and_menu_stay_on_one_row_at_supported_sizes() -> void:
 	var viewport:=SubViewport.new();viewport.size=Vector2i(1280,800);add_child_autofree(viewport)
@@ -93,6 +121,7 @@ func test_employee_panel_signs_named_candidate_once_per_click_then_assigns_from_
 
 func test_supplier_panel_shows_unlock_without_charging_when_opened() -> void:
 	var profile:=profile_case()
+	profile.story.revised=TDRevisedMainline.initial()
 	var panel:=TDManagementPanels.SupplierPanel.new()
 	add_child_autofree(panel)
 	var before:=profile.snapshot()

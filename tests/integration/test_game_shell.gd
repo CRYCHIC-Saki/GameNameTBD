@@ -20,9 +20,10 @@ func after_each() -> void:
 	await get_tree().process_frame;await get_tree().process_frame
 
 func start() -> void:
-	var result:=shell.create_game("slot-01","灶间烟火")
+	var result:=shell.create_game("slot-01","灶间烟火",false)
 	shell.guide.dialogue.finish_now() # Fixture cancels the automatic arrival.
 	assert_true(result.ok,result.code)
+	shell.profile.story.beat="done"
 	driver.kitchen=shell.kitchen_view.kitchen
 
 func button(label: String, within: Node) -> Button:
@@ -61,14 +62,14 @@ func test_market_shelves_open_at_stall_and_keep_local_and_remote_stock_separate(
 	shell.town._player.position=shell.town._origin()+(Vector2(stall.approach_x,stall.approach_y)+Vector2.ONE*.5)*shell.town.cell_size()
 	driver.tap(KEY_E)
 	assert_not_null(shell._modal_box,"城南大市入口")
-	var expected:=shell.profile.shop.market_ids("chengdu")
+	var expected:=shell.profile.shop.local_market_ids("chengdu")
 	var shelf: Array[String]=[]
 	var tomato_row: HBoxContainer
 	for icon: TDIngredientIcon in shell._modal_box.find_children("*","TDIngredientIcon",true,false):
 		shelf.append(icon.item_id)
 		if icon.item_id=="tomato": tomato_row=icon.get_parent()
 	assert_eq(shelf,expected,"完整保留当前档位可买的商品与顺序")
-	assert_has(shelf,"aspic")
+	assert_has(shelf,"scallion")
 	assert_has(shelf,"salt")
 	assert_does_not_have(shelf,"pasta")
 	assert_does_not_have(shelf,"udon")
@@ -85,7 +86,7 @@ func test_market_shelves_open_at_stall_and_keep_local_and_remote_stock_separate(
 	assert_eq(shop.available("tomato"),held+2000)
 	assert_eq(int(shop.snapshot().money_cents),cash-2*unit_price)
 	assert_string_contains(caption.text,shell._ingredient_name("tomato"))
-	assert_string_contains(caption.text,"家中 %.2f"%(float(held+2000)/1000.0))
+	assert_string_contains(caption.text,"店内 %.2f"%(float(held+2000)/1000.0))
 	assert_true(shell.profile.recommend_route("paris","test:market-shelf").ok)
 	shell.show_remote_market("paris")
 	var remote_buy: Button
@@ -110,6 +111,7 @@ func test_market_shelves_open_at_stall_and_keep_local_and_remote_stock_separate(
 
 func test_market_inventory_menu_open_and_real_kitchen_delivery_three_day_save_loop() -> void:
 	start()
+	preload("res://tools/test_support/native_dialogue.gd").completed_mainline(shell.profile)
 	for day: int in range(1,4):
 		for id: String in shell.profile.shop.snapshot().menu:
 			shell.profile.shop.set_menu(id,id=="service.tomato_egg",1300)
@@ -119,7 +121,9 @@ func test_market_inventory_menu_open_and_real_kitchen_delivery_three_day_save_lo
 			if buy.text=="购买": buy.pressed.emit()
 		assert_gt(shell.profile.shop.available("tomato"),0)
 		shell._close_dialog();shell.travel("restaurant");shell.show_menu()
-		var open:=button("确认菜单，开门营业",shell._modal_box);assert_not_null(open);open.pressed.emit()
+		var open:=button("开门营业",shell._modal_box);assert_not_null(open)
+		if open==null: return
+		open.pressed.emit()
 		assert_eq(shell.profile.shop.snapshot().phase,"OPEN")
 		assert_true(shell.travel("town").ok)
 		assert_eq(shell.profile.buy({"egg":1000}).code,"SHOP_OPEN")
@@ -157,18 +161,16 @@ func test_market_inventory_menu_open_and_real_kitchen_delivery_three_day_save_lo
 		view.shop.close_early()
 		for remaining: Dictionary in view.shop.pending_orders(): view.shop.cancel_order(remaining.id)
 		kitchen.advance(.01);assert_eq(view.shop.snapshot().phase,"SETTLED")
-		assert_eq(shell.profile.progression.snapshot().last_day,day,"Real QTE day produces one level settlement")
-		assert_true(shell.profile.progression_error.ok,shell.profile.progression_error.code)
+		assert_eq(shell.profile.progression.snapshot().last_day,day-1,"Closing the shop does not grant experience")
 		assert_eq(int(shell.profile.commerce.cash_audit(int(view.shop.snapshot().money_cents)).difference_cents),0,"Taxes, wages and refunds conserve total cash.")
-		assert_true(shell.save_game().ok)
+		shell._sleep("chengdu",0)
+		assert_eq(shell.profile.progression.snapshot().last_day,day,"Sleeping settles the day once")
 		var before:Dictionary=shell.profile.snapshot()
 		shell.go_title();assert_true(shell.load_game("slot-01").ok)
-		assert_eq(shell.profile.shop.snapshot().day,day)
+		assert_eq(shell.profile.shop.snapshot().day,day+1)
 		assert_true(TDLevelProgression.same_value(shell.profile.progression.snapshot(),before.progression),"Real kitchen level progress survives restart")
 		assert_eq(JSON.parse_string(JSON.stringify(shell.profile.shop.snapshot())),JSON.parse_string(JSON.stringify(before.shop)))
 		assert_eq(JSON.parse_string(JSON.stringify(shell.profile.research.snapshot())),JSON.parse_string(JSON.stringify(before.research)))
-		assert_true(shell.profile.next_day().ok)
-		shell.kitchen_view._make_kitchen();shell.kitchen_view.kitchen.auto_advance=false
 
 func test_book_uses_real_kitchen_unlocks_within_slot_and_never_in_other_slot() -> void:
 	start();driver.tap(KEY_B);assert_not_null(shell.atlas)
@@ -179,9 +181,9 @@ func test_book_uses_real_kitchen_unlocks_within_slot_and_never_in_other_slot() -
 	assert_true(RESEARCH_DRIVER.play(shell.profile.research,token,get_tree().root))
 	await get_tree().process_frame
 	assert_has(shell.profile.research.snapshot().unlocked,"C03")
-	shell.close_atlas();assert_true(shell.save_game().ok)
+	shell.close_atlas();assert_true(shell.profile.save().ok)
 	var old:=shell.profile
-	shell.go_title();assert_true(shell.create_game("slot-02").ok);shell.guide.dialogue.finish_now()
+	shell.go_title();assert_true(shell.create_game("slot-02","小镇食堂",false).ok);shell.guide.dialogue.finish_now()
 	assert_eq(shell.profile.research.snapshot().unlocked,["C01","C02"])
 	assert_eq(old._research_candidate(old.research.snapshot()).code,"STALE_PROFILE")
 	shell.go_title();assert_true(shell.load_game("slot-01").ok)
@@ -204,10 +206,10 @@ func test_bank_world_interaction_and_buttons_use_the_profile_wallet() -> void:
 	if deposit==null: return
 	deposit.pressed.emit()
 	assert_eq(int(shell.profile.commerce.society.bank.account("player").deposit_cents),10000)
-	assert_true(shell.save_game().ok)
+	assert_true(shell.profile.save().ok)
 	shell.show_bank()
 	var stale_action: Callable=button("存入",shell._modal_box).pressed.get_connections()[0].callable
-	shell.go_title();assert_true(shell.create_game("slot-02").ok);shell.guide.dialogue.finish_now()
+	shell.go_title();assert_true(shell.create_game("slot-02","小镇食堂",false).ok);shell.guide.dialogue.finish_now()
 	var unchanged:=shell.profile.snapshot()
 	stale_action.call()
 	assert_eq(shell.profile.snapshot(),unchanged)
@@ -217,7 +219,7 @@ func test_bank_world_interaction_and_buttons_use_the_profile_wallet() -> void:
 	button("借款",shell._modal_box).pressed.emit()
 	assert_eq(int(shell.profile.commerce.society.bank.account("player").principal_cents),10000)
 	assert_eq(int(shell.profile.shop.snapshot().money_cents),30000)
-	assert_true(shell.save_game().ok)
+	assert_true(shell.profile.save().ok)
 	shell.go_title();assert_true(shell.load_game("slot-01").ok)
 	assert_eq(int(shell.profile.commerce.society.bank.account("player").deposit_cents),10000)
 
@@ -244,7 +246,7 @@ func test_pause_console_and_modal_prevent_underlay_input_and_keep_business_clock
 
 func test_slot_layout_round_trip_and_old_file_explicit_import_is_read_only() -> void:
 	start();assert_true(shell.profile.layout.apply_venue_style("chinese","high").ok)
-	var layout:=shell.profile.layout.to_dict();assert_true(shell.save_game().ok)
+	var layout:=shell.profile.layout.to_dict();assert_true(shell.profile.save().ok)
 	var old_shop:=TDShopStore.new(shell.legacy_shop_path,shell.profile.shop)
 	for day: int in 3:
 		assert_true(shell.profile.shop.open_day().ok)
@@ -266,6 +268,8 @@ func test_slot_layout_round_trip_and_old_file_explicit_import_is_read_only() -> 
 	assert_true(TDGameProfile.validate_save(shell.profile.snapshot()).ok)
 	assert_eq(FileAccess.get_file_as_bytes(shell.legacy_shop_path),shop_bytes)
 	assert_eq(FileAccess.get_file_as_bytes(shell.legacy_research_path),research_bytes)
+	assert_eq(shell.slots.load_slot("slot-02").code,"NOT_FOUND","Import only loads the legacy data")
+	shell._sleep("chengdu",0)
 	assert_eq(shell.import_legacy().code,"ALREADY_IMPORTED")
 	shell.go_title();assert_true(shell.load_game("slot-01").ok)
 	assert_eq(JSON.stringify(shell.profile.layout.to_dict()),JSON.stringify(layout))

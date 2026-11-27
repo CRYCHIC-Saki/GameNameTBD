@@ -603,6 +603,18 @@
       "difficulty": 5
     },
     {
+      "id": "E21",
+      "name": "菌菇浓汤",
+      "tier": 1,
+      "prerequisites": [],
+      "cost": 1,
+      "ingredients": "菌菇、清汤、奶油、黄油、盐",
+      "flavor": "汤品 / 奶油",
+      "description": "切好菌菇，用黄油炒香，加清汤和奶油煨浓。",
+      "cuisine_id": "eu",
+      "difficulty": 1
+    },
+    {
       "id": "J01",
       "name": "盐饭团",
       "tier": 1,
@@ -977,7 +989,8 @@
     "J17": "cuisine_j17",
     "J18": "cuisine_j18",
     "J19": "cuisine_j19",
-    "J20": "cuisine_j20"
+    "J20": "cuisine_j20",
+    "E21": "cuisine_e21"
   },
   "charts": {
     "C03": {
@@ -1683,6 +1696,17 @@
         "sushi_rice",
         "radish",
         "mushroom"
+      ]
+    },
+    "E21": {
+      "id": "study.E21",
+      "kind": "kitchen",
+      "version": 3,
+      "recipe_id": "study.e21",
+      "profile": "lesson.E21",
+      "primary": [
+        "mushroom",
+        "stock"
       ]
     }
   }

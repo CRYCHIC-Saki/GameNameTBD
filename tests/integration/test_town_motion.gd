@@ -6,7 +6,7 @@ func before_each() -> void:
 	app=load("res://src/app/main.tscn").instantiate()
 	app.settings_path="res://artifacts/movement-tests/%d/settings.json"%Time.get_ticks_usec()
 	add_child_autofree(app);shell=app.game_shell;shell.automatic_time=false
-	assert_true(shell.create_game("slot-01").ok);shell.guide.dialogue.finish_now()
+	assert_true(shell.create_game("slot-01","小镇食堂",false).ok);shell.guide.dialogue.finish_now()
 	shell.travel("restaurant")
 	await wait_physics_frames(2)
 
@@ -94,9 +94,10 @@ func test_visible_chef_feet_match_physical_origin_projection() -> void:
 	for cell:Vector2i in [Vector2i(1,1),Vector2i(6,8),Vector2i(7,4)]:
 		room.teleport_player(cell)
 		var rect:=room._iso.chef_rect(room.player_position())
-		var texture:=TDChefArt.texture(room._player.facing)
-		var used:=texture.get_image().get_used_rect()
-		var visible_bottom:=rect.position.y+float(used.end.y)*rect.size.y/texture.get_height()
+		var texture := TDChefArt.texture(room._iso.player_facing,room._iso.player_walk_frame) as AtlasTexture
+		var frame := texture.atlas.get_image().get_region(Rect2i(texture.region))
+		var used := frame.get_used_rect()
+		var visible_bottom := rect.position.y+float(used.end.y+texture.margin.position.y)*rect.size.y/texture.get_height()
 		var expected:=TDRestaurantIsoView.project(cell.x+.5,cell.y+.5)
 		assert_almost_eq(visible_bottom,expected.y,.001)
 		assert_almost_eq(rect.get_center().x,expected.x,.001)

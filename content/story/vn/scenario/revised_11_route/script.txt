@@ -1,0 +1,4 @@
+# start
+@bg knight-hall with instant 0
+narrator: 赫兹把这场对决做进了节目，随后跟着焰子和阿铃，继续前往和味道。
+@end

@@ -1,0 +1,44 @@
+# start
+@bg palace with instant 0
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+// 原稿第 100 段 【疑惑】罗厄
+@show luo puzzled at td:0.731830:1.411909:2.150000 with instant
+luo: 你就是罗金娜推荐的焰子？我在赫兹的节目里见过你，去了不少地方，还赢过几位很有名的厨师，看来是有些本事。
+// 原稿第 101 段 【通常】焰子
+@show hero calm at td:0.268170:1.464197:2.150000 with instant
+hero: 是啊，我学了好多新菜！听说你已经吃腻了世间的美食，我就想来试试，说不定能做出你喜欢的料理呢。
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+// 原稿第 102 段 【无语】罗厄
+@show luo speechless at td:0.731830:1.411909:2.150000 with instant
+luo: 这种话我已经听过很多次了，宫里的菜单比你的行李还厚呢。光把各地的菜记下来，可没那么容易让我满意。
+// 原稿第 103 段 【得意】焰子
+@show hero proud at td:0.268170:1.464197:2.150000 with instant
+hero: 那就等你尝过再说吧！这次我准备的料理，是把一路学到的做法放在一起，试过好多次才做好的。
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+// 原稿第 104 段 【通常】罗厄
+@show luo calm at td:0.731830:1.411909:2.150000 with instant
+luo: 既然这么有信心，我就亲自和你比一场。明天到港口广场来，带上你最拿手的料理。你若能让我满意，无比丰厚的奖励正等着你。赫兹，明天由你主持，把比赛从头到尾播出去。
+// 原稿第 105 段 【高兴】焰子
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 那就说定了！我会好好准备，让你尝尝我在那些地方学到的好东西！
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hina with instant
+// 原稿第 106 段 【得意】赫兹
+@show hertz proud at td:0.707320:1.555701:2.150000 with instant
+hertz: 两位放心，明天我一定准时到场！这次终于能让观众看看，焰子从各地学来的手艺，能不能得到公主的认可了。
+@end

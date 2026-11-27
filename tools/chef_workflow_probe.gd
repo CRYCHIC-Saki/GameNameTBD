@@ -1,6 +1,6 @@
 extends SceneTree
 ## Production main/Shell, roster and cooking rules; only time and profile are isolated fixtures.
-const OUT: String="res://artifacts/chef-workflow-20261114/gpu"
+var out := "res://artifacts/chef-workflow-20261114/gpu"
 var checks: int=0
 var failures: int=0
 var events: Array=[]
@@ -12,7 +12,7 @@ func verify(value: bool, description: String) -> void:
 	else: print("PASS ",description)
 func capture(label: String) -> void:
 	await process_frame;await process_frame;await RenderingServer.frame_post_draw
-	verify(root.get_texture().get_image().save_png(OUT.path_join(label+".png"))==OK,"screenshot "+label)
+	verify(root.get_texture().get_image().save_png(out.path_join(label+".png"))==OK,"screenshot "+label)
 	captures[label]=true
 func resume_focus_pause(shell: TDGameShell) -> void:
 	# Windows can move focus while a capture is shown. Exercise the normal resume path.
@@ -23,9 +23,11 @@ func resume_focus_pause(shell: TDGameShell) -> void:
 		shell._close_dialog()
 		verify(not root.get_tree().paused,"resume from actual pause menu")
 func run() -> void:
-	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(OUT));root.size=Vector2i(1280,800)
+	for arg: String in OS.get_cmdline_user_args():
+		if arg.begins_with("--output="): out=arg.trim_prefix("--output=")
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(out));root.size=Vector2i(1280,800)
 	var app:=load("res://src/app/main.tscn").instantiate() as TDApplication
-	app.settings_path=OUT.path_join("slots-%d/settings.json"%Time.get_ticks_usec());root.add_child(app)
+	app.settings_path=out.path_join("slots-%d/settings.json"%Time.get_ticks_usec());root.add_child(app)
 	var shell:=app.game_shell;shell.automatic_time=false
 	verify(shell.create_game("slot-01","厨师验证").ok,"main scene isolated profile")
 	shell.guide.dialogue.finish_now();shell.profile.story.beat="done"
@@ -57,7 +59,8 @@ func run() -> void:
 		if not job.is_empty():
 			var phase:=str(job.phase);var ingredient_at:=int(job.ingredient_at)
 			var label: String=""
-			if phase=="to_fridge" and ingredient_at==0: label="01-fridge-walk"
+			if phase=="to_board" and ingredient_at==0: label="00-chef-tomato"
+			elif phase=="to_fridge" and ingredient_at==0: label="01-fridge-walk"
 			elif phase=="cut": label="02-real-cutting"
 			elif phase=="to_fridge" and ingredient_at==1: label="03-return-for-egg"
 			elif phase=="cook": label="04-real-stove"
@@ -82,12 +85,14 @@ func run() -> void:
 	for i: int in 250:
 		resume_focus_pause(shell)
 		view.kitchen.advance(.2)
+		if not captures.has("07-waiter-carrying") and shop.table_service.pass_items().is_empty() and not shop.table_service.empty():
+			await capture("07-waiter-carrying")
 		if shop.table_service.empty(): break
 	verify(shop.table_service.empty(),"real waiter picked up and delivered plate")
 	verify(shop.snapshot().money_cents>money,"real table service earns sale")
 	await capture("07-restaurant-served")
 	shell.go_title();app.queue_free();await process_frame;await process_frame
-	var report:=FileAccess.open(OUT.path_join("report.json"),FileAccess.WRITE)
+	var report:=FileAccess.open(out.path_join("report.json"),FileAccess.WRITE)
 	report.store_string(JSON.stringify({"checks":checks,"failures":failures,"captures":captures.keys(),"events":events},"\t"));report.close()
 	print("CHEF_GPU checks=",checks," failures=",failures," captures=",captures.size())
 	quit(0 if failures==0 else 1)

@@ -131,20 +131,20 @@ func test_manual_save_owns_employees_supply_and_relationships_together() -> void
 	disk=store.load_slot("slot-01");assert_true(TDLevelProgression.same_value(disk.data.employees.owned,p.employees.snapshot().owned))
 	assert_true(disk.data.characters.records.aling.flags.met)
 
-func test_real_shell_seven_buttons_shortcuts_pause_and_old_entries_removed() -> void:
+func test_real_shell_eight_buttons_shortcuts_pause_and_old_entries_removed() -> void:
 	app=load("res://src/app/main.tscn").instantiate()
 	app.settings_path="res://artifacts/management-ui/scene/%d/settings.json"%Time.get_ticks_usec()
 	add_child(app);await wait_process_frames(2)
 	var shell: TDGameShell=app.game_shell;shell.automatic_time=false
-	assert_true(shell.create_game("slot-01","管理测试").ok)
+	assert_true(shell.create_game("slot-01","管理测试",false).ok)
 	shell.guide.dialogue.finish_now();shell.profile.story.beat="done"
 	await wait_process_frames(2)
-	for pair: Array in [["employees","employees_menu"],["quests","quest_journal"],["map","world_map"],["branches","branches_menu"],["suppliers","suppliers_menu"],["relationships","relationships_menu"]]:
+	for pair: Array in [["employees","employees_menu"],["quests","quest_journal"],["map","world_map"],["branches","branches_menu"],["suppliers","suppliers_menu"],["relationships","relationships_menu"],["challenge","challenge_menu"]]:
 		shell._hud.button_for(pair[0]).pressed.emit()
 		assert_not_null(shell._modal,pair[0]);assert_true(get_tree().paused)
 		var event:=InputEventAction.new();event.action=pair[1];event.pressed=true;shell._input(event)
 		assert_null(shell._modal,pair[0]+" shortcut closes same panel");assert_false(get_tree().paused)
-	assert_eq(shell._hud.buttons.size(),7)
+	assert_eq(shell._hud.buttons.size(),8)
 	shell._hud.button_for("recipes").pressed.emit();assert_not_null(shell.atlas)
 	var close:=InputEventAction.new();close.action="recipe_book";close.pressed=true;shell._input(close)
 	assert_null(shell.atlas);assert_false(get_tree().paused)
@@ -158,6 +158,22 @@ func test_real_shell_seven_buttons_shortcuts_pause_and_old_entries_removed() -> 
 	for facade: Dictionary in shell.town._facades:
 		var kind: String = facade.get("plot",{}).get("kind","")
 		assert_false(kind in ["factory_lot","supply_factory"],"Legacy lot has no interactive factory facade")
+
+	shell.guide.set_process(false)
+	shell.profile.story.revised=TDRevisedMainline.initial()
+	await wait_process_frames(2)
+	shell.show_world_map()
+	var active_map := shell._modal
+	for pair: Array in [["employees","employees_menu"],["suppliers","suppliers_menu"],["branches","branches_menu"]]:
+		assert_true(shell._hud.button_for(pair[0]).disabled)
+		var key:=InputEventAction.new();key.action=pair[1];key.pressed=true;shell._input(key)
+		assert_eq(shell._modal,active_map,"A locked shortcut leaves the active panel open")
+	TDRevisedMainline.mark(shell.profile.story.revised,"employees")
+	await wait_process_frames(2)
+	assert_false(shell._hud.button_for("employees").disabled)
+	shell._hud.button_for("employees").pressed.emit()
+	assert_not_null(shell._modal)
+	assert_eq(shell._management_action,"employees")
 
 func test_boundary_receives_completed_main_supply_before_next_open() -> void:
 	var p:=make_profile()

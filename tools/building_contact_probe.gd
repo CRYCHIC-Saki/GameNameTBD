@@ -42,6 +42,7 @@ func visit(town: String) -> void:
 		var home:=TDTownWorld.new()
 		home.player_mode=true
 		home.session=profile.world
+		home.characters=profile.characters
 		view.add_child(home)
 		actor=home._player
 		building=home._reference_map.get_node("Props/west_upper_homes")
@@ -60,6 +61,32 @@ func visit(town: String) -> void:
 		if layer is CanvasLayer: layer.visible=false
 	world.set_day_minute(720)
 	check_walls(town)
+	if town=="chengdu":
+		var props := (world as TDTownWorld)._reference_map.get_node("Props")
+		var home := world as TDTownWorld
+		var walkers := home.characters
+		var edges := 0
+		var all_clear := true
+		for quarter: int in range(8,22):
+			walkers.clock.minute = quarter*60
+			for n: int in 80:
+				walkers.advance(.24)
+				for person: Dictionary in walkers.visible_people():
+					if person.route.is_empty(): continue
+					edges+=1
+					var feet := Vector2(person.position)+TDCharacterRoster.FOOT_OFFSET
+					if not home._reference_escort_can_stand(feet): all_clear=false
+		check(edges>20 and all_clear,"resident feet cleared the same obstacles on "+str(edges)+" moving samples")
+		for sample: Array in [
+				["plaza_banyan",Vector2(.50,.89),true], ["plaza_banyan",Vector2(.20,.54),false],
+				["square_cart",Vector2(.56,.81),true],
+				["square_storyteller_desk",Vector2(.48,.62),true],
+				["square_storyteller_desk",Vector2(.10,.83),true],
+				["square_storyteller_desk",Vector2(.89,.83),true]]:
+			var prop := props.get_node(str(sample[0])) as Sprite2D
+			var visual := prop.global_transform * prop.get_rect()
+			check(world._can_stand(visual.position+visual.size*Vector2(sample[1]))!=sample[2],
+				"Jiangnan fixture "+str(sample[0])+" "+str(sample[1]))
 	var bounds:=building.global_transform*building.get_rect()
 	cam=Camera2D.new()
 	world.add_child(cam)
@@ -139,6 +166,10 @@ func visible_difference(a: Color,b: Color) -> bool:
 
 func depth(town: String, building: Sprite2D, bounds: Rect2, behind: bool) -> void:
 	actor.position=Vector2(bounds.get_center().x,bounds.position.y+bounds.size.y*.32 if behind else bounds.end.y+12)
+	if not behind:
+		for gap: int in range(12,48,2):
+			actor.position.y=bounds.end.y+gap
+			if world._can_stand(actor.position): break
 	actor.face(Vector2.DOWN if behind else Vector2.UP)
 	check(world._can_stand(actor.position),town+" clear ground "+("behind" if behind else "in front"))
 	var hero:=actor.get_node("Sprite2D") as Sprite2D

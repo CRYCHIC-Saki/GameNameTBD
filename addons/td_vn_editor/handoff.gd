@@ -62,6 +62,9 @@ static func apply(source: String, data: Dictionary) -> Dictionary:
 static func protected_target(path: String, registry_path: String = TDStoryEvents.PATH) -> Dictionary:
 	var normalized := path.replace("\\","/").simplify_path().to_lower()
 	if normalized == INTRO: return {"error":"","protected":true}
+	var presentation: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://content/story/vn/presentation.json"))
+	for chapter: Dictionary in presentation.get("chapters", {}).values():
+		if str(chapter.path).to_lower() == normalized: return {"error":"","protected":true}
 	var file := FileAccess.open(registry_path, FileAccess.READ)
 	if file == null: return {"error":"无法读取剧情触发登记，请交给开发者检查。","protected":true}
 	var json := JSON.new()

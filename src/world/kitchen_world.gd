@@ -31,7 +31,6 @@ func set_day_minute(value: float) -> void:
 	if has_node("Background"): $Background.modulate=self_modulate
 var _controls_enabled: bool = true
 var _player: TDKitchenPlayer
-var _prompt: Label
 var _back_button: Button
 var _hud: Control
 var _context: Dictionary = {}
@@ -40,7 +39,6 @@ var _message_left: float = 0.0
 var _last_context_message: String = ""
 var _held_label: Label
 var _simmer_label: Label
-var _near_prompt: Label
 var simmer_meters: Array=[]
 var station_names: Dictionary={}
 var single_fridge: bool = false
@@ -66,6 +64,11 @@ var _pot_materials: Array[Label] = []
 var _simmer_panels: Array[PanelContainer] = []
 var _simmer_titles: Array[Label] = []
 var _simmer_bars: Array[ProgressBar] = []
+
+func _staff_clear_step(to: Vector2) -> bool:
+	for actor: Node2D in _staff_nodes:
+		if actor.visible and not TDInteractionRange.npc_clear(_player.position,to,actor.position,30.0): return false
+	return true
 
 func staff_approach(id: String, slot: int = 0) -> Vector2:
 	for station: Dictionary in stations():
@@ -120,15 +123,13 @@ func stations() -> Array[Dictionary]:
 func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_player = $Player as TDKitchenPlayer
+	_player.npc_step_clear = _staff_clear_step
 	$Background.z_index = -10
 	$Background.visible=not TDRegionalInterior.regional(cuisine_id)
 	$Background.scale=Vector2(1280.0/$Background.texture.get_width(),800.0/$Background.texture.get_height())
 	_player.z_index = 1
 	_make_hud()
 	_hud.z_index=2
-	_near_prompt=_sign("[ E ]", Vector2.ZERO, 76, TDUI.FONT_SECTION, "InteractionSign")
-	_near_prompt.autowrap_mode=TextServer.AUTOWRAP_OFF
-	_near_prompt.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 	for station: Dictionary in stations():
 		var at: Vector2 = (station.get("visual",station.position+Vector2(0,-120)) as Vector2) + Vector2(-70,12)
 		if station.id=="kitchen.trash": at.y-=24
@@ -139,7 +140,6 @@ func _ready() -> void:
 			var body := StaticBody2D.new(); body.name="ServingCounter"; body.position = Vector2(1040,565)
 			var collider := CollisionShape2D.new(); var shape := RectangleShape2D.new(); shape.size = Vector2(232,102); collider.shape = shape
 			body.add_child(collider); add_child(body)
-	_update_prompt()
 
 func _process(delta: float) -> void:
 	_staff_delta = 0.0
@@ -148,7 +148,6 @@ func _process(delta: float) -> void:
 		_staff_delta = delta
 		if is_visible_in_tree(): _message_left=maxf(0.0,_message_left-delta)
 	_refresh_held()
-	_update_prompt()
 	_update_pot_signs()
 	_sync_staff()
 	queue_redraw()
@@ -172,7 +171,6 @@ func set_controls_enabled(enabled: bool) -> void:
 		_player.set_controls_enabled(enabled)
 	if is_instance_valid(_back_button):
 		_back_button.disabled = not enabled
-	_update_prompt()
 
 func interaction_available() -> bool:
 	return _controls_enabled and is_visible_in_tree() and is_inside_tree() and not get_tree().paused and not _station_at_player().is_empty()
@@ -240,21 +238,6 @@ func _station_at_player() -> Dictionary:
 			best = station
 	return best
 
-func _update_prompt() -> void:
-	if not is_instance_valid(_prompt):
-		return
-	var station := _station_at_player()
-	var station_id := String(station.get("id", ""))
-	if _near_prompt != null:
-		var sign := _near_prompt.get_parent() as Control
-		sign.visible = _controls_enabled and not station_id.is_empty()
-		if not station_id.is_empty():
-			_near_prompt.text=_station_hint(station_id)
-			sign.size.x=300 if station_id in ["kitchen.stove.left","kitchen.stove.right","kitchen.steamer"] else 170
-			sign.position=(station.get("visual",station.position-Vector2(0,120)) as Vector2)+Vector2(-sign.size.x*.5,-70)
-	_prompt.text=""
-	_prompt.get_parent().hide()
-
 func _sign(text: String, at: Vector2, width: float, font_size: int, id: String) -> Label:
 	var panel := PanelContainer.new()
 	panel.name=id;panel.position=at;panel.size=Vector2(width,0)
@@ -275,7 +258,7 @@ func _make_hud() -> void:
 	_hud.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_hud.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(_hud)
-	_sign("小镇食堂 / 厨房",Vector2(24,12),360,TDUI.FONT_SECTION,"HeadingSign")
+	_sign("厨房",Vector2(24,12),360,TDUI.FONT_SECTION,"HeadingSign")
 	_held_label = _sign("手上：空",Vector2(24,628),1232,TDUI.FONT_SECTION,"HeldSign")
 	_held_label.max_lines_visible=2
 	_held_label.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
@@ -285,20 +268,6 @@ func _make_hud() -> void:
 	_back_button.position = Vector2(1070.0, 14.0)
 	_back_button.size = Vector2(182.0, 50.0)
 	_hud.add_child(_back_button)
-	var bar := Panel.new()
-	bar.name="OperationSign"
-	bar.position = Vector2(108.0, 716.0)
-	bar.size = Vector2(1064.0, 72.0)
-	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	bar.add_theme_stylebox_override("panel", TDUI.wood(TDUI.Surface.INSET,12))
-	_hud.add_child(bar)
-	_prompt = TDUI.label("", TDUI.FONT_SECTION,TDUI.INK)
-	_prompt.position = Vector2(18.0, 8.0)
-	_prompt.size = Vector2(1028.0, 56.0)
-	_prompt.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_prompt.mouse_filter=Control.MOUSE_FILTER_IGNORE
-	bar.add_child(_prompt)
 	for index: int in 2:
 		var panel := PanelContainer.new()
 		panel.name="PotSign%d"%index;panel.position=Vector2(530+index*220,352);panel.size=Vector2(214,0)
@@ -525,19 +494,6 @@ func _held_place(root: Node2D, reported: String, cooking: bool, job_id: String="
 		return place
 	return held
 
-func _station_hint(id: String) -> String:
-	var hand: Dictionary = _context.get("hand",{})
-	if id=="kitchen.fridge" or id.begins_with("kitchen.supply."): return "E 冰箱" if hand.is_empty() else "E 放回"
-	if id=="kitchen.trash": return "E 丢弃" if not hand.is_empty() else "E 清理"
-	if id == "kitchen.board": return "E 取回" if _context.get("board_occupied",false) else "E 备菜"
-	if id == "kitchen.dining": return "E 餐厅"
-	if id == "kitchen.serve": return "E 出餐"
-	var index: int=0 if id=="kitchen.stove.left" else 1
-	var pot: Dictionary=pot_contents[index] if index<pot_contents.size() else {}
-	if pot.get("state","")=="plated": return "E 端盘"
-	if not pot.get("occupied",false): return "E 放入"
-	return "E 放入 · F 开火 · Q 取回"
-
 func _draw_service_door() -> void:
 	var frame := SERVICE_DOOR_RECT
 	var wood := Color(TDRegionalInterior.WOODS.get(TDRegionalInterior.style(cuisine_id),"8b5a34"))
@@ -571,7 +527,6 @@ func _draw() -> void:
 	if is_instance_valid(_player) and not _context.get("hand",{}).is_empty():
 		var hand: Dictionary = _context.hand
 		var point: Vector2 = _player.position + Vector2(0,-116)
-		draw_rect(Rect2(point - Vector2(20,14),Vector2(40,24)),Color("d5d6bb"))
-		if hand.kind == "dish" or hand.shape != "whole":
-			for index: int in 3: draw_rect(Rect2(point + Vector2(-13+index*10,-9),Vector2(8,9)),Color("d56a48"))
-		else: draw_circle(point + Vector2(0,-2),9,Color("f1d17d") if hand.name == "鸡蛋" else Color("d95e45"))
+		TDIngredientIcon.bubbles(self,[hand],point)
+	if order_shop!=null and order_shop.table_service!=null:
+		TDIngredientIcon.bubbles(self,order_shop.table_service.pass_items(),Vector2(1040,498))

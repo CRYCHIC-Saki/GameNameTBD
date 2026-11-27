@@ -8,8 +8,11 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 func _draw() -> void:
-	if points.size()<2: return
+	if points.is_empty(): return
 	var color:=Color(1,.85,.44,.16+.13*(sin(phase*2)+1))
+	if points.size()==1:
+		draw_arc(points[0],17,0,TAU,32,Color("ffe090"),3,true)
+		return
 	for i: int in range(1,points.size()):
 		draw_line(points[i-1],points[i],Color(color,.10),9)
 		draw_dashed_line(points[i-1],points[i],color,2,8)

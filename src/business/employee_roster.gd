@@ -299,6 +299,8 @@ func market_rows(town: String, role: String) -> Array:
 
 func sign_employee(id: String, token: String, offer_key: String) -> TDOutcome:
 	if not _allowed(): return TDOutcome.new(false,"NOT_AT_BOUNDARY","筹备或日结后才能签约。")
+	if not _profile().story_feature_available("employees"):
+		return TDOutcome.new(false,"STORY_LOCKED",TDRevisedMainline.expansion_hint("employees"))
 	if token.is_empty() or token.length()>160 or state.seen.has(token): return TDOutcome.new(false,"DUPLICATE","此签约已处理；没有重复扣款。")
 	if state.owned.has(id): return TDOutcome.new(false,"ALREADY_OWNED","这位员工已在仓库中。")
 	if not _fixed_defs.has(id): return TDOutcome.new(false,"UNKNOWN_CANDIDATE","请选择当前招聘市场的候选人。")
@@ -317,9 +319,13 @@ func sign_employee(id: String, token: String, offer_key: String) -> TDOutcome:
 
 func assign(employee_id: String, store_id: String) -> TDOutcome:
 	if not _allowed(): return TDOutcome.new(false,"NOT_AT_BOUNDARY","筹备或日结后才能调整岗位。")
+	var p := _profile()
+	if not p.story_feature_available("employees"): return TDOutcome.new(false,"STORY_LOCKED",TDRevisedMainline.expansion_hint("employees"))
 	if not state.owned.has(employee_id): return TDOutcome.new(false,"EMPLOYEE_NOT_OWNED")
 	if not _valid_store(store_id): return TDOutcome.new(false,"UNKNOWN_STORE")
-	if not store_id.is_empty() and store_id!=HOME and not _profile().branches.funded(store_id): return TDOutcome.new(false,"UNPAID_SITE","请先确认付款施工。")
+	if not store_id.is_empty() and store_id!=HOME:
+		if not p.branches.can_support_store(store_id): return TDOutcome.new(false,"STORY_LOCKED",TDRevisedMainline.expansion_hint("branches"))
+		if not p.branches.funded(store_id): return TDOutcome.new(false,"UNPAID_SITE","请先确认付款施工。")
 	var person: Dictionary=state.owned[employee_id]
 	var row:=employee_info(employee_id)
 	if not fits_store(row,store_id):
@@ -327,7 +333,7 @@ func assign(employee_id: String, store_id: String) -> TDOutcome:
 	if person.assigned==store_id: return TDOutcome.new(true,"ALREADY_ASSIGNED")
 	var role: String=row.role
 	if not store_id.is_empty() and assigned(store_id,role).size()>=int(config.role_caps[role]): return TDOutcome.new(false,"ROLE_FULL","这个岗位已满；原派驻保持不变。")
-	var day: int=int(_profile().shop.snapshot().day)
+	var day: int=int(p.shop.snapshot().day)
 	record_duties(day)
 	person.assigned=store_id
 	record_duties(day); sync_main_crew()

@@ -1,0 +1,55 @@
+# start
+@bg knight-hall with instant 0
+narrator: 【剧本预览】本场可查看完整台词，战斗和经营结果不写入正式进度。
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide hertz with instant
+@hide hina with instant
+@show vito puzzled at td:0.772680:1.496877:2.150000 with instant
+vito: 欢迎来到骑士馆，我是维托。罗金娜在信里提过你，听说你想学这里的料理，还想和我比试？
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 是啊！金娜姐说你很厉害，我想先跟你学做菜，练好了再来挑战你。
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide hertz with instant
+@hide hina with instant
+@show vito calm at td:0.772680:1.496877:2.150000 with instant
+vito: 那你先去广场看看吧，那里有几位厨师愿意教人。你可以借用那边的小摊，一边接待客人，一边把意面、酱汁和配菜练熟，准备好了再来找我。
+@show hero proud at td:0.268170:1.464197:2.150000 with instant
+hero: 维托，我已经学会了这里的做法，也把小摊经营起来了！这次我想和你比一比，就用你最擅长的番茄意面。
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide hertz with instant
+@hide hina with instant
+@show vito proud at td:0.772680:1.496877:2.150000 with instant
+vito: 你刚把小摊开顺，就惦记上我的拿手菜了？好，这场我接下了，骑士可不会因为你是客人就让着你。
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hina with instant
+@show hertz happy at td:0.707320:1.555701:2.150000 with instant
+hertz: 观众朋友们，焰子学了不少当地菜，也接待了不少客人，今天终于要和料理骑士维托比试了！两位，请把你们最拿手的番茄意面端上来吧！
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide hertz with instant
+@hide hina with instant
+@show vito troubled at td:0.772680:1.496877:2.150000 with instant
+vito: 你的酱汁收得比我好，面条也正合适……我每天路过广场，都能闻到你那口锅里的番茄味，原来是在练着赢我啊。
+@show hero speechless at td:0.268170:1.464197:2.150000 with instant
+hero: 我都说了要挑战你呀，你现在才发现吗？之前总是面煮好了，酱汁还没做好，这几天总算把它们练到能一起出锅啦。
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide hertz with instant
+@hide hina with instant
+@show vito happy at td:0.772680:1.496877:2.150000 with instant
+vito: 这场比赛是你赢了。我的料理笔记也送给你，路上可以接着练。下次见面，我们再好好比一场。
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 谢谢你！等我学会其他地方的料理，也会带回来做给你吃的！
+narrator: 赫兹把这场对决做进了节目，随后跟着焰子和阿铃，继续前往和味道。
+@end

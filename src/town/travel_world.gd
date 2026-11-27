@@ -3,13 +3,18 @@ extends Node2D
 ## One disposable exploration view; all property comes from the profile's map provider.
 signal harbor_requested
 signal landmark_requested(plot: Dictionary)
+signal crowd_requested(site_id: String)
+signal resident_requested(id: String)
+var characters: TDCharacterRoster
+var crowd_label: Callable
 var cell_size: float = TDTownWorld.CELL
 const FOOT_RADIUS := 9.0
 var town_id: String="tokyo"
 var map: TDTownMap
 var player: TDKitchenPlayer
 var camera: Camera2D
-var _hint: Label
+const BuildingNameplate := preload("res://src/town/building_nameplate.gd")
+var _building_nameplate: BuildingNameplate
 var _layer: CanvasLayer
 var _ground: ImageTexture
 var _island: Node2D
@@ -20,6 +25,9 @@ var _harbor_counter: Rect2
 var _solids: Array[Rect2]=[]
 var _target: Dictionary={}
 var _closed: bool=false
+var _town_actor: TDStoryArt.TownActor
+const CrowdStands := preload("res://src/town/crowd_stands.gd")
+var _crowd_stands: CrowdStands
 
 func _ready() -> void:
 	texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST
@@ -38,6 +46,12 @@ func _ready() -> void:
 			add_child(TDEnvironmentArt.facade_sprite(item.art,item.rect))
 			_solids.append_array(item.bases)
 	_make_blockers()
+	_place_town_actor()
+	_crowd_stands = CrowdStands.new()
+	_crowd_stands.name = "CrowdStands"
+	_crowd_stands.y_sort_enabled = true
+	add_child(_crowd_stands)
+	_crowd_stands.refresh(CrowdStands.travel_sites(town_id, _buildings), _can_stand, TDTownWorld.OUTDOOR_PERSON_HEIGHT)
 	player=TDKitchenPlayer.new();player.name="Player";player.sprite_height=TDTownWorld.OUTDOOR_PERSON_HEIGHT;player.walk_cycle_distance=96
 	player.process_mode=Node.PROCESS_MODE_PAUSABLE
 	player.collision_layer=32;player.collision_mask=16;player.confine_to=_confine
@@ -54,9 +68,8 @@ func _ready() -> void:
 		camera.limit_right=roundi(end.x)
 		camera.limit_bottom=roundi(end.y)
 	_layer=CanvasLayer.new();_layer.layer=22;add_child(_layer)
-	var panel:=PanelContainer.new();panel.position=Vector2(18,690);panel.size=Vector2(1244,92);_layer.add_child(panel)
-	_hint=TDUI.label("",TDUI.FONT_BODY);_hint.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;panel.add_child(_hint)
-	var margin:=TDUI.wood();margin.content_margin_left=16;margin.content_margin_top=10;panel.add_theme_stylebox_override("panel",margin)
+	_building_nameplate = BuildingNameplate.new()
+	_layer.add_child(_building_nameplate)
 	queue_redraw()
 
 func _make_ground() -> void:
@@ -105,7 +118,7 @@ func _make_native_map() -> void:
 		var plot:=map._by_id(id)
 		if id=="harbor":
 			_harbor_counter=base
-			plot={"id":id,"kind":"harbor","name":"白鹭河客港" if map.egret else "潮见客港"}
+			plot={"id":id,"kind":"harbor","name":"稀味客港" if map.egret else "和味客港"}
 		var rect:=_island.transform*sprite.transform*sprite.get_rect()
 		base=base.intersection(rect.grow(-0.01))
 		var texture:=AtlasTexture.new()
@@ -115,7 +128,7 @@ func _make_native_map() -> void:
 	for plot: Dictionary in map.plots:
 		if plot.has("branch_id") or (plot.has("economic_parcel_id") and str(plot.id).begins_with("commercial_street:shop:")):
 			var lot:=TDInteractionRange.plot_bounds(plot)
-			_add_building(plot,2.6,lot.size.x,Vector2(lot.get_center().x,lot.end.y-.12))
+			_add_building(plot,2.6,lot.size.x,TDTravelCatalog.native_frontage_feet(lot))
 
 func _draw_hero_shadow() -> void:
 	if not is_instance_valid(player) or not player.visible: return
@@ -205,8 +218,28 @@ func _make_blockers() -> void:
 func _add_building(plot: Dictionary,height: float,width: float,feet: Vector2,variation: int = 0) -> Rect2:
 	var art := TDTravelCatalog.facade(town_id,plot,variation)
 	var kind: String = "construction" if plot.get("construction",false) else plot.kind
-	var entry := TDTownArt.street_entry(art,feet*cell_size,width*cell_size,height,.25,kind,map,Vector2.ZERO,cell_size,TDTownArt.frontage_bias(map,plot))
-	var rect: Rect2 = entry.rect
+	var rect: Rect2
+	var base: Rect2
+	if plot.get("preset_storefront", false) and kind != "construction":
+		var diner := TDJiangnanReferenceArt.diner_facade()
+		var original: Rect2 = diner.rect
+		var shift := feet * cell_size - Vector2(original.get_center().x, original.end.y)
+		rect = Rect2(original.position + shift, original.size)
+		var original_base: Rect2 = diner.bases[0]
+		base = Rect2(original_base.position + shift, original_base.size)
+		base.end = Vector2(base.end.x, rect.end.y)
+		for wall: Rect2 in diner.walking:
+			_solids.append(Rect2(wall.position + shift, wall.size))
+	else:
+		# Keep the existing frontage and contact geometry when changing the sprite.
+		var footprint := TDTravelCatalog.facade(town_id, plot, variation, false) if plot.has("branch_id") else art
+		var entry := TDTownArt.street_entry(footprint,feet*cell_size,width*cell_size,height,.25,kind,map,Vector2.ZERO,cell_size,TDTownArt.frontage_bias(map,plot))
+		rect = entry.rect
+		base = entry.bases[0]
+		if (map.egret or map.shiomi) and kind != "construction":
+			_solids.append_array(TDEnvironmentArt.shop_walls(rect, base))
+		else:
+			_solids.append(base)
 	var sprite := TDEnvironmentArt.facade_sprite(art, rect)
 	if plot.get("kind")=="harbor" and town_id=="paris": sprite.flip_h=true
 	add_child(sprite)
@@ -214,11 +247,6 @@ func _add_building(plot: Dictionary,height: float,width: float,feet: Vector2,var
 	if map.shiomi:
 		var local_rect: Rect2=_island.transform.affine_inverse()*rect
 		_island.get_node("Weather").register_ground_shadow(sprite,Vector2(local_rect.get_center().x,local_rect.end.y),local_rect.size)
-	var base: Rect2 = entry.bases[0]
-	if (map.egret or map.shiomi) and not plot.get("construction",false):
-		_solids.append_array(TDEnvironmentArt.shop_walls(rect,base))
-	else:
-		_solids.append(base)
 	_buildings.append({"plot":plot.duplicate(true),"feet":Vector2(rect.get_center().x,rect.end.y)/cell_size,"base":base,"rect":rect,"art":art})
 	return rect
 
@@ -256,68 +284,136 @@ func _make_dressing() -> void:
 			add_child(TDEnvironmentArt.facade_sprite(tex,rect))
 
 func _confine(candidate: Vector2) -> bool:
-	# Sweep in short steps as well as testing the endpoint, including long physics frames.
 	if player==null: return _can_stand(candidate)
-	var count:=maxi(1,ceili(player.position.distance_to(candidate)/6.0))
-	for i: int in range(1,count+1):
-		if not _can_stand(player.position.lerp(candidate,float(i)/count)): return false
-	return true
+	return TDInteractionRange.ground_segment_clear(player.position,candidate,_can_stand) \
+		and _other_people_clear(player.position,candidate,null)
+
+func _other_people_clear(from: Vector2, to: Vector2, mover: TDStoryArt.TownActor) -> bool:
+	var spacing := TDInteractionRange.NPC_SPACING
+	if mover!=null and not TDInteractionRange.npc_clear(from,to,player.position,spacing): return false
+	var escort := get_meta("revised_escort",null) as TDStoryArt.TownActor if has_meta("revised_escort") else null
+	for actor: TDStoryArt.TownActor in [_town_actor,escort]:
+		if is_instance_valid(actor) and actor!=mover and actor.visible and not TDInteractionRange.npc_clear(from,to,actor.position,spacing): return false
+	return _crowd_stands==null or _crowd_stands.clear_step(from,to,spacing)
+
+func npc_step_clear(from: Vector2, to: Vector2, actor: TDStoryArt.TownActor) -> bool:
+	return TDInteractionRange.ground_segment_clear(from,to,_npc_can_stand) and _other_people_clear(from,to,actor)
+
+func _place_town_actor() -> void:
+	var actor := "vito" if town_id == "paris" else "hina" if town_id == "tokyo" else ""
+	if actor.is_empty(): return
+	var plot := map._by_id("plaza" if actor == "vito" else "competitor:shop:2")
+	if plot.is_empty() or not plot.has("approach_x") or not plot.has("approach_y"): return
+	var anchor := (Vector2(float(plot.approach_x), float(plot.approach_y)) + Vector2.ONE * .5) * cell_size
+	_town_actor = TDStoryArt.TownActor.new()
+	_town_actor.name = actor.capitalize()
+	# The opposite side of the Shiomi entrance is under a pine canopy.
+	var side := Vector2.LEFT if actor == "hina" else Vector2.RIGHT
+	_town_actor.place(actor, TDTownWorld.OUTDOOR_PERSON_HEIGHT, anchor, _npc_can_stand, side)
+	add_child(_town_actor)
 
 func _can_stand(candidate: Vector2) -> bool:
-	# TDKitchenPlayer owns axis sliding; this predicate receives ONE proposed foot point.
+	return _ground_clear(candidate,FOOT_RADIUS)
+
+func _npc_can_stand(candidate: Vector2) -> bool:
+	return _ground_clear(candidate,TDTownWorld.NPC_FOOT_RADIUS)
+
+func _ground_clear(candidate: Vector2, radius: float) -> bool:
 	for offset: Vector2 in TDEnvironmentArt.FOOT_SAMPLES:
-		var p:=candidate+offset*FOOT_RADIUS
+		var p:=candidate+offset*radius
 		if map.egret:
 			if not TDEgretLayout.can_stand(_island.to_local(p)): return false
 		elif _island!=null:
 			if not TDShiomiArt.can_stand(_island,p): return false
 		elif not _walkable(Vector2i(floori(p.x/cell_size),floori(p.y/cell_size))): return false
 	for solid: Rect2 in _solids:
-		if TDEnvironmentArt.overlaps_base(candidate, solid, FOOT_RADIUS): return false
+		if TDEnvironmentArt.overlaps_base(candidate, solid, radius): return false
 	return true
 
 func nearby() -> Dictionary:
-	var at:=player.position/cell_size
+	return _target_at(player.position)
+
+func _target_at(feet: Vector2) -> Dictionary:
+	var at:=feet/cell_size
 	var port_rect:=TDTravelCatalog.harbor_rect(town_id)
-	if at.distance_to(at.clamp(port_rect.position,port_rect.end))<=.65 or player.position.distance_to(player.position.clamp(_harbor_counter.position,_harbor_counter.end))<=cell_size*.65: return {"id":"harbor","kind":"harbor","name":"港口客运"}
+	if at.distance_to(at.clamp(port_rect.position,port_rect.end))<=.65 or feet.distance_to(feet.clamp(_harbor_counter.position,_harbor_counter.end))<=cell_size*.65: return {"id":"harbor","kind":"harbor","name":"港口客运"}
 	var best:=.65;var found: Dictionary={}
 	for entry: Dictionary in _buildings:
 		var p: Dictionary=entry.plot
-		if p.get("kind") in ["housing","diner_lot","harbor"]: continue
+		if not TDInteractionRange.facility(p) or p.kind == "harbor": continue
 		var rect: Rect2=entry.base
-		var distance: float=player.position.distance_to(player.position.clamp(rect.position,rect.end))/cell_size
+		var distance: float=feet.distance_to(feet.clamp(rect.position,rect.end))/cell_size
 		if distance<best: best=distance;found=p
 	return found.duplicate(true)
+
+func landmark_access(kind: String, id: String = "") -> Vector2:
+	for entry: Dictionary in _buildings:
+		var plot: Dictionary=entry.plot
+		if plot.get("kind")!=kind or (not id.is_empty() and plot.get("id")!=id): continue
+		var base: Rect2=entry.base
+		for fraction: float in [0.0,-.30,.30,-.48,.48]:
+			for distance: float in [.25,.38,.50,.60]:
+				for door: Vector2 in [Vector2(base.get_center().x+base.size.x*fraction,base.end.y+cell_size*distance),
+					Vector2(base.position.x-cell_size*distance,base.get_center().y+base.size.y*fraction),
+					Vector2(base.end.x+cell_size*distance,base.get_center().y+base.size.y*fraction)]:
+					if not _can_stand(door): continue
+					if _target_at(door).get("id")==plot.id: return door
+	return Vector2.INF
 
 func _process(_delta: float) -> void:
 	if _closed: return
 	camera.position=player.position
+	if visible and player.controls_enabled:
+		if _town_actor != null: _town_actor.face_nearby(player.position)
+		_crowd_stands.face_nearby(player.position)
 	if _hero_shadow!=null: _hero_shadow.queue_redraw()
-	_target=nearby()
-	var text: String=""
-	if player.controls_enabled and not _target.is_empty():
-		text="E "+_interaction_label(_target)
-	_hint.text=text
-	_hint.get_parent().visible=not text.is_empty()
+	_target = nearby() if visible and player.controls_enabled else {}
+	if not _target.is_empty():
+		camera.force_update_scroll()
+		_track_building()
+	else:
+		_building_nameplate.hide()
 
-func _interaction_label(plot: Dictionary) -> String:
-	var title := TDTravelCatalog.label(plot,town_id)
-	if town_id=="paris":
-		match str(plot.kind):
-			"market": return "买菜 · "+title
-			"bank": return "办理存取款 · "+title
-			"harbor": return "乘船 · 白鹭河客港"
-		if plot.has("branch_id") and not plot.get("construction",false):
-			return "进店巡视 · "+title
-	return "港口客运" if plot.kind=="harbor" else title
+func _track_building() -> void:
+	for entry: Dictionary in _buildings:
+		var plot: Dictionary = entry.plot
+		if plot.get("id") != _target.id:
+			continue
+		var title := str(plot.name) if plot.kind == "harbor" else TDTravelCatalog.label(plot, town_id)
+		_building_nameplate.track(self, entry.rect, title)
+		return
+	_building_nameplate.hide()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("world_interact") and not event.is_echo() and player.controls_enabled:
+		var resident := _nearby_resident()
+		if not resident.is_empty():
+			resident_requested.emit(resident)
+			get_viewport().set_input_as_handled()
+			return
+		if not _nearby_crowd().is_empty():
+			crowd_requested.emit(_crowd_site())
+			get_viewport().set_input_as_handled()
+			return
 		var target:=nearby()
 		if not target.is_empty():
 			if target.kind=="harbor": harbor_requested.emit()
 			else: landmark_requested.emit(target)
 		get_viewport().set_input_as_handled()
+
+func _nearby_resident() -> String:
+	if characters==null or _town_actor==null or not _town_actor.visible: return ""
+	var id := _town_actor.actor_id
+	if characters.can_chat(id) and TDInteractionRange.faces(player.position,player.facing,_town_actor.position,76.0): return id
+	return ""
+
+func _crowd_site() -> String:
+	return _crowd_stands.talk_site(player.position, player.facing) if _crowd_stands != null else ""
+
+func _nearby_crowd() -> String:
+	if crowd_label.is_valid() and not _crowd_site().is_empty():
+		return str(crowd_label.call())
+	return ""
 
 func set_day_minute(minute: float) -> void:
 	if _island!=null: _island.get_node("Atmosphere").set_minute(minute)
@@ -327,8 +423,12 @@ func set_day_minute(minute: float) -> void:
 	if _island!=null:
 		_island.get_node("Weather").set_minute(minute)
 		player.modulate=TDDaylight.sample(minute).tint
+		if _town_actor != null: _town_actor.modulate = player.modulate
+		_crowd_stands.modulate = player.modulate
 		return
 	self_modulate=TDDaylight.sample(minute).tint
+	if _town_actor != null: _town_actor.modulate = self_modulate
+	_crowd_stands.modulate = self_modulate
 
 func close() -> void:
 	_closed=true

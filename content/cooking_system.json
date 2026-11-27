@@ -1589,7 +1589,7 @@
     "大纲§3–4、§6；Onboarding L1/L2；所有量级PROPOSED；涩不映射到七味"
   ],
   "pc_operations": {
-    "bpm": 120,
+    "bpm": 140,
     "max_fine_steps": 8,
     "diagonal_release_bonus": 0.1,
     "stir_texture_gain": 0.12,
@@ -1774,7 +1774,7 @@
       "stir_fry": {
         "id": "stir_fry",
         "name": "炒菜节拍表",
-        "bpm": 120,
+        "bpm": 140,
         "events": [
           {
             "beat": 0,
@@ -1814,7 +1814,7 @@
             "parameters": {}
           },
           {
-            "beat": 44,
+            "beat": 50,
             "operation": "plate",
             "parameters": {}
           }
@@ -1823,7 +1823,7 @@
       "steam": {
         "id": "steam",
         "name": "蒸制节拍表 · 机制样例",
-        "bpm": 120,
+        "bpm": 140,
         "events": [
           {
             "beat": 0,
@@ -1854,7 +1854,7 @@
       "prepare": {
         "id": "prepare",
         "dish": "番茄切块",
-        "bpm": 120,
+        "bpm": 140,
         "groups": {
           "cut": {
             "operation": "cut",
@@ -1943,7 +1943,7 @@
       "tomato_egg": {
         "id": "tomato_egg",
         "dish": "tomato_egg",
-        "bpm": 120,
+        "bpm": 140,
         "groups": {
           "ignite": {
             "operation": "preheat",
@@ -2945,7 +2945,7 @@
       "steam": {
         "id": "steam",
         "dish": "steam",
-        "bpm": 120,
+        "bpm": 140,
         "groups": {
           "season": {
             "operation": "season",
@@ -3275,7 +3275,7 @@
       "simmer": {
         "id": "simmer",
         "dish": "simmer",
-        "bpm": 120,
+        "bpm": 140,
         "groups": {
           "ignite": {
             "operation": "preheat",
@@ -3891,7 +3891,7 @@
       "prepare_strips": {
         "id": "prepare_strips",
         "dish": "黄瓜切条",
-        "bpm": 120,
+        "bpm": 140,
         "groups": {
           "cut": {
             "operation": "cut",
