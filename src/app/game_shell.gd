@@ -503,10 +503,6 @@ func load_game(id: String, kind: String = "latest") -> TDOutcome:
 		if not backup.ok:
 			next.close()
 			return _outcome(backup)
-		var converted := slots.save_slot(id,next.snapshot(),checkpoint)
-		if not converted.ok:
-			next.close()
-			return _outcome(converted)
 	var story_migrated := next.use_revised_mainline()
 	next.branches.install_completed_storefronts()
 	# Legacy manual saves can contain a time during the preparation day.

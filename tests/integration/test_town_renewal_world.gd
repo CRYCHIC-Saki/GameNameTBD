@@ -86,7 +86,7 @@ func test_actual_clock_signal_long_frame_and_split_updates_agree() -> void:
 	assert_eq(large.opportunities,small.opportunities)
 	assert_eq(large.firms,small.firms,"same real background economic transactions")
 
-func test_real_load_migrates_only_after_backup_and_successful_write() -> void:
+func test_real_load_backs_up_selected_checkpoint_and_saves_at_next_boundary() -> void:
 	var helper: GutTest=load("res://tests/unit/test_town_renewal.gd").new()
 	var old: Dictionary=helper.legacy_snapshot();helper.free()
 	var app: TDApplication=load("res://src/app/main.tscn").instantiate()
@@ -99,14 +99,17 @@ func test_real_load_migrates_only_after_backup_and_successful_write() -> void:
 	var path := shell.slots.path_for("slot-01",TDProfileStore.DAILY)
 	var checksum := FileAccess.get_sha256(path)
 	shell.slots.interrupt_at="partial_write"
-	assert_false(shell.load_game("slot-01",TDProfileStore.DAILY).ok);assert_null(shell.profile)
-	assert_eq(FileAccess.get_sha256(path),checksum)
-	assert_eq(FileAccess.get_sha256(path+".before-region-v2.bak"),checksum)
-	shell.slots.interrupt_at=""
 	assert_true(shell.load_game("slot-01",TDProfileStore.DAILY).ok)
 	assert_eq(shell.location,"town","A legacy slot first enters the revised opening")
 	assert_true(shell.profile.has_residence(),"Migration preserves ownership of the cottage")
 	assert_eq(shell.profile.world.map_version,2)
+	assert_eq(FileAccess.get_sha256(path),checksum,"Loading never saves the migrated profile")
+	assert_eq(FileAccess.get_sha256(path+".before-region-v2.bak"),checksum)
+	shell.guide.dialogue.finish_now()
+	shell._sleep("chengdu",0)
+	assert_eq(FileAccess.get_sha256(path),checksum,"An interrupted checkpoint keeps the last complete one")
+	shell.slots.interrupt_at=""
+	shell._sleep("chengdu",0)
 	assert_eq(int(shell.slots.load_slot("slot-01",TDProfileStore.DAILY).data.schema_version),9)
 	assert_eq(FileAccess.get_sha256(path+".before-region-v2.bak"),checksum)
 	assert_eq(FileAccess.get_sha256(untouched),story_checksum,"A different checkpoint keeps its original bytes")

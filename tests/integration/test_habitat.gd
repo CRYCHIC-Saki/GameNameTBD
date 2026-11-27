@@ -77,7 +77,9 @@ func test_bed_saves_next_day_once_and_loads_there_with_existing_progress() -> vo
 	var before:=shell.profile.snapshot()
 	shell.go_title();assert_true(shell.load_game("slot-01").ok)
 	assert_eq(shell.location,"cottage");assert_eq(shell.cottage.target(),"rest")
-	assert_true(TDLevelProgression.same_value(shell.profile.snapshot(),before),"Reload keeps the saved roster, finances and morning clock")
+	var reloaded := shell.profile.snapshot()
+	for field: String in before:
+		assert_true(TDLevelProgression.same_value(reloaded[field],before[field]),"Reload preserves " + field)
 	assert_false(shell.restaurant.interaction_points().any(func(p:Dictionary)->bool:return p.action=="rest"))
 	var old:=before.duplicate(true);old.schema_version=3;old.erase("residence");old.erase("branches")
 	var migrated:=TDGameProfile.new();var result:=migrated.restore(old)

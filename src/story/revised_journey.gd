@@ -577,30 +577,10 @@ func _update_escort(delta: float) -> void:
 	_escort.pose(_gait.facing,_gait.frame)
 
 func _detour_escort(clear_step: Callable) -> void:
-	var start := _escort.position
-	var forward := start.direction_to(_route[_step])
-	var side := forward.orthogonal()
-	for index: int in range(_step,mini(_route.size(),_step+9)):
-		var rejoin := _route[index]
-		if clear_step.call(start,rejoin,_escort):
-			_step=index
-			return
-		for width: float in [34.0,-34.0,56.0,-56.0,76.0,-76.0]:
-			for lead: float in [0.0,24.0,-18.0]:
-				var waypoint := start+side*width+forward*lead
-				if not clear_step.call(start,waypoint,_escort) or not clear_step.call(waypoint,rejoin,_escort): continue
-				var route := PackedVector2Array([waypoint])
-				route.append_array(_route.slice(index))
-				_route=route
-				_step=0
-				return
-	if _step==_route.size()-1:
-		var goal := _route[_step]
-		for offset: Vector2 in [-forward*40.0,side*40.0,-side*40.0]:
-			var stop := goal+offset
-			if clear_step.call(start,stop,_escort):
-				_route[_step]=stop
-				return
+	var route := TDInteractionRange.route_detour(_route,_step,_escort.position,clear_step.bind(_escort))
+	if route.is_empty(): return
+	_route=route
+	_step=0
 
 func _make_route(key: String, player: Vector2, target: Vector2, remote: bool) -> void:
 	clear_escort()

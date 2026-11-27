@@ -1843,7 +1843,14 @@ func _tick_reference_escort(delta: float, goal: Vector2i) -> void:
 		if not _reference_escort_can_stand(candidate):
 			_reference_escort_goal = Vector2i(-99, -99)
 			break
-		if not _resident_step_clear("aling",_reference_escort_stop,candidate): break
+		if not _resident_step_clear("aling",_reference_escort_stop,candidate):
+			var clear_step := func(from: Vector2, to: Vector2) -> bool:
+				return TDPlannedTown._reference_segment_clear(from,to,_reference_escort_can_stand) and _resident_step_clear("aling",from,to)
+			var detour := TDInteractionRange.route_detour(_reference_escort_path,_reference_escort_index,_reference_escort_stop,clear_step,1.0/cell_size())
+			if not detour.is_empty():
+				_reference_escort_path=detour
+				_reference_escort_index=0
+			break
 		_reference_escort_stop = candidate
 		_escort = Vector2i(candidate.floor())
 		remaining -= step

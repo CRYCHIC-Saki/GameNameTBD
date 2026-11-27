@@ -34,3 +34,22 @@ static func npc_clear(from: Vector2, to: Vector2, feet: Vector2, spacing: float)
 static func faces(from: Vector2, facing: Vector2i, target: Vector2, reach: float) -> bool:
 	var offset := target-from
 	return offset.length_squared() <= reach*reach and (offset.is_zero_approx() or offset.normalized().dot(Vector2(facing).normalized()) >= .35)
+
+static func route_detour(route: PackedVector2Array, step: int, start: Vector2, clear_step: Callable, scale: float=1.0) -> PackedVector2Array:
+	var forward := start.direction_to(route[step])
+	var side := forward.orthogonal()
+	for index: int in range(step,mini(route.size(),step+9)):
+		var rejoin := route[index]
+		if clear_step.call(start,rejoin): return route.slice(index)
+		for width: float in [34.0,-34.0,56.0,-56.0,76.0,-76.0]:
+			for lead: float in [0.0,24.0,-18.0]:
+				var waypoint := start+(side*width+forward*lead)*scale
+				if not clear_step.call(start,waypoint) or not clear_step.call(waypoint,rejoin): continue
+				var remaining := PackedVector2Array([waypoint])
+				remaining.append_array(route.slice(index))
+				return remaining
+	if step==route.size()-1:
+		for offset: Vector2 in [-forward,side,-side]:
+			var stop := route[step]+offset*40.0*scale
+			if clear_step.call(start,stop): return PackedVector2Array([stop])
+	return PackedVector2Array()

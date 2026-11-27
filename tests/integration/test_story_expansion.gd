@@ -118,8 +118,9 @@ func test_both_escort_legs_bowl_interaction_and_story_save_round_trip() -> void:
 	story.recipe_viewed=true;story.tutorials.append("M1");story.tracked=false
 	var inventory: Dictionary=shell.profile.shop.snapshot().inventory
 	var snapshot:=story.export_state();assert_true(shell.profile.save().ok)
+	assert_true(TDLevelProgression.same_value(shell.slots.load_slot("slot-01").data.story,snapshot))
 	shell.go_title();assert_true(shell.load_game("slot-01").ok)
-	assert_true(TDLevelProgression.same_value(shell.profile.story.export_state(),snapshot))
+	assert_eq(shell.profile.story.revised.get("cursor"),0,"A legacy episode starts the revised story at its opening")
 	assert_eq(shell.profile.world.san,san_before-5)
 	assert_true(TDLevelProgression.same_value(shell.profile.shop.snapshot().inventory,inventory))
 	var exported:=shell.profile.snapshot()

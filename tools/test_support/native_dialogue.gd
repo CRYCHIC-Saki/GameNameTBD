@@ -9,6 +9,7 @@ static func completed_mainline(profile: TDGameProfile) -> void:
 			TDRevisedMainline.complete_dialogue(state,node.id,true)
 		else:
 			TDRevisedMainline.complete_action(state,node.id)
+	profile.characters.sync_story_encounters(state)
 
 ## Drive actual VN input. Never complete tasks by mutating TDDialogue.finished.
 static func finish(view: TDDialogueView, tree: SceneTree) -> void:
