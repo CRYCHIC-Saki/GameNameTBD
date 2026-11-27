@@ -79,19 +79,17 @@ func test_actual_neighbourhood_notice_and_player_cottage_keep_separate_actions()
 	assert_true(shell.create_game("slot-01","小镇食堂",false).ok);shell.guide.dialogue.finish_now();shell.profile.story.beat="done";shell.town.sync_characters(0)
 	await get_tree().process_frame
 	shell.profile.residence.stage="door";assert_true(shell.profile.unlock_residence().ok)
+	preload("res://tools/test_support/native_dialogue.gd").completed_mainline(shell.profile)
 	var before: Dictionary=shell.profile.snapshot()
 	var driver:=DRIVER.new();driver.viewport=get_tree().root
 	for id: String in ["urban_village","rich_district"]:
-		var foot := Vector2(219,197) if id == "urban_village" else Vector2(1180,215)
-		shell.town._player.position = shell.town._origin() + foot / TDPlannedTown.REFERENCE_PIXELS_PER_CELL * shell.town.cell_size()
-		assert_true(shell.town._can_stand(shell.town._player.position), id + " has an open doorstep")
-		assert_eq(str(shell.town.facing_plot().get("id","")),id)
-		driver.tap(KEY_E);assert_not_null(shell._modal_box)
-		if shell._modal_box==null: continue
-		var labels: String=""
-		for label: Label in shell._modal_box.find_children("*","Label",true,false): labels+=label.text
-		assert_true(labels.contains("居民区"));assert_false(labels.contains("地块参考总价"))
-		assert_eq(shell.profile.snapshot(),before);shell._close_dialog()
+		var plot := shell.profile.world.town_map._by_id(id)
+		assert_false(plot.is_empty(),id)
+		assert_false(TDInteractionRange.facility(plot),id)
+		assert_false(shell.town._interactable_facades.has(id),id)
+		shell._place(str(plot.kind),id)
+		assert_null(shell._modal_box)
+		assert_eq(shell.profile.snapshot(),before)
 	shell.town.spawn_at_plot("player_cottage");driver.tap(KEY_E);assert_eq(shell.location,"cottage")
 	assert_true(shell.profile.save().ok);shell.go_title();assert_true(shell.load_game("slot-01").ok)
 	assert_eq(shell.location,"cottage")

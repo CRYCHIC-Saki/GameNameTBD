@@ -46,7 +46,9 @@ func test_paid_thirteen_town_legacy_save_migrates_without_losing_shipments() -> 
 	var current: Dictionary=profile.shop.snapshot()
 	for field: String in historical:
 		if field in ["menu","fame"]:
-			for id: String in historical[field]: assert_eq(current[field].get(id),historical[field][id],id)
+			for id: String in historical[field]:
+				if id in TDRetiredRecipes.SERVICE_IDS: assert_does_not_have(current[field],id)
+				else: assert_eq(current[field].get(id),historical[field][id],id)
 			for id: String in current[field]:
 				if historical[field].has(id): continue
 				assert_false(profile.shop.offer(id).is_empty(),id)
@@ -175,12 +177,14 @@ func test_zero_customers_utilities_debt_and_income_repayment_are_exact() -> void
 	assert_eq(shop.snapshot().phase,"SETTLED")
 	assert_true(shop.active_orders().is_empty())
 	assert_eq(int(profile.commerce.state.day_stats.admitted),0)
-	assert_eq(int(profile.commerce.state.debt_cents),120)
+	var utility := int(profile.commerce.config.fees.opening_cents)
+	assert_eq(int(profile.commerce.state.debt_cents),utility)
+	assert_eq(int(profile.commerce.state.books.back().utilities_cents),utility)
 	assert_eq(int(profile.commerce.state.books.back().rent_cents),0)
 	var before:=profile.snapshot();assert_false(shop.settle_day().ok);assert_eq(profile.snapshot(),before)
 	assert_true(profile.next_day().ok)
 	assert_true(shop.world_adjustment(200,"test:income","测试收入").ok)
-	assert_eq(int(shop.snapshot().money_cents),80)
+	assert_eq(int(shop.snapshot().money_cents),200-utility)
 	assert_eq(int(profile.commerce.state.debt_cents),0)
 	assert_true(TDGameProfile.validate_save(profile.snapshot()).ok)
 

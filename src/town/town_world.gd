@@ -404,10 +404,6 @@ func _interact() -> void:
 	if external_story_frozen: return
 	if at_chen_door():
 		story_requested.emit("bowl" if story.beat=="bowl" else "chen");return
-	var story_person := _story_faced()
-	if player_mode and story_person.is_empty() and not _nearby_crowd().is_empty():
-		crowd_requested.emit(_crowd_site())
-		return
 	var cell := _player_cell()
 	var plot := session.town_map.plot_at(cell.x, cell.y)
 	if player_mode:
@@ -418,7 +414,15 @@ func _interact() -> void:
 			if not neighbor.is_empty() and String(neighbor["kind"]) != "housing" and not neighbor.get("economic_courtyard",false):
 				plot = neighbor
 				break
-	if player_mode and story_person != "":
+	var is_at_service_door := false
+	if player_mode and not plot.is_empty() and plot.has("approach_x") and plot.has("approach_y"):
+		var approach := _origin() + (Vector2(plot.approach_x,plot.approach_y) + Vector2.ONE * .5) * cell_size()
+		is_at_service_door = _player.position.distance_to(approach) < CrowdStands.DOOR_CLEARANCE * .8
+	var story_person := _story_faced() if player_mode and not is_at_service_door else ""
+	if player_mode and not is_at_service_door and story_person.is_empty() and not _nearby_crowd().is_empty():
+		crowd_requested.emit(_crowd_site())
+		return
+	if not story_person.is_empty():
 		if authored_interaction.is_valid() and authored_interaction.call(story_person): return
 		if story_requested.has_connections() and story!=null and not story.revised.is_empty():
 			story_requested.emit(story_person)

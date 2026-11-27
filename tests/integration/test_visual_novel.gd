@@ -50,7 +50,7 @@ func test_real_plugin_runtime_and_native_scenario_drive_opening() -> void:
 	assert_eq(background.atlas.resource_path, "res://assets/vn-painterly-v1/harbor.png")
 	var hero := stage.runner.ctx.characters.active_sprites["hero"] as VNEngineCharacterSprite
 	var portrait := hero.sprite.texture as AtlasTexture
-	assert_eq(portrait.atlas.resource_path, "res://assets/ui-wood-v1/portrait-hero-v2.png")
+	assert_eq(portrait.atlas.resource_path, (TDStoryArt.portrait("hero","happy") as AtlasTexture).atlas.resource_path)
 	assert_true(stage.dialog.background_box.get_theme_stylebox("panel") is StyleBoxTexture)
 	assert_true(stage.runner.ctx.characters.active_sprites.has("hero"))
 	assert_false(stage.runner.ctx.characters.active_sprites.has("aling"))
@@ -115,7 +115,7 @@ func test_pause_cancel_restart_discards_old_resume_and_template_name() -> void:
 	view._vn_stage._resume(generation)
 	assert_eq(view._vn_stage.blocked, "")
 	assert_eq(view.talk.cg_elapsed, 0.0)
-	assert_eq((load("res://content/story/vn/config/characters/_characters.tres") as VNEngineCast).display_name_of("hero"), "？？？")
+	assert_eq((load("res://content/story/vn/config/characters/_characters.tres") as VNEngineCast).display_name_of("hero"), "焰子")
 	view.dismiss()
 	assert_null(VNEngineMain.instance())
 	var daily := TDDialogue.new(); daily.add_line("老陈", "chen", "来，坐下聊聊。")

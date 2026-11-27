@@ -25,7 +25,3 @@ func start(name_value: String, request_name: bool) -> bool:
 	main.play_chapter("intro")
 	show()
 	return true
-
-func attach_stage(stage: VNEngineStageScreen) -> void:
-	super.attach_stage(stage)
-	if needs_name: _set_name(hero_name)

@@ -23,6 +23,7 @@ func start() -> void:
 	var result:=shell.create_game("slot-01","灶间烟火",false)
 	shell.guide.dialogue.finish_now() # Fixture cancels the automatic arrival.
 	assert_true(result.ok,result.code)
+	shell.profile.story.beat="done"
 	driver.kitchen=shell.kitchen_view.kitchen
 
 func button(label: String, within: Node) -> Button:
@@ -61,14 +62,14 @@ func test_market_shelves_open_at_stall_and_keep_local_and_remote_stock_separate(
 	shell.town._player.position=shell.town._origin()+(Vector2(stall.approach_x,stall.approach_y)+Vector2.ONE*.5)*shell.town.cell_size()
 	driver.tap(KEY_E)
 	assert_not_null(shell._modal_box,"城南大市入口")
-	var expected:=shell.profile.shop.market_ids("chengdu")
+	var expected:=shell.profile.shop.local_market_ids("chengdu")
 	var shelf: Array[String]=[]
 	var tomato_row: HBoxContainer
 	for icon: TDIngredientIcon in shell._modal_box.find_children("*","TDIngredientIcon",true,false):
 		shelf.append(icon.item_id)
 		if icon.item_id=="tomato": tomato_row=icon.get_parent()
 	assert_eq(shelf,expected,"完整保留当前档位可买的商品与顺序")
-	assert_has(shelf,"aspic")
+	assert_has(shelf,"scallion")
 	assert_has(shelf,"salt")
 	assert_does_not_have(shelf,"pasta")
 	assert_does_not_have(shelf,"udon")
@@ -85,7 +86,7 @@ func test_market_shelves_open_at_stall_and_keep_local_and_remote_stock_separate(
 	assert_eq(shop.available("tomato"),held+2000)
 	assert_eq(int(shop.snapshot().money_cents),cash-2*unit_price)
 	assert_string_contains(caption.text,shell._ingredient_name("tomato"))
-	assert_string_contains(caption.text,"家中 %.2f"%(float(held+2000)/1000.0))
+	assert_string_contains(caption.text,"店内 %.2f"%(float(held+2000)/1000.0))
 	assert_true(shell.profile.recommend_route("paris","test:market-shelf").ok)
 	shell.show_remote_market("paris")
 	var remote_buy: Button
@@ -110,6 +111,7 @@ func test_market_shelves_open_at_stall_and_keep_local_and_remote_stock_separate(
 
 func test_market_inventory_menu_open_and_real_kitchen_delivery_three_day_save_loop() -> void:
 	start()
+	preload("res://tools/test_support/native_dialogue.gd").completed_mainline(shell.profile)
 	for day: int in range(1,4):
 		for id: String in shell.profile.shop.snapshot().menu:
 			shell.profile.shop.set_menu(id,id=="service.tomato_egg",1300)
@@ -119,7 +121,9 @@ func test_market_inventory_menu_open_and_real_kitchen_delivery_three_day_save_lo
 			if buy.text=="购买": buy.pressed.emit()
 		assert_gt(shell.profile.shop.available("tomato"),0)
 		shell._close_dialog();shell.travel("restaurant");shell.show_menu()
-		var open:=button("确认菜单，开门营业",shell._modal_box);assert_not_null(open);open.pressed.emit()
+		var open:=button("开门营业",shell._modal_box);assert_not_null(open)
+		if open==null: return
+		open.pressed.emit()
 		assert_eq(shell.profile.shop.snapshot().phase,"OPEN")
 		assert_true(shell.travel("town").ok)
 		assert_eq(shell.profile.buy({"egg":1000}).code,"SHOP_OPEN")

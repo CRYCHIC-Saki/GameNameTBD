@@ -195,10 +195,10 @@ func _rollback_delete(archive: String, data: Dictionary) -> TDOutcome:
 	if DirAccess.remove_absolute(archive.path_join("manifest.json"))!=OK: return TDOutcome.new(false,"DELETE_RECOVERY_REQUIRED")
 	return TDOutcome.new(true,"DELETE_ROLLED_BACK")
 
-func backup_map_migration(id: String, regional: bool=false, jiangnan: bool=false, regions_retired: bool=false) -> TDOutcome:
-	if not valid_id(id): return TDOutcome.new(false,"INVALID_SLOT")
-	var source:=path_for(id)
-	var checked:=load_slot(id, "")
+func backup_map_migration(id: String, regional: bool=false, jiangnan: bool=false, regions_retired: bool=false, kind: String="") -> TDOutcome:
+	var source := path_for(id,kind)
+	if source.is_empty(): return TDOutcome.new(false,"INVALID_SLOT")
+	var checked := load_slot(id,kind)
 	if not checked.ok: return checked
 	var suffix: String=".before-region-v2" if regional else ".before-map-v2"
 	if regional and checked.data.get("region_layout_version",1)==2: suffix=".before-shiomi-v3"

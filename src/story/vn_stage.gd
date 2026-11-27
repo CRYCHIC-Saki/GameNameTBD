@@ -94,7 +94,7 @@ func attach_stage(stage: VNEngineStageScreen) -> void:
 		runner.state.flags["san_after"] = str(source_talk.context.get("san_after", 95))
 	runner.dialog_started.connect(_on_line)
 	runner.parse_diagnostics_ready.connect(_on_diagnostics.bind(_generation))
-	if not needs_name: _set_name(hero_name)
+	_set_name("？？？" if needs_name else hero_name)
 
 func _register_speaker(beat: Dictionary) -> void:
 	var id := TDVNPresentation.speaker_id(beat)

@@ -1,5 +1,6 @@
 extends GutTest
 const DRIVER=preload("res://tools/test_support/kitchen_input.gd")
+const STORY=preload("res://tools/test_support/native_dialogue.gd")
 var app: TDApplication
 var shell: TDGameShell
 
@@ -35,6 +36,7 @@ func interact_at_home() -> void:
 
 func test_new_save_keeps_progress_at_harbor_then_story_unlock_saves_at_bed() -> void:
 	assert_false(shell.profile.has_residence());assert_eq(shell.travel("cottage").code,"HOME_LOCKED")
+	STORY.completed_mainline(shell.profile)
 	shell.profile.story.beat="founded";shell.profile.story.setup_seen=true;shell.profile.story.hero_name="赤焰"
 	assert_true(shell.profile.buy({"egg":1000}).ok);assert_true(shell.profile.save().ok)
 	var money:int=shell.profile.shop.snapshot().money_cents
@@ -68,6 +70,7 @@ func test_two_am_before_business_unlocks_home_without_erasing_tutorial() -> void
 	assert_eq(shell.profile.story.beat,"cook");assert_true(shell.travel("kitchen").ok)
 
 func test_pending_route_restores_harbor_and_legacy_home_is_not_taken_away() -> void:
+	STORY.completed_mainline(shell.profile)
 	shell.profile.story.beat="founded";shell.profile.story.setup_seen=true
 	shell.profile.shop.open_day();shell.profile.shop.close_early()
 	shell.profile.invite_home("first_day");shell.profile.residence.stage="following"
@@ -76,6 +79,7 @@ func test_pending_route_restores_harbor_and_legacy_home_is_not_taken_away() -> v
 	assert_eq(shell.town._player_cell(),TDHarbor.ARRIVAL);assert_eq(shell.profile.residence.stage,"following")
 	follow_home()
 	var old:=shell.profile.snapshot();old.schema_version=6
+	old.erase("branches")
 	old.residence={"schema_version":1,"anchor":"cottage_bed","plot":old.residence.plot.duplicate(true)}
 	var restored:=TDGameProfile.new();assert_true(restored.restore(old).ok);assert_true(restored.has_residence())
 	assert_eq(restored.snapshot().schema_version,9);restored.close()

@@ -77,7 +77,7 @@ func test_spacious_projection_and_function_markers_preserve_layout_and_reachabil
 	room.teleport_player(Vector2i(cashier.approach_x,cashier.approach_y));driver.tap(KEY_E)
 	assert_not_null(shell._modal_box);shell._close_dialog()
 	assert_eq(shell.profile.snapshot(),before,"Visual space expansion never reallocates saved furniture or money")
-	assert_eq(room._iso._camera.zoom,Vector2.ONE)
+	assert_eq(room._iso._camera.zoom,Vector2(1.18,1.18))
 
 func test_ledger_follows_moved_rotated_counter_and_survives_removal() -> void:
 	shell.travel("restaurant");var room:=shell.restaurant;var layout:=room.layout

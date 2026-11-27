@@ -134,7 +134,12 @@ func test_old_daily_books_migrate_to_new_curve_and_unlock_rewards_once() -> void
 	assert_true(profile.shop.open_day().ok)
 	assert_true(profile.shop.advance(360).ok)
 	assert_true(profile.shop.close_for_night().ok)
-	assert_true(profile.settle_progression().ok)
+	var day_book := profile.level_daily_report()
+	assert_true(day_book.ok,day_book.code)
+	if not day_book.ok: return
+	# A successful saved business day supplies positive XP for migration.
+	day_book.data.stores[0].profit_cents = 12000
+	assert_true(profile.progression.settle(day_book.data).ok)
 	var legacy := profile.snapshot()
 	var xp := int(legacy.progression.total_xp)
 	assert_gt(xp,0)

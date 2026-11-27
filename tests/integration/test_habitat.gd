@@ -66,6 +66,7 @@ func test_four_faces_nearby_building_and_cottage_is_a_real_room() -> void:
 
 func test_bed_saves_next_day_once_and_loads_there_with_existing_progress() -> void:
 	assert_eq(shell.location,"town")
+	preload("res://tools/test_support/native_dialogue.gd").completed_mainline(shell.profile)
 	shell.profile.shop.open_day();shell.profile.shop.close_early()
 	assert_eq(shell.profile.shop.snapshot().phase,"SETTLED")
 	shell.travel("cottage",true);driver.tap(KEY_E)
@@ -76,9 +77,9 @@ func test_bed_saves_next_day_once_and_loads_there_with_existing_progress() -> vo
 	var before:=shell.profile.snapshot()
 	shell.go_title();assert_true(shell.load_game("slot-01").ok)
 	assert_eq(shell.location,"cottage");assert_eq(shell.cottage.target(),"rest")
-	assert_true(TDLevelProgression.same_value(shell.profile.snapshot(),before))
+	assert_true(TDLevelProgression.same_value(shell.profile.snapshot(),before),"Reload keeps the saved roster, finances and morning clock")
 	assert_false(shell.restaurant.interaction_points().any(func(p:Dictionary)->bool:return p.action=="rest"))
-	var old:=before.duplicate(true);old.schema_version=3;old.erase("residence")
+	var old:=before.duplicate(true);old.schema_version=3;old.erase("residence");old.erase("branches")
 	var migrated:=TDGameProfile.new();var result:=migrated.restore(old)
 	assert_true(result.ok,result.code);assert_eq(migrated.snapshot().schema_version,9)
 	assert_true(TDLevelProgression.same_value(migrated.research.snapshot(),shell.profile.research.snapshot()));migrated.close()

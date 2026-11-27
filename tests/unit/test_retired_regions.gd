@@ -146,7 +146,8 @@ func test_load_menu_backs_up_original_and_three_passenger_ports_work() -> void:
 		assert_true(reopened.ok,reopened.code)
 		assert_eq(int(shell.profile.shop.snapshot().money_cents),330000)
 		shell.guide.dialogue.finish_now()
-		shell.profile.story.beat="done"
+		assert_false(shell.voyage("tokyo").ok,"The migrated slot starts before overseas travel is unlocked")
+		preload("res://tools/test_support/native_dialogue.gd").completed_mainline(shell.profile)
 		shell.travel("town")
 		shell.town.spawn_at_harbor()
 		assert_false(shell.voyage("bangkok").ok)

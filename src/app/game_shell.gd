@@ -496,14 +496,26 @@ func load_game(id: String, kind: String = "latest") -> TDOutcome:
 	if not next.error.ok: next.close();return _outcome(next.error)
 	var result:=next.restore(saved.data)
 	if not result.ok: next.close();return _outcome(result)
+	var checkpoint := str(saved.data.get("checkpoint",""))
+	var migrated := next.map_migrated_on_load or next.region_migrated_on_load or next.jiangnan_migrated_on_load or next.regions_settled_on_load
+	if migrated:
+		var backup := slots.backup_map_migration(id, next.region_migrated_on_load, next.jiangnan_migrated_on_load, next.regions_settled_on_load, checkpoint)
+		if not backup.ok:
+			next.close()
+			return _outcome(backup)
+		var converted := slots.save_slot(id,next.snapshot(),checkpoint)
+		if not converted.ok:
+			next.close()
+			return _outcome(converted)
 	var story_migrated := next.use_revised_mainline()
 	next.branches.install_completed_storefronts()
 	# Legacy manual saves can contain a time during the preparation day.
-	if saved.data.get("checkpoint", "") != TDProfileStore.STORY and next.shop.snapshot().phase == "PREPARE":
+	if checkpoint != TDProfileStore.STORY and next.shop.snapshot().phase == "PREPARE":
 		next.characters.clock.minute = TDWorldDayClock.START_MINUTE
 	next.persistence=slots.save_slot
-	_activate(next, story_migrated and next.characters.clock.closed_day!=next.characters.clock.day, str(saved.data.get("checkpoint", "")))
-	if story_migrated: _message("已载入修订主线。旧档的经营进度已保留。")
+	_activate(next, story_migrated and next.characters.clock.closed_day!=next.characters.clock.day, checkpoint)
+	if migrated: _message(result.message+"原档已留迁移前备份。")
+	elif story_migrated: _message("已载入修订主线。旧档的经营进度已保留。")
 	return result
 
 func continue_game() -> void:
@@ -729,9 +741,7 @@ func _place(kind: String, id: String) -> void:
 	if not profile.story.revised.is_empty() and guide.journey.home_landmark(id): return
 	if id.begins_with("player-branch:"): _outcome(enter_branch(id))
 	elif kind=="cottage":
-		if profile.residence.stage=="door":
-			if profile.story.revised.is_empty(): guide.present_home("home_door")
-			else: guide.begin_homecoming(); travel("cottage")
+		if profile.residence.stage=="door": guide.present_home("home_door")
 		else: travel("cottage")
 	elif kind=="harbor": show_harbor()
 	elif kind=="hotel":

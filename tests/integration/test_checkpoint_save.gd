@@ -131,13 +131,17 @@ func test_story_checkpoint_and_hotel_checkpoint_are_independent() -> void:
 	assert_true(shell.create_game("slot-02","临海食堂").ok)
 	assert_eq(shell.slots.load_slot("slot-02").code,"NOT_FOUND")
 	var view := shell.guide.dialogue
-	for frame: int in range(120):
-		if not shell.guide.presenting(): break
-		if view._vn_stage.runner != null:
-			view._vn_stage.dialog._reveal_to_end()
-			view._vn_stage.dialog._advance_dialog()
-		await get_tree().process_frame
-		await get_tree().process_frame
+	var input := preload("res://tools/test_support/kitchen_input.gd").new()
+	input.viewport = get_tree().root
+	await preload("res://tools/test_support/native_dialogue.gd").finish(view,get_tree())
+	for id: String in shell.guide.journey.ARRIVAL_SHOPS:
+		shell.town.spawn_at_plot(id)
+		input.tap(KEY_E)
+	assert_eq(shell.guide.journey.arrival_checked_count(),shell.guide.journey.ARRIVAL_SHOPS.size())
+	shell.town.spawn_at_harbor()
+	await wait_process_frames(3)
+	assert_true(shell.guide.presenting())
+	await preload("res://tools/test_support/native_dialogue.gd").finish(view,get_tree())
 	await wait_process_frames(3)
 	var story := shell.slots.load_slot("slot-02",TDProfileStore.STORY)
 	assert_true(story.ok,story.code)

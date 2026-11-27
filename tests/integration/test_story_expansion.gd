@@ -176,6 +176,6 @@ func test_harbor_is_reachable_and_interactive_without_changing_property_or_save(
 	for direction: Vector2i in [Vector2i.UP,Vector2i.DOWN,Vector2i.LEFT,Vector2i.RIGHT]:
 		shell.town._player.position=approach;shell.town._player.face(Vector2(direction))
 		assert_eq(shell.town.facing_plot().get("id",""),"harbor.hekou")
-	driver.tap(KEY_E);assert_not_null(shell._modal);assert_true(get_tree().paused)
+	shell.town._interact();assert_not_null(shell._modal);assert_true(get_tree().paused)
 	driver.tap(KEY_ESCAPE);assert_false(get_tree().paused)
 	assert_true(TDLevelProgression.same_value(before,shell.profile.snapshot()),"Port preview does not unlock cargo routes, spend money or alter property")

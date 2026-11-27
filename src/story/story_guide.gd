@@ -154,12 +154,6 @@ func hero_name() -> String:
 func begin_homecoming() -> void:
 	if presenting(): return
 	var profile := shell.profile
-	if not profile.story.revised.is_empty():
-		if profile.residence.stage not in ["invited","following","door"]: return
-		profile.residence.stage="door"
-		if profile.unlock_residence().ok:
-			shell._message("小屋已解锁。可到小屋床边休息并保存。")
-		return
 	if profile.residence.stage=="invited": present_home("home_late" if profile.residence.reason=="late" else "home_invite")
 
 func present_home(scene: String) -> void:
@@ -590,7 +584,7 @@ func _process_revised(delta: float) -> void:
 	var hidden := presenting() or shell._modal != null or shell.atlas != null or shell.kitchen_view._popup!=null or shell._rest_busy
 	_trail.hide(); _bark.hide(); _bark_portrait.hide()
 	if not shell.profile.has_residence() and shell.profile.story.served and shell.profile.shop.snapshot().phase == "SETTLED": shell.profile.invite_home("first_day")
-	if not hidden and shell.location=="town" and shell.profile.residence.stage in ["invited","following","door"]:
+	if not hidden and shell.location=="town" and shell.profile.residence.stage=="invited":
 		begin_homecoming()
 	if _failed_revised_scene == null: journey.tick(delta)
 	var node := TDRevisedMainline.current(shell.profile.story.revised)

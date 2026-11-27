@@ -1,4 +1,15 @@
 extends RefCounted
+
+static func completed_mainline(profile: TDGameProfile) -> void:
+	profile.use_revised_mainline()
+	var state := profile.story.revised
+	for index: int in range(int(state.cursor),TDRevisedMainline.data().nodes.size()):
+		var node: Dictionary = TDRevisedMainline.data().nodes[index]
+		if node.kind=="dialogue":
+			TDRevisedMainline.complete_dialogue(state,node.id,true)
+		else:
+			TDRevisedMainline.complete_action(state,node.id)
+
 ## Drive actual VN input. Never complete tasks by mutating TDDialogue.finished.
 static func finish(view: TDDialogueView, tree: SceneTree) -> void:
 	for _i: int in 120:

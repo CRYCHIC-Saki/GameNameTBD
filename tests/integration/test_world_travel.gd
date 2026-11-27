@@ -393,11 +393,17 @@ func test_shiomi_counter_opens_from_the_shop_door_and_sells_local_unlocked_ingre
 		if not rows.has(id): return
 		(tabs[0] as TabBar).current_tab=0 if id=="udon" else 1
 		assert_true((rows[id] as Control).is_visible_in_tree(),id)
-		var before:=shell.profile.shop.available(id)
+		var branches := shell.profile.branches
+		var store_id := branches.preset_in("tokyo")
+		assert_false(store_id.is_empty())
+		if store_id.is_empty(): return
+		var before := int(branches.state.stores[store_id].inventory.get(id,0))
+		var main_stock := shell.profile.shop.available(id)
 		var button: Button=rows[id].find_children("*","Button",true,false).back()
 		assert_eq(button.text,"购买")
 		button.pressed.emit()
-		assert_eq(shell.profile.shop.available(id),before+1000)
+		assert_eq(int(branches.state.stores[store_id].inventory.get(id,0)),before+1000)
+		assert_eq(shell.profile.shop.available(id),main_stock)
 
 func test_service_can_leave_but_procurement_policy_stays_separate() -> void:
 	assert_true(shell.kitchen_view.buy_kit("service.tomato_egg").ok)
