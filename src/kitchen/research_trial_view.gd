@@ -42,7 +42,7 @@ func _button(text:String,rect:Rect2,action:Callable) -> Button:
 
 func _sync() -> void:
 	var now:int=Time.get_ticks_usec();var delta:float=float(now-_last_usec)/1000000.0;_last_usec=now
-	if not automated_clock and _result==null and not _paused: session.advance(delta)
+	if not automated_clock and _result==null and not _paused: session.advance(minf(delta, TDFullKitchen.MAX_INTERACTIVE_DELTA))
 
 func _process(_delta:float) -> void:
 	_sync()

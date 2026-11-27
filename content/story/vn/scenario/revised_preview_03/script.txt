@@ -1,0 +1,77 @@
+# start
+@bg ingredient-shop with instant 0
+narrator: 【剧本预览】本场可查看完整台词，战斗和经营结果不写入正式进度。
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show aling speechless at td:0.740000:1.555701:2.150000 with instant
+aling: 罗司祭，夜鸦带来了一位异乡厨师。此人方才胜过吾，想必值得你亲自一试。
+@hide aling with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show chen happy at td:0.789020:1.503413:2.150000 with instant
+chen: 欢迎，背着锅的小家伙！叫我金娜姐就好啦。能让阿铃这么夸你，看来手艺很不错嘛。
+@show hero proud at td:0.268170:1.464197:2.150000 with instant
+hero: 我是焰子！听说你是这里很厉害的厨师，我刚赢了一场，正想再找个人比试。你愿意来吗？
+@hide aling with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show chen calm at td:0.789020:1.503413:2.150000 with instant
+chen: 当然可以，我也正想尝尝你的手艺呢。这里的鸡蛋和米饭都备好了，我们就用这些做一道蛋炒饭吧。
+@show hero cry at td:0.268170:1.464197:2.150000 with instant
+hero: 明明用的是一样的食材，怎么连你炒出来的饭粒都比我香啊……这次是我输了，可我还想再吃一口。
+@hide aling with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show chen troubled at td:0.789020:1.503413:2.150000 with instant
+chen: 你的控火很有天赋，不过一着急就只顾着翻炒，调味和配料都没来得及照顾好。多学些搭配，再安排好下锅顺序，会进步得很快哦。
+@show hero proud at td:0.268170:1.464197:2.150000 with instant
+hero: 那我该先去哪里学？下次我可要连配菜一起赢回来，你先替我记着！
+@hide aling with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show chen calm at td:0.789020:1.503413:2.150000 with instant
+chen: 先去稀味郡找维托吧，她住在钟楼旁的旧骑士馆。再去和味道，找河边挂蓝布帘那家店的日奈，她们都有很擅长的料理。
+@hide aling with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show chen happy at td:0.789020:1.503413:2.150000 with instant
+chen: 我把其他几位厨师的住处也标在地图上了。先向当地居民学些基础做法，再去挑战她们，沿途一定能学到不少东西。对了，我们这里也有很多厉害的厨师，你有兴趣的话也可以去挑战挑战哦。
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 好！等我成为一个成熟的厨师，就回来重新挑战你。到时候你可要好好尝尝我的菜！
+@hide aling with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show chen proud at td:0.789020:1.503413:2.150000 with instant
+chen: 那就说好了，我会在这里等你回来。路上用的食材先送你们一些，等你学成了，可要常来照顾我的生意。金娜姐挑食材的本事，你也尝过了吧？
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show aling happy at td:0.740000:1.555701:2.150000 with instant
+aling: 此行路途遥远，夜鸦愿为向导，与你同赴各地灶前。
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hina with instant
+@show hertz proud at td:0.707320:1.555701:2.150000 with instant
+hertz: 从见习厨师开始，学会各地的料理，最后回来挑战公主，这段经历很适合做成追踪节目！你们愿意让我随行采访吗？沿途的厨师和他们的拿手菜，我也想介绍给观众。
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 好啊，大家一起去吧！有阿铃带路，我就不用担心找不到那些店了。赫兹，你也可以跟着尝尝，我们先去维托那里！
+@end

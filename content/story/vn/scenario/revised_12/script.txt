@@ -1,0 +1,33 @@
+# start
+@bg riverside-diner with instant 0
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+// 原稿第 71 段 【通常】日奈
+@show hina calm at td:0.740000:1.503413:2.150000 with instant
+hina: 欢迎，三位就是罗金娜提过的客人吧？先坐下喝碗汤，刚赶完路，应该也饿了。
+// 原稿第 72 段 【疑惑】焰子
+@show hero puzzled at td:0.268170:1.464197:2.150000 with instant
+hero: 这汤看起来这么清，怎么会有这么浓的鲜味？我可没见你往里面加什么呀，这个能教教我吗？
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+// 原稿第 73 段 【通常】日奈
+@show hina calm at td:0.740000:1.503413:2.150000 with instant
+hina: 当然可以。高汤要留意材料和火候，米饭、煎鱼也各有讲究。镇上的厨师都很乐意教人，你可以先跟他们学，再借用这里的厨房接待客人，慢慢把做法练熟。
+// 原稿第 74 段 【得意】焰子
+@show hero proud at td:0.268170:1.464197:2.150000 with instant
+hero: 那等我学会以后，下一份定食就请你来当客人吧。到时候可要认真挑毛病，我是来挑战你的哦。
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+// 原稿第 75 段 【得意】日奈
+@show hina proud at td:0.740000:1.503413:2.150000 with instant
+hina: 好啊，我就在店里等你。既然要请我当客人，就得连饭带汤一起让我满意。我们比煎鱼定食，怎么样？
+@end

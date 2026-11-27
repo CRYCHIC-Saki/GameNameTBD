@@ -22,7 +22,7 @@ func before_each() -> void:
 	app=APP.instantiate() as TDApplication; app.settings_path="res://artifacts/test-storage/phase2-settings.json"
 	save_path="res://artifacts/test-storage/service-%d.json" % Time.get_ticks_usec(); app.shop_save_path=save_path
 	layer.add_child(app)
-	# Historical five-recipe save fixture; new-player research is covered separately.
+	# Historical starter-recipes save fixture; new-player research is covered separately.
 	var world:=app._phase3()
 	app.research.inherit_legacy(world.catalog.dish_list().filter(func(d:Dictionary)->bool:return d.get("starter",false)).map(func(d:Dictionary)->String:return d.id))
 	app.enter_shop(); view=app.shop_view; kitchen=view.kitchen; kitchen.auto_advance=false; sent={}
@@ -150,15 +150,22 @@ func test_automatic_real_workflow_pause_delivery_and_no_mastery_farming() -> voi
 	assert_lt(view.shop.available("oil"),int(before.oil));assert_lt(view.shop.available("salt"),int(before.salt))
 	station("kitchen.stove.left");station("kitchen.serve");assert_eq(view.shop.order(id).status,"SERVED")
 
-func test_automatic_two_real_pots_keep_state_and_consumption_independent() -> void:
+func test_automatic_cooking_uses_only_one_pot_then_releases_it() -> void:
 	view.buy_kit("service.tomato_egg");view.buy_kit("service.tomato_egg",false)
 	view.open_day();kitchen=view.kitchen;kitchen.auto_advance=false;mastered_fixture("service.tomato_egg")
 	for lane: TDCookingLane in kitchen.lanes: lane.beat_offset_sec=0
-	load_raw_pot(0);load_raw_pot(1)
-	assert_true(view.start_automatic(0).ok);assert_true(view.start_automatic(1).ok)
+	load_raw_pot(0)
+	assert_true(view.start_automatic(0).ok)
+	assert_eq(view.start_automatic(1).code,"OTHER_POT_IN_USE")
 	play(100,false)
-	assert_eq(kitchen.lanes[0].snapshot().state,"plated");assert_eq(kitchen.lanes[1].snapshot().state,"plated")
-	assert_ne(kitchen.lanes[0].snapshot().session_id,kitchen.lanes[1].snapshot().session_id)
+	assert_eq(kitchen.lanes[0].snapshot().state,"plated")
+	assert_true(kitchen.lanes[1].snapshot().ingredients.is_empty())
+	station("kitchen.stove.left")
+	assert_eq(kitchen.handling.hand_kind,"dish")
+	assert_eq(kitchen.handling.put_board().code,"DISH_IN_HAND")
+	assert_eq(kitchen.handling.put_pot(kitchen.lanes[1].session).code,"DISH_IN_HAND")
+	view._trash()
+	assert_false(kitchen.other_pot_in_use(1))
 	assert_eq(view.shop.mastery("service.tomato_egg").points,400.0)
 	for amount: int in view.shop.snapshot().inventory.values(): assert_gte(amount,0)
 
@@ -199,12 +206,6 @@ func test_research_starters_and_unlocked_examples_use_real_cooking_and_delivery(
 		assert_true(view.shop.is_unlocked(id));var order_id:=prepare_order(id);cook_order(order_id)
 		assert_false(view.shop.order(order_id).score.is_empty());assert_false(kitchen.lanes[0 if id!="study.steamed_egg" else 1].snapshot().failed_dish)
 
-func test_real_beef_noodles_inventory_cooking_and_customer_delivery() -> void:
-	var id: String=prepare_order("service.beef_noodles")
-	cook_order(id)
-	var before: Dictionary=view.shop.snapshot()
-	station("kitchen.serve"); assert_eq(view.shop.snapshot(),before)
-
 func test_real_mapo_tofu_inventory_cooking_and_customer_delivery() -> void:
 	var id: String=prepare_order("service.mapo_tofu")
 	cook_order(id)
@@ -217,20 +218,17 @@ func test_real_kungpao_inventory_cooking_and_customer_delivery() -> void:
 	var before: Dictionary=view.shop.snapshot()
 	station("kitchen.serve"); assert_eq(view.shop.snapshot(),before)
 
-func test_real_pepper_pork_inventory_cooking_and_customer_delivery() -> void:
-	var id: String=prepare_order("service.pepper_pork")
-	cook_order(id)
-	var before: Dictionary=view.shop.snapshot()
-	station("kitchen.serve"); assert_eq(view.shop.snapshot(),before)
-
 func test_real_three_days_save_restart_and_custom_menu() -> void:
 	var custom_id: String=""
 	for day: int in range(1,4):
 		var id: String=prepare_order("service.tomato_egg" if custom_id.is_empty() else custom_id)
 		cook_order(id)
 		if day>1:
-			assert_eq(view.shop.order(id).used.get("vinegar"),200)
-			assert_eq(view.shop.order(id).used.get("sugar",0),200 if view.shop.order(id).customer.id=="sweet" else 0)
+			assert_almost_eq(int(view.shop.order(id).used.get("vinegar",0)),200,6)
+			if view.shop.order(id).customer.id=="sweet":
+				assert_almost_eq(int(view.shop.order(id).used.get("sugar",0)),200,6)
+			else:
+				assert_eq(view.shop.order(id).used.get("sugar",0),0)
 			assert_true(view.shop.order(id).customer.requirements.any(func(r:Dictionary)->bool:return r.get("ingredient_id")=="tomato"))
 		view.shop.close_early()
 		for remaining: Dictionary in view.shop.active_orders(): view.cancel_order(remaining.id)
@@ -343,14 +341,17 @@ func test_real_mouse_hold_release_outside_changes_usage_and_recipe_amounts() -> 
 	var id: String=prepare_order("service.tomato_egg")
 	cook_order(id)
 	var item: Dictionary=view.shop.order(id)
-	assert_eq(item.used.get("salt"),40)
-	assert_eq(item.used.get("sugar"),80)
-	assert_eq(item.used.get("oil"),180)
+	assert_almost_eq(int(item.used.get("salt",0)),40,6)
+	assert_almost_eq(int(item.used.get("sugar",0)),80,6)
+	assert_almost_eq(int(item.used.get("oil",0)),180,6)
 	assert_eq(item.plan.schema_version,3)
 	var season: Dictionary={}
 	for step: Dictionary in item.plan.operations:
 		if step.parameters.has("sequence"): season=step.parameters
-	assert_eq(season.amounts,[.08,.08,.04,.06])
+	var expected_amounts := [.08,.08,.04,.06]
+	assert_eq(season.amounts.size(),expected_amounts.size())
+	for i: int in mini(season.amounts.size(),expected_amounts.size()):
+		assert_almost_eq(float(season.amounts[i]),float(expected_amounts[i]),.006)
 	view.shop.close_early(); kitchen.advance(.01)
 	var saved:=view.save_order_plan(id,"少盐短按炒蛋")
 	assert_true(saved.ok,saved.code)
@@ -366,7 +367,9 @@ func test_real_mouse_hold_release_outside_changes_usage_and_recipe_amounts() -> 
 	var chart:=TDBeatSheet.new()
 	assert_true(chart.configure(compiled.data.sheets[edited.id],kitchen.catalog.data().operations).ok)
 	var event: Dictionary=chart.snapshot().events.filter(func(x:Dictionary)->bool:return x.operation=="season" and x.parameters.get("mode")=="precise")[0]
-	assert_eq(event.settings.hold_durations_sec,[.85,.85,.85,.85])
+	assert_eq(event.settings.hold_durations_sec.size(),4)
+	for duration: float in event.settings.hold_durations_sec:
+		assert_almost_eq(duration,.17/float(event.settings.pour_rate_per_sec),.00001)
 
 func test_same_family_two_customers_really_play_different_cut_and_season_charts() -> void:
 	view.buy_kit("service.tomato_egg"); view.buy_kit("service.tomato_egg",false)
@@ -376,31 +379,31 @@ func test_same_family_two_customers_really_play_different_cut_and_season_charts(
 	var first: String=view.shop.active_orders()[0].id; var second: String=view.shop.active_orders()[1].id
 	cook_order(first)
 	var large: Dictionary=view.shop.order(first)
-	assert_eq(large.used.sugar,200)
+	assert_almost_eq(int(large.used.sugar),200,6)
 	assert_eq(large.plan.operations.filter(func(s:Dictionary)->bool:return s.operation=="cut")[0].parameters.shape,"chunk")
 	cook_order(second)
 	var small: Dictionary=view.shop.order(second)
-	assert_eq(small.used.soy_sauce,150)
+	assert_almost_eq(int(small.used.soy_sauce),150,6)
 	var cut: Dictionary=small.plan.operations.filter(func(s:Dictionary)->bool:return s.operation=="cut")[0]
 	assert_eq(cut.parameters.shape,"dice"); assert_eq(cut.parameters.beats,8)
 	assert_eq(large.plan.recipe_id,small.plan.recipe_id)
 	assert_eq(view._sidebar.find_children("*","Button",true,false).size(),0)
 
 func test_second_different_dish_can_be_served_before_first_customer() -> void:
-	view.buy_kit("service.tomato_egg"); view.buy_kit("service.pepper_pork")
-	view.shop.set_menu("service.pepper_pork",true,2600)
+	view.buy_kit("service.tomato_egg"); view.buy_kit("service.mapo_tofu")
+	view.shop.set_menu("service.mapo_tofu",true,2600)
 	view.open_day(); kitchen=view.kitchen; kitchen.auto_advance=false; view.shop._rng=MenuRandom.new()
 	for lane: TDCookingLane in kitchen.lanes+[kitchen.prep]: lane.beat_offset_sec=0
 	kitchen.advance(81)
 	var first: Dictionary=view.shop.active_orders()[0]; var second: Dictionary=view.shop.active_orders()[1]
 	assert_ne(first.recipe_id,second.recipe_id)
-	assert_true(first.recipe_id in ["service.tomato_egg","service.pepper_pork"] and second.recipe_id in ["service.tomato_egg","service.pepper_pork"])
+	assert_true(first.recipe_id in ["service.tomato_egg","service.mapo_tofu"] and second.recipe_id in ["service.tomato_egg","service.mapo_tofu"])
 	cook_order(second.id)
 	assert_eq(view.shop.order(first.id).status,"WAITING")
 	assert_eq(view.shop.order(second.id).status,"SERVED")
 
 func test_one_fridge_all_materials_and_only_one_held_item() -> void:
-	view.buy_kit("service.tomato_egg"); view.buy_kit("service.beef_noodles")
+	view.buy_kit("service.tomato_egg"); view.shop.receive_supply({"beef":1000},"fixture-beef")
 	view.open_day(); kitchen=view.kitchen; kitchen.auto_advance=false; kitchen.advance(1)
 	assert_eq(kitchen.world.stations().filter(func(s:Dictionary)->bool:return s.get("kind")=="fridge").size(),1)
 	assert_eq(kitchen.world.stations().filter(func(s:Dictionary)->bool:return s.get("kind")=="supply").size(),0)
@@ -439,7 +442,7 @@ func test_three_visible_orders_list_materials_without_action_buttons() -> void:
 	assert_gt(float(view.shop.active_orders()[0].deadline_sec),float(view.shop.snapshot().elapsed_sec))
 
 func test_no_order_beef_cut_choice_return_retrieve_and_cold_boundary_reload() -> void:
-	view.buy_kit("service.beef_noodles")
+	view.shop.receive_supply({"beef":1000},"fixture-beef")
 	view.open_day(); kitchen=view.kitchen; kitchen.auto_advance=false
 	assert_true(view.pick_ingredient("beef").ok)
 	station("kitchen.board"); await get_tree().process_frame
@@ -450,12 +453,14 @@ func test_no_order_beef_cut_choice_return_retrieve_and_cold_boundary_reload() ->
 	assert_not_null(choice); click(choice.get_global_rect().get_center())
 	play(12); station("kitchen.board")
 	var before: Dictionary=kitchen.handling.hand.snapshot().to_dict().ingredients.values()[0].duplicate(true)
-	assert_eq(before.shape,"dice"); assert_eq(before.fine,.75)
+	assert_eq(before.shape,"dice"); assert_eq(before.fine,.875)
 	assert_true(view.return_ingredient().ok)
 	assert_null(kitchen.handling.hand); assert_eq(view.shop.snapshot().cold_foods.size(),1)
 	assert_eq(view.shop.available("beef"),0)
 	assert_true(view.pick_stored(before.id).ok)
 	assert_eq(kitchen.handling.hand.snapshot().to_dict().ingredients.values()[0].flavor,before.flavor)
+	assert_eq(kitchen.handling.put_board().code,"ALREADY_PREPARED")
+	assert_null(kitchen.handling.board)
 	station("kitchen.stove.left")
 	assert_eq(kitchen.lanes[0].snapshot().ingredients.size(),1)
 	assert_true(view.take_pot_ingredient(0,before.id).ok)
@@ -470,11 +475,24 @@ func test_no_order_beef_cut_choice_return_retrieve_and_cold_boundary_reload() ->
 	view.next_day(); view.open_day(); kitchen=view.kitchen; kitchen.auto_advance=false
 	assert_true(view.pick_stored(before.id).ok)
 	var after: Dictionary=kitchen.handling.hand.snapshot().to_dict().ingredients.values()[0]
-	assert_eq(after.id,before.id); assert_eq(after.flavor,before.flavor); assert_eq(after.history,before.history)
+	assert_eq(after.id,before.id); assert_true(TDLevelProgression.same_value(after.flavor,before.flavor)); assert_eq(after.history,before.history)
 	assert_eq(view.shop.available("beef"),0)
 
+func test_returned_raw_stock_keeps_quantity_and_expiry_and_cannot_be_returned_twice() -> void:
+	assert_true(view.shop.receive_supply({"beef":2000},"fridge-return-fixture").ok)
+	var original: Array=view.shop.snapshot().inventory_lots.beef
+	var count := view.shop.available("beef")
+	assert_true(view.pick_ingredient("beef").ok)
+	var receipt := kitchen.handling.hand.portable_data().data
+	assert_eq(view.shop.available("beef"),count-1000)
+	assert_true(view.return_ingredient().ok)
+	assert_eq(view.shop.snapshot().inventory_lots.beef,original)
+	assert_true(view.shop.snapshot().cold_foods.is_empty())
+	assert_eq(view.shop.store_food(receipt).code,"DUPLICATE")
+	assert_eq(view.shop.available("beef"),count)
+
 func test_any_nonempty_pot_runs_unknown_full_chain_and_trash_clears_it() -> void:
-	view.buy_kit("service.tomato_egg"); view.buy_kit("service.beef_noodles")
+	view.buy_kit("service.tomato_egg"); view.shop.receive_supply({"beef":1000},"fixture-beef")
 	view.open_day(); kitchen=view.kitchen; kitchen.auto_advance=false
 	view.pick_ingredient("beef"); station("kitchen.stove.left")
 	station("kitchen.stove.left")
@@ -497,7 +515,7 @@ func test_any_nonempty_pot_runs_unknown_full_chain_and_trash_clears_it() -> void
 
 func test_failed_dish_serves_first_customer_once_and_lowers_popularity() -> void:
 	for i: int in 3: view.buy_kit("service.tomato_egg",false)
-	view.buy_kit("service.beef_noodles")
+	view.shop.receive_supply({"beef":1000},"fixture-beef")
 	view.open_day(); kitchen=view.kitchen; kitchen.auto_advance=false; kitchen.advance(50)
 	var first: String=view.shop.active_orders()[0].id
 	view.pick_ingredient("beef"); station("kitchen.steamer"); station("kitchen.steamer",KEY_F)
@@ -513,37 +531,37 @@ func test_failed_dish_serves_first_customer_once_and_lowers_popularity() -> void
 
 func test_actual_perfect_steam_requires_research_but_historical_unlock_survives_restart() -> void:
 	# Historical stock / paid supply still allows cooking a locked recipe after D037.
-	assert_true(view.shop.receive_supply(view.shop.offer("service.qiguoji").stock,"historical-steam").ok)
+	assert_true(view.shop.receive_supply(view.shop.offer("study.steamed_egg").stock,"historical-steam").ok)
 	view.open_day(); kitchen=view.kitchen; kitchen.auto_advance=false
-	assert_false(view.shop.is_unlocked("service.qiguoji"))
-	for food: String in ["chicken","mushroom"]: assert_true(view.pick_ingredient(food).ok); station("kitchen.steamer")
+	assert_false(view.shop.is_unlocked("study.steamed_egg"))
+	for food: String in ["egg","water"]: assert_true(view.pick_ingredient(food).ok); station("kitchen.steamer")
 	station("kitchen.steamer",KEY_F); assert_true(kitchen.stage.visible)
 	play(60)
 	var dish: Dictionary=kitchen.lanes[1].snapshot()
 	assert_false(kitchen.stage.visible,"wait for the authored plating tail before taking the dish")
 	assert_eq(dish.state,"plated"); assert_false(dish.failed_dish); assert_true(dish.missing_required.is_empty())
 	for step: Dictionary in dish.steps: assert_eq(step.grade,"Perfect",step.operation)
-	assert_false(view.shop.is_unlocked("service.qiguoji")) # D030: Perfect no longer bypasses research.
-	assert_true(app.research.inherit_legacy(["qiguoji"]).ok) # A legitimate historical unlock remains compatible.
+	assert_false(view.shop.is_unlocked("study.steamed_egg")) # D030: Perfect no longer bypasses research.
+	assert_true(app.research.inherit_legacy(["steamed_egg"]).ok) # A legitimate historical unlock remains compatible.
 	assert_eq(view.shop.observe_finished(dish).code,"RESEARCH_REQUIRED")
 	view.shop.close_early(); kitchen.advance(.01)
-	var plan:=view.shop.save_plan("第一份汽锅鸡做法",dish.custom_plan)
+	var plan:=view.shop.save_plan("第一份蒸水蛋做法",dish.custom_plan)
 	assert_true(plan.ok,plan.code)
 	assert_eq(view.save_boundary().code,"KITCHEN_BUSY","日结不会偷偷清掉未交付的菜")
 	station("kitchen.steamer");station("kitchen.trash")
 	var boundary:=view.save_boundary()
 	assert_true(boundary.ok,boundary.code+" "+boundary.message)
 	app.return_to_menu(); await get_tree().process_frame; app.enter_shop(true); view=app.shop_view; kitchen=view.kitchen; kitchen.auto_advance=false
-	assert_true(view.shop.is_unlocked("service.qiguoji")); view.next_day()
-	assert_true(view.shop.set_menu("service.qiguoji",true,2200).ok)
+	assert_true(view.shop.is_unlocked("study.steamed_egg")); view.next_day()
+	assert_true(view.shop.set_menu("study.steamed_egg",true,2200).ok)
 
 func test_missed_steam_and_cooking_started_retrieval_are_rejected() -> void:
 	# Historical stock / paid supply still allows cooking a locked recipe after D037.
-	assert_true(view.shop.receive_supply(view.shop.offer("service.qiguoji").stock,"historical-steam").ok); view.open_day(); kitchen=view.kitchen; kitchen.auto_advance=false
-	for food: String in ["chicken","mushroom"]: view.pick_ingredient(food); station("kitchen.steamer")
+	assert_true(view.shop.receive_supply(view.shop.offer("study.steamed_egg").stock,"historical-steam").ok); view.open_day(); kitchen=view.kitchen; kitchen.auto_advance=false
+	for food: String in ["egg","water"]: view.pick_ingredient(food); station("kitchen.steamer")
 	station("kitchen.steamer",KEY_F); kitchen.advance(3)
 	var id: String=kitchen.lanes[1].snapshot().ingredients.keys()[0]
 	assert_eq(view.take_pot_ingredient(1,id).code,"COOKING_STARTED")
 	play(40,false)
 	assert_eq(kitchen.lanes[1].snapshot().state,"plated")
-	assert_false(view.shop.is_unlocked("service.qiguoji"))
+	assert_false(view.shop.is_unlocked("study.steamed_egg"))

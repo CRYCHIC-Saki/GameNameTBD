@@ -1,0 +1,140 @@
+{
+  "schema": 1,
+  "character_id": "vito",
+  "display_name": "维托",
+  "date": "2026-11-26",
+  "status": "DELIVERED_LOCAL_USER_CONFIRMED_ARCHIVE",
+  "generator": "built-in image_gen",
+  "scope": "新增前后左右四向静态像素小人素材。",
+  "references": [
+    {
+      "path": "assets/characters/mainline-20261126/vito/calm.png",
+      "sha256": "0b7ee6ccbce49d8595dfd5a0a69f2fec06e487193ee42b2de9b8b43420e4ace0",
+      "role": "用户角色原画的项目内原字节副本，身份与服饰参考"
+    },
+    {
+      "path": "assets/characters/ash-priest/archive/2026-10-29/ash-priest-idle-four-directions.png",
+      "sha256": "7b9875c2015d61af28f8cca325e951b16b41c11532ab2d9c7587c8fe4d7e4273",
+      "role": "既有已确认像素小人，仅风格、像素颗粒和布局参考"
+    },
+    {
+      "path": "assets/characters/luoe/archive/2026-11-08/luoe-idle-four-directions.png",
+      "sha256": "e9056b52635b5e3be2010eb6fe604cf438023e8e968a2c063eaebb19e7793f9d",
+      "role": "既有已确认像素小人，仅风格、像素颗粒和布局参考"
+    }
+  ],
+  "identity_elements": [
+    "遮住角色右眼的棕色刘海、可见绿色左眼、角色左侧单马尾",
+    "奶油色褶边帽，角色左侧帽面绿色面具和番茄装饰",
+    "白泡袖、深绿袖口、黄色领结与番茄胸饰",
+    "绿色长围裙裙装与红色番茄图案",
+    "角色右腰银色餐叉、左腰黄色蝴蝶结",
+    "黄色下层衣摆、浅色袜口和棕色长靴"
+  ],
+  "sprite_atlas": {
+    "file": "vito-idle-four-directions-v1.png",
+    "sha256": "c7abf5a05eb97b6852cd24d3545d98b9a6b2a9a0a14835343ff8d9f8627c9b58",
+    "size": [
+      1254,
+      1254
+    ],
+    "pixel_format": "Format32bppArgb",
+    "corner_alpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "layout": [
+      2,
+      2
+    ],
+    "cell_size": [
+      627,
+      627
+    ],
+    "frames_per_direction": 1,
+    "animation": "idle_static",
+    "directions": [
+      {
+        "id": "front",
+        "facing": "down",
+        "region_xywh": [
+          0,
+          0,
+          627,
+          627
+        ]
+      },
+      {
+        "id": "back",
+        "facing": "up",
+        "region_xywh": [
+          627,
+          0,
+          627,
+          627
+        ]
+      },
+      {
+        "id": "left",
+        "facing": "left",
+        "region_xywh": [
+          0,
+          627,
+          627,
+          627
+        ]
+      },
+      {
+        "id": "right",
+        "facing": "right",
+        "region_xywh": [
+          627,
+          627,
+          627,
+          627
+        ]
+      }
+    ],
+    "filter_recommendation": "nearest",
+    "pivot_note": "图格留白与侧面占宽不同，接入时按角色脚底确定锚点。"
+  },
+  "art_assumptions": [
+    "沿用此前2×2四向站姿格式，每向一帧；不含行走帧。",
+    "背面与侧面依据原稿服装及配饰左右关系补绘；用户于2026-11-26确认归档保留本版。",
+    "为小人可读性简化发丝、衣褶、装饰纹理；原画和已归档其他角色保持不变。"
+  ],
+  "verification": {
+    "generated_copy_identity": "PASS",
+    "png_metadata": "PASS",
+    "visual_inspection": "已核对四个朝向，右眼遮挡、左侧马尾/面具/蝴蝶结及右腰餐叉的方向关系。",
+    "human_art_acceptance": "USER_CONFIRMED_KEEP_V1",
+    "engine_tests": "NOT_RUN_ASSET_ONLY",
+    "runtime_integration": "NOT_DONE",
+    "archive_byte_identity": "PASS"
+  },
+  "alpha_note": "保留生成器RGBA及半透明边缘，未脚本清理alpha；四角alpha见sprite_atlas。",
+  "generation_record": "generation-prompts.json",
+  "selected_archive": {
+    "date": "2026-11-26",
+    "selection": "USER_CONFIRMED_KEEP_V1",
+    "files": [
+      {
+        "role": "sprite",
+        "file": "archive/2026-11-26/vito-idle-four-directions.png",
+        "source_file": "vito-idle-four-directions-v1.png",
+        "sha256": "c7abf5a05eb97b6852cd24d3545d98b9a6b2a9a0a14835343ff8d9f8627c9b58",
+        "size": [
+          1254,
+          1254
+        ],
+        "pixel_format": "Format32bppArgb",
+        "byte_identical_to_selected_version": true
+      }
+    ],
+    "record": "archive/2026-11-26/archive-record.json",
+    "runtime_integration": "NOT_DONE",
+    "note": "本版原字节归档，后续作为像素小人美术基准，原制作文件继续保留。"
+  }
+}

@@ -65,6 +65,29 @@ func test_inventory_cost_and_debt_do_not_double_charge_purchases() -> void:
 	assert_eq(economy.pay_debt(1000),131)
 	assert_eq(int(economy.state.debt_cents),0)
 
+func test_store_reputation_uses_volume_and_satisfaction_but_awareness_uses_retained_sales() -> void:
+	var examples := [
+		[0, 0.0, 0, 40.0, 0.35],
+		[8, 60.0, 8, 50.0, 0.37047072],
+		[8, 90.0, 8, 53.0, 0.37047072],
+		[8, 90.0, 0, 53.0, 0.35],
+		[8, 30.0, 0, 47.0, 0.35],
+		[12, 90.0, 12, 55.6, 0.38046304],
+	]
+	for example: Array in examples:
+		var economy := make_economy()
+		economy.begin_day()
+		var orders: Array = [{"status": "TIMED_OUT", "prepaid_cents": 0, "refunded_cents": 0}]
+		for i: int in int(example[0]):
+			orders.append({"status": "SERVED", "score": {"satisfaction": example[1]},
+				"prepaid_cents": 1000, "refunded_cents": 0 if i < int(example[2]) else 1000})
+		economy.settle([], 1000 * int(example[2]), true, orders)
+		assert_almost_eq(float(economy.state.popularity), float(example[3]), 0.000001)
+		assert_almost_eq(float(economy.state.awareness), float(example[4]), 0.00001)
+		assert_eq(economy.state.day_stats.opportunities, 44)
+	assert_almost_eq(TDWorldEconomy.popularity_after_service(50.0, 8, 2.4, false), 50.0, 0.000001)
+	assert_almost_eq(TDWorldEconomy.popularity_after_service(50.0, 8, 7.2, false), 53.0, 0.000001)
+
 func test_shared_opportunity_pool_capacity_npc_cash_and_two_worlds() -> void:
 	var economy:=make_economy();var other:=make_economy()
 	var template: Array=[{"requirements":[]},{"requirements":[]}]

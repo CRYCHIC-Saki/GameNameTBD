@@ -21,6 +21,24 @@ func get_plate(id: String) -> Dictionary:
 	for plate: Dictionary in _plates:
 		if plate.id==id: return plate.duplicate(true)
 	return {}
+func held_item(plate_id: String) -> Dictionary:
+	if plate_id.is_empty(): return {}
+	for plate: Dictionary in _plates:
+		if plate.id==plate_id: return plate.visual
+	return {}
+
+func pass_items() -> Array:
+	var groups: Dictionary = {}
+	for plate: Dictionary in _plates:
+		if plate.carrier!="": continue
+		var item: Dictionary = plate.visual
+		var key := str(item.id)+"/"+str(item.name)
+		if not groups.has(key):
+			groups[key]=item.duplicate()
+			groups[key].count=0
+		groups[key].count+=1
+	return groups.values()
+
 func for_order(id: String) -> Dictionary:
 	for plate: Dictionary in _plates:
 		if plate.order_id==id: return plate.duplicate(true)
@@ -31,7 +49,7 @@ func place(order_id: String, dish: Dictionary) -> TDOutcome:
 	if _seen.has(str(dish.get("dish_id",""))): return TDOutcome.new(false,"DUPLICATE_DISH")
 	var checked:=shop.can_deliver(order_id,dish)
 	if not checked.ok: return checked
-	_plates.append({"id":str(dish.dish_id),"order_id":order_id,"carrier":"","dish":dish.duplicate(true)})
+	_plates.append({"id":str(dish.dish_id),"order_id":order_id,"carrier":"","dish":dish.duplicate(true),"visual":TDIngredientIcon.dish_item(dish)})
 	_seen[str(dish.dish_id)]=true
 	shop._kitchen_key=""
 	return TDOutcome.new(true,"AT_PASS","已放到出餐口，需端到客人桌边才算送达。",{"order_id":order_id,"dish_id":dish.dish_id})
@@ -43,7 +61,7 @@ func place_trial(dish: Dictionary) -> TDOutcome:
 	if dish.get("state")!="plated" or str(dish.get("dish_id","")).is_empty(): return TDOutcome.new(false,"INVALID_DISH")
 	if _seen.has(str(dish.dish_id)): return TDOutcome.new(false,"DUPLICATE_DISH")
 	if not for_order(TRIAL_ORDER).is_empty(): return TDOutcome.new(false,"TRIAL_AT_PASS","阿铃的菜已在出餐口，请先送到她桌边。")
-	_plates.append({"id":str(dish.dish_id),"order_id":TRIAL_ORDER,"carrier":"","dish":dish.duplicate(true)})
+	_plates.append({"id":str(dish.dish_id),"order_id":TRIAL_ORDER,"carrier":"","dish":dish.duplicate(true),"visual":TDIngredientIcon.dish_item(dish)})
 	_seen[str(dish.dish_id)]=true
 	return TDOutcome.new(true,"AT_PASS","已放到出餐口。回餐厅按 E 取菜，再到阿铃桌边按 E 交给她。")
 

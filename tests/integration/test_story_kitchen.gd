@@ -9,7 +9,7 @@ func before_each() -> void:
 	app.settings_path="res://artifacts/story-tests/%d/settings.json"%Time.get_ticks_usec()
 	autofree(app);get_tree().root.add_child(app)
 	shell=app.game_shell;shell.automatic_time=false
-	assert_true(shell.create_game("slot-01","试做食堂").ok);shell.guide.dialogue.finish_now()
+	assert_true(shell.create_game("slot-01","试做食堂",false).ok);shell.guide.dialogue.finish_now()
 	driver=DRIVER.new();driver.viewport=get_tree().root;driver.kitchen=shell.kitchen_view.kitchen
 	await get_tree().process_frame
 
@@ -41,17 +41,18 @@ func test_prepare_ingredients_are_usable_without_opening_shop() -> void:
 	assert_true(picked.ok,picked.code)
 	assert_eq(shell.profile.shop.snapshot().phase,"PREPARE")
 	assert_true(shell.profile.shop.active_orders().is_empty())
-	assert_eq(shell.save_game().code,"KITCHEN_BUSY")
+	assert_eq(shell.profile.save().code,"KITCHEN_BUSY")
 	var checkpoint:=FileAccess.get_file_as_bytes(shell.slots.path_for("slot-01"))
 	assert_eq(shell.profile._research_candidate(shell.profile.research.snapshot()).code,"BUFFERED_UNTIL_EXPLICIT_SAVE")
 	assert_eq(FileAccess.get_file_as_bytes(shell.slots.path_for("slot-01")),checkpoint,"research stays in memory until explicit save")
 	assert_true(shell.kitchen_view.return_ingredient().ok)
-	assert_true(shell.save_game().ok)
+	assert_true(shell.profile.save().ok)
 	var cold: Array=shell.profile.shop.snapshot().cold_foods
-	assert_eq(cold.size(),1)
+	assert_true(cold.is_empty())
+	assert_eq(shell.profile.shop.available("tomato"),1000)
 	shell.go_title();assert_true(shell.load_game("slot-01").ok)
 	assert_true(TDLevelProgression.same_value(shell.profile.shop.snapshot().cold_foods,cold))
-	assert_true(shell.kitchen_view.pick_stored(cold[0].id).ok)
+	assert_true(shell.kitchen_view.pick_ingredient("tomato").ok)
 
 func test_old_micro_grant_is_topped_up_once_across_save_reload() -> void:
 	var shop:=shell.profile.shop
@@ -62,7 +63,7 @@ func test_old_micro_grant_is_topped_up_once_across_save_reload() -> void:
 	assert_eq(int(shop.snapshot().inventory.tomato),1000)
 	assert_eq(int(shop.snapshot().inventory.egg),1000)
 	var inventory: Dictionary=shop.snapshot().inventory
-	assert_true(shell.save_game().ok)
+	assert_true(shell.profile.save().ok)
 	shell.go_title();assert_true(shell.load_game("slot-01").ok)
 	shell._story_supplies();shell._story_supplies()
 	assert_true(TDLevelProgression.same_value(shell.profile.shop.snapshot().inventory,inventory))
@@ -99,7 +100,7 @@ func test_real_closed_kitchen_inputs_complete_and_feed_opening_story() -> void:
 	shell.travel("kitchen");driver.station("kitchen.stove.left");driver.station("kitchen.serve")
 	assert_eq(shell.profile.story.score,-1,"Putting on the pass is not feeding Aling")
 	assert_eq(shell.profile.story.beat,"cook");assert_true(view.shop.table_service_enabled)
-	assert_eq(shell.save_game().code,"PASS_NOT_CLEAR")
+	assert_eq(shell.profile.save().code,"PASS_NOT_CLEAR")
 	assert_eq(shell.guide.objective().target,"pass")
 	shell.travel("restaurant");shell.restaurant._sync_business_guests()
 	var trial:=shell.restaurant._guest_by_ticket(TDTableService.TRIAL_ORDER)
@@ -116,7 +117,7 @@ func test_real_closed_kitchen_inputs_complete_and_feed_opening_story() -> void:
 	shell._apply_story(shell.profile.story.complete_scene("verdict_good" if shell.profile.story.good else "verdict_bad"))
 	assert_eq(shell.profile.story.beat,"founded")
 	assert_true(kitchen.lanes[0].snapshot().ingredients.is_empty(),"阿铃吃掉这盘试做菜")
-	assert_true(shell.save_game().ok)
+	assert_true(shell.profile.save().ok)
 	var paid:=view.shop.snapshot()
 	shell._apply_story({"pay":true});assert_eq(view.shop.snapshot(),paid)
 
@@ -155,7 +156,7 @@ func test_after_hours_costs_carry_once_and_old_books_stay_frozen() -> void:
 	economy.cooking_time(20)
 	assert_eq(int(economy.state.after_hours_cost_cents),roundi(cost*.5))
 	assert_eq(economy.state.books.back(),book)
-	assert_true(shell.save_game().ok)
+	assert_true(shell.profile.save().ok)
 	shell.go_title();assert_true(shell.load_game("slot-01").ok)
 	profile=shell.profile;shop=profile.shop;economy=profile.commerce
 	assert_true(profile.next_day().ok)
@@ -177,7 +178,7 @@ func test_selected_art_uses_distinct_read_only_directional_resources() -> void:
 			var sprite:=TDStoryArt.sprite(who,facing) as AtlasTexture
 			assert_not_null(sprite);assert_false(sprite in textures);textures.append(sprite)
 			assert_same(sprite,TDStoryArt.sprite(who,facing))
-			assert_true(sprite.atlas.resource_path.contains("/archive/2026-10-29/"))
+			assert_eq(sprite.atlas.resource_path,"res://assets/characters/coarse-pixel-v1/%s.png" % who)
 			assert_gt(sprite.region.size.y,100.0)
 		assert_not_null(TDStoryArt.portrait(who))
 	assert_not_null(TDStoryArt.portrait("luo"),"User supplied Luo reference now has a portrait")

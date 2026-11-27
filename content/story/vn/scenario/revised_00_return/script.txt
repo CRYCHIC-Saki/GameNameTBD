@@ -1,0 +1,52 @@
+# start
+@bg harbor with instant 0
+// 原稿第 10 段
+narrator: 沿街找了几家餐馆，却发现连卖热饼的小店都关着门。
+// 原稿第 11 段 【疑惑】焰子
+@show hero puzzled at td:0.268170:1.464197:2.150000 with instant
+hero: 奇怪，这里怎么一家店都没开？地图上明明说，随时都能吃到各国的料理呀。
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+// 原稿第 12 段 【得意】阿铃
+@show aling proud at td:0.740000:1.555701:2.150000 with instant
+aling: 背锅的旅人，请慢！吾乃夜鸦密使阿铃。看你并非本地人，报上姓名与来意！
+// 原稿第 13 段 【通常】焰子
+@show hero calm at td:0.268170:1.464197:2.150000 with instant
+hero: 我是见习厨师焰子哦，听说这里有很多好吃的，想来尝尝，顺便学做菜。
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+// 原稿第 14 段 【困扰】阿铃
+@show aling troubled at td:0.740000:1.555701:2.150000 with instant
+aling: 原来是寻味的巡礼者。可惜你来得不巧，此地厨师皆已奉召入宫，如今无人敢开门迎客。
+// 原稿第 15 段 【困扰】焰子
+@show hero troubled at td:0.268170:1.464197:2.150000 with instant
+hero: 全都进宫了？我只是想吃顿饭，怎么还得先去见这里的公主呀？
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+// 原稿第 16 段 【通常】阿铃
+@show aling calm at td:0.740000:1.555701:2.150000 with instant
+aling: 至味公主罗厄，厨艺已登世间之巅，对美食尤为狂热。如今百般滋味皆已尝腻，便下令全镇厨师入宫献膳，直到寻得令她满意的至味。
+// 原稿第 17 段 【高兴】焰子
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 原来是这样啊。连这里的厨师都满足不了她，要是能做出让她喜欢的料理，一定很有意思！
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+// 原稿第 18 段 【疑惑】阿铃
+@show aling puzzled at td:0.740000:1.555701:2.150000 with instant
+aling: 你不过是个见习厨师，也敢夸此海口？先与吾比试一番，让夜鸦看看你的本领！
+// 原稿第 19 段 【无语】焰子
+@show hero speechless at td:0.268170:1.464197:2.150000 with instant
+hero: 好啊，只要比完能吃饭就行。先借我一个厨房吧，再这么聊下去，我的肚子可要替我认输了。
+@end

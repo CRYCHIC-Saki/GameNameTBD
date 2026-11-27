@@ -1,8 +1,6 @@
 [gd_resource type="AtlasTexture" format=3]
-
-[ext_resource type="Texture2D" path="res://assets/ui-wood-v1/portrait-hero-v2.png" id="1"]
-
+[ext_resource type="Texture2D" path="res://assets/characters/mainline-20261126/hero/calm.png" id="1"]
 [resource]
 atlas = ExtResource("1")
-region = Rect2(0, 0, 512, 512)
+region = Rect2(0, 0, 2560, 2560)
 filter_clip = true

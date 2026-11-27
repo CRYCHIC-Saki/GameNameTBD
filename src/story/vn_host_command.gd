@@ -11,8 +11,10 @@ func command_name() -> String:
 	return kind
 
 func is_blocking() -> bool:
-	return true
+	return kind != "td_pick"
 
 func apply(args: String, ctx: VNEngineCommandContext) -> void:
 	var owner_node: Node = host.get_ref()
-	if owner_node != null: owner_node.begin_block(kind, args, ctx)
+	if owner_node == null: return
+	if kind == "td_pick": owner_node.record_pick(args.strip_edges())
+	else: owner_node.begin_block(kind, args, ctx)

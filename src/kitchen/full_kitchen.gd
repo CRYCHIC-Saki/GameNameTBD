@@ -25,8 +25,6 @@ var world: TDKitchenWorld
 var lanes: Array[TDCookingLane] = []
 var day_san: float = -1.0
 var panel: Control
-var dual: bool = false
-var _dual_toggle: CheckButton
 var _pause_button: Button
 var _last_ticks: int
 var _closed: bool = false
@@ -39,7 +37,6 @@ var shared_clock := TDClock.new()
 var beat_audio: TDBeatAudio
 var beat_bar: TDTemperatureView
 var active_lane: int = 0
-var _row_container: HBoxContainer
 var _title: Label
 var _message: String = ""
 var _supply_panel: PanelContainer
@@ -84,7 +81,6 @@ func _ready() -> void:
 	var column := VBoxContainer.new(); margin.add_child(column)
 	var header := HBoxContainer.new(); column.add_child(header)
 	_title = TDUI.label("功能位 · 卡拍做菜", TDUI.FONT_SECTION, TDUI.ORANGE); _title.size_flags_horizontal = Control.SIZE_EXPAND_FILL; header.add_child(_title)
-	_dual_toggle = CheckButton.new(); _dual_toggle.text = "双菜同时操作"; _dual_toggle.toggled.connect(set_dual); header.add_child(_dual_toggle)
 	var offset := SpinBox.new(); offset.min_value = -250; offset.max_value = 250; offset.step = 5; offset.suffix = "ms补偿"; offset.custom_minimum_size.x = 155
 	offset.value_changed.connect(func(value: float) -> void:
 		for lane: TDCookingLane in lanes + [prep]: lane.input_offset_sec = value / 1000.0)
@@ -102,7 +98,6 @@ func _ready() -> void:
 	assistance.add_child(TDUI.button("重新做一份", _restart_active))
 	var scroll := ScrollContainer.new(); scroll.size_flags_vertical=Control.SIZE_EXPAND_FILL; scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED; column.add_child(scroll)
 	var row := HBoxContainer.new(); row.size_flags_horizontal=Control.SIZE_EXPAND_FILL; row.size_flags_vertical = Control.SIZE_EXPAND_FILL; row.add_theme_constant_override("separation", 20); scroll.add_child(row)
-	_row_container = row
 	for index: int in 2:
 		var lane := TDCookingLane.new()
 		lane.catalog = catalog; lane.scorer = scorer; lane.lane_index = index
@@ -111,6 +106,7 @@ func _ready() -> void:
 		lane.pc_controls = true; lane.shared_clock = shared_clock; lane.beat_offset_sec = audio_delay
 		lane.document_rules = guided_controls
 		lane.restart_allowed = func() -> bool: return handling.hand == null or handling.hand != lane.session
+		lane.start_allowed = func() -> bool: return not other_pot_in_use(index)
 		lane.library = TDRecipeLibrary.new(library_path, _content)
 		lane.dish_delivered.connect(_forward_dish)
 		row.add_child(lane)
@@ -121,14 +117,14 @@ func _ready() -> void:
 	prep.document_rules = guided_controls
 	prep.library = TDRecipeLibrary.new(library_path, _content); row.add_child(prep); prep.hide()
 	beat_bar = TDTemperatureView.new(); beat_bar.beat_only = true; beat_bar.bpm = float(_content.pc_operations.bpm); column.add_child(beat_bar)
-	column.add_child(TDUI.label("占位美术 / 节奏音轨 · 左锅WASD、右锅方向键 · 空格收势 / 出锅 · Esc暂停", TDUI.FONT_CAPTION, TDUI.MUTED))
+	column.add_child(TDUI.label("WASD 或方向键 · 空格收势 / 出锅 · Esc暂停", TDUI.FONT_CAPTION, TDUI.MUTED))
 	_paused_label = TDUI.label("已暂停 · Esc 恢复", TDUI.FONT_TITLE, TDUI.ORANGE)
 	_paused_label.position = Vector2(470, 370)
 	_paused_label.size=Vector2(450,50); _paused_label.autowrap_mode=TextServer.AUTOWRAP_OFF
 	_paused_label.z_index=20; _paused_label.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	add_child(_paused_label)
 	_paused_label.hide()
-	set_dual(false)
+	_show_active_pot()
 	_compact_controls(panel)
 	panel.hide()
 	stage = TDGuidedCookingView.new(); add_child(stage); stage.hide()
@@ -168,18 +164,19 @@ func _forward_dish(dish: Dictionary) -> void:
 
 func open_bench(station_id: String = "kitchen.stove.left") -> void:
 	if _closed: return
+	if station_id != "kitchen.board" and other_pot_in_use(pot_index(station_id)): return
 	if guided_controls: _open_guided(station_id); return
 	world.set_controls_enabled(false)
 	world.hide()
 	active_lane = 1 if station_id in ["kitchen.stove.right", "kitchen.steamer"] else 0
 	if station_id == "kitchen.board":
 		for lane: TDCookingLane in lanes: lane.hide()
-		prep.show(); _dual_toggle.hide(); _title.text = "砧板 · 备好后取走"
+		prep.show(); _title.text = "砧板 · 备好后取走"
 	else:
-		prep.hide(); _dual_toggle.show()
+		prep.hide()
 		lanes[active_lane].station_role = "steamer" if station_id == "kitchen.steamer" else "stove"
 		_title.text = "灶台 · 投料后开始操作" if station_id != "kitchen.steamer" else "蒸笼 · 右锅"
-		set_dual(dual)
+		_show_active_pot()
 	panel.show()
 
 func close_bench() -> void:
@@ -198,18 +195,19 @@ func open_station_view(station_id: String) -> void:
 func refresh_world() -> void:
 	_update_world()
 
-func set_dual(value: bool) -> void:
-	if lanes.size() < 2: return
-	if not value and lanes[1].qte != null:
-		_dual_toggle.set_pressed_no_signal(true)
-		return
-	dual = value
-	_dual_toggle.set_pressed_no_signal(value)
-	for index: int in lanes.size(): lanes[index].visible = value or index == active_lane
+static func pot_index(station_id: String) -> int:
+	return 1 if station_id in ["kitchen.stove.right","kitchen.steamer"] else 0
+
+func other_pot_in_use(index: int) -> bool:
+	var other := lanes[1-index]
+	if other.external_operator != "" or other.qte != null or other.thermal_qte != null: return true
+	if other.sheet != null and other.sheet.running: return true
+	var dish := other.snapshot()
+	return dish.state in ["preparing","operating","plated"] and not dish.ingredients.is_empty()
+
+func _show_active_pot() -> void:
 	for lane: TDCookingLane in lanes:
-		if lane.qte != null: lane.qte.release_input()
-		lane.dual = value
-		lane.refresh()
+		lane.visible = lane.lane_index == active_lane
 
 func _process(_delta: float) -> void:
 	if auto_advance: _sync_time()
@@ -224,10 +222,17 @@ func music_audible() -> bool:
 	if _closed or shared_clock.paused or not is_visible_in_tree(): return false
 	return stage!=null and stage.visible and stage.lanes.any(func(lane:TDCookingLane)->bool:return lane.qte!=null or lane.thermal_qte!=null or (lane.sheet!=null and lane.sheet.running))
 
+# A blocked render frame cannot present notes to the player. Discard its excess
+# wall time at the input boundary; explicit simulation advances stay exact.
+const MAX_INTERACTIVE_DELTA := 0.10
+var other_interactive_kitchen: Callable
+
 func _sync_time() -> void:
 	var now: int = Time.get_ticks_usec()
 	var elapsed: float = float(now - _last_ticks) / 1000000.0
 	_last_ticks = now
+	if music_audible() or (other_interactive_kitchen.is_valid() and other_interactive_kitchen.call()):
+		elapsed = minf(elapsed, MAX_INTERACTIVE_DELTA)
 	advance(elapsed)
 
 func advance(seconds: float) -> void:
@@ -304,21 +309,19 @@ func _input(event: InputEvent) -> void:
 	if not panel.visible or get_tree().paused or not event is InputEventKey or event.echo: return
 	var focus: Control = get_viewport().gui_get_focus_owner()
 	if focus is LineEdit or focus is TextEdit: return
-	if not dual and event.is_action("cook_action"):
-		lanes[0].input_action("primary", event.pressed)
+	if event.is_action("cook_action"):
+		lanes[active_lane].input_action("primary", event.pressed)
 		get_viewport().set_input_as_handled(); return
-	for index: int in (2 if dual else 1):
-		var prefix: String = "lane_left_" if index == 0 else "lane_right_"
+	for prefix: String in ["lane_left_","lane_right_"]:
 		for direction: String in ["up", "left", "down", "right"]:
 			if not event.is_action(prefix + direction): continue
-			var lane: TDCookingLane = lanes[index]
+			var lane: TDCookingLane = lanes[active_lane]
 			var kind: String = lane.progress.get("qte_kind", "")
 			if kind == "sequence": lane.input_action(direction, event.pressed)
 			elif kind == "maintain" and direction in ["left", "right"] and event.pressed:
 				var control: float = clampf(float(lane.progress.get("control", .5)) + (-.05 if direction == "left" else .05), 0, 1)
 				lane.input_action("adjust", true, control)
 				lane._heat.set_value_no_signal(control * 100)
-			elif dual and direction == "up": lane.input_action("primary", event.pressed)
 			get_viewport().set_input_as_handled()
 			return
 
@@ -371,7 +374,8 @@ func _station_interaction(id: String) -> void:
 		else: result = TDOutcome.new(false,"NO_DISH","先在灶台出锅，再端着盘子来。")
 	else:
 		var index: int = 1 if id in ["kitchen.stove.right","kitchen.steamer"] else 0
-		if handling.hand_kind == "ingredient":
+		if other_pot_in_use(index): result = TDOutcome.new(false,"OTHER_POT_IN_USE","请先完成或清空正在使用的锅。")
+		elif handling.hand_kind == "ingredient":
 			result = handling.put_pot(lanes[index].session)
 			if result.ok: result.message = "食材已入锅；继续拿料，或空手按 E 开始操作。"
 		elif handling.hand != null: result = TDOutcome.new(false,"HANDS_FULL","把成品送到右下方出餐台。")
@@ -422,21 +426,19 @@ func _input_pc(event: InputEvent) -> void:
 		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT: dragged = event.pressed
 		for lane: TDCookingLane in views:
 			var area: Rect2 = lane.temperature_view.bar_rect()
-			if dual: area = Rect2(_row_container.global_position, _row_container.size)
 			lane.input_action("drag" if dragged else "hover", in_area, clampf((pointer.x-area.position.x)/maxf(1,area.size.x),0,1))
 		return
 	if not event is InputEventKey or event.echo: return
 	var focus: Control = get_viewport().gui_get_focus_owner()
 	if focus is LineEdit or focus is TextEdit: return
-	var active: Array = [prep] if prep.visible else ([lanes[0],lanes[1]] if dual else [lanes[active_lane]])
+	var active: Array = [prep] if prep.visible else [lanes[active_lane]]
 	if event.is_action("cook_action"):
 		for lane: TDCookingLane in active:
 			if lane.qte != null and (active.size() == 1 or lane.qte.accepts_primary() or not event.pressed): lane.input_action("primary",event.pressed)
 		get_viewport().set_input_as_handled(); return
 	for lane: TDCookingLane in active:
-		var prefix: String = "lane_right_" if lane.lane_index == 1 else "lane_left_"
 		for direction: String in ["up","left","down","right"]:
-			if event.is_action(prefix+direction):
+			if event.is_action("lane_left_"+direction) or event.is_action("lane_right_"+direction):
 				var action: String = direction
 				if lane.progress.get("pc_module") == "M1" and direction in ["left","right"]: action = "rotate_"+direction
 				lane.input_action(action,event.pressed)
@@ -499,7 +501,8 @@ func _guided_station(id: String) -> void:
 	else:
 		var index: int=1 if id in ["kitchen.stove.right","kitchen.steamer"] else 0
 		var lane: TDCookingLane=lanes[index]
-		if handling.hand_kind=="ingredient":
+		if other_pot_in_use(index): result=TDOutcome.new(false,"OTHER_POT_IN_USE","请先完成或清空正在使用的锅。")
+		elif handling.hand_kind=="ingredient":
 			if lane.snapshot().state=="delivered": lane.new_session("tomato_egg")
 			var item: Dictionary=handling.hand.snapshot().to_dict().ingredients.values()[0]
 			if lane.snapshot().ingredients.is_empty():
@@ -520,9 +523,6 @@ func _guided_station(id: String) -> void:
 					result=TDOutcome.new(false,"MISSING_PREPARATION","先放入切好的番茄和鸡蛋。" if profile in ["tomato_egg","steam"] else "先将食材放入锅中。")
 				else:
 					lane.document_rules=true
-					# Both pots use separated target bands from the start, so opening
-					# the second pot never changes an in-flight controller's target.
-					lane.dual=true
 					result=lane.start_sheet(profile)
 					if result.ok: _open_guided(id); return
 			else: _open_guided(id); return
@@ -531,6 +531,7 @@ func _guided_station(id: String) -> void:
 	world.set_controls_enabled(true); _update_world()
 
 func _open_guided(id: String) -> void:
+	if id != "kitchen.board" and other_pot_in_use(pot_index(id)): return
 	_on_board=id=="kitchen.board"
 	active_lane=1 if id in ["kitchen.stove.right","kitchen.steamer"] else 0
 	if not _on_board:
@@ -540,14 +541,7 @@ func _open_guided(id: String) -> void:
 	_refresh_guided()
 
 func _guided_lanes() -> Array:
-	if _on_board: return [prep]
-	var active: Array=[]
-	for lane: TDCookingLane in lanes:
-		if lane.external_operator!="": continue
-		if lane.qte!=null or lane.thermal_qte!=null or (lane.sheet!=null and lane.sheet.running): active.append(lane)
-	if lanes[active_lane] not in active: active.append(lanes[active_lane])
-	active.sort_custom(func(a:TDCookingLane,b:TDCookingLane)->bool: return a.lane_index<b.lane_index)
-	return active
+	return [prep] if _on_board else [lanes[active_lane]]
 
 func _refresh_guided() -> void:
 	stage.cuisine_id = world.cuisine_id
@@ -587,8 +581,6 @@ func _input_guided(event: InputEvent) -> void:
 		for lane: TDCookingLane in active:
 			if lane.thermal_qte==null: continue
 			var rect: Rect2=stage.thermal_rect(lane.lane_index)
-			# Dual bars share a physical x axis; visible target and mouse
-			# attraction coordinates must agree in both single and dual views.
 			var value: float=(pointer.x-rect.position.x)/rect.size.x
 			lane.input_action("drag" if dragged else "hover",hovered,clampf(value,0,1))
 		return
@@ -603,9 +595,8 @@ func _input_guided(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled(); return
 	var routed: bool=false
 	for lane: TDCookingLane in active:
-		var prefix: String="lane_right_" if lane.lane_index==1 else "lane_left_"
 		for direction: String in ["up","left","down","right"]:
-			if event.is_action(prefix+direction) and lane.qte!=null and lane.progress.get("qte_kind") in ["sequence","rhythm"]:
+			if (event.is_action("lane_left_"+direction) or event.is_action("lane_right_"+direction)) and lane.qte!=null and lane.progress.get("qte_kind") in ["sequence","rhythm"]:
 				var action: String="rotate_"+direction if lane.progress.get("pc_module")=="M1" and direction in ["left","right"] else direction
 				lane.input_action(action,event.pressed); routed=true
 	if not routed and event.pressed:

@@ -1,3 +1,7 @@
+## 2026-11-26 当前用户配乐
+
+日常和做菜播放 `casual.wav`，原速完整循环，厨房谱面为 140 BPM。罗厄的挑战对局播放 `boss.wav`（《探寻至味的公主 ~Not enough！》），其他挑战对局播放 `cooking.wav`。返回选人或关闭挑战时恢复当前场景音乐。主线普通战斗提示使用 `cooking.wav`，终局提示用 `boss.wav`。原始音频的来源和 SHA256 见 `mainline-20261126.json`。
+
 # 原创占位音乐（D039 / AI-047）
 
 三首循环由本项目`tools/generate_music.ps1`离线合成：casual（80 BPM）、service（104 BPM）、cooking（120 BPM），各32拍，PCM16单声道22050Hz。旋律、和弦、合成音色均为本次原创，没有第三方采样或外部音乐素材。

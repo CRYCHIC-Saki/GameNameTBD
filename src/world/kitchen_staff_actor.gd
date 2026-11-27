@@ -41,11 +41,10 @@ func _draw() -> void:
 
 func _draw_utensils() -> void:
 	if row.is_empty(): return
-	if str(row.carried)!="":
-		if row.carried=="dish":
-			utensils.draw_set_transform(Vector2(22,-36),0,Vector2(1,.55))
-			utensils.draw_circle(Vector2.ZERO,19,Color("ebe4d5"));utensils.draw_circle(Vector2.ZERO,14,Color("d9a65a"));utensils.draw_set_transform_matrix(Transform2D.IDENTITY)
-		else: TDIngredientIcon.draw_on(utensils,str(row.carried),Rect2(10,-57,30,30))
+	var held: Dictionary = row.get("held",{})
+	if not held.is_empty():
+		TDIngredientIcon.draw_item(utensils,held,Rect2(10,-57,30,30))
+		TDIngredientIcon.bubbles(utensils,[held],Vector2(51,-76))
 	if row.phase=="cut":
 		var lift: float=absf(sin(float(row.elapsed)*9.0))*12
 		utensils.draw_rect(Rect2(19,-65-lift,5,14),Color("715336"));utensils.draw_rect(Rect2(19,-75-lift,18,12),Color("c5d8d0"))

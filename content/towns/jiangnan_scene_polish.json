@@ -1,4 +1,12 @@
 {
+  "placement_offsets": {
+    "north_river_willow": [-5.083714,-10.167428],
+    "bank_river_willow": [-24.147641,2.541857],
+    "south_bridge_west_willow": [-12.709285,-12.709285],
+    "estuary_willow": [5.083714,10.167428],
+    "riverside_steps_willow": [0,-12.709285],
+    "grove-858-31": [0,5.083714]
+  },
   "props": {
     "bank": {"pose":[862,477,142,132],"bases":[[801,442,122,28]]},
     "diner": {"pose":[687.5,471,133,149],"bases":[[638,439,100,29]]},

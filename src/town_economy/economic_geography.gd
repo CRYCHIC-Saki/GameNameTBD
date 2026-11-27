@@ -28,7 +28,7 @@ func configure(town_id: String, plots: Array, overrides: Dictionary = {}, layout
 		# Occupancy and player shops can precede the native plots in this list.
 		for plot: Dictionary in _plots:
 			var version := int(plot.get("region_layout_version",1))
-			if version in [4,5,6,7,8,9,10,11]:
+			if version in [4,5,6,7,8,9,10,11,TDEgretLayout.CURRENT_VERSION]:
 				_egret_version=version
 				break
 		if _egret_version != 0 and TDEgretLayout.geography(_egret_version).has("land_use"):

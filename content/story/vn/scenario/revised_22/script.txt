@@ -1,0 +1,22 @@
+# start
+@bg harbor-square with instant 0
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hina with instant
+// 原稿第 110 段 【通常】赫兹
+@show hertz calm at td:0.707320:1.555701:2.150000 with instant
+hertz: 观众朋友们，这里是臻味港的港口广场！一路跟着节目走来的焰子，今天将正式挑战至味公主罗厄。这趟旅行学来的手艺究竟能做到哪一步，我们就在这里见证结果！
+@hide aling with instant
+@hide chen with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+// 原稿第 111 段 【得意】罗厄
+@show luo proud at td:0.731830:1.411909:2.150000 with instant
+luo: 准备好了吗？这场比赛，我也会亲自做一道料理。你既然来挑战我，就应该知道自己要面对什么水平的对手。
+// 原稿第 112 段 【得意】焰子
+@show hero proud at td:0.268170:1.464197:2.150000 with instant
+hero: 我已经等不及啦！这道“满汉风味宴席”，就请你亲口尝尝吧！
+@end

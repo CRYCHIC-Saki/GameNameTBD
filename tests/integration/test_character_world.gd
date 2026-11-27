@@ -8,7 +8,7 @@ func before_each() -> void:
 	app=load("res://src/app/main.tscn").instantiate()
 	app.settings_path="res://artifacts/character-tests/%d/settings.json"%Time.get_ticks_usec()
 	add_child_autofree(app);shell=app.game_shell;shell.automatic_time=false
-	assert_true(shell.create_game("slot-01","日程测试").ok);shell.guide.dialogue.finish_now()
+	assert_true(shell.create_game("slot-01","日程测试",false).ok);shell.guide.dialogue.finish_now()
 	# These regressions exercise an already acquired cottage; new-slot gating has dedicated tests.
 	shell.profile.residence.stage="door";assert_true(shell.profile.unlock_residence().ok)
 	driver=DRIVER.new();driver.viewport=get_tree().root;driver.kitchen=shell.kitchen_view.kitchen
@@ -30,7 +30,7 @@ func test_clock_story_pause_daily_chat_and_hidden_town_schedule() -> void:
 	var daily:=people.conversation("aling")
 	shell.town._open_talk(daily);daily.skip();shell.town._talk_view._choose("chat")
 	shell.town._talk_view._on_skip()
-	assert_eq(people.relationship("aling").affection,2)
+	assert_eq(people.relationship("aling").affection,int(people.settings.chat_gain))
 	assert_eq(shell.profile.story.export_state(),story_before,"Everyday chat cannot progress the story")
 	shell.profile.story.beat="done";shell.town.sync_characters(0)
 	var old: Vector2i=people.runtime.chen.cell
@@ -45,21 +45,25 @@ func test_profile_clock_relationship_roundtrip_legacy_and_slot_isolation() -> vo
 	var profile:=shell.profile
 	profile.characters.complete_chat(profile.characters.conversation("chen").context,true,["about"])
 	shell.advance_world_time(123.5)
-	assert_true(shell.save_game().ok)
+	assert_true(shell.profile.save().ok)
 	var expected:=profile.characters.snapshot()
 	expected.clock.minute = TDWorldDayClock.START_MINUTE
+	for row: Dictionary in expected.records.values(): row.flags.erase("met")
 	shell.go_title();assert_true(shell.load_game("slot-01").ok)
 	assert_true(TDLevelProgression.same_value(shell.profile.characters.snapshot(),expected))
 	var saved:=shell.profile.snapshot();var legacy:=saved.duplicate(true)
 	legacy.schema_version=4;legacy.erase("characters")
+	# Completed overseas storefronts were introduced after schema 4.
+	legacy.erase("branches")
 	legacy.residence={"schema_version":1,"anchor":"cottage_bed","plot":legacy.residence.plot}
-	var migrated:=TDGameProfile.new();assert_true(migrated.restore(legacy).ok)
+	var migrated:=TDGameProfile.new();var restored:=migrated.restore(legacy)
+	assert_true(restored.ok,restored.code+" "+restored.message)
 	assert_eq(migrated.characters.clock.minute,480.0);assert_eq(migrated.characters.relationship("chen").affection,0)
 	migrated.close()
 	var bad:=saved.duplicate(true);bad.characters.clock.day=2
 	assert_false(shell.profile.restore(bad).ok)
 	assert_true(TDLevelProgression.same_value(shell.profile.characters.snapshot(),expected))
-	shell.go_title();assert_true(shell.create_game("slot-02").ok);shell.guide.dialogue.finish_now()
+	shell.go_title();assert_true(shell.create_game("slot-02","小镇食堂",false).ok);shell.guide.dialogue.finish_now()
 	assert_eq(shell.profile.characters.relationship("chen").affection,0)
 	assert_eq(shell.profile.characters.clock.minute,480.0)
 
@@ -83,7 +87,8 @@ func test_night_returns_raw_and_cut_stock_discards_heated_food_then_advances_onc
 	var returned:=0
 	for food: Dictionary in shop.snapshot().cold_foods:
 		if food.ingredient_id=="tomato": returned+=roundi(float(food.amount)*1000)
-	assert_eq(returned,2000,"Returned raw and prepared portions stay usable")
+	assert_eq(returned,1000,"The prepared portion stays usable")
+	assert_eq(int(shop.snapshot().inventory.tomato),1000,"Raw food returns to bulk stock")
 	assert_eq(shop.available("egg"),0,"Heating is not undone into raw eggs")
 	assert_true(shop.snapshot().cold_foods.any(func(f:Dictionary)->bool:return not f.get("cuts",[]).is_empty()))
 	var before:=shop.snapshot();assert_eq(shell.finish_night().code,"NIGHT_ALREADY_CLOSED")
@@ -94,10 +99,10 @@ func test_night_returns_raw_and_cut_stock_discards_heated_food_then_advances_onc
 	assert_eq(shell.profile.shop.snapshot().day,2)
 
 func test_night_does_not_call_persistence_and_reloads_morning() -> void:
-	assert_true(shell.save_game().ok)
+	assert_true(shell.profile.save().ok)
 	var path:=shell.slots.path_for("slot-01");var bytes:=FileAccess.get_file_as_bytes(path)
 	var before_cash:=int(shell.profile.shop.snapshot().money_cents)
-	shell.profile.persistence=func(_id:String,_data:Dictionary)->TDOutcome:return TDOutcome.new(false,"INJECTED_WRITE_FAILURE")
+	shell.slots.interrupt_at="after_temp"
 	shell.profile.characters.clock.minute=1560
 	assert_true(shell.finish_night().ok)
 	assert_eq(shell.location,"cottage");assert_eq(shell.profile.shop.snapshot().day,1)
@@ -240,7 +245,7 @@ func test_real_named_meal_changes_affection_once_and_loaded_history_does_not_res
 	people.observe_orders(shop.snapshot().orders);people.observe_orders(shop.snapshot().orders)
 	assert_eq(people.relationship(id).affection,expected)
 	assert_eq(shop.snapshot().phase,"SETTLED")
-	assert_true(shell.save_game().ok)
+	assert_true(shell.profile.save().ok)
 	shell.go_title();assert_true(shell.load_game("slot-01").ok)
 	shell.restaurant._sync_business_guests()
 	assert_true(shell.restaurant.guest_nodes().is_empty(),"Boundary reload must not replay old meals")

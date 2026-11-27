@@ -69,7 +69,7 @@ func run() -> void:
 	shell.kitchen_view.set_process(false)
 	world.set_context({"hand":{"name":"番茄","shape":"dice","kind":"ingredient"}},"这口锅已经开火，不能取回原料；可以继续烹饪或整锅丢弃。")
 	world.pot_contents=[{"title":"左锅 · 待烹饪","materials":"番茄（小丁）＋鸡蛋＋牛肉＋土豆","occupied":true},{"title":"右锅","materials":"","occupied":false}]
-	world.simmer_meters=[{"name":"汽锅鸡","ratio":.82,"remaining_sec":38.2},{"name":"第二锅","ratio":.61,"remaining_sec":25.8}]
+	world.simmer_meters=[{"name":"蒸水蛋","ratio":.82,"remaining_sec":38.2},{"name":"第二锅","ratio":.61,"remaining_sec":25.8}]
 	world._update_pot_signs()
 	await settle()
 	for label: Label in [world._held_label,world._pot_materials[0]]:
@@ -126,8 +126,7 @@ func run() -> void:
 	root.size=Vector2i(1280,800)
 	shell.travel("town");shell.town._player.position=shell.town._origin()+Vector2(35.5,36.5)*TDTownWorld.CELL
 	await settle()
-	verify(not shell.town._status.visible and not shell.town._pack_button.visible,"no duplicate town task or empty backpack")
-	verify(not shell.town._target_hint.text.contains("WASD"),"town only describes a nearby target")
+	verify(shell.town._status_panel == null and not shell.town._pack_button.visible,"no town status banner or empty backpack")
 	await capture("08-town")
 	# Presentation fixture: an already-unlocked home, without writing a real save.
 	shell.profile.residence.stage="door";verify(shell.profile.unlock_residence().ok,"fixture home unlocked")
@@ -139,7 +138,7 @@ func run() -> void:
 	shell.travel("town");shell.town.spawn_at_harbor()
 	verify(shell.voyage("tokyo").ok,"actual port travel still works")
 	await settle()
-	verify(shell.visiting._hint.text.contains("港口") and not shell.visiting._hint.text.contains("M 地图"),"travel has one nearby port action")
+	verify(shell.visiting._building_nameplate.visible and shell.visiting._layer.get_child_count() == 1,"travel has only the attached port nameplate")
 	await capture("10-travel")
 	shell.go_title();app.queue_free();await settle()
 	var report:=FileAccess.open(OUT.path_join("report.json"),FileAccess.WRITE)

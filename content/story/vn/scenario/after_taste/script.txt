@@ -1,0 +1,82 @@
+// D078: after_taste; source: opening.json / homecoming.json. Visual presentation only.
+# start
+@bg town-china with instant 0
+
+# beat_0
+@hide hero with instant
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@bg cg-black-soup with instant 0
+narrator: 玩家僵住。周围的海风声骤然消失。\n碗里的倒影仍在微笑，尽管他没有笑。\n一个贴着耳朵的声音说：“好吃。”\n下一瞬，摊前所有居民同时开口。
+
+# beat_1
+crowd: 至味降临，吾舌无憾！
+
+# beat_2
+narrator: SAN：{$san_before} → {$san_after}。\n你察觉了异常。SAN 会影响感知与后续料理表现；本次变化不改变操作难度。
+
+# beat_3
+@show hero surprised at td:0.268170:1.464197:2.150000 with instant
+hero: 诸位的舌头，正在遭受某种灭绝性的攻击。
+
+# beat_4
+@hide aling with instant
+@hide luo with instant
+@show chen happy at td:0.789020:1.503413:2.150000 with instant
+chen: 何等精确！圣典将此称作“味蕾的涅槃”！再来一碗？
+
+# beat_5
+@show hero surprised at td:0.268170:1.464197:2.150000 with instant
+hero: 别加了！这根本……难吃得足以毁灭一个纪元！
+
+# beat_6
+@hide hero with instant
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@bg town-china with instant 0
+narrator: 居民纷纷看向他。阿铃伸手拦在两人之间。
+
+# beat_7
+@hide chen with instant
+@hide luo with instant
+@show aling calm at td:0.740000:1.555701:2.150000 with instant
+aling: 异乡人，你向圣餐提出了决斗。依照夜鸦的规矩，挑战者必须拿出自己的供物。
+
+# beat_8
+@show hero calm at td:0.268170:1.464197:2.150000 with instant
+hero: 我会的菜还不多。不过，番茄炒蛋，我练了整整一个冬天。
+
+# beat_9
+@hide chen with instant
+@hide luo with instant
+@show aling surprised at td:0.740000:1.555701:2.150000 with instant
+aling: 番茄……炒蛋？
+
+# beat_10
+@show hero puzzled at td:0.268170:1.464197:2.150000 with instant
+hero: 你吃过？
+
+# beat_11
+@hide chen with instant
+@hide luo with instant
+@show aling puzzled at td:0.740000:1.555701:2.150000 with instant
+aling: 儿时的记忆里似乎有这么一道。鸡蛋要嫩，番茄有一点甜。后来……那段记录遗失了。
+
+# beat_12
+@hide hero with instant
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@bg town-china with instant 0
+narrator: 她用力合上账本。
+
+# beat_13
+@hide chen with instant
+@hide luo with instant
+@show aling happy at td:0.740000:1.555701:2.150000 with instant
+aling: 跟我来！夜鸦尚有一座沉睡的祭坛，今日准许你将其唤醒！
+
+# finish
+@end

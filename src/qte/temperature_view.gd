@@ -3,7 +3,7 @@ extends Control
 ## Read-only temperature/beat HUD. Mouse is routed once by the kitchen root.
 var progress: Dictionary = {}
 var beat_sec: float = 0.0
-var bpm: float = 120.0
+var bpm: float = 140.0
 var beat_only: bool = false
 
 func _init() -> void:

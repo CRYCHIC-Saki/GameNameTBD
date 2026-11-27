@@ -6,6 +6,7 @@ AI-088 PROPOSED. Existing source documents and stable recipe IDs remain intact.
 from pathlib import Path
 import copy
 import json
+from cuisine_food_stages import bind_stages
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -52,6 +53,7 @@ E17 oven|heat:封煎牛排,season:蘑菇酱调味,shape:酥皮包裹,bake:控制
 E18 oven|mix:打发蛋白,season:糖香草,fold:轻翻拌蛋糊,bake:烘起舒芙蕾
 E19 stockpot|heat:分批煎肉,season:红酒香草,boil:慢炖主菜,bake:鸭肉烤香,shape:宴席分盘
 E20 skillet|heat:海鲜快煎,flip:牛排翻面,season:两款酱汁,bake:土豆焗烤,fold:甜点翻拌,bake:烘甜点,shape:品鉴摆盘
+E21 stockpot|heat:黄油炒香菌菇,season:加奶油与盐,boil:小火煨浓汤,mix:搅匀装碗
 J01 sushi|season:盐饭调味,mix:松饭,shape:三角饭团,shape:包海苔
 J02 tamago|mix:调蛋液,season:出汁甜味,heat:摊薄蛋液,roll:卷起蛋层,heat:补煎蛋层,roll:整形成卷
 J03 stockpot|boil:煮乌冬,season:出汁调汤,mix:挑面入汤,shape:撒葱装碗
@@ -137,7 +139,7 @@ def chart(identity, name, steps, seasonings, ordinal, tier, study=False):
     group='plate';groups[group]={'operation':'plate','technique':'plate','label':'把握完成时机','parameters':{}}
     at=int(at)+1
     for i in range(4+ordinal%4):note(at+i,group,'plate','primary','hold')
-    return dict(id=identity,dish=name,bpm=120,preview_beats=2,groups=groups,beats=[rows[t] for t in sorted(rows)])
+    return dict(id=identity,dish=name,bpm=140,preview_beats=2,groups=groups,beats=[rows[t] for t in sorted(rows)])
 
 def main():
     materials=read('content/culinary_materials.json');atlas=read('content/research/recipe_atlas.json')
@@ -175,13 +177,30 @@ def main():
         recipe.update(id=rid,name=m['name'],cuisine_id=m['cuisine_id'],workstation=station,cooking_method='steam' if station=='steamer' else 'stir',guided_profile=rid,version=2,expects_aroma=False,expected_aroma=[],allowed_ingredients=list(dict.fromkeys(primary+spices)),seasoning_palette=spices,preparation_sheets={},required_ingredients=[dict(id=x,min_amount=1,min_fine=0,max_fine=1,min_heat_dose=.2 if hot else 0) for x in primary],required_steps=[],recommended_steps=[],source='AI-088 PROPOSED; recipe_atlas + culinary_materials',initially_unlocked=False,ideal_temperature=[40,100] if hot else [15,40])
         recipe['technique_plan']=[{'technique':t,'label':l} for t,l in steps]
         sheet=chart(rid,m['name'],steps,spices,index,tier);study=chart('lesson.'+aid,m['name']+' · 研习',steps,spices,index,tier,True)
+        if aid == 'C02':
+            for score in (sheet, study):
+                score['initial_food_stage'] = 'wok:empty'
+                for key, group in score['groups'].items():
+                    if group['technique'] == 'oil':
+                        group['food_stage'] = 'wok:oil'
+                    elif group['technique'] == 'heat':
+                        group['food_stage'] = 'wok:egg>curds'
+                    elif group['technique'] == 'stir' and group['label'] == '倒入番茄翻炒':
+                        group['food_stage'] = 'wok:curds+tomato_dice>dish'
+                    elif key == 'study_finish':
+                        group['food_stage'] = 'board:dish'
+                    elif key == 'plate':
+                        group['food_stage'] = 'plate:dish'
+        else:
+            for score in (sheet, study):
+                bind_stages(aid, authored, score)
         # Challenge length is musical time, not a reason every perfect banquet
         # must burn. Calibrate the authored full heat path to 2.4 food heat units.
         ideal_dose=0.
         for gid,g in sheet['groups'].items():
             notes=[r for r in sheet['beats'] if any(n['group']==gid for n in r['lanes'].values())]
             if g['operation'] in ('heat','boil'):
-                ideal_dose+=(notes[-1]['t']-notes[0]['t']+1)*.5*(g['control']['target_min']+g['control']['target_max'])/2
+                ideal_dose+=(notes[-1]['t']-notes[0]['t']+1)*(60/140)*(g['control']['target_min']+g['control']['target_max'])/2
             elif g['operation']=='steam':ideal_dose+=len(notes)*.25
         recipe['thermal_scale']=round(2.4/ideal_dose,6) if ideal_dose else 1.
         sheets[rid]=sheet;sheets[study['id']]=study
@@ -194,7 +213,7 @@ def main():
             count=min(12,4+tier+index%3);actions=['primary']*count
             for n in range(2,count,3):actions[n]='rotate_left' if (index+offset+n)%2 else 'rotate_right'
             beats=[{'t':5+i*(1. if tier>=3 else 1.5),'lanes':{'hand':{'group':'cut','op':'cut','input':a,'form':'tap'}}} for i,a in enumerate(actions)]
-            sheets[sid]={'id':sid,'dish':m['name'],'bpm':120,'preview_beats':2,'groups':{'cut':group},'beats':beats};recipe['preparation_sheets'][food]=sid
+            sheets[sid]={'id':sid,'dish':m['name'],'bpm':140,'preview_beats':2,'groups':{'cut':group},'beats':beats};recipe['preparation_sheets'][food]=sid
         price=1200+tier*650+index%4*150
         existing=next((d for d in old['dishes'] if d['atlas_id']==aid),None)
         wid=atlas['runtime_mapping'].get(aid,'cuisine_'+aid.lower())
@@ -207,20 +226,7 @@ def main():
         for ingredient in set(primary)&set(spices): offer['stock'][ingredient]=2000
         dishes.append(dict(atlas_id=aid,world=world,recipe=recipe,offer=offer))
         atlas['runtime_mapping'][aid]=world['id'];atlas['charts'][aid]={'id':'study.'+aid,'kind':'kitchen','version':3,'recipe_id':rid,'profile':study['id'],'primary':primary}
-    extras=[]
-    # These three shipped dishes remain valid even though their stable IDs are
-    # outside the tree. They also need their own charts, not a shared wok track.
-    for n,(rid,station,steps) in enumerate([
-        ('service.beef_noodles','stockpot',[['preheat','汤锅点火'],['season','调牛肉汤'],['boil','煨牛肉'],['boil','煮面挑散'],['shape','浇汤摆肉']]),
-        ('service.pepper_pork','wok',[['preheat','热锅点火'],['oil','下油滑锅'],['heat','滑炒肉丝'],['stir','辣椒合炒'],['season','酱香调味'],['stir','大火收汁']]),
-        ('service.qiguoji','steamer',[['season','姜盐入味'],['shape','码鸡入汽锅'],['preheat','蒸锅起汽'],['steam','汽蒸鸡肉'],['steam','凝汽聚鲜']])]):
-        recipe=copy.deepcopy(old_recipes[rid]);spices=recipe.get('seasoning_palette',['salt','oil'])
-        sheet=chart(rid,recipe['name'],steps,spices,101+n,3)
-        recipe.update(version=2,cuisine_id='cn',workstation=station,guided_profile=rid,technique_plan=[dict(technique=t,label=l) for t,l in steps],recommended_steps=[g['operation'] for g in sheet['groups'].values()])
-        dose=sum((max(r['t'] for r in sheet['beats'] if any(x['group']==g for x in r['lanes'].values()))-min(r['t'] for r in sheet['beats'] if any(x['group']==g for x in r['lanes'].values()))+1)*.5*(v['control']['target_min']+v['control']['target_max'])/2 for g,v in sheet['groups'].items() if v['operation'] in ['heat','boil'])
-        if dose:recipe['thermal_scale']=round(2.4/dose,6)
-        extras.append(recipe);sheets[rid]=sheet
-    write('content/cuisine_recipes.json',dict(schema_version=1,revision=1,parameter_status='PROPOSED',source='AI-088; explicit culinary plans in tools/build_cuisine_charts.py',dishes=dishes,extra_recipes=extras,sheets=sheets))
+    write('content/cuisine_recipes.json',dict(schema_version=1,revision=1,parameter_status='PROPOSED',source='AI-088; explicit culinary plans in tools/build_cuisine_charts.py',dishes=dishes,sheets=sheets))
     write('content/research/recipe_atlas.json',atlas)
     print(f'{len(dishes)} dishes; {len(sheets)} cooking/research/preparation charts')
 

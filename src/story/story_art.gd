@@ -1,17 +1,10 @@
 class_name TDStoryArt
 extends RefCounted
-## Original selected idle/portrait art stays read-only; new walking frames complement it.
-const ALING: Texture2D = preload("res://assets/characters/aling/archive/2026-10-29/aling-idle-four-directions.png")
-const CHEN: Texture2D = preload("res://assets/characters/ash-priest/archive/2026-10-29/ash-priest-idle-four-directions.png")
 const ALING_BUST: Texture2D = preload("res://assets/characters/aling/archive/2026-10-29/aling-dialogue-halfbody.png")
 const CHEN_BUST: Texture2D = preload("res://assets/characters/ash-priest/archive/2026-10-29/ash-priest-dialogue-halfbody.png")
 const HERO_BUST: Texture2D = preload("res://assets/characters/protagonist/protagonist-dialogue-halfbody-pose-pixel-v7.png")
-const ALING_WALK: Texture2D = preload("res://assets/characters/aling/aling-walk-four-directions-v1.png")
-const CHEN_WALK: Texture2D = preload("res://assets/characters/ash-priest/ash-priest-walk-four-directions-v1.png")
-const REGIONS: Dictionary = {
-	"aling": [Rect2(180,30,385,593),Rect2(696,30,382,594),Rect2(226,643,275,578),Rect2(738,643,308,578)],
-	"chen": [Rect2(183,17,407,609),Rect2(669,17,404,609),Rect2(212,633,380,608),Rect2(698,633,359,608)],
-}
+const MAP_NPCS := ["aling", "chen", "luoe", "hertz", "vito", "hina", "crowd"]
+const WALKING_NPCS := ["aling", "chen"]
 const EMOTIONS := ["calm","happy","surprised","puzzled","angry","sad"]
 const MOODS: Dictionary = {
 	"hero":preload("res://assets/story/hero-emotions-v1.png"),
@@ -24,21 +17,95 @@ const PROPS: Texture2D=preload("res://assets/redraw-v1/story-props.png")
 const BACKGROUNDS: Texture2D=preload("res://assets/redraw-v1/backgrounds.png")
 static var _views: Dictionary = {}
 
-static func sprite(who: String, facing: Vector2i = Vector2i.DOWN, walk_frame: int=-1) -> Texture2D:
-	if not REGIONS.has(who): return null
-	var index:=TDChefArt.direction_index(facing)
-	if walk_frame==0 or walk_frame==2:
-		var key: String=who+":walk:"+str(index)+":"+str(walk_frame)
-		if not _views.has(key):
-			var source: Texture2D=ALING_WALK if who=="aling" else CHEN_WALK
-			var size:=Vector2i(source.get_width()/4,source.get_height()/2)
-			var origin:=Vector2i(index,walk_frame/2)*size
-			var image:=source.get_image()
-			if image.is_compressed(): image.decompress()
-			var used:=_walk_bounds(image.get_region(Rect2i(origin,size)))
-			return _view(key,source,Rect2(origin+used.position,used.size))
-		return _views[key]
-	return _view(who+str(index),ALING if who=="aling" else CHEN,REGIONS[who][index])
+static func sprite(who: String, facing: Vector2i = Vector2i.DOWN, walk_frame: int = -1) -> Texture2D:
+	var character := "luoe" if who == "luo" else who
+	if character not in MAP_NPCS:
+		return null
+	var index := TDChefArt.direction_index(facing)
+	if character in WALKING_NPCS:
+		index = TDCoarseSpriteArt.cardinal_index(index, walk_frame)
+	return TDCoarseSpriteArt.frame(character, index)
+
+
+static func four_way_facing(offset: Vector2) -> Vector2i:
+	if absf(offset.x) > absf(offset.y):
+		return Vector2i.LEFT if offset.x < 0 else Vector2i.RIGHT
+	return Vector2i.UP if offset.y < 0 else Vector2i.DOWN
+
+class TownActor extends Sprite2D:
+	var actor_id: String
+	var display_height: float
+	var facing := Vector2i.ZERO
+	var _frame := -1
+
+	var _caption: Label
+
+	func configure(id: String, height: float) -> void:
+		actor_id = id
+		display_height = height * (0.9 if id == "aling" else 1.0)
+		centered = false
+		texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		facing = Vector2i.ZERO
+		pose(Vector2i.DOWN)
+
+	func place(id: String, height: float, anchor: Vector2, can_stand: Callable,
+			preferred: Vector2 = Vector2.RIGHT) -> void:
+		configure(id,height)
+		visible = false
+		# Start beside the destination so the character leaves its entrance clear.
+		for step: float in [52.0, 76.0, 100.0, 124.0]:
+			for direction: Vector2 in [preferred, -preferred, Vector2.DOWN, Vector2.UP,
+				Vector2(1, 1).normalized(), Vector2(-1, 1).normalized(),
+				Vector2(1, -1).normalized(), Vector2(-1, -1).normalized()]:
+				var feet := anchor + direction * step
+				if can_stand.call(feet):
+					position = feet
+					visible = true
+					_set_facing(Vector2i.DOWN)
+					return
+
+	func set_caption(value: String) -> void:
+		_caption=TDUI.label(value,TDUI.FONT_CAPTION,Color("fff6df"))
+		_caption.add_theme_color_override("font_outline_color",Color("21160d"))
+		_caption.add_theme_constant_override("outline_size",4)
+		_caption.mouse_filter=Control.MOUSE_FILTER_IGNORE
+		_caption.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+		add_child(_caption)
+		_layout_caption()
+
+	func set_callout(value: String) -> void:
+		if _caption==null: return
+		var heading := str(_caption.get_meta("heading",_caption.text))
+		_caption.set_meta("heading",heading)
+		var text := heading if value.is_empty() else value+"\n"+heading
+		if _caption.text==text: return
+		_caption.text=text
+		_layout_caption()
+
+	func _layout_caption() -> void:
+		if _caption==null: return
+		_caption.scale=Vector2.ONE/scale
+		_caption.custom_minimum_size.x=128
+		_caption.reset_size()
+		_caption.position=Vector2(-64,-display_height-_caption.size.y-6)/scale
+
+	func face_nearby(point: Vector2) -> void:
+		if not visible: return
+		var delta := point - position
+		if delta.length_squared() <= 240.0 * 240.0 and delta.length_squared() > 4.0:
+			_set_facing(TDStoryArt.four_way_facing(delta))
+
+	func _set_facing(direction: Vector2i) -> void:
+		pose(direction)
+
+	func pose(direction: Vector2i, frame: int = -1) -> void:
+		if direction == facing and frame == _frame: return
+		facing = direction
+		_frame = frame
+		texture = TDStoryArt.sprite(actor_id, facing, frame)
+		scale = Vector2.ONE * (display_height / texture.get_height())
+		offset = Vector2(-texture.get_width() * .5, -texture.get_height())
+		_layout_caption()
 
 static func _walk_bounds(image: Image) -> Rect2i:
 	# Generated transparent gutters contain a few alpha=1 pixels. They must not shift

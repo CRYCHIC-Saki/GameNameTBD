@@ -1,0 +1,38 @@
+# start
+@bg old-stall with instant 0
+// 原稿第 30 段
+narrator: 阿铃尝过焰子的炒蛋，原本准备好的评语迟迟没说出口，筷子倒是一直没停。
+// 原稿第 31 段 【生气】焰子
+@show hero angry at td:0.268170:1.464197:2.150000 with instant
+hero: 喂，先给我留两口呀！我做这顿饭是想填饱肚子，照你这个吃法，一会儿连盘子都省得洗了。
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hina with instant
+// 原稿第 32 段 【高兴】赫兹
+@show hertz happy at td:0.707320:1.555701:2.150000 with instant
+hertz: 刚到臻味港就赢下了一场比试，真是个不错的开头！焰子，你接下来还想挑战这里的其他厨师吗？
+// 原稿第 33 段 【通常】焰子
+@show hero calm at td:0.268170:1.464197:2.150000 with instant
+hero: 有机会的话当然想试试，我还想做道菜给那位公主尝尝呢。听说她很挑剔，我就更想知道，她到底喜欢吃什么了。
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+// 原稿第 34 段 【哭哭】阿铃
+@show aling cry at td:0.740000:1.555701:2.150000 with instant
+aling: 此战是吾输了，夜鸦的威名竟折于一盘炒蛋……罢了，你这手艺值得引荐给罗金娜。
+// 原稿第 35 段 【疑惑】焰子
+@show hero puzzled at td:0.268170:1.464197:2.150000 with instant
+hero: 罗金娜是谁？也是这里的厨师吗？
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+// 原稿第 36 段 【通常】阿铃
+@show aling calm at td:0.740000:1.555701:2.150000 with instant
+aling: 正是。她厨艺精湛，又经营着食材铺，今日恰好回店补货。待用过饭，吾便带你前去拜访。
+@end

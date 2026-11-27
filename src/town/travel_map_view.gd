@@ -8,8 +8,14 @@ const WORLD_SIZE := Vector2(1045,510)
 const BACKGROUND: Texture2D=preload("res://assets/town/world-atlas-v1.png")
 const TOWN_SIZE:=220.0
 const ORIGINS:={"paris":Vector2(430,120)-CHART_ORIGIN,"chengdu":Vector2(800,280)-CHART_ORIGIN,"tokyo":Vector2(1175,170)-CHART_ORIGIN}
+# The chart illustration and the local survey use different coordinates.
+const PALACE_CHART_POINT := Vector2(1075,307) - CHART_ORIGIN
+const PALACE_LOCAL_POINT := Vector2(1611,247) / TDPlannedTown.REFERENCE_SIZE.x
 const SEA:=Color("137c7b")
+const FOG_REGIONS := {"paris":Rect2(-52,-18,470,380), "tokyo":Rect2(665,12,452,458)}
 const JiangnanDistrictTerrain := preload("res://src/town/jiangnan_district_terrain.gd")
+const CrowdStands := preload("res://src/town/crowd_stands.gd")
+static var _fog_texture: ImageTexture
 var maps: Dictionary={}
 var town_id: String="chengdu"
 var marker:=Vector2(TDHarbor.ARRIVAL)+Vector2.ONE*.5
@@ -25,10 +31,53 @@ var _textures: Dictionary={}
 var _jiangnan_zones: Array[Dictionary] = []
 var _hover: String=""
 var _map_minute := 720.0
+var _locked_towns: Array[String] = []
+var _revealing_town := ""
+var _reveal_fog := 0.0
+var challenge_towns: Array[String] = []
+var live_challenge_locations: Dictionary = {}
+var tracked_paris_site := ""
 
 func configure(profile: TDGameProfile) -> void:
 	if profile.characters!=null: _map_minute=profile.characters.clock.minute
-	for id: String in TDTravelCatalog.IDS: maps[id]=TDTravelCatalog.map_for(profile,id)
+	for id: String in TDTravelCatalog.IDS:
+		if profile.town_map_unlocked(id):
+			maps[id]=TDTravelCatalog.map_for(profile,id)
+		else: _locked_towns.append(id)
+	if show_player:
+		for id: String in maps:
+			if id != "chengdu" or maps.has("paris"): challenge_towns.append(id)
+
+func reveal_story_town(id: String) -> void:
+	if not is_inside_tree() or is_queued_for_deletion() or not maps.has(id) or not FOG_REGIONS.has(id): return
+	_revealing_town=id
+	_reveal_fog=1.0
+	reset_view()
+	var reveal := create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	reveal.tween_method(_set_reveal_fog,1.0,0.0,.8)
+	reveal.tween_method(_zoom_to_reveal.bind(id),0.0,1.0,.75).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+	reveal.tween_callback(func() -> void: _revealing_town="";queue_redraw())
+
+func _set_reveal_fog(value: float) -> void:
+	_reveal_fog=value
+	queue_redraw()
+
+func _zoom_to_reveal(value: float, id: String) -> void:
+	zoom=lerpf(1.0,3.0,value)
+	pan=Vector2.ZERO.lerp(_town_focus_pan(id),value)
+	queue_redraw()
+
+func challenge_locations(id: String) -> Dictionary:
+	if not maps.has(id): return {}
+	if id == town_id and live_challenge_locations.has(id): return live_challenge_locations[id]
+	if id not in challenge_towns: return {}
+	if live_challenge_locations.has(id): return live_challenge_locations[id]
+	var locations := {}
+	for site: String in CrowdStands.VISITS.get(id,[]):
+		var place: Dictionary=maps[id]._by_id(site)
+		if not place.is_empty():
+			locations[site]=Vector2(float(place.approach_x),float(place.approach_y))+Vector2.ONE*.5
+	return locations
 
 func _ready() -> void:
 	custom_minimum_size=minimum_view_size;mouse_filter=Control.MOUSE_FILTER_STOP;clip_contents=true
@@ -77,18 +126,22 @@ func reset_view() -> void:
 	zoom=1;pan=Vector2.ZERO;queue_redraw()
 
 func focus_town(id: String) -> void:
-	if not ORIGINS.has(id): return
+	if not maps.has(id): return
 	zoom=3.0
+	pan=_town_focus_pan(id)
+	queue_redraw()
+
+func _town_focus_pan(id: String) -> Vector2:
 	var center := Vector2.ONE*.5
-	if id=="chengdu" and maps.has(id) and TDPlannedTown.approved(maps[id]):
-		center.y *= TDJiangnanReferenceArt.SIZE.y / TDJiangnanReferenceArt.SIZE.x
-	pan=-(ORIGINS[id]+center*TOWN_SIZE-WORLD_SIZE*.5)*scale_factor()
-	_limit_pan();queue_redraw()
+	var terrain: Texture2D = _textures.get(id)
+	if terrain!=null: center.y /= terrain.get_size().aspect()
+	return -(ORIGINS[id]+center*TOWN_SIZE-WORLD_SIZE*.5)*scale_factor()
 
 func _notification(what: int) -> void:
 	if what==NOTIFICATION_WM_WINDOW_FOCUS_OUT: _dragging=false
 
 func _gui_input(event: InputEvent) -> void:
+	if not _revealing_town.is_empty(): accept_event();return
 	if event is InputEventMouseButton:
 		if event.button_index in [MOUSE_BUTTON_WHEEL_UP,MOUSE_BUTTON_WHEEL_DOWN] and event.pressed:
 			zoom_at(event.position,1.22 if event.button_index==MOUSE_BUTTON_WHEEL_UP else 1.0/1.22);accept_event()
@@ -143,14 +196,21 @@ func _text(at: Vector2, value: String, font_size: int=TDUI.FONT_CAPTION, color: 
 	draw_string_outline(font,at,value,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size,4,Color("233c3d"))
 	draw_string(font,at,value,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size,color)
 
+func focused_town() -> String:
+	if zoom < 2.4: return ""
+	for id: String in maps:
+		if Rect2(ORIGINS[id],Vector2.ONE*TOWN_SIZE).has_point(screen_to_world(size*.5)): return id
+	return ""
+
 func _draw() -> void:
+	var local_id := focused_town()
 	var local_island: bool=maps.has("tokyo") and maps.tokyo.shiomi and zoom>=3.0 and Rect2(ORIGINS.tokyo,Vector2.ONE*TOWN_SIZE).has_point(screen_to_world(size*.5))
 	draw_rect(Rect2(Vector2.ZERO,size),Color("075968") if local_island else SEA)
-	if not local_island:
+	if local_id.is_empty():
 		var texels := BACKGROUND.get_size() / ATLAS_SIZE
 		draw_texture_rect_region(BACKGROUND,Rect2(world_to_screen(Vector2.ZERO),WORLD_SIZE*scale_factor()),Rect2(CHART_ORIGIN*texels,WORLD_SIZE*texels))
 	for id: String in maps:
-		if local_island and id!="tokyo": continue
+		if id != local_id: continue
 		var origin: Vector2=ORIGINS[id];var rect:=Rect2(world_to_screen(origin),Vector2.ONE*TOWN_SIZE*scale_factor())
 		var terrain: Texture2D = _textures[id]
 		rect.size.y = rect.size.x/terrain.get_size().aspect()
@@ -160,13 +220,21 @@ func _draw() -> void:
 	# Passenger routes are independent of economic route unlocks.
 	var home:=_port_point("chengdu")
 	for id: String in maps:
-		if local_island or id=="chengdu": continue
+		if not local_id.is_empty() or id=="chengdu" or (id==_revealing_town and _reveal_fog>0.0): continue
 		var dest:=_port_point(id);var delta:=dest-home
 		for step: int in range(1,30,2):
 			var t:=float(step)/30;var u:=float(step+1)/30
 			draw_line(world_to_screen(home+delta*t+Vector2(0,sin(t*PI)*35)),world_to_screen(home+delta*u+Vector2(0,sin(u*PI)*35)),Color(.96,.85,.57,.5),1.4,true)
 	_draw_land_overlay()
-	if show_player:
+	if local_id.is_empty():
+		for id: String in _locked_towns: _draw_fog(id,1.0)
+		if _reveal_fog>0.0: _draw_fog(_revealing_town,_reveal_fog)
+		for id: String in maps:
+			if id != _revealing_town or _reveal_fog <= 0.0: _draw_town(id,ORIGINS[id])
+	if show_player: _draw_challenge_markers(local_id)
+	if show_player and maps.has("chengdu") and local_id in ["","chengdu"]:
+		_draw_palace_marker(local_id.is_empty())
+	if show_player and maps.has(town_id) and (local_id.is_empty() or local_id == town_id):
 		var p:=world_to_screen(ORIGINS[town_id]+marker/73.0*TOWN_SIZE)
 		draw_circle(p,9,Color("263e40"));draw_circle(p,6,Color("fff3ad"));draw_arc(p,12,0,TAU,24,Color("ffe298"),1.5,true)
 		_text(p+Vector2(13,5),"你在这里",TDUI.FONT_CAPTION)
@@ -179,10 +247,87 @@ func _draw() -> void:
 	_text(Vector2(14,size.y-12),caption_text(),TDUI.FONT_CAPTION)
 
 func caption_text() -> String:
-	return str(TDTravelCatalog.info(_hover if not _hover.is_empty() else town_id).caption)
+	if _hover in _locked_towns: return "随主线开放"
+	var viewed := focused_town()
+	if viewed.is_empty(): viewed=_hover if not _hover.is_empty() else town_id
+	return str(TDTravelCatalog.info(viewed).caption)
+
+func _draw_fog(id: String, opacity: float) -> void:
+	if _fog_texture == null: _fog_texture=_make_fog_texture()
+	var region: Rect2=FOG_REGIONS[id]
+	var rect:=Rect2(world_to_screen(region.position),region.size*scale_factor())
+	draw_texture_rect(_fog_texture,rect,false,Color(1,1,1,opacity))
+	var label := "迷雾未散"
+	var width := get_theme_default_font().get_string_size(label,HORIZONTAL_ALIGNMENT_LEFT,-1,TDUI.FONT_BODY).x
+	_text(rect.get_center()+Vector2(-width*.5,0),label,TDUI.FONT_BODY,Color(1,1,1,opacity))
+
+static func _make_fog_texture() -> ImageTexture:
+	var bitmap := Image.create(128,112,false,Image.FORMAT_RGBA8)
+	var clouds := FastNoiseLite.new()
+	clouds.seed=1505
+	clouds.frequency=.09
+	for y: int in bitmap.get_height():
+		for x: int in bitmap.get_width():
+			var pos := (Vector2(x,y)+Vector2.ONE*.5)/Vector2(bitmap.get_size())*2.0-Vector2.ONE
+			var cloud := clouds.get_noise_2d(x,y)
+			var edge := pow(pow(absf(pos.x),4.0)+pow(absf(pos.y),4.0),.25)+cloud*.08
+			var alpha := 1.0-smoothstep(.84,1.01,edge)
+			var color := Color("789ca1").lerp(Color("c5d9d5"),clampf(.48+cloud*.85,0.0,1.0))
+			bitmap.set_pixel(x,y,Color(color,alpha))
+	return ImageTexture.create_from_image(bitmap)
 
 func _draw_land_overlay() -> void:
 	pass
+
+func _draw_challenge_markers(local_id: String) -> void:
+	if local_id.is_empty():
+		for id: String in challenge_towns:
+			if id==_revealing_town and _reveal_fog>0.0: continue
+			var tracked := id=="paris" and not tracked_paris_site.is_empty()
+			_draw_challenge_marker(world_to_screen(ORIGINS[id]+Vector2(12,10)),false,tracked)
+		return
+	var pins := PackedVector2Array()
+	var locations := challenge_locations(local_id)
+	for feet: Vector2 in locations.values(): pins.append(cell_to_screen(local_id,feet))
+	var tracked := Vector2.INF
+	if local_id=="paris" and locations.has(tracked_paris_site):
+		tracked=cell_to_screen(local_id,locations[tracked_paris_site])
+	for pin: Vector2 in pins:
+		var left := false
+		for other: Vector2 in pins:
+			if other.x > pin.x and other.x - pin.x < 108 and absf(other.y-pin.y)<24:
+				left=true;break
+		_draw_challenge_marker(pin,left,pin==tracked)
+
+func _draw_challenge_marker(pin: Vector2, left: bool = false, tracked: bool = false) -> void:
+	draw_circle(pin,7,Color("263e40"))
+	draw_circle(pin,4,Color("ffd08a"))
+	if tracked: draw_arc(pin,10,0,TAU,24,Color("fff0a4"),2,true)
+	var label := "任务 · 居民挑战" if tracked else "杂鱼挑战"
+	var width:=get_theme_default_font().get_string_size(label,HORIZONTAL_ALIGNMENT_LEFT,-1,TDUI.FONT_CAPTION).x
+	_text(pin+Vector2(-width-10 if left else 10,-4),label,TDUI.FONT_CAPTION,Color("ffd08a"))
+
+func _draw_palace_marker(world_chart: bool) -> void:
+	var anchor := PALACE_CHART_POINT if world_chart else ORIGINS.chengdu + PALACE_LOCAL_POINT * TOWN_SIZE
+	var pin := world_to_screen(anchor).round()
+	var ink := Color("233c3d")
+	var gold := Color("ffdd91")
+	draw_circle(pin, 14, ink, true, -1, true)
+	draw_arc(pin, 13.5, 0, TAU, 32, gold, 1.5, true)
+	draw_colored_polygon(PackedVector2Array([
+		pin + Vector2(-9, -1), pin + Vector2(0, -8), pin + Vector2(9, -1),
+	]), gold)
+	draw_rect(Rect2(pin + Vector2(-6, 1), Vector2(4, 6)), gold)
+	draw_rect(Rect2(pin + Vector2(2, 1), Vector2(4, 6)), gold)
+
+	var label := "王宫"
+	var font := get_theme_default_font()
+	var span := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, TDUI.FONT_CAPTION) + Vector2(14, 4)
+	var offset_x := 18.0 if world_chart else -span.x - 18
+	var box := Rect2(pin + Vector2(offset_x, -span.y * .5), span)
+	draw_rect(box, ink)
+	draw_rect(box, gold, false, 1)
+	_text(box.position + Vector2(7, 2 + font.get_ascent(TDUI.FONT_CAPTION)), label, TDUI.FONT_CAPTION, gold)
 
 func cell_to_screen(id: String, cell: Vector2) -> Vector2:
 	return world_to_screen(ORIGINS[id]+cell*TOWN_SIZE/float(maps[id].extent))
@@ -193,6 +338,11 @@ func _port_point(id: String) -> Vector2:
 	return ORIGINS[id]+point/73.0*TOWN_SIZE
 
 func _draw_town(id: String, origin: Vector2) -> void:
+	# At world scale the redrawn chart owns the towns; never paste live rectangles over it.
+	if focused_town().is_empty():
+		var title_at := world_to_screen(origin+Vector2(0,-14))
+		_text(title_at,str(TDTravelCatalog.info(id).name),18 if id==town_id else 16,Color("ffdc8c") if id==town_id else Color("f5e4bb"))
+		return
 	var map: TDTownMap=maps[id];var unit: float=TOWN_SIZE/73.0
 	var reference := TDPlannedTown.approved(map) or map.shiomi or map.egret
 	var show_neighborhoods := id=="chengdu" and show_player and zoom>=3.0 and not _jiangnan_zones.is_empty()
@@ -210,8 +360,15 @@ func _draw_town(id: String, origin: Vector2) -> void:
 			draw_rect(rect.grow(1),Color(.1,.2,.15,.35));draw_rect(rect,Color(color,.45))
 		if str(plot.kind) not in ["housing","factory_lot"] and float(plot.w)>=3 and (not reference or overlay):
 			var tex := TDTravelCatalog.facade(id,plot)
-			var width:=clampf(float(plot.w)*unit,8,24)*scale_factor();var span:=Vector2(width,width*tex.get_height()/tex.get_width())
-			draw_texture_rect(tex,Rect2(rect.get_center()-span*.5,span),false)
+			if plot.get("preset_storefront", false) and not plot.get("construction", false):
+				var diner_bounds: Rect2 = TDJiangnanReferenceArt.diner_facade().rect
+				var cell := TDEgretLayout.WALK_CELL if map.egret else float(TDTownWorld.CELL)
+				var span := diner_bounds.size * (unit * scale_factor() / cell)
+				var feet := cell_to_screen(id, TDTravelCatalog.native_frontage_feet(TDInteractionRange.plot_bounds(plot)))
+				draw_texture_rect(tex, Rect2(feet - Vector2(span.x * .5, span.y), span), false)
+			else:
+				var width:=clampf(float(plot.w)*unit,8,24)*scale_factor();var span:=Vector2(width,width*tex.get_height()/tex.get_width())
+				draw_texture_rect(tex,Rect2(rect.get_center()-span*.5,span),false)
 		if zoom>=2.4 and plot.kind in ["hotel","landmark","market","plaza","bank","player_diner","player_cottage"]:
 			if not show_neighborhoods or plot.kind=="player_cottage" or plot.has("branch_id"):
 				_text(rect.position+Vector2(0,-4),TDTravelCatalog.label(plot,id),TDUI.FONT_CAPTION)

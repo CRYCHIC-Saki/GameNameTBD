@@ -83,6 +83,7 @@ func next_boundary(maximum: float) -> float:
 
 func _assign(cooks: Array) -> void:
 	if shop.snapshot().phase not in ["OPEN","DRAINING"]: return
+	if not jobs.is_empty(): return
 	var families: Array=[]
 	for lane: TDCookingLane in kitchen.lanes:
 		if owns(lane.lane_index) or not lane.snapshot().ingredients.is_empty() or lane.qte!=null: families.append(lane.base_recipe_id)
@@ -99,6 +100,7 @@ func _assign(cooks: Array) -> void:
 		var station: String=""
 		var lane: TDCookingLane=null
 		for candidate: TDCookingLane in kitchen.lanes:
+			if kitchen.other_pot_in_use(candidate.lane_index): continue
 			if jobs.has(candidate.lane_index) or kitchen.handling.hand==candidate.session: continue
 			if not candidate.snapshot().ingredients.is_empty() or candidate.qte!=null or candidate.thermal_qte!=null or (candidate.sheet!=null and candidate.sheet.running): continue
 			for target: String in TDCuisineKitchen.IDS:
@@ -123,6 +125,7 @@ func _assign(cooks: Array) -> void:
 		jobs[lane.lane_index]=job;families.append(family)
 		_go(job,"to_fridge","kitchen.fridge")
 		note="厨师按菜谱逐份取料、切配、入锅。"
+		return
 
 func _settle(job: Dictionary) -> void:
 	var person: Dictionary=people[job.cook]
@@ -239,11 +242,13 @@ func rows() -> Array:
 			label=kitchen.lanes[job.lane].cook_step()
 			if label in ["取料",""]: label="等待下一拍"
 		var carried: String=""
+		var held: Dictionary={}
 		if not job.is_empty():
 			var hands: TDKitchenHandling=job.handling
-			if hands.hand!=null: carried="dish" if hands.hand_kind=="dish" else str(hands.hand.snapshot().to_dict().ingredients.values()[0].ingredient_id)
+			held = hands.display().hand
+			if not held.is_empty(): carried="dish" if hands.hand_kind=="dish" else str(held.id)
 		var gait: TDNpcGait=person.gait
-		result.append({"id":id,"name":person.name,"cuisine_id":person.cuisine_id,"appearance_variant":person.appearance_variant,"index":person.index,"point":person.point,"facing":gait.facing,"frame":gait.frame,"phase":phase,"action":label,"elapsed":person.elapsed,"carried":carried,"visual_seconds":kitchen.shared_clock.game_sec})
+		result.append({"id":id,"name":person.name,"cuisine_id":person.cuisine_id,"appearance_variant":person.appearance_variant,"index":person.index,"point":person.point,"facing":gait.facing,"frame":gait.frame,"phase":phase,"action":label,"elapsed":person.elapsed,"held":held,"carried":carried,"visual_seconds":kitchen.shared_clock.game_sec})
 	return result
 
 func extra_snapshots() -> Array:

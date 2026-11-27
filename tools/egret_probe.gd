@@ -135,7 +135,7 @@ func verify_land_use(map: TDTownMap) -> void:
 		[Vector2i(5,36),"pier","river_quays","harbor"], [Vector2i(11,36),"quay","river_quays","harbor"],
 		[Vector2i(14,37),"lawn","river_quays","harbor"], [Vector2i(1,44),"sea","river_quays","water"],
 		[Vector2i(10,25),"lawn","workers_quarter","housing"], [Vector2i(42,25),"lawn","workers_quarter","supply_factory"],
-		[Vector2i(22,29),"lawn","civic_square","bank"], [Vector2i(18,31),"lawn","civic_square","civic_square"],
+		[Vector2i(18,29),"lawn","civic_square","bank"], [Vector2i(18,31),"lawn","civic_square","civic_square"],
 		[Vector2i(22,31),"stone","civic_square","road"], [Vector2i(37,38),"square","civic_square","plaza"],
 		[Vector2i(46,32),"stone","civic_square","market"], [Vector2i(17,42),"wheat","market_gardens","farmland"],
 		[Vector2i(22,52),"earth","market_gardens","road"], [Vector2i(48,43),"lawn","inn_quarter","hotel"],
@@ -254,8 +254,8 @@ func verify_marked_streets(world: TDTravelWorld) -> void:
 					wide=wide and world._can_stand(TDEgretLayout.world_point(point+Vector2(offset,0)))
 		verify(wide,"continuous clear street width at "+str(lane[0]))
 		verify(await follow_route(world,lane.slice(1)),"walk through marked street from "+str(lane[0]))
-	world.player.position=TDEgretLayout.world_point(Vector2(700,426))
-	var bank_entry: Array[Vector2] = [Vector2(695,408),Vector2(695,374)]
+	world.player.position=TDEgretLayout.world_point(Vector2(632,389))
+	var bank_entry: Array[Vector2] = [Vector2(632,382),Vector2(632,374)]
 	verify(await follow_route(world,bank_entry) and world.nearby().get("id")=="commercial_street:bank",
 		"walk from the street to the relocated bank entrance")
 
@@ -317,15 +317,15 @@ func exercise_old_slot(shell: TDGameShell, fixture: String, output: String) -> v
 	if copied!=OK: return
 	var original := FileAccess.get_sha256(fixture)
 	var old := shell.slots.load_slot("slot-01")
-	verify(old.ok and int(old.data.get("region_layout_version",0)) in [3,4,5,6,7,8,9,10],"valid historical slot: "+old.code+" "+old.message)
+	verify(old.ok and int(old.data.get("region_layout_version",0)) in [3,4,5,6,7,8,9,10,11],"valid historical slot: "+old.code+" "+old.message)
 	if not old.ok: return
 	var loaded := shell.load_game("slot-01")
 	verify(loaded.ok,"load and migrate through game menu: "+loaded.code+" "+loaded.message)
 	if not loaded.ok: return
 	var current := shell.slots.load_slot("slot-01")
-	verify(current.ok and current.data.get("region_layout_version")==11 and shell.profile.region_migrated_on_load,"west quay migration committed on disk")
+	verify(current.ok and current.data.get("region_layout_version")==TDEgretLayout.CURRENT_VERSION and shell.profile.region_migrated_on_load,"west quay migration committed on disk")
 	if not current.ok: return
-	var backup := path+(".before-egret-v11.bak" if old.data.region_layout_version>=4 else ".before-egret-v4.bak")
+	var backup := path+(".before-egret-v12.bak" if old.data.region_layout_version>=4 else ".before-egret-v4.bak")
 	if shell.profile.regions_settled_on_load: backup=path+".before-three-towns.bak"
 	verify(FileAccess.get_sha256(backup)==original,"pre-migration backup equals original save bytes")
 	for field: String in ["money_cents","ledger","seen"]:

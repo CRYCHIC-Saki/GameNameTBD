@@ -78,12 +78,12 @@ func test_returned_cut_food_preserves_exposure_reaction_and_does_not_react_twice
 	var invalid: Dictionary=saved.duplicate(true); invalid.processing_state.flavor[0][0]=NAN
 	assert_false(session("invalid").restore_portable(invalid).ok)
 
-func test_locked_recipe_method_and_corrupt_progress_are_explicit() -> void:
+func test_retired_recipe_and_corrupt_progress_are_explicit() -> void:
 	var shop:=TDShopSession.new(catalog,"unit")
-	assert_eq(shop.snapshot().unlocked.size(),5)
+	assert_eq(shop.snapshot().unlocked.size(),3)
 	assert_false(shop.is_unlocked("service.qiguoji"))
-	assert_eq(shop.set_menu("service.qiguoji",true,2200).code,"RECIPE_NOT_UNLOCKED")
-	assert_eq(shop.context_for_ingredients(["chicken","mushroom"],true,"steam").recipe_id,"service.qiguoji")
+	assert_false(shop.set_menu("service.qiguoji",true,2200).ok)
+	assert_true(shop.context_for_ingredients(["chicken","mushroom"],true,"steam").is_empty())
 	assert_true(shop.context_for_ingredients(["chicken","mushroom"],true,"stir").is_empty())
 	assert_true(shop.context_for_ingredients(["beef"],true,"stir").is_empty())
 	for field: String in ["cold_foods","unlocked"]:
@@ -91,15 +91,15 @@ func test_locked_recipe_method_and_corrupt_progress_are_explicit() -> void:
 	var future: Dictionary=shop.snapshot(); future.progress_version=999; assert_eq(shop.validate_save(future).code,"UNSUPPORTED_VERSION")
 	var duplicate: Dictionary=shop.snapshot(); duplicate.unlocked.append(duplicate.unlocked[0]); assert_false(shop.validate_save(duplicate).ok)
 
-func test_old_boundary_migrates_five_unlocked_without_touching_old_input() -> void:
+func test_old_boundary_migrates_starter_unlocks_without_touching_old_input() -> void:
 	var shop:=TDShopSession.new(catalog,"legacy")
 	var old: Dictionary=shop.snapshot()
 	for key: String in ["progress_version","cold_foods","unlocked","stock_version","inventory_lots","mastery_version","mastery","mastery_dishes"]: old.erase(key)
-	old.inventory.erase("mushroom"); old.menu.erase("service.qiguoji"); old.fame.erase("service.qiguoji")
+	old.inventory.erase("mushroom")
 	var before: Dictionary=old.duplicate(true)
 	assert_true(shop.restore(old).ok)
-	assert_eq(old,before); assert_eq(shop.snapshot().unlocked.size(),5)
-	assert_eq(shop.available("mushroom"),0); assert_false(shop.snapshot().menu["service.qiguoji"].enabled)
+	assert_eq(old,before); assert_eq(shop.snapshot().unlocked.size(),3)
+	assert_eq(shop.available("mushroom"),0); assert_false(shop.snapshot().menu.has("service.qiguoji"))
 
 func test_processed_food_normalized_twice_remains_valid() -> void:
 	var shop:=TDShopSession.new(catalog,"cold-run")

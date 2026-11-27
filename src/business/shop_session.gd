@@ -1,5 +1,6 @@
 class_name TDShopSession
 extends RefCounted
+var opening_permission: Callable
 var before_open: Callable
 var before_settlement: Callable
 signal day_settled(day: int)
@@ -58,6 +59,12 @@ func market_ids(region: String = "") -> Array[String]:
 	for id: String in catalog.config.costs:
 		if market_sells(id,region): result.append(id)
 	return result
+
+func local_market_sells(id: String, region: String) -> bool:
+	return market_sells(id,region) and purchasable(id)
+
+func local_market_ids(region: String) -> Array[String]:
+	return market_ids(region).filter(func(id: String) -> bool: return local_market_sells(id,region))
 
 func purchase_ids() -> Array[String]:
 	var result: Array[String]=[]
@@ -166,8 +173,15 @@ func consume_materials(token: String, units: Dictionary) -> TDOutcome:
 		delta[id]=-int(units[id])
 	var expiry: Dictionary={}
 	for id: String in units: expiry[id]=TDFoodStock.first_expiry(_s.inventory_lots,id)
+	var basis := material_cost_basis()
+	var values: Dictionary={}
+	for id: String in units:
+		values[id]=TDFoodStock.cost_of(basis.get(id,{}),int(units[id]))
 	_s.seen[token]=true; _record("consumption",0,delta,token)
-	return TDOutcome.new(true,"CONSUMED","",{"expires_on":expiry})
+	return TDOutcome.new(true,"CONSUMED","",{"expires_on":expiry,"inventory_values":values,"stock_day":int(_s.day)})
+
+func material_cost_basis() -> Dictionary:
+	return commerce.state.cost_stock if commerce!=null else {}
 
 func sync_kitchen(snapshots: Array) -> void:
 	# Cooling changes revision every tick, but never changes whether an order has enough food.
@@ -312,8 +326,31 @@ func store_food(data: Dictionary) -> TDOutcome:
 	if _s.cold_foods.any(func(f:Dictionary)->bool:return f.id==data.id): return TDOutcome.new(false,"DUPLICATE")
 	var stored: Dictionary=data.duplicate(true)
 	if int(stored.get("expires_on",0))==0: stored.expires_on=int(_s.day)+int(stock_rules.get(stored.ingredient_id,{}).get("shelf_days",3))
+	if _unprepared(stored): return _return_raw_food(stored)
 	_s.cold_foods.append(stored); _kitchen_key=""
 	return TDOutcome.new(true,"FOOD_STORED","已放回冰箱，切型和处理结果保留。")
+
+static func _unprepared(food: Dictionary) -> bool:
+	return not food.cuts.any(func(cut:Dictionary)->bool: return not cut.directions.is_empty())
+
+func _return_raw_food(food: Dictionary) -> TDOutcome:
+	var token := day_namespace()+"return:"+str(food.id)
+	if _s.seen.has(token): return TDOutcome.new(false,"DUPLICATE")
+	var ingredient: String = food.ingredient_id
+	var cost := int(food.get("stock_value_cents",0)) if int(food.get("stock_day",0))==int(_s.day) else 0
+	var extra := {"expires_on":int(food.expires_on),"inventory_cost_cents":cost}
+	_s.seen[token]=true
+	_record("stock_return",0,{ingredient:roundi(float(food.amount)*1000)},token,extra)
+	_kitchen_key=""
+	return TDOutcome.new(true,"FOOD_STORED","已放回冰箱，库存已合并。")
+
+func merge_unprepared_stock() -> void:
+	# Earlier saves stored untouched ingredients as separate cold portions.
+	for index: int in range(_s.cold_foods.size()-1,-1,-1):
+		var food: Dictionary = _s.cold_foods[index]
+		if not _unprepared(food): continue
+		if int(food.get("expires_on",0))<=int(_s.day): continue
+		if _return_raw_food(food).ok: _s.cold_foods.remove_at(index)
 
 func stored_food(id: String) -> Dictionary:
 	for food: Dictionary in _s.cold_foods:
@@ -338,6 +375,17 @@ func _check_food(data: Variant) -> TDOutcome:
 
 func snapshot() -> Dictionary:
 	return _s.duplicate(true)
+
+func current_phase() -> String:
+	return _s.phase
+
+func day_orders() -> Array:
+	return _s.orders.duplicate(true)
+
+## HUD and story observation do not need inventory lots, payment history or saved recipes.
+func frame_status() -> Dictionary:
+	return {"phase":_s.phase, "day":_s.day, "money_cents":_s.money_cents, "popularity":_s.popularity,
+		"menu":_s.menu.duplicate(true), "orders":day_orders()}
 
 func kitchen_available() -> bool:
 	if kitchen_gate.is_valid() and not kitchen_gate.call(): return false
@@ -466,6 +514,9 @@ func sold_out(id: String) -> TDOutcome:
 	return TDOutcome.new(true,"SOLD_OUT")
 
 func open_day(random_source: RefCounted = null) -> TDOutcome:
+	if opening_permission.is_valid():
+		var permission: TDOutcome = opening_permission.call()
+		if not permission.ok: return permission
 	if _s.phase != "PREPARE": return TDOutcome.new(false,"INVALID_STATE")
 	if _s.menu.values().filter(func(x:Dictionary)->bool:return x.enabled).is_empty(): return TDOutcome.new(false,"EMPTY_MENU")
 	if before_open.is_valid(): before_open.call()
@@ -1055,7 +1106,7 @@ func settle_day() -> TDOutcome:
 	if before_settlement.is_valid(): before_settlement.call()
 	if commerce!=null:
 		var summary:=day_summary()
-		commerce.settle(_s.ledger,int(summary.received_cents)+int(summary.tip_cents)-int(summary.refunded_cents),_s.has("day_open_money_cents"))
+		commerce.settle(_s.ledger,int(summary.received_cents)+int(summary.tip_cents)-int(summary.refunded_cents),_s.has("day_open_money_cents"),_s.orders)
 		_pay_economic_debt()
 		var account:=commerce.society.bank.account("player")
 		var due: int=int(account.interest_cents)+(int(account.principal_cents) if int(account.due_day)>0 and int(_s.day)>=int(account.due_day) else 0)
@@ -1223,7 +1274,12 @@ func save_plan(title: String, plan: Dictionary, identity: String = "") -> TDOutc
 		for i: int in _s.custom.size():
 			if _s.custom[i].id == identity: index=i; version=int(_s.custom[i].version)+1
 		if index < 0: return TDOutcome.new(false,"UNKNOWN_RECIPE")
-	else: identity="custom.%s.%d" % [_s.run_id,_s.custom.size()+1]
+	else:
+		var serial: int = _s.custom.size() + 1
+		identity = "custom.%s.%d" % [_s.run_id, serial]
+		while _s.menu.has(identity):
+			serial += 1
+			identity = "custom.%s.%d" % [_s.run_id, serial]
 	var entry: Dictionary = {"id":identity,"name":title.strip_edges(),"version":version,"scope":"CUSTOM","plan":plan.duplicate(true)}
 	var compiled:=catalog.compile_plan(entry)
 	if not compiled.ok: return compiled
@@ -1235,7 +1291,7 @@ func _record(kind: String, cents: int, inventory_delta: Dictionary, reference: S
 	_s.serial += 1; _s.money_cents += cents
 	for id: String in inventory_delta:
 		var units: int=int(inventory_delta[id])
-		if units>0: TDFoodStock.add(_s.inventory_lots,id,units,int(_s.day),int(stock_rules.get(id,{}).get("shelf_days",3)))
+		if units>0: TDFoodStock.record_add(_s.inventory_lots,id,units,int(_s.day),int(stock_rules.get(id,{}).get("shelf_days",3)),extra)
 		elif units<0: TDFoodStock.take(_s.inventory_lots,id,-units)
 		_s.inventory[id] += units
 	_s.ledger.append({"id":"%s:txn-%d" % [_s.run_id,_s.serial],"day":int(_s.day),"kind":kind,"cents":cents,"inventory_delta":inventory_delta.duplicate(true),"reference":reference,"extra":extra.duplicate(true)})
@@ -1245,6 +1301,8 @@ func restore(data: Variant) -> TDOutcome:
 	var checked := validate_save(data)
 	if not checked.ok: return checked
 	table_service.clear_on_restore()
+	if TDRetiredRecipes.has_shop_entries(data):
+		data = TDRetiredRecipes.shop_copy(data)
 	_s = normalize_save(data)
 	for id: String in catalog.config.get("material_cost_ids",[]):
 		if not _s.inventory.has(id): _s.inventory[id]=0
@@ -1312,6 +1370,8 @@ static func normalize_save(data: Dictionary) -> Dictionary:
 
 func validate_save(data: Variant) -> TDOutcome:
 	if not data is Dictionary or data.get("schema_version") != 1: return TDOutcome.new(false,"UNSUPPORTED_VERSION")
+	if TDRetiredRecipes.has_shop_entries(data):
+		data = TDRetiredRecipes.shop_copy(data)
 	if data.has("material_version") and data.material_version!=1: return TDOutcome.new(false,"UNKNOWN_MATERIAL_VERSION")
 	if data.has("stock_version"):
 		if data.stock_version!=1 or not data.get("inventory") is Dictionary or not TDServiceCatalog.integer(data.get("day"),1,1000000000) or not TDFoodStock.valid(data.get("inventory_lots"),data.inventory,int(data.day)): return TDOutcome.new(false,"INVALID_STOCK_BATCHES")
@@ -1360,14 +1420,19 @@ func validate_save(data: Variant) -> TDOutcome:
 	for id: String in recipes:
 		if data.menu.has(id) and data.fame.has(id): continue
 		if id.begins_with("phase3.") or id.begins_with("study."): continue
-		if data.has("progress_version") or id!="service.qiguoji": return TDOutcome.new(false,"MISSING_RECIPE_STATE")
+		return TDOutcome.new(false,"MISSING_RECIPE_STATE")
 	var money: int = int(catalog.config.settings.initial_cents); var inventory: Dictionary = {}
 	for id: String in catalog.config.costs: inventory[id]=0
 	for event: Variant in data.ledger:
 		if not event is Dictionary or not event.get("id") is String or ids.has(event.id) or not event.get("kind") is String or not TDServiceCatalog.integer(event.get("cents"),-1000000000,1000000000) or not event.get("inventory_delta") is Dictionary or not TDServiceCatalog.integer(event.get("day"),1,int(data.day)): return TDOutcome.new(false,"INVALID_LEDGER")
-		if not event.get("reference") is String or not event.get("extra") is Dictionary or event.kind not in ["purchase","prepayment","consumption","tip","refund_cancel","refund_served","settlement","emergency_grant","recipe_unlock","failed_delivery","world_adjustment","supply_delivery","operating_payment","bank_transfer","spoilage","wage","night_cleanup","branch_transfer","pass_waste"]: return TDOutcome.new(false,"INVALID_LEDGER")
+		if not event.get("reference") is String or not event.get("extra") is Dictionary or event.kind not in ["purchase","prepayment","consumption","tip","refund_cancel","refund_served","settlement","emergency_grant","recipe_unlock","failed_delivery","world_adjustment","supply_delivery","operating_payment","bank_transfer","spoilage","wage","night_cleanup","branch_transfer","pass_waste","stock_return"]: return TDOutcome.new(false,"INVALID_LEDGER")
 		if event.kind=="wage" and event.extra.has("wage_expense_cents") and (not TDServiceCatalog.integer(event.extra.wage_expense_cents,0,10000000) or event.cents!=0): return TDOutcome.new(false,"INVALID_WAGE_LEDGER")
 		if event.kind=="branch_transfer" and (not event.extra.get("store_id") is String or (not event.extra.store_id.begins_with("player-branch:") and event.extra.store_id not in ["player_diner","employee-roster","supplier-network"]) or not event.extra.get("label") is String): return TDOutcome.new(false,"INVALID_BRANCH_LEDGER")
+		if event.kind=="stock_return":
+			if event.cents!=0 or event.inventory_delta.size()!=1 or not TDServiceCatalog.integer(event.inventory_delta.values()[0],1,1000000):
+				return TDOutcome.new(false,"INVALID_LEDGER")
+			if not TDServiceCatalog.integer(event.extra.get("expires_on"),int(event.day)+1,int(event.day)+1000) or not TDServiceCatalog.integer(event.extra.get("inventory_cost_cents"),0,1000000000):
+				return TDOutcome.new(false,"INVALID_LEDGER")
 		if event.kind=="spoilage":
 			if int(event.cents)!=0 or not event.extra.get("cold_foods") is Array: return TDOutcome.new(false,"INVALID_LEDGER")
 			for quantity: Variant in event.inventory_delta.values():

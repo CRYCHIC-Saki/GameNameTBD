@@ -28,7 +28,7 @@ static func cuisine_text(id: String) -> String:
 	return " / ".join(names)
 static func regions_text(id: String) -> String:
 	var names: Array[String]=[]
-	var labels: Dictionary={"chengdu":"中式镇","paris":"欧陆镇","tokyo":"日本镇"}
+	var labels: Dictionary={"chengdu":"臻味港","paris":"稀味郡","tokyo":"和味道"}
 	for region: String in _raw().get("items",{}).get(id,{}).get("supply_regions",[]): names.append(labels.get(region,region))
 	return "三镇共有" if names.size()==REGIONS.size() else " / ".join(names)
 static func recipes() -> Array: return _raw().get("recipes",[]).duplicate(true)

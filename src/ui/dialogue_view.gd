@@ -5,6 +5,7 @@ const CHEF_STAND_IN := preload("res://assets/redraw-v1/chef.png")
 ## Left click advances. Holding the left button fast-forwards. Skip jumps ahead.
 
 signal closed(last_text: String, picks: Array)
+signal playback_failed(scene: TDDialogue)
 
 class Portrait extends Control:
 	var who: String = "guest"
@@ -43,6 +44,7 @@ var _name_confirmed: bool=false
 var _vn_stage: TDVisualNovelStage
 var _chapter: Label
 var _native: bool = false
+var _native_start_remaining := 0.0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -66,6 +68,7 @@ func _ready() -> void:
 	_vn_stage.block_started.connect(_native_block)
 	_vn_stage.line_started.connect(_native_line)
 	_vn_stage.completed.connect(func()->void:_close_native(true))
+	_vn_stage.failed.connect(_fail_native)
 	_portrait = Portrait.new()
 	_portrait.name = "Portrait"
 	_portrait.z_index = 0
@@ -183,7 +186,21 @@ func present(next: TDDialogue) -> void:
 	set_process(true)
 	if _native:
 		_vn_stage.event_chapter = next.context.get("event_chapter",{}).duplicate(true)
-		_vn_stage.start(talk.hero_name, next.context.get("request_name", false))
+		_vn_stage.source_talk = next
+		next.picks.clear()
+		_vn_stage.scenario_text = ""
+		if _vn_stage.event_chapter.is_empty() and next.context.get("scene") != "intro":
+			var scene := str(next.context.get("scene", ""))
+			var chapter := TDVNPresentation.chapter(scene)
+			if not chapter.is_empty():
+				_vn_stage.event_chapter = chapter
+			else:
+				_vn_stage.scenario_text = TDVNPresentation.compile(next)
+				_vn_stage.event_chapter = {"id":"host","title":"小镇纪事","script_path":"res://content/story/vn/scenario/host/script.txt"}
+		_native_start_remaining = 8.0
+		if not _vn_stage.start(talk.hero_name, next.context.get("request_name", false)):
+			_fail_native()
+			return
 		_refresh_native()
 	else: _refresh()
 
@@ -232,6 +249,15 @@ func _gui_input(event: InputEvent) -> void:
 
 func _process(delta: float) -> void:
 	if _native:
+		if _native_start_remaining > 0.0 and not presentation_paused:
+			var runner := _vn_stage.runner
+			if runner != null and runner.script_res != null and not runner.script_res.nodes.is_empty():
+				_native_start_remaining = 0.0
+			else:
+				_native_start_remaining -= delta
+				if _native_start_remaining <= 0.0:
+					_fail_native()
+					return
 		if talk != null and not presentation_paused and _vn_stage.blocked == "td_cg":
 			talk.cg_elapsed = minf(talk.cg_duration, talk.cg_elapsed + delta)
 			_refresh_native()
@@ -287,19 +313,21 @@ func _refresh() -> void:
 	_cg.size=size
 	var film:=talk.display_kind=="cg"
 	var intro: bool=str(talk.context.get("scene",""))=="intro"
-	if film and TDArrivalCutscene.SEGMENTS.has(talk.cg_id): _arrival_hold=talk.cg_id
+	if film and talk.cg_id in ["arrival", "hungry", "messenger"]: _arrival_hold=talk.cg_id
 	_cg.show_shot(talk.cg_id if film else "",talk.cg_elapsed,talk.cg_duration)
 	_vn_stage.set_paused(presentation_paused)
 	_chapter.visible=intro
-	_chapter.text="序章  /  赤焰之手，空腹降临" if film else "河口镇  /  港口"
-	_panel.visible=not film;_dim.visible=not film and not intro;_film_controls.visible=film or intro
+	_chapter.text="序章  /  赤焰之手，空腹降临" if film else "臻味港  /  港口"
+	var landmark: bool = talk.context.get("kind") == "landmark"
+	_panel.visible=not film;_dim.visible=not film and not intro and not landmark;_film_controls.visible=film or intro
 	_film_pause.text="继续播放" if presentation_paused or talk.cg_paused else "暂停"
 	_skip_clip.disabled=not film or presentation_paused
 	_skip_clip.visible=film
 	_cg.set_audio_paused(presentation_paused or talk.cg_paused)
 
-	_portrait.visible=talk.display_kind=="line"
-	_right_portrait.visible=talk.presentation=="story" and talk.display_kind=="line"
+	var show_portraits := talk.display_kind == "line" and not landmark
+	_portrait.visible=show_portraits
+	_right_portrait.visible=show_portraits and talk.presentation=="story"
 	# The embedded VN stage owns intro portraits; offscreen Aling stays unrevealed.
 	if intro: _portrait.hide();_right_portrait.hide()
 	_portrait.emotion=talk.left_emotion if talk.presentation=="story" else talk.emotion
@@ -430,7 +458,7 @@ func _refresh_native() -> void:
 	_film_controls.show(); _chapter.show()
 	_film_pause.text = "继续播放" if presentation_paused else "暂停"
 	_skip_clip.visible = film; _skip_clip.disabled = presentation_paused
-	_chapter.text = str(talk.context.get("event_chapter",{}).get("title","")) if talk.context.get("kind") == "authored_event" else ("序章  /  赤焰之手，空腹降临" if film else "河口镇  /  港口")
+	_chapter.text = "序章  /  赤焰之手，空腹降临" if talk.context.get("scene") == "intro" else str(_vn_stage.event_chapter.get("title", "小镇纪事"))
 	_cg.size = size
 	_cg.show_shot(talk.cg_id if film else "", talk.cg_elapsed, talk.cg_duration)
 	_cg.set_audio_paused(presentation_paused)
@@ -449,10 +477,17 @@ func _close_native(success: bool) -> void:
 	last_context = talk.context.duplicate(true)
 	last_completed = success
 	var text := talk.body
+	var picked := talk.picks.duplicate()
 	_native = false; talk = null
 	_vn_stage.reset(); _cg.stop_audio()
 	hide(); set_process(false)
-	closed.emit(text, [])
+	closed.emit(text, picked)
+
+func _fail_native() -> void:
+	if not _native or talk == null: return
+	var scene := talk
+	_close_native(false)
+	playback_failed.emit(scene)
 
 func _rebuild_choices() -> void:
 	if _choices == null:

@@ -47,11 +47,13 @@ func _ink(shader: Shader) -> ShaderMaterial:
 	return mat
 
 func _add_water(scene: Node2D, layer_name: String, river: bool) -> void:
-	var water := _ink(WATER)
+	var layer := scene.get_node(layer_name) as CanvasItem
+	var authored := layer.material as ShaderMaterial
+	var water := authored.duplicate() as ShaderMaterial if authored != null and authored.shader == WATER else _ink(WATER)
 	water.set_shader_parameter("river", river)
 	water.set_shader_parameter("world_per_pixel", scene.global_scale.abs()*pixel_size)
 	water.set_shader_parameter("map_origin", scene.global_position)
-	scene.get_node(layer_name).material = water
+	layer.material = water
 	clock_materials.append(water)
 
 func _european_port(scene: Node2D) -> void:

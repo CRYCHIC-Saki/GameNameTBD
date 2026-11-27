@@ -22,21 +22,26 @@ var suppliers := TDSupplierNetwork.new()
 const MenuSupply := preload("res://src/business/menu_supply_contract.gd")
 var menu_supply := MenuSupply.new(self)
 var progression := TDLevelProgression.new()
-var progression_error := TDOutcome.new(true)
 var residence:Dictionary={}
 var map_migration: Dictionary={}
 var map_migrated_on_load: bool=false
 const RetiredRegions := preload("res://src/business/retired_regions.gd")
 var regions_settled_on_load := false
 var region_migrated_on_load: bool=false
-var region_layout_version: int=11
+var region_layout_version: int=TDEgretLayout.CURRENT_VERSION
 var region_migration: Dictionary={}
 var jiangnan_migration: Dictionary={}
 var jiangnan_migrated_on_load: bool=false
 var story := TDOpening.new()
+const ChallengeRules := preload("res://src/challenge/challenge_rules.gd")
+const ChallengeSkills := preload("res://src/challenge/challenge_skills.gd")
+var challenge_loadout: Array[String] = ["", ""]
+var challenge_progress := ChallengeRules.initial_progress()
 var story_events := TDStoryEvents.new()
 var characters := TDCharacterRoster.new()
 var main_management_auto: bool=false
+var require_revised_unlocks := false
+var rest_town := ""
 
 func _init() -> void:
 	if not story_events.error.is_empty(): error=TDOutcome.new(false,"INVALID_STORY_CATALOG",story_events.error);return
@@ -84,6 +89,11 @@ func _init() -> void:
 	if not progression.error.ok: error=progression.error;return
 	initialize_progression()
 	shop.day_settled.connect(_on_day_settled)
+	shop.opening_permission = func() -> TDOutcome:
+		if branches.training_open(): return TDOutcome.new(false,"SHOP_OPEN","已有一家餐厅在手动营业。")
+		var reason := business_lock_reason(str(commerce.state.home))
+		if not reason.is_empty(): return TDOutcome.new(false,"PORT_CLOSED_BY_STORY",reason)
+		return TDOutcome.new(true,"ALLOWED")
 	shop.day_opened.connect(_on_business_opened)
 	shop.day_settled.connect(_on_business_settled)
 	error=initialize_residence()
@@ -94,6 +104,19 @@ func _on_business_opened() -> void:
 
 func _on_business_settled(_day: int) -> void:
 	story.note_served()
+
+func use_revised_mainline() -> bool:
+	require_revised_unlocks = true
+	if not story.revised.is_empty(): return false
+	var tracked := story.tracked
+	story.clear()
+	story.revised = TDRevisedMainline.initial()
+	story.beat = "done"
+	story.hero_name = "焰子"
+	story.tracked = tracked
+	rest_town = ""
+	characters.sync_story_encounters(story.revised)
+	return true
 
 func initialize_residence() -> TDOutcome:
 	var plot:=world.town_map.choose_cottage()
@@ -129,15 +152,24 @@ func level_daily_report() -> TDOutcome:
 	# One portfolio report per day; transfers and opening capital are not profit.
 	if not _alive or shop.snapshot().phase!="SETTLED": return TDOutcome.new(false,"NOT_SETTLED")
 	var day := int(shop.snapshot().day)
+	var levels := progression.snapshot()
+	# Once applied, use the original report instead of the next day's baselines.
+	if int(levels.last_day)==day and not levels.recent.is_empty():
+		return TDOutcome.new(true,"LEVEL_REPORT","",levels.recent.back().input)
 	var book: Dictionary=shop.day_summary().economy
 	if book.is_empty() or int(book.day)!=day: return TDOutcome.new(false,"MISSING_LEVEL_BUSINESS_BOOK")
-	var before: Dictionary=progression.snapshot().baselines.get("player_diner",{})
+	var before: Dictionary=levels.baselines.get("player_diner",{})
 	if before.is_empty(): return TDOutcome.new(false,"MISSING_LEVEL_BASELINE")
 	return TDOutcome.new(true,"LEVEL_REPORT","",{"day":day,"stores":[{"store_id":"player_diner","scale_milli":1000,"profit_cents":int(book.profit_cents),"popularity_before":float(before.popularity),"popularity_after":float(shop.snapshot().popularity),"awareness_before":float(before.awareness),"awareness_after":float(commerce.state.awareness)*100.0}]+branches.level_rows(day)})
 
-func _on_day_settled(_day: int) -> void:
+func _on_day_settled(day: int) -> void:
 	characters.observe_orders(shop.snapshot().orders)
-	progression_error=settle_progression()
+	if TDRevisedMainline.training_town(story.revised)!="paris": return
+	var store_id := branches.preset_in("paris")
+	if store_id.is_empty(): return
+	var book: Dictionary = branches.state.stores[store_id].daily
+	if int(book.get("day",0))==day and book.get("story_service",false) and int(book.get("served",0))>0:
+		TDRevisedMainline.mark(story.revised,"paris_served")
 
 func settle_progression() -> TDOutcome:
 	if not _alive: return TDOutcome.new(false,"STALE_PROFILE")
@@ -150,11 +182,23 @@ func settle_progression() -> TDOutcome:
 	var restored := staged.restore(progression.snapshot())
 	if not restored.ok: return restored
 	var result := staged.settle(report.data)
+	return _apply_progression(staged, result)
+
+func add_debug_xp(amount: int) -> TDOutcome:
+	if not _alive: return TDOutcome.new(false,"STALE_PROFILE")
+	if not at_boundary() or not research._active.is_empty():
+		return TDOutcome.new(false,"NOT_AT_BOUNDARY","请在筹备或打烊时调整经验。")
+	var staged := TDLevelProgression.new(progression.config)
+	var restored := staged.restore(progression.snapshot())
+	if not restored.ok: return restored
+	return _apply_progression(staged, staged.add_debug_xp(amount))
+
+func _apply_progression(staged: TDLevelProgression, result: TDOutcome) -> TDOutcome:
 	if not result.ok: return result
 	# Stage rewards through the existing rule, without the live save_sink. Both domains
 	# enter the same profile package; a scene refresh never invokes the reward rule.
 	var staged_research := TDResearchSession.new(research.catalog)
-	restored=staged_research.restore(research.snapshot())
+	var restored := staged_research.restore(research.snapshot())
 	if not restored.ok: return restored
 	for reward: Dictionary in result.data.rewards:
 		var granted := staged_research.grant_inspiration(str(reward.grant_id),int(reward.inspiration))
@@ -163,7 +207,6 @@ func settle_progression() -> TDOutcome:
 	if not checked.ok: return checked
 	progression.restore(staged.snapshot())
 	research.restore(staged_research.snapshot())
-	progression_error=TDOutcome.new(true)
 	return result
 
 func pending_level_events() -> Array:
@@ -228,6 +271,7 @@ func main_menu_rows() -> Array:
 
 func set_main_management(value: bool) -> TDOutcome:
 	if not _alive or not at_boundary(): return TDOutcome.new(false,"NOT_AT_BOUNDARY","筹备或日结后才能调整托管。")
+	if not story_feature_available("employees"): return TDOutcome.new(false,"STORY_LOCKED",TDRevisedMainline.expansion_hint("employees"))
 	if value and employees.manager_for("player_diner").is_empty(): return TDOutcome.new(false,"MANAGER_REQUIRED","请先从员工仓库为主店派驻店长。")
 	main_management_auto=value
 	if value: _automate_main()
@@ -235,6 +279,7 @@ func set_main_management(value: bool) -> TDOutcome:
 
 func _automate_main() -> void:
 	if not _alive or not main_management_auto or shop.snapshot().phase!="PREPARE" or employees.manager_for("player_diner").is_empty(): return
+	if not story_feature_available("employees"): return
 	if menu_supply.holds_menu("player_diner"):
 		employees.auto_assign("player_diner")
 		return
@@ -272,17 +317,20 @@ func _accrue_main_payroll() -> void:
 func _meal_candidate(raw: Dictionary, templates: Array, family_count: int) -> Dictionary:
 	return characters.candidate(raw,templates,family_count,commerce.event_minute)
 
-func _factory_products(group: String) -> Array:
+func _factory_products(group: String, stock: Dictionary = {}) -> Array:
 	var rows: Array=[]
-	for id: String in shop.purchase_ids():
-		if shop.stock_info(id).group==group and TDMaterialCatalog.supplies(world.town_id,id): rows.append({"id":id,"hours":1.0 if group=="meat" else .5})
+	for id: String in shop.catalog.config.costs:
+		if not stock.is_empty() and int(stock.get(id,0)) <= 0: continue
+		if shop.stock_rules.get(id,{}).get("group","vegetable") != group: continue
+		if TDMaterialCatalog.supplies(world.town_id,id) and shop.purchasable(id):
+			rows.append({"id":id,"hours":1.0 if group=="meat" else .5})
 	return rows
 
 func _factory_item(id: String) -> Dictionary:
 	if not service.config.costs.has(id): return {}
-	for food: Dictionary in service.cooking.data().ingredients:
-		if food.id==id: return {"id":id,"name":food.name,"cost":maxi(1,ceili(float(service.config.costs[id])/100)),"unit":shop.stock_info(id).unit}
-	return {}
+	var food := service.cooking.ingredient_data(id)
+	if food.is_empty(): return {}
+	return {"id":id,"name":food.name,"cost":maxi(1,ceili(float(service.config.costs[id])/100)),"unit":shop.stock_rules.get(id,{}).get("unit","份")}
 
 func sync_commercial_map() -> TDOutcome:
 	var result := world.town_map.apply_commercial_occupancy(commerce.expansion.presentation(commerce.state.home,commerce.state.competitors[commerce.state.home],int(commerce.state.day)))
@@ -300,7 +348,38 @@ func bank_action(action: String, cents: int, token: String) -> TDOutcome:
 	return result
 
 func at_boundary() -> bool:
-	return shop!=null and shop.snapshot().phase in ["PREPARE","SETTLED"]
+	return shop!=null and shop.current_phase() in ["PREPARE","SETTLED"]
+
+func story_feature_available(id: String) -> bool:
+	if id=="challenge":
+		return not require_revised_unlocks if story.revised.is_empty() else bool(story.revised.port_reopened)
+	if not TDRevisedMainline.EXPANSION_MILESTONES.has(id): return false
+	if story.revised.is_empty(): return not require_revised_unlocks
+	if TDRevisedMainline.flag(story.revised,id): return true
+	# The previous combined Lv.15 scene already introduced hiring and supply.
+	return id in ["employees","suppliers"] and TDRevisedMainline.flag(story.revised,"business_expansion")
+
+func town_map_unlocked(town_id: String) -> bool:
+	if town_id not in TDTravelCatalog.IDS: return false
+	if story.revised.is_empty() and not require_revised_unlocks: return true
+	return TDRevisedMainline.map_unlocked(story.revised,town_id)
+
+func story_can_trade(town: String) -> bool:
+	return business_lock_reason(town).is_empty()
+
+func business_lock_reason(town: String) -> String:
+	if town == "chengdu" and not story.revised.is_empty() and not story.revised.port_reopened:
+		return "完成主线后，臻味港才开放营业。现在可在厨房练习做菜。"
+	return ""
+
+func allows_popularity_decline() -> bool:
+	var revised := story.revised
+	if revised.is_empty() or revised.port_reopened: return true
+	var step := int(revised.cursor)
+	# The Paris teaching sequence and the first intermission share one cursor.
+	if step == 8 and TDRevisedMainline.flag(revised, "paris_training_started"):
+		return TDRevisedMainline.flag(revised, "paris_training_complete")
+	return TDRevisedMainline.INTERMISSIONS.has(step)
 
 func can_leave_shop() -> bool:
 	return at_boundary()
@@ -334,9 +413,12 @@ func snapshot(candidate: Dictionary = {}) -> Dictionary:
 	progress.world_time={"day":int(business.day),"phase":state.day_phase,"spent":state.free_spent}
 	var data:={"schema_version":9,"kind":"town-diner-profile","slot_id":slot_id,"title":title,"updated_at":updated_at,"revision":revision,"imported_legacy":imported_legacy,"shop":business,"research":progress,"world":state,"layout":layout.to_dict(),"economy":commerce.snapshot(),"branches":branches.snapshot(),"employees":employees.snapshot(),"suppliers":suppliers.snapshot(),"progression":progression.snapshot(),"residence":residence.duplicate(true),"characters":characters.snapshot(),"map_migration":map_migration.duplicate(true)}
 	data.region_content_version=1
+	data.rest_town=rest_town
 	data.menu_supply=menu_supply.state.duplicate(true)
 	data.main_management_auto=main_management_auto
 	data.story_events=story_events.snapshot()
+	data.challenge_loadout=challenge_loadout.duplicate()
+	data.challenge_progress=challenge_progress.duplicate(true)
 	data.region_layout_version=region_layout_version;data.region_migration=region_migration.duplicate(true)
 	data.jiangnan_layout_revision=world.town_map.jiangnan_layout_revision
 	data.jiangnan_migration=jiangnan_migration.duplicate(true)
@@ -344,23 +426,45 @@ func snapshot(candidate: Dictionary = {}) -> Dictionary:
 	if not chapter.is_empty(): data.story=chapter
 	return data
 
-func save(candidate: Dictionary = {}) -> TDOutcome:
+func record_challenge_result(phase: int, opponent_id: String, town: String, site: String) -> Array[String]:
+	if phase not in [TDChallengeBattle.Phase.WON, TDChallengeBattle.Phase.LOST, TDChallengeBattle.Phase.DRAW]: return []
+	var target := ChallengeRules.target_id(opponent_id, town, site)
+	if target.is_empty(): return []
+	var before := ChallengeRules.permanent_stats(story, challenge_progress)
+	var previous_skills := ChallengeSkills.unlocked(story, challenge_progress)
+	if opponent_id == "chen": challenge_progress.rojin_fought = true
+	if phase == TDChallengeBattle.Phase.WON and target not in challenge_progress.defeated:
+		challenge_progress.defeated.append(target)
+	var gains: Array[String] = []
+	for id: String in ChallengeSkills.unlocked(story, challenge_progress):
+		if id not in previous_skills:
+			gains.append(ChallengeSkills.reward_notice(id))
+			if id == ChallengeSkills.BEAM: gains.append("下次备战可装配技能。")
+	var after := ChallengeRules.permanent_stats(story, challenge_progress)
+	if after.hp > before.hp:
+		gains.append("生命上限 +%d · 攻击力 +%d" % [after.hp - before.hp, after.damage - before.damage])
+	if after.ap > before.ap:
+		gains.append("行动点 +%d" % (after.ap - before.ap))
+	return gains
+
+func complete_rojin_advice() -> Array[String]:
+	if ChallengeRules.rojin_advice_received(story, challenge_progress): return []
+	challenge_progress.rojin_advice = true
+	return [ChallengeSkills.reward_notice(ChallengeSkills.DELAY)]
+
+func save(candidate: Dictionary = {}, writer: Callable = Callable(), checkpoint_kind: String = "") -> TDOutcome:
 	if not _alive: return TDOutcome.new(false,"STALE_PROFILE")
 	if not story_events.active.is_empty(): return TDOutcome.new(false,"STORY_PLAYING","请先结束当前演出再保存。")
 	if not shop.table_service.empty(): return TDOutcome.new(false,"PASS_NOT_CLEAR","出餐口还有菜，请送出或清理后保存。")
 	if not at_boundary(): return TDOutcome.new(false,"NOT_AT_BOUNDARY","营业中不能存档，请打烊后保存。")
 	if kitchen_checkpoint.is_valid():
-		var ready: TDOutcome=kitchen_checkpoint.call()
+		var ready: TDOutcome=kitchen_checkpoint.call(checkpoint_kind)
 		if not ready.ok: return ready
-	if not persistence.is_valid(): return TDOutcome.new(false,"NO_STORAGE")
-	# Research's candidate callback must never recurse into another live reward commit.
-	if not candidate.is_empty() and shop.snapshot().phase=="SETTLED" and int(progression.snapshot().last_day)!=int(shop.snapshot().day): return TDOutcome.new(false,"PROGRESSION_PENDING")
-	if candidate.is_empty():
-		var settled := settle_progression()
-		if not settled.ok: return settled
+	var destination := writer if writer.is_valid() else persistence
+	if not destination.is_valid(): return TDOutcome.new(false,"NO_STORAGE")
 	var data:=snapshot(candidate)
-	data.updated_at=int(Time.get_unix_time_from_system()*1000000.0);data.revision=revision+1
-	var result: TDOutcome=persistence.call(slot_id,data)
+	data.updated_at=maxi(updated_at+1,int(Time.get_unix_time_from_system()*1000000.0));data.revision=revision+1
+	var result: TDOutcome=destination.call(slot_id,data)
 	if result.ok: updated_at=data.updated_at;revision=data.revision
 	return result
 
@@ -372,23 +476,53 @@ func _research_candidate(candidate: Dictionary) -> TDOutcome:
 	if not checked.ok: return checked
 	return TDOutcome.new(true,"BUFFERED_UNTIL_EXPLICIT_SAVE")
 
-func buy(cart: Dictionary, counter_region: String = "") -> TDOutcome:
+func buy(cart: Dictionary, counter_region: String = "", destination: String = "") -> TDOutcome:
 	if not can_leave_shop(): return TDOutcome.new(false,"SHOP_OPEN","营业中不能外出采购。")
 	if shop.snapshot().phase!="PREPARE": return TDOutcome.new(false,"NOT_PREPARING")
 	var at_regional_counter:=not counter_region.is_empty()
 	var town: String=counter_region if at_regional_counter else commerce.state.home
-	var quote:=commerce.quote(town,cart,at_regional_counter)
+	for id: Variant in cart:
+		if not shop.local_market_sells(str(id),town):
+			return TDOutcome.new(false,"INGREDIENT_LOCKED","当地市集供应已解锁菜谱所需的本地食材。")
+	var quote:=commerce.quote(town,cart,true)
 	if not quote.ok: return quote
 	var token: String="market:%s:%d"%[shop.snapshot().run_id,int(shop.snapshot().serial)+1]
+	var local_store := destination
+	if not local_store.is_empty() and (not at_regional_counter or local_store!=branches.preset_in(town)):
+		return TDOutcome.new(false,"INVALID_MARKET_DESTINATION")
+	if at_regional_counter and local_store.is_empty():
+		var training := branches.training_store()
+		if training==branches.preset_in(town): local_store=training
+	if not local_store.is_empty():
+		if branches.training_open(local_store): return TDOutcome.new(false,"SHOP_OPEN","请在筹备时间采购。")
+		var purchased := _buy_training_stock(local_store,cart,quote.data,token)
+		if purchased.ok and TDRevisedMainline.training_town(story.revised)=="paris" and town=="paris":
+			TDRevisedMainline.mark(story.revised,"paris_purchased")
+		return purchased
 	var prices: Dictionary={}
 	for item: String in quote.data.rows: prices[item]=int(quote.data.rows[item].price_cents)
 	var before:=shop.snapshot();var economy_before:=commerce.snapshot()
 	var result:=shop.buy(cart,token,prices,town)
 	if not result.ok: return result
-	var committed:=commerce.commit_quote(quote.data,token,at_regional_counter)
+	var committed:=commerce.commit_quote(quote.data,token,true)
 	if not committed.ok: shop.restore(before);commerce.restore(economy_before);return committed
-	if not at_regional_counter: commerce.mark_delivered(token)
 	return result
+
+func _buy_training_stock(store: String, cart: Dictionary, quote: Dictionary, token: String) -> TDOutcome:
+	var before := shop.snapshot()
+	var economy_before := commerce.snapshot()
+	var paid := branches._cash(-int(quote.total_cents),token,"经营点 · 市集采购",store)
+	if not paid.ok: return paid
+	var costs: Dictionary={}
+	for id: String in quote.rows: costs[id]=int(quote.rows[id].goods_cents)
+	var committed := commerce.commit_quote(quote,token,true)
+	var received := branches.receive_supply(store,cart,costs,token) if committed.ok else committed
+	if not received.ok:
+		shop.restore(before)
+		commerce.restore(economy_before)
+		return received
+	branches.note_supply_purchase(store,int(quote.total_cents))
+	return TDOutcome.new(true,"PURCHASED","食材已送到当地经营点。")
 
 func close_branch_books() -> TDOutcome:
 	if world == null or not world.branch_open:
@@ -417,30 +551,46 @@ func next_day() -> TDOutcome:
 	if kitchen_checkpoint.is_valid():
 		var ready: TDOutcome=kitchen_checkpoint.call()
 		if not ready.ok: return ready
+	var state := shop.frame_status()
+	if state.phase != "SETTLED": return TDOutcome.new(false,"NOT_SETTLED")
+	var day := int(state.day)
+	var levels_before := progression.snapshot()
+	var research_before := research.snapshot()
 	var settled := settle_progression()
 	if not settled.ok: return settled
+	var growth := settled.data
+	if growth.is_empty() and not levels_before.recent.is_empty() and int(levels_before.recent.back().day)==day:
+		growth = levels_before.recent.back()
+	var profit_cents := int(growth.profit_cents) if growth.has("profit_cents") else int(shop.day_summary().economy.get("profit_cents", 0))
 	var previous:=commerce.snapshot()
-	var moved:=commerce.advance_day(int(shop.snapshot().day))
-	if not moved.ok: return moved
-	var books := close_branch_books()
-	if not books.ok:
-		commerce.restore(previous)
-		return books
+	var result := commerce.advance_day(day)
+	if result.ok: result = close_branch_books()
 	var overnight: float=1440.0+TDWorldDayClock.START_MINUTE-characters.clock.minute
-	var result:=shop.next_day(int(shop.snapshot().day))
-	if result.ok:
-		world.day=int(shop.snapshot().day);world.day_phase="morning";world.free_spent=0.0
-		branches.advance_day()
-		characters.next_day(world.day)
-		# Night deliveries are booked on the new morning after expiry/day rollover.
-		# Only game-time lines advance; prepaid legacy real-second queues do not.
-		suppliers.advance_game_minutes(overnight,false)
-		world.pantry.spoil(world.day);world.supply.collect(world.day)
-		receive_supplies()
-		menu_supply.morning()
-		prepare_management()
-		sync_commercial_map();world.map_revision+=1
-	else: commerce.restore(previous)
+	if result.ok: result = shop.next_day(day)
+	if not result.ok:
+		commerce.restore(previous)
+		progression.restore(levels_before)
+		research.restore(research_before)
+		return result
+	world.day=int(shop.snapshot().day);world.day_phase="morning";world.free_spent=0.0
+	branches.advance_day()
+	characters.next_day(world.day)
+	# Night deliveries are booked on the new morning after expiry/day rollover.
+	# Only game-time lines advance; prepaid legacy real-second queues do not.
+	suppliers.advance_game_minutes(overnight,false)
+	world.pantry.spoil(world.day);world.supply.collect(world.day)
+	receive_supplies()
+	menu_supply.morning()
+	prepare_management()
+	sync_commercial_map();world.map_revision+=1
+	result.data = {
+		"day": day,
+		"profit_cents": profit_cents,
+		"popularity_delta": float(growth.get("popularity_delta", 0.0)),
+		"awareness_delta": float(growth.get("awareness_delta", 0.0)),
+		"xp_before": int(levels_before.total_xp),
+		"xp_after": int(progression.progress().total_xp),
+	}
 	return result
 
 func order_remote(id: String, town_id: String = "", units: int = 1000, request_id: String = "") -> TDOutcome:
@@ -535,6 +685,7 @@ func restore(data: Dictionary) -> TDOutcome:
 		data = converted.data
 	var checked:=validate_save(data)
 	if not checked.ok: return checked
+	data = TDRetiredRecipes.profile_copy(data)
 	map_migrated_on_load=int(data.world.get("map_version",1))<2
 	if map_migrated_on_load:
 		var migrated:=TDMapMigration.convert(data)
@@ -557,6 +708,7 @@ func restore(data: Dictionary) -> TDOutcome:
 		checked=validate_save(data)
 		if not checked.ok: return checked
 	main_management_auto=bool(data.get("main_management_auto",false))
+	rest_town=str(data.get("rest_town",""))
 	if int(data.get("region_layout_version",1))<3:
 		var converted:=TDShiomiLayout.migrate(data)
 		if not converted.ok: return converted
@@ -571,14 +723,14 @@ func restore(data: Dictionary) -> TDOutcome:
 		checked=validate_save(data)
 		if not checked.ok: return checked
 		region_migrated_on_load=true
-	if int(data.get("region_layout_version",1))<11:
-		var converted:=TDRegionMigration.migrate_native(data,"paris",11)
+	if int(data.get("region_layout_version",1))<TDEgretLayout.CURRENT_VERSION:
+		var converted:=TDRegionMigration.migrate_native(data,"paris",TDEgretLayout.CURRENT_VERSION)
 		if not converted.ok: return converted
 		data=converted.data
 		checked=validate_save(data)
 		if not checked.ok: return checked
 		region_migrated_on_load=true
-	region_layout_version=11;region_migration=data.get("region_migration",{}).duplicate(true)
+	region_layout_version=TDEgretLayout.CURRENT_VERSION;region_migration=data.get("region_migration",{}).duplicate(true)
 	branches._maps.clear()
 	map_migration=data.get("map_migration",{}).duplicate(true)
 	jiangnan_migration=data.get("jiangnan_migration",{}).duplicate(true)
@@ -589,6 +741,7 @@ func restore(data: Dictionary) -> TDOutcome:
 	shop.restore(data.shop);research.restore(data.research)
 	TDWorldSnapshot.restore(world,data.world)
 	branches.state=data.get("branches",{"schema_version":1,"serial":0,"stores":{},"legacy":{}}).duplicate(true)
+	branches.refresh_preset_names()
 	if int(data.schema_version)>=2:
 		commerce=TDWorldEconomy.new(service.config.costs,str(data.economy.home),int(data.shop.seed),int(data.shop.day))
 		commerce.restore(data.economy)
@@ -609,7 +762,11 @@ func restore(data: Dictionary) -> TDOutcome:
 		var point:=Vector2i(int(site[0])+int(site[2])/2,int(site[1])+int(site[3])/2)
 		var surveyed:=island_geography.cell(point)
 		if surveyed.reachable: store.place=surveyed
-	if int(data.schema_version)>=3: progression.restore(data.progression)
+	if int(data.schema_version)>=3:
+		progression.restore(data.progression)
+		for reward: Dictionary in progression.upgrade_balance():
+			checked = research.grant_inspiration(str(reward.grant_id),int(reward.inspiration))
+			if not checked.ok: return checked
 	else: initialize_progression(true)
 	if int(data.schema_version)>=4:
 		residence=data.residence.duplicate(true);world.town_map.install_cottage(residence.plot)
@@ -619,16 +776,25 @@ func restore(data: Dictionary) -> TDOutcome:
 	for plot: Dictionary in world.town_map.plots: plot.enabled=bool(data.world.zone_enabled.get(plot.id,plot.enabled))
 	var furniture:=TDRestaurantCatalog.new();furniture.load_file()
 	layout=TDRestaurantLayout.import_dict(data.layout,furniture)
-	if layout!=null: shop.crew=layout.crew
+	if layout!=null:
+		layout.normalize_counters()
+		shop.crew=layout.crew
 	slot_id=data.slot_id;title=data.title;updated_at=int(data.updated_at);revision=int(data.revision);imported_legacy=data.imported_legacy
 	if data.has("story") and data.story is Dictionary: story.restore(data.story)
 	else: story.clear()
+	var saved_challenges: Dictionary = data.get("challenge_progress", {})
+	challenge_progress = ChallengeRules.initial_progress()
+	challenge_progress.merge(saved_challenges.duplicate(true), true)
+	if not saved_challenges.has("rojin_advice"):
+		challenge_progress.rojin_advice = bool(saved_challenges.get("rojin_fought", false)) or "revised_05" in story.revised.get("resolved", [])
+	challenge_loadout = ChallengeSkills.normalize(data.get("challenge_loadout", []), ChallengeSkills.unlocked(story, challenge_progress))
 	story_events.restore(data.get("story_events",{"schema_version":1,"counts":{}}))
 	# Older slots already owned their cottage. Never remove a previously saved entitlement.
 	if int(data.schema_version)<7:
 		residence.merge({"schema_version":2,"anchor":"cottage_bed","stage":"unlocked","reason":"legacy"},true)
 	if int(data.schema_version)>=5: characters.restore(data.characters,int(data.shop.day))
 	else: characters.migrate(int(data.shop.day),data.shop.phase=="SETTLED")
+	characters.sync_story_encounters(story.revised)
 	world.scaled_interior=false
 	_sync_recipes()
 	if int(data.schema_version)<8 and world.branch_open:
@@ -681,8 +847,10 @@ static func validate_save(raw: Variant) -> TDOutcome:
 		raw = converted.data
 	if raw is Dictionary and raw.has("story_events") and not TDStoryEvents.validate_progress(raw.story_events): return TDOutcome.new(false,"INVALID_STORY_EVENTS")
 	if not raw is Dictionary or not TDServiceCatalog.integer(raw.get("schema_version"),1,9) or raw.get("kind")!="town-diner-profile": return TDOutcome.new(false,"UNSUPPORTED_VERSION")
+	if raw.has("challenge_progress") and not ChallengeRules.validate_progress(raw.challenge_progress): return TDOutcome.new(false,"INVALID_CHALLENGE_PROGRESS")
+	if raw.get("rest_town","") not in ["","chengdu","paris","tokyo"]: return TDOutcome.new(false,"INVALID_REST_TOWN")
 	if raw.has("main_management_auto") and not raw.main_management_auto is bool: return TDOutcome.new(false,"INVALID_MAIN_MANAGEMENT")
-	if not TDServiceCatalog.integer(raw.get("region_layout_version",1),1,11): return TDOutcome.new(false,"UNKNOWN_REGION_VERSION")
+	if not TDServiceCatalog.integer(raw.get("region_layout_version",1),1,TDEgretLayout.CURRENT_VERSION): return TDOutcome.new(false,"UNKNOWN_REGION_VERSION")
 	if not TDServiceCatalog.integer(raw.get("jiangnan_layout_revision",1),1,2): return TDOutcome.new(false,"UNKNOWN_JIANGNAN_LAYOUT")
 	var jiangnan := TDJiangnanMigration.validate_archive(raw.get("jiangnan_migration",{}))
 	if not jiangnan.ok: return jiangnan
@@ -712,6 +880,7 @@ static func validate_save(raw: Variant) -> TDOutcome:
 	if not TDServiceCatalog.integer(raw.get("revision"),0,1000000000) or not TDServiceCatalog.integer(raw.get("updated_at"),0,9007199254740991): return TDOutcome.new(false,"INVALID_PROFILE")
 	for field: String in ["shop","research","world","layout"]:
 		if not raw.get(field) is Dictionary: return TDOutcome.new(false,"INVALID_PROFILE",field)
+	raw = TDRetiredRecipes.profile_copy(raw)
 	var content:=TDServiceCatalog.new();var checked:=TDResearchRuntime.load_default(content)
 	if not checked.ok: return checked
 	if raw.shop.get("menu") is Dictionary: install_legacy(content,raw.shop.menu.keys())
@@ -801,8 +970,10 @@ static func validate_save(raw: Variant) -> TDOutcome:
 		if not levels.error.ok: return levels.error
 		checked=levels.validate_save(raw.get("progression"))
 		if not checked.ok: return checked
-		var cursor := int(raw.shop.day)-(0 if raw.shop.phase=="SETTLED" else 1)
-		if int(raw.progression.last_day)!=cursor or not raw.progression.baselines.has("player_diner"): return TDOutcome.new(false,"INCONSISTENT_LEVEL_DAY")
+		var cursor := int(raw.progression.last_day)
+		var day := int(raw.shop.day)
+		if (cursor != day - 1 and not (raw.shop.phase=="SETTLED" and cursor==day)) or not raw.progression.baselines.has("player_diner"):
+			return TDOutcome.new(false,"INCONSISTENT_LEVEL_DAY")
 		for reward: Dictionary in raw.progression.rewards:
 			if not TDLevelProgression.same_value(raw.research.events.get(reward.grant_id),{"kind":"inspiration","amount":int(reward.inspiration)}): return TDOutcome.new(false,"INCONSISTENT_LEVEL_REWARD")
 		for event_id: String in raw.research.events:
@@ -893,6 +1064,7 @@ func close() -> void:
 		# Keep the rejecting sink on stale references instead of silently accepting writes.
 	persistence=Callable()
 	if shop!=null:
+		shop.opening_permission=Callable()
 		shop.before_open=Callable();shop.before_settlement=Callable()
 		shop.cooking_reward=Callable()
 		shop.kitchen_gate=Callable()

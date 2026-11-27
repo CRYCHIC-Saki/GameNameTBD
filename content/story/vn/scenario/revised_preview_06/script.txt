@@ -1,0 +1,55 @@
+# start
+@bg ingredient-shop with instant 0
+narrator: 【剧本预览】本场可查看完整台词，战斗和经营结果不写入正式进度。
+narrator: 焰子回到臻味港时，沿街的餐馆依旧关着门。罗金娜已经收到回程消息，替她留好了厨房。
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 金娜姐，我回来啦！维托和日奈教了我好多做法，我还去了其他几个小镇，这次终于能做出一整桌菜了！
+@hide aling with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show chen happy at td:0.789020:1.503413:2.150000 with instant
+chen: 欢迎回来！看你这么高兴，路上一定收获不少吧。还记得出发前，我们约好什么了吗？
+@show hero proud at td:0.268170:1.464197:2.150000 with instant
+hero: 当然记得！今天我就是回来挑战你的，我们还用上次的食材，好不好？
+@hide aling with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show chen proud at td:0.789020:1.503413:2.150000 with instant
+chen: 好啊，这回我可等着吃完整的一桌菜了。主菜、配菜和酱汁，一样也别想蒙混过去哦。
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hina with instant
+@show hertz calm at td:0.707320:1.555701:2.150000 with instant
+hertz: 观众朋友们，还记得焰子出发前输掉的那场比试吗？今天她回来了，连食材都选了上次那一份。罗金娜，这回也请你认真尝尝她的手艺吧！
+@hide aling with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show chen puzzled at td:0.789020:1.503413:2.150000 with instant
+chen: 米饭的火候、鸡蛋的香味，还有调味，都照顾得很好。已经能把不同地方的蛋炒饭做法配合起来用了，看来这趟旅行真的很值得呢。
+@show hero speechless at td:0.268170:1.464197:2.150000 with instant
+hero: 一开始可没这么顺，客人催菜的时候，我恨不得多长两只手。做得多了，再照着他们的意见慢慢改，这才总算能按时端上桌啦。
+@hide aling with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show chen happy at td:0.789020:1.503413:2.150000 with instant
+chen: 这次是你赢了，焰子。你已经是一位能独当一面的厨师了，也该让公主尝尝你的料理。
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 我现在就可以去挑战她了吗？太好了，我一直想让她也尝尝这些味道！
+@hide aling with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show chen troubled at td:0.789020:1.503413:2.150000 with instant
+chen: 当然可以，我来替你引荐。不过她对料理非常挑剔，你可要把自己的本事都拿出来。
+@end

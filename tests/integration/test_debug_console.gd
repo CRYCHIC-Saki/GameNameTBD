@@ -5,7 +5,7 @@ func start(active: bool=true) -> void:
 	app=load("res://src/app/main.tscn").instantiate();app.settings_path="res://artifacts/console/tests/%d/settings.json"%Time.get_ticks_usec();add_child(app)
 	await wait_process_frames(2);shell=app.game_shell;shell.automatic_time=false
 	if active:
-		assert_true(shell.create_game("slot-01","控制台测试").ok);shell.guide.close();get_tree().paused=false
+		assert_true(shell.create_game("slot-01","控制台测试",false).ok);shell.guide.close();get_tree().paused=false
 func after_each() -> void:
 	if is_instance_valid(app): shell.go_title();app.queue_free();app=null
 	get_tree().paused=false;await wait_process_frames(2)
@@ -36,13 +36,42 @@ func test_money_stock_inspiration_only_memory_and_roundtrip() -> void:
 	var points: int=int(p.research.snapshot().points);assert_true(command("inspiration add 50").contains("成功"));assert_eq(int(p.research.snapshot().points),points+50)
 	assert_eq(FileAccess.get_file_as_bytes(shell.slots.path_for("slot-01")),disk)
 	assert_true(TDGameProfile.validate_save(p.snapshot()).ok);assert_eq(int(p.commerce.cash_audit(int(p.shop.snapshot().money_cents)).difference_cents),0)
-	assert_true(command("save").contains("成功"));assert_ne(FileAccess.get_file_as_bytes(shell.slots.path_for("slot-01")),disk)
+	assert_true(command("save").contains("自动存档"))
+	assert_eq(FileAccess.get_file_as_bytes(shell.slots.path_for("slot-01")),disk)
+	shell._close_dialog()
+	shell._sleep("chengdu",0)
+	assert_true(shell.slots.load_slot("slot-01",TDProfileStore.DAILY).ok)
 	shell.go_title();assert_false(shell.debug_enabled);assert_true(shell.load_game("slot-01").ok)
 	assert_eq(int(shell.profile.shop.snapshot().inventory.tomato),stock+1125)
 func test_invalid_commands_leave_full_profile_unchanged() -> void:
 	await start();command("debug");var before:=shell.profile.snapshot()
 	for raw: String in ["money add 1e9","money add -999999","money add 1.001","money add 5 extra","give nope 1","give tomato -1","give tomato 0","give tomato 1001","give tomato 1 wrong-shop","give tomato \"1","inspiration add -1","inspiration add 10001","recipe unlock MISSING","cuisine open bad","time set 02:00","time set 26:00","time set 07:59","san 101","shop auto main maybe","employee assign unknown main"]:
 		assert_false(command(raw).contains("成功"),raw);assert_eq(shell.profile.snapshot(),before,raw)
+
+func test_console_xp_unlocks_decor_and_survives_the_next_checkpoint() -> void:
+	await start()
+	command("debug")
+	var p := shell.profile
+	assert_true(command("xp").contains("Lv.1"))
+	var decor := shell.restaurant._decor_panel
+	decor.select_category("陈设")
+	assert_null(decor.find_child("Item_screen", true, false))
+	var required := p.progression.threshold(p.progression.decoration_level("screen"))
+	var points := int(p.research.snapshot().points)
+	assert_true(command("xp add %d" % required).contains("获得 %d 经验" % required))
+	assert_eq(int(p.progression.progress().total_xp), required)
+	assert_gt(int(p.research.snapshot().points), points)
+	decor.refresh_cards()
+	assert_not_null(decor.find_child("Item_screen", true, false))
+	var saved := p.snapshot()
+	assert_true(TDGameProfile.validate_save(saved).ok)
+	assert_true(command("xp add -5").contains("整数"))
+	assert_eq(p.snapshot(), saved)
+	shell._sleep("", 0)
+	assert_true(shell.slots.load_slot("slot-01", TDProfileStore.DAILY).ok)
+	shell.go_title()
+	assert_true(shell.load_game("slot-01", TDProfileStore.DAILY).ok)
+	assert_eq(int(shell.profile.progression.progress().total_xp), required)
 func test_recipe_debug_unlock_has_explicit_provenance_no_fake_score_and_rejects_corruption() -> void:
 	await start();command("debug");var p:=shell.profile
 	assert_true(command("recipe unlock C09").contains("成功"));var data:=p.research.snapshot()

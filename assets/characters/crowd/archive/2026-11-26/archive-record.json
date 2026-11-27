@@ -1,0 +1,244 @@
+{
+  "schema": 1,
+  "character_id": "crowd",
+  "display_name": "群众 NPC（杂鱼）",
+  "date": "2026-11-26",
+  "generator": "built-in image_gen",
+  "status": "ARCHIVED_AS_REQUESTED",
+  "human_art_acceptance": "PENDING",
+  "source_archive": "doc/source/characters/crowd/source-archive-record.json",
+  "files": [
+    {
+      "role": "idle",
+      "file": "archive/2026-11-26/crowd-idle-four-directions.png",
+      "generated_file": "C:\\Users\\Administrator\\.codex\\generated_images\\01a17b72-580d-7c22-890d-2d1b45461a94\\exec-73c90d21-b437-4b45-afbd-4651ce071daf.png",
+      "sha256": "8d40214991701fe9a93e53ba7f86f7301cfae797db7a819b3ace1e76c7ef6717",
+      "size": [
+        1254,
+        1254
+      ],
+      "pixel_format": "Format32bppArgb",
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "layout": [
+        2,
+        2
+      ],
+      "regions": [
+        {
+          "label": "front",
+          "cell_xywh": [
+            0,
+            0,
+            627,
+            627
+          ],
+          "visible_bounds_xywh": [
+            204,
+            25,
+            295,
+            578
+          ]
+        },
+        {
+          "label": "back",
+          "cell_xywh": [
+            627,
+            0,
+            627,
+            627
+          ],
+          "visible_bounds_xywh": [
+            781,
+            25,
+            286,
+            578
+          ]
+        },
+        {
+          "label": "left",
+          "cell_xywh": [
+            0,
+            627,
+            627,
+            627
+          ],
+          "visible_bounds_xywh": [
+            202,
+            655,
+            300,
+            574
+          ]
+        },
+        {
+          "label": "right",
+          "cell_xywh": [
+            627,
+            627,
+            627,
+            627
+          ],
+          "visible_bounds_xywh": [
+            753,
+            656,
+            300,
+            573
+          ]
+        }
+      ]
+    },
+    {
+      "role": "expressions",
+      "file": "archive/2026-11-26/crowd-front-expressions.png",
+      "generated_file": "C:\\Users\\Administrator\\.codex\\generated_images\\01a17b72-580d-7c22-890d-2d1b45461a94\\exec-9efeb049-c784-45c9-bda1-43f28d6b17f8.png",
+      "sha256": "481972236acce2f28c3fa3cad827b6949b85d2efef000f9c4fcca6be28c98a58",
+      "size": [
+        1774,
+        887
+      ],
+      "pixel_format": "Format32bppArgb",
+      "corner_alpha": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "layout": [
+        4,
+        2
+      ],
+      "regions": [
+        {
+          "label": "通常",
+          "cell_xywh": [
+            0,
+            0,
+            443,
+            443
+          ],
+          "visible_bounds_xywh": [
+            154,
+            12,
+            213,
+            411
+          ]
+        },
+        {
+          "label": "高兴",
+          "cell_xywh": [
+            443,
+            0,
+            444,
+            443
+          ],
+          "visible_bounds_xywh": [
+            548,
+            11,
+            267,
+            412
+          ]
+        },
+        {
+          "label": "生气",
+          "cell_xywh": [
+            887,
+            0,
+            443,
+            443
+          ],
+          "visible_bounds_xywh": [
+            988,
+            12,
+            237,
+            411
+          ]
+        },
+        {
+          "label": "得意",
+          "cell_xywh": [
+            1330,
+            0,
+            444,
+            443
+          ],
+          "visible_bounds_xywh": [
+            1406,
+            11,
+            251,
+            412
+          ]
+        },
+        {
+          "label": "哭哭",
+          "cell_xywh": [
+            0,
+            443,
+            443,
+            444
+          ],
+          "visible_bounds_xywh": [
+            154,
+            455,
+            216,
+            411
+          ]
+        },
+        {
+          "label": "疑惑",
+          "cell_xywh": [
+            443,
+            443,
+            444,
+            444
+          ],
+          "visible_bounds_xywh": [
+            570,
+            455,
+            235,
+            411
+          ]
+        },
+        {
+          "label": "困扰",
+          "cell_xywh": [
+            887,
+            443,
+            443,
+            444
+          ],
+          "visible_bounds_xywh": [
+            988,
+            455,
+            249,
+            411
+          ]
+        },
+        {
+          "label": "无语",
+          "cell_xywh": [
+            1330,
+            443,
+            444,
+            444
+          ],
+          "visible_bounds_xywh": [
+            1368,
+            455,
+            260,
+            411
+          ]
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "byte_identity": "PASS_2_OF_2",
+    "grid_padding": "PASS_12_OF_12_ALPHA_GE_128",
+    "visible_bounds_alpha_min": 128
+  },
+  "note": "一名群众角色共八种表情。四向为通常站姿，表情图集中八格均为正面。保留生成的 PNG 与透明边缘。"
+}

@@ -47,11 +47,8 @@
   "dishes": {
     "tomato_egg": ["tomato", "egg", "vegetableoil"],
     "tomato_preserved_egg": ["tomato", "egg", "vegetableoil"],
-    "ganchaoniuhe": ["ricenoodle", "beefsteak", "scallion"],
     "mapodoufu": ["firmtofu", "doubanjiang", "porkloin"],
     "gongbaojiding": ["chickenbreast", "chili", "scallion"],
-    "lajiaochaorou": ["porkloin", "chili"],
-    "qiguoji": ["chickenleg", "shiitake"],
     "fish_and_chips": ["cod", "potato"],
     "huangyouji": ["chickenleg", "butter", "tomato"],
     "biryani": ["rice", "chickenleg", "currypowder"],

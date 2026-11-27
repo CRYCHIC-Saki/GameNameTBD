@@ -1,0 +1,139 @@
+{
+  "schema": 1,
+  "character_id": "hertz",
+  "display_name": "赫兹",
+  "date": "2026-11-26",
+  "status": "DELIVERED_LOCAL_USER_CONFIRMED_ARCHIVE",
+  "generator": "built-in image_gen",
+  "scope": "新增前后左右四向静态像素小人素材。",
+  "references": [
+    {
+      "path": "assets/characters/mainline-20261126/hertz/calm.png",
+      "sha256": "cdd9dff9900b0d1797758f7f76cbe697f39307696426d6e8a801689037857e4c",
+      "role": "用户角色原画的项目内原字节副本，身份与服饰参考"
+    },
+    {
+      "path": "assets/characters/ash-priest/archive/2026-10-29/ash-priest-idle-four-directions.png",
+      "sha256": "7b9875c2015d61af28f8cca325e951b16b41c11532ab2d9c7587c8fe4d7e4273",
+      "role": "既有已确认像素小人，仅风格、像素颗粒和布局参考"
+    },
+    {
+      "path": "assets/characters/luoe/archive/2026-11-08/luoe-idle-four-directions.png",
+      "sha256": "e9056b52635b5e3be2010eb6fe604cf438023e8e968a2c063eaebb19e7793f9d",
+      "role": "既有已确认像素小人，仅风格、像素颗粒和布局参考"
+    }
+  ],
+  "identity_elements": [
+    "红色短发、白色额前挑染、青蓝眼睛",
+    "角色左耳白色耳机",
+    "金色复古格栅话筒及浅色绕线",
+    "暗红长燕尾服、白领与袖口、深色领带与金色闪电饰",
+    "金黄马甲、深灰棕长裤、白色翻口金边短靴"
+  ],
+  "sprite_atlas": {
+    "file": "hertz-idle-four-directions-v1.png",
+    "sha256": "62430a99b22c27d818af281a169f6febe939f59ef8c8171341727e0c51723837",
+    "size": [
+      1254,
+      1254
+    ],
+    "pixel_format": "Format32bppArgb",
+    "corner_alpha": [
+      0,
+      0,
+      1,
+      0
+    ],
+    "layout": [
+      2,
+      2
+    ],
+    "cell_size": [
+      627,
+      627
+    ],
+    "frames_per_direction": 1,
+    "animation": "idle_static",
+    "directions": [
+      {
+        "id": "front",
+        "facing": "down",
+        "region_xywh": [
+          0,
+          0,
+          627,
+          627
+        ]
+      },
+      {
+        "id": "back",
+        "facing": "up",
+        "region_xywh": [
+          627,
+          0,
+          627,
+          627
+        ]
+      },
+      {
+        "id": "left",
+        "facing": "left",
+        "region_xywh": [
+          0,
+          627,
+          627,
+          627
+        ]
+      },
+      {
+        "id": "right",
+        "facing": "right",
+        "region_xywh": [
+          627,
+          627,
+          627,
+          627
+        ]
+      }
+    ],
+    "filter_recommendation": "nearest",
+    "pivot_note": "图格留白与侧面占宽不同，接入时按角色脚底确定锚点。"
+  },
+  "art_assumptions": [
+    "沿用此前2×2四向站姿格式，每向一帧；不含行走帧。",
+    "背面与侧面依据原稿服装及配饰左右关系补绘；用户于2026-11-26确认归档保留本版。",
+    "为小人可读性简化发丝、衣褶、装饰纹理；原画和已归档其他角色保持不变。"
+  ],
+  "verification": {
+    "generated_copy_identity": "PASS",
+    "png_metadata": "PASS",
+    "visual_inspection": "已核对四个朝向、挑染、左耳耳机、话筒及燕尾服。",
+    "human_art_acceptance": "USER_CONFIRMED_KEEP_V1",
+    "engine_tests": "NOT_RUN_ASSET_ONLY",
+    "runtime_integration": "NOT_DONE",
+    "archive_byte_identity": "PASS"
+  },
+  "alpha_note": "保留生成器RGBA及半透明边缘，未脚本清理alpha；四角alpha见sprite_atlas。",
+  "generation_record": "generation-prompts.json",
+  "selected_archive": {
+    "date": "2026-11-26",
+    "selection": "USER_CONFIRMED_KEEP_V1",
+    "files": [
+      {
+        "role": "sprite",
+        "file": "archive/2026-11-26/hertz-idle-four-directions.png",
+        "source_file": "hertz-idle-four-directions-v1.png",
+        "sha256": "62430a99b22c27d818af281a169f6febe939f59ef8c8171341727e0c51723837",
+        "size": [
+          1254,
+          1254
+        ],
+        "pixel_format": "Format32bppArgb",
+        "byte_identical_to_selected_version": true
+      }
+    ],
+    "record": "archive/2026-11-26/archive-record.json",
+    "runtime_integration": "NOT_DONE",
+    "note": "本版原字节归档，后续作为像素小人美术基准，原制作文件继续保留。"
+  }
+}

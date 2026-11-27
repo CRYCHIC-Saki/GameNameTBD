@@ -5,8 +5,8 @@ var events: Array=[]
 
 func before_each() -> void:
 	events=[]
-	var catalog:=TDServiceCatalog.new();assert_true(catalog.load_file().ok)
-	shop=TDShopSession.new(catalog,"chef-flow",59,["service.tomato_egg","service.pepper_pork","service.qiguoji"])
+	var catalog:=TDServiceCatalog.new();assert_true(TDResearchRuntime.load_default(catalog).ok)
+	shop=TDShopSession.new(catalog,"chef-flow",59,["service.tomato_egg","service.mapo_tofu","study.steamed_egg"])
 	shop.table_service_enabled=true;shop.crew=TDRestaurantCrew.new()
 	assert_true(shop.crew.hire("cook-he").ok)
 	view=TDShopView.new();view.shop=shop;view.service=catalog;view.embedded=true
@@ -154,13 +154,13 @@ func test_dismissal_and_night_release_keep_real_cold_food_and_clear_callbacks() 
 	view.close();assert_false(shop.cook_step_source.is_valid());assert_false(view.kitchen.world.staff_source.is_valid())
 
 func test_real_steam_recipe_uses_steamer_and_real_recipe_steps() -> void:
-	open_recipe("service.qiguoji")
+	open_recipe("study.steamed_egg")
 	assert_eq(job().pot_station,"kitchen.steamer");assert_eq(job().lane,1)
 	assert_true(until_action("dish_deposited",180))
 	var cooked: Array=events.filter(func(e:Dictionary)->bool:return e.action=="cook_started")
 	assert_eq(cooked.size(),1)
 	assert_eq(cooked[0].position,view.kitchen.world.staff_approach("kitchen.steamer"))
-	assert_eq(shop.table_service.rows()[0].dish.recipe_id,"service.qiguoji")
+	assert_eq(shop.table_service.rows()[0].dish.recipe_id,"study.steamed_egg")
 
 func test_tuning_validation_and_zero_time_no_actions() -> void:
 	var raw: Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://content/service_content.json"))
@@ -170,23 +170,23 @@ func test_tuning_validation_and_zero_time_no_actions() -> void:
 	for i: int in 20: view.tick_staff()
 	assert_eq(shop.snapshot().inventory,inventory);assert_eq(view.staff.rows(),rows);assert_true(events.is_empty())
 
-func test_two_cooks_share_one_board_without_shared_hands_or_pots() -> void:
+func test_two_cooks_serve_orders_in_sequence_with_one_pot() -> void:
 	assert_true(shop.crew.hire("cook-zhou").ok)
 	var cart: Dictionary={}
-	for id: String in ["service.tomato_egg","service.pepper_pork"]:
+	for id: String in ["service.tomato_egg","service.mapo_tofu"]:
 		for ingredient: String in shop.offer(id).stock: cart[ingredient]=int(cart.get(ingredient,0))+int(shop.offer(id).stock[ingredient])*2
 	assert_true(shop.buy(cart,"dual-stock").ok)
-	for id: String in shop.snapshot().menu: shop.set_menu(id,id in ["service.tomato_egg","service.pepper_pork"],1200)
+	for id: String in shop.snapshot().menu: shop.set_menu(id,id in ["service.tomato_egg","service.mapo_tofu"],1200)
 	assert_true(shop.open_day().ok)
 	for i: int in 5: shop._arrive()
 	shop._next_arrival=350;view.tick_staff()
-	assert_eq(view.staff.jobs.size(),2)
-	assert_ne(view.staff.jobs[0].handling,view.staff.jobs[1].handling)
+	assert_eq(view.staff.jobs.size(),1)
 	var max_cuts: int=0
-	for i: int in 360:
+	for i: int in 480:
 		view.kitchen.advance(.5)
 		var cutting: int=view.staff.jobs.values().filter(func(j:Dictionary)->bool:return j.phase=="cut").size()
 		max_cuts=maxi(max_cuts,cutting)
+		assert_lte(view.staff.jobs.size(),1)
 		assert_lte(cutting,1)
 		if shop.table_service.rows().size()>=2: break
 	assert_eq(max_cuts,1);assert_gte(shop.table_service.rows().size(),2)
@@ -233,14 +233,16 @@ func assert_attributes_close(actual: Variant, expected: Variant) -> void:
 
 func test_night_during_cut_cancels_worker_and_reentry_starts_clean() -> void:
 	open_recipe();assert_true(until_action("cut_started"))
+	var tomato_before := shop.available("tomato")
 	var old_session:=str(job().session_id)
 	assert_eq(view.kitchen.staff_prep.input_action("cut",true).code,"AUTOMATIC")
 	assert_true(view.finish_night().ok)
 	assert_true(view.staff.jobs.is_empty());assert_false(view.kitchen.staff_prep_active)
 	assert_null(view.kitchen.staff_prep.qte);assert_eq(view.staff.board_owner,"")
-	assert_eq(shop.snapshot().cold_foods.size(),1)
+	assert_true(shop.snapshot().cold_foods.is_empty())
+	assert_eq(shop.available("tomato"),tomato_before+1000)
 	assert_eq(shop.available("egg"),1000)
 	view._make_kitchen();view.kitchen.auto_advance=false
 	assert_true(view.staff.jobs.is_empty());assert_eq(view.staff.board_owner,"")
 	assert_ne(view.kitchen.lanes[0].snapshot().session_id,old_session)
-	view.tick_staff();assert_eq(shop.snapshot().cold_foods.size(),1)
+	view.tick_staff();assert_true(shop.snapshot().cold_foods.is_empty())

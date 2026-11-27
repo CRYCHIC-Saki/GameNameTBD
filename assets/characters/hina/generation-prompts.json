@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "date": "2026-11-26",
+  "character_id": "hina",
+  "display_name": "日奈",
+  "generator": "built-in image_gen",
+  "user_request": "为日奈创作像素小人素材并归档",
+  "generations": [
+    {
+      "prompt": "Use case: stylized-concept.\nAsset type: exactly FOUR static idle chibi game sprites of HINA / 日奈, on one transparent 2x2 sprite sheet.\nInput image roles: image 1 is the user's ORIGINAL neutral-expression character design, the sole identity/outfit/prop reference. Image 2 (green tomato-apron cook Vito) and image 3 (red priestess) are STYLE REFERENCES ONLY: reproduce their coarse square pixel blocks, restrained shading, cute compact proportions and four-direction sheet layout. Do not borrow their costume, mask, hat, ladle or other identity features.\nPrimary request: translate Hina into the same game's clearly CHUNKY PIXEL ART. Four independently drawn views of ONE consistent character, NOT four posed illustrations. Strong dark stepped outline, LARGE square clusters throughout all internal details, limited flat colors, 2-3 tones per material, broad simplified hair locks and folds. Approximate a 60-70-logical-pixel-tall native RPG sprite enlarged with nearest-neighbor. Head large and cute, body compact and moderately slim, approximately 2.5 heads tall. Not a smooth anime illustration with jagged contours, no brush shading, no hair-strand rendering, gradients, excessive detail, noise or dithering.\nEXACT LAYOUT: top-left frontal facing down/toward viewer; top-right true back facing away/up; bottom-left strict LEFT-facing profile; bottom-right strict RIGHT-facing profile. All four figures same height and scale, aligned feet/baselines within row, centered in equal-sized quadrants, generous empty transparent padding, nothing cut off. Exactly ONE standing idle pose per direction, full head including ahoge and full feet in frame. No frames, labels, text, arrows, UI, watermark or ground shadow.\nHINA IDENTITY:\n- Snow-white/silver bob with pink inner hair/shadows, large single curved AHOGE tuft rising from top, tiny red highlights. One HIGH SIDE PONYTAIL on character's anatomical LEFT side (screen-RIGHT in front view), white outer locks and pink underside, tied with a small orange/golden SHRIMP-shaped ornament. Shrimp means a curled segmented shrimp with little tail, not a crescent, croissant or horn. No twin ponytails. Warm golden/orange eyes with reddish inner color, small natural catchlights and a gentle friendly smile, soft round jaw.\n- White shrine-inspired cook blouse with a broad RED folded collar and a tiny GOLD-YELLOW bow underneath. Bare shoulder openings edged with small red loops/ruffles. Two wide WHITE hanging kimono-style detached bell sleeves with RED cuff edges and red inner lining. Keep the uncovered shoulders and oversized sleeves readable even at small scale.\n- Chest has a small plain RED rectangular badge on anatomical RIGHT (front screen-LEFT) and a tiny ORANGE SHRIMP brooch on anatomical LEFT (front screen-RIGHT). Use simple colored motifs without lettering.\n- Dark muted SLATE-PURPLE wrap apron/overskirt with an asymmetric angled lower hem, on top of a visible RED pleated underskirt. The skirt ends around knees/shins at sprite scale. Large GOLD-YELLOW bow at anatomical LEFT hip/back side (screen-RIGHT in front). Preserve deep purple vs bright red layering.\n- WHITE calf socks and low BROWN wooden-soled Japanese sandals with RED straps. Do not give her boots or pumps, do not bare the legs completely.\n- Anatomical RIGHT hand (screen-LEFT in frontal view) holds the brown handle of a small SILVER cooking SPATULA / turner upright beside shoulder. Flat metal head has a wide straight top and curved tapering bottom like the original. It is a spatula, not a soup ladle, spear, fan or shovel. Anatomical LEFT hand rests at waist. Keep prop close to body, easy standing silhouette.\nFOUR-VIEW CONSISTENCY: the ponytail, shrimp tie, left chest brooch and yellow waist bow remain on the same anatomical LEFT side in every view. Back shows white/pink hair and ponytail on screen-LEFT, plain rear white blouse/red collar, purple apron and red hem; the front chest badges must NOT appear on back. Left-facing profile shows character's LEFT side and thus near-side ponytail/shrimp tie/yellow bow, with right-hand spatula partly occluded but correctly held; right-facing profile shows RIGHT side and near-side spatula while left ponytail/bow naturally lie on far side. Do not simply mirror accessory placement.\nTrue transparent background everywhere outside the four sprites. No decorative floating flowers/emotion marks from expression variants. Maintain original Hina design and the exact coarse-pixel density of style references.",
+      "referenced_image_paths": [
+        "F:/MyGameTBD/doc/source/characters/hina/expressions/通常.png",
+        "F:/MyGameTBD/assets/characters/vito/archive/2026-11-26/vito-idle-four-directions.png",
+        "F:/MyGameTBD/assets/characters/ash-priest/archive/2026-10-29/ash-priest-idle-four-directions.png"
+      ],
+      "reference_roles": [
+        "日奈通常表情原画，角色身份与服饰依据",
+        "维托已归档像素小人，仅风格与颗粒",
+        "灰烬司祭已归档像素小人，仅风格与颗粒"
+      ],
+      "transparent_background": true,
+      "generated_file": "C:/Users/Administrator/.codex/generated_images/01a17b72-580d-7c22-890d-2d1b45461a94/exec-678a7415-c696-4c4b-9f5d-423592f2211d.png",
+      "saved_file": "hina-idle-four-directions-v1.png",
+      "archived_file": "archive/2026-11-26/hina-idle-four-directions.png"
+    }
+  ],
+  "note": "60–70逻辑像素等描述为视觉目标，不代表严格网格验证。所有保存和归档保留生成器原字节。"
+}

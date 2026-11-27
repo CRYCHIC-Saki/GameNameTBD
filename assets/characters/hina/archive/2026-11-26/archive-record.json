@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "character_id": "hina",
+  "display_name": "日奈",
+  "archived_on": "2026-11-26",
+  "request": "为日奈创作像素小人素材并归档",
+  "operation": "Byte-identical archive copy of the newly generated four-direction v1 sprite sheet.",
+  "status": "ARCHIVED_AS_REQUESTED",
+  "files": [
+    {
+      "role": "sprite",
+      "file": "archive/2026-11-26/hina-idle-four-directions.png",
+      "source_file": "hina-idle-four-directions-v1.png",
+      "sha256": "f834bf1f7d6ef1079cbb002f14a87c4bad511f0c2d3a75faad5f44249d14acb9",
+      "size": [
+        1254,
+        1254
+      ],
+      "pixel_format": "Format32bppArgb",
+      "byte_identical_to_generated_file": true
+    }
+  ],
+  "human_art_acceptance": "PENDING_NEW_GENERATION",
+  "runtime_integration": "NOT_DONE"
+}

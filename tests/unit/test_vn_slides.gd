@@ -29,6 +29,23 @@ func test_reject_invalid_layout_tokens() -> void:
 	assert_eq(TDVNLayout.encode(NAN,.5,1.0),"")
 	assert_eq(TDVNLayout.encode(.5,INF,1.0),"")
 
+func test_half_body_preset_keeps_head_and_places_lower_body_below_dialogue() -> void:
+	for viewport_size: Vector2 in [Vector2(1280,800),Vector2(1920,1080),Vector2(2546,1292)]:
+		var reference_size := Vector2.ZERO
+		for actor: String in TDVNLayout.FACE_FOCUS:
+			var token := TDVNLayout.half_body("left" if actor == "hero" else "right",actor)
+			assert_eq(TDVNLayout.parse(token).scale,TDVNLayout.HALF_BODY_SCALE)
+			var bounds := TDVNLayout.rect(token,.64,viewport_size)
+			if reference_size == Vector2.ZERO: reference_size=bounds.size
+			assert_eq(bounds.size,reference_size,"Same magnification for every original canvas")
+			if actor == "hina": continue
+			var image := TDVNLayout.fit(load(Document.portrait_path(actor,"calm")),bounds)
+			var focus: Vector2 = TDVNLayout.FACE_FOCUS[actor]
+			var face := image.position+image.size*focus
+			assert_gt(face.y,viewport_size.y*.20)
+			assert_lt(face.y,viewport_size.y*.43,"Face stays above dialogue in wide windows")
+			assert_gt(image.end.y,viewport_size.y,"Lower body continues behind dialogue")
+
 func test_offscreen_large_layout_roundtrip_and_page_independence() -> void:
 	var doc := Document.new(); doc.load_text(SOURCE)
 	var next_before := doc.composition(5)

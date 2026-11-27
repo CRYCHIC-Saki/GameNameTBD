@@ -5,6 +5,7 @@ extends RefCounted
 
 const TRIAL_RECIPES := ["service.tomato_egg","recipe.tomato_egg","tomato_egg"]
 
+var revised: Dictionary = {}
 var beat: String = ""
 var hero_name: String=""
 var script_version: int = 2
@@ -165,15 +166,16 @@ func mark_supplied() -> void:
 	owe_pack = false
 
 func note_opened() -> void:
-	if beat == "founded":
+	if beat == "founded" or not revised.is_empty():
 		opened = true
 
 func note_served() -> void:
-	if opened and beat == "founded":
+	if opened and (beat == "founded" or not revised.is_empty()):
 		served = true
 		opened = false
 
 func clear() -> void:
+	revised.clear()
 	hero_name=""
 	tracked=true;recipe_viewed=false;tutorials.clear();completed_scenes.clear()
 	served_dish_id="";assessment.clear();setup_seen=false
@@ -195,7 +197,7 @@ func export_state() -> Dictionary:
 	if beat.is_empty():
 		return {}
 	return {
-		"chapter": "opening", "hero_name":hero_name, "script_version":2, "tracked":tracked,
+		"chapter": "opening", "revised":revised.duplicate(true), "hero_name":hero_name, "script_version":2, "tracked":tracked,
 		"recipe_viewed":recipe_viewed,"tutorials":tutorials.duplicate(),
 		"completed_scenes":completed_scenes.duplicate(),"served_dish_id":served_dish_id,
 		"assessment":assessment.duplicate(true),"setup_seen":setup_seen,
@@ -215,6 +217,7 @@ func export_state() -> Dictionary:
 	}
 
 func restore(data: Dictionary) -> void:
+	revised = data.get("revised", {}).duplicate(true)
 	var next := String(data.get("beat", ""))
 	if next not in ["arrive", "follow", "soup", "bowl", "return", "awaken", "cook", "verdict", "founded", "done"]:
 		beat = ""
@@ -259,6 +262,7 @@ func _stall_gap(board: Dictionary) -> String:
 
 static func validate_state(raw: Variant) -> TDOutcome:
 	if not raw is Dictionary: return TDOutcome.new(false,"INVALID_STORY")
+	if not TDRevisedMainline.validate(raw.get("revised", {})): return TDOutcome.new(false,"INVALID_REVISED_MAINLINE")
 	if not TDServiceCatalog.integer(raw.get("script_version",1),1,2): return TDOutcome.new(false,"UNSUPPORTED_STORY_VERSION")
 	if raw.get("beat","") not in ["","arrive","follow","soup","bowl","return","awaken","cook","verdict","founded","done"]: return TDOutcome.new(false,"INVALID_STORY_BEAT")
 	for key: String in ["tutorials","completed_scenes"]:

@@ -81,14 +81,16 @@ func test_main_management_slot_roundtrip_old_default_invalid_and_no_implicit_sav
 func make_ui() -> TDBranchPanel:
 	app=load("res://src/app/main.tscn").instantiate();app.settings_path="res://artifacts/store-management/ui/%d/settings.json"%Time.get_ticks_usec();add_child(app)
 	await wait_process_frames(2)
-	app.game_shell.automatic_time=false;assert_true(app.game_shell.create_game("slot-01","店铺测试").ok)
+	app.game_shell.automatic_time=false;assert_true(app.game_shell.create_game("slot-01","店铺测试",false).ok)
 	app.game_shell.guide.close();get_tree().paused=false
 	app.game_shell.profile.shop.world_adjustment(300000,"fixture","fixture")
 	app.game_shell.show_branch()
 	return app.game_shell._modal_box.get_child(-1) as TDBranchPanel
 func test_real_list_includes_home_branches_and_detail_navigation_is_read_only() -> void:
-	var panel:=await make_ui();var p:=panel.profile;var branch:=open_branch(p);panel.list_stores()
-	var before:=p.snapshot();assert_eq(panel.store_buttons.size(),2);assert_true(panel.store_buttons.has("player_diner"));assert_true(panel.store_buttons.has(branch))
+	var panel:=await make_ui();var p:=panel.profile
+	var initial_count := panel.store_buttons.size()
+	var branch:=open_branch(p);panel.list_stores()
+	var before:=p.snapshot();assert_eq(panel.store_buttons.size(),initial_count+1);assert_true(panel.store_buttons.has("player_diner"));assert_true(panel.store_buttons.has(branch))
 	assert_eq(app.game_shell._hud.button_for("branches").caption,"店铺")
 	for id: String in ["player_diner",branch,"player_diner"]:
 		panel.store_buttons[id].pressed.emit();assert_eq(panel.selected_id,id)
@@ -108,7 +110,9 @@ func test_main_detail_applies_menu_assigns_manager_and_enables_management() -> v
 	assert_true(p.main_management_auto);assert_eq(p.employees.assigned("player_diner","cook").size(),1)
 	panel.select_tab("menu");assert_true(panel.menu_rows[id].check.disabled,"turn management off before manual menu editing")
 func test_branch_detail_uses_own_menu_budget_and_shared_employee_warehouse() -> void:
-	var panel:=await make_ui();var p:=panel.profile;var branch:=open_branch(p);own(p,"cook-he")
+	var panel:=await make_ui();var p:=panel.profile
+	var initial_count := panel.store_buttons.size()
+	var branch:=open_branch(p);own(p,"cook-he")
 	var home_menu: Dictionary=p.shop.snapshot().menu
 	panel.manage(branch);var id: String=panel.menu_rows.keys()[0]
 	panel.menu_rows[id].check.button_pressed=true;panel.menu_rows[id].price.value=15.75;panel.budget_input.value=88;panel.apply_menu()
@@ -116,4 +120,4 @@ func test_branch_detail_uses_own_menu_budget_and_shared_employee_warehouse() -> 
 	assert_eq(p.shop.snapshot().menu,home_menu)
 	panel.select_tab("staff");panel.assign_employee("cook-he",branch)
 	assert_eq(p.employees.employee_info("cook-he").assigned,branch)
-	panel.list_stores();assert_eq(panel.store_buttons.size(),2)
+	panel.list_stores();assert_eq(panel.store_buttons.size(),initial_count+1)

@@ -31,6 +31,35 @@ func config(kind: String) -> Dictionary:
 func make(kind: String, clock: TDClock, operation: String = "cut") -> QTE:
 	return QTE.new(request(operation), config(kind), clock, FixedRandom.new())
 
+func test_misses_compress_later_cues_without_overlapping_hit_windows() -> void:
+	var clock := Clock.new()
+	var settings := config("rhythm")
+	settings.interval_sec = 0.7
+	settings.document_rules = true
+	settings.pc_module = "directional_cut"
+	var qte := QTE.new(request(), settings, clock, FixedRandom.new())
+	var started := qte.start()
+	assert_true(started.ok)
+	var original: Array = started.data.beat_times_sec
+	clock.advance(0.2)
+	var first_error := qte.input(1, clock.qte_sec, "wrong", true)
+	var first: Array = first_error.data.beat_times_sec
+	clock.advance(0.2)
+	var second_error := qte.input(2, clock.qte_sec, "wrong", true)
+	var second: Array = second_error.data.beat_times_sec
+	assert_eq(second[0], original[0])
+	assert_lt(float(first[1]), float(original[1]))
+	assert_lt(float(second[1]), float(first[1]))
+	clock.advance(0.75)
+	var after_timeout := qte.update()
+	var times: Array = after_timeout.data.beat_times_sec
+	assert_eq(after_timeout.data.miss, 1)
+	assert_lt(float(times[1]), float(second[1]))
+	for index: int in range(1, times.size()):
+		assert_gt(float(times[index]) - float(times[index - 1]), 2.0 * float(settings.good_sec))
+	clock.advance(float(times[1]) - clock.qte_sec)
+	assert_eq(qte.input(3, clock.qte_sec, "primary", true).data.judgement, "perfect")
+
 func test_all_five_lifecycle_identity_and_no_input_are_real_failures() -> void:
 	for kind in QTE.KINDS:
 		var clock := Clock.new()

@@ -1,10 +1,42 @@
 {
   "schema_version": 1,
-  "rules_version": 1,
-  "source": "AI-046: proposed balance; D038 shop attributes only",
+  "rules_version": 2,
+  "source": "Early mainline progression and decoration rewards",
   "max_level": 50,
-  "curve": {"base_xp": 60, "linear_xp": 20, "quadratic_xp": 4},
-  "daily": {"profit_reference_cents": 3000, "profit_cap_xp": 70, "popularity_cap_xp": 15, "awareness_cap_xp": 15, "growth_xp_per_point": 3, "max_xp": 100},
-  "rewards": {"inspiration": 2, "milestone_every": 5, "milestone_bonus": 3},
-  "hooks": []
+  "curve": {
+    "base_xp": 60,
+    "linear_xp": 20,
+    "quadratic_xp": 4,
+    "early_base_xp": 12,
+    "early_linear_xp": 2,
+    "early_last_level": 19,
+    "full_curve_level": 36
+  },
+  "daily": {
+    "profit_reference_cents": 1500,
+    "profit_cap_xp": 80,
+    "popularity_cap_xp": 20,
+    "awareness_cap_xp": 20,
+    "growth_xp_per_point": 4,
+    "max_xp": 120
+  },
+  "rewards": {
+    "inspiration": 2,
+    "milestone_every": 5,
+    "milestone_bonus": 3
+  },
+  "hooks": [],
+  "decoration": {
+    "screen": 2,
+    "tile": 3,
+    "stripe": 4,
+    "waiting_seat": 5,
+    "floral": 7,
+    "stone": 9,
+    "booth": 11,
+    "brick": 13,
+    "sofa": 15,
+    "carpet": 18,
+    "child_seat": 20
+  }
 }

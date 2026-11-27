@@ -77,20 +77,6 @@ static func housing_groups(map: TDTownMap) -> Array[Dictionary]:
 		_housing.append({"at":at,"size":size})
 	return _housing.duplicate(true)
 
-static func _draw_housing_label(canvas: CanvasItem, map: TDTownMap, origin: Vector2, cell: float, entries: Array[Dictionary]) -> void:
-	var groups := housing_groups(map)
-	if map.layout_version==2 and not groups.is_empty():
-		var bounds:=Rect2(Vector2(groups[0].at),Vector2.ONE*groups[0]["size"])
-		for group: Dictionary in groups: bounds=bounds.merge(Rect2(Vector2(group.at),Vector2.ONE*group["size"]))
-		if not map.cottage.is_empty(): bounds=bounds.merge(facade_plot(map,map.cottage,1.0))
-		var center:=origin+Vector2(bounds.get_center().x,bounds.position.y-.7)*cell
-		for item: Dictionary in entries:
-			if item.get("housing_block",false) or item.get("plot",{}).get("kind","")=="player_cottage":
-				center.y = minf(center.y,item.rect.position.y-24.0)
-		var plate:=Rect2(center-Vector2(112,18),Vector2(224,34))
-		canvas.draw_style_box(_label_style(true),plate)
-		canvas.draw_string(TDUI.font(),plate.position+Vector2(10,24),"青瓦巷 · 居民区",HORIZONTAL_ALIGNMENT_CENTER,204,TDUI.FONT_SECTION,Color("fff1cd"))
-
 static func facades(map: TDTownMap, cell: float, origin: Vector2, management_menus: bool) -> Array[Dictionary]:
 	if TDPlannedTown.approved(map):
 		return _reference_facades(map, cell, origin, management_menus)
@@ -116,7 +102,7 @@ static func facades(map: TDTownMap, cell: float, origin: Vector2, management_men
 		var lot := facade_plot(map, plot, cell, origin)
 		if Yard.is_residential(kind):
 			lot = Yard.facade_lot(lot,cell,Yard.has_yard(plot))
-		var art := TDTravelCatalog.facade("chengdu", plot)
+		var art := TDTravelCatalog.facade("chengdu", plot, 0, false)
 		# Taller multi-story art needs more height to give its door the same
 		# scale as the single-story houses and street stalls.
 		var height := 2.4
@@ -155,6 +141,8 @@ static func facades(map: TDTownMap, cell: float, origin: Vector2, management_men
 						feet = block+Vector2(.62,3.08)*cell
 						height = 2.85
 			var item := street_entry(art,feet,slot.size.x,height,.25,use,map,origin,cell,frontage_bias(map,plot),kind=="amusement")
+			if plot.has("branch_id"):
+				item.art = TDTravelCatalog.facade("chengdu", plot)
 			if map.layout_version==2 and plot.id in ["hotel","landmark","player_diner","commercial_street:bank","market-small","snack_street","market-mid"]:
 				item.jiangnan_feature = "courtyard_shadow"
 			item.plot = plot
@@ -170,7 +158,7 @@ static func facades(map: TDTownMap, cell: float, origin: Vector2, management_men
 	if not port.is_empty():
 		var art := TDHarbor.texture(1)
 		var rect := TDHarbor.booth_rect(origin, cell)
-		entries.append({"art": art, "rect": rect, "bases": TDEnvironmentArt.facade_bases(rect, 0.27)})
+		entries.append({"art": art, "rect": rect, "bases": TDEnvironmentArt.facade_bases(rect, 0.27), "plot": port})
 	var landings := JiangnanFrontage.river_life(map,cell,origin)
 	entries.append_array(landings)
 	JiangnanDistrictProps.fixtures(map,cell,origin,entries)
@@ -199,10 +187,12 @@ static func _reference_facades(map: TDTownMap, cell: float, origin: Vector2, man
 			continue
 		var lot := TDInteractionRange.plot_bounds(plot, cell, origin)
 		if kind == "player_cottage" and _use_reference_house(entries, plot, lot): continue
-		var art := TDTravelCatalog.facade("chengdu", plot)
+		var footprint := TDTravelCatalog.facade("chengdu", plot, 0, false)
 		var use := "construction" if plot.get("construction", false) else kind
-		var item := street_entry(art, street_feet(lot), lot.size.x, 3.0 if kind == "player_cottage" else 3.75,
+		var item := street_entry(footprint, street_feet(lot), lot.size.x, 3.0 if kind == "player_cottage" else 3.75,
 			.25, use, map, origin, cell)
+		if plot.has("branch_id"):
+			item.art = TDTravelCatalog.facade("chengdu", plot)
 		item.plot = plot
 		if use!="construction": item.walking=TDEnvironmentArt.shop_walls(item.rect,item.bases[0])
 		item.label_at = Vector2((item.rect as Rect2).get_center().x, (item.rect as Rect2).end.y)
@@ -348,7 +338,7 @@ static func _verge_edge(map: TDTownMap, origin: Vector2, cell: float, wall: Rect
 		edge = maxf(limit,boundary) if side<0 else minf(limit,boundary)
 	return edge
 
-static func draw_world(canvas: Node2D, session: TDPhase3Session, selected: Dictionary, entries: Array[Dictionary]) -> void:
+static func draw_world(canvas: Node2D, session: TDPhase3Session, entries: Array[Dictionary]) -> void:
 	var map := session.town_map
 	var origin := Vector2(300,24)
 	var cell: float = (canvas as TDTownWorld).cell_size() if canvas is TDTownWorld else TDTownWorld.CELL
@@ -357,30 +347,9 @@ static func draw_world(canvas: Node2D, session: TDPhase3Session, selected: Dicti
 		TDTownScenery.draw_wilds(canvas, origin, cell)
 		if JiangnanDistrictProps.enabled(map):
 			JiangnanDistrictProps.draw_street_marks(canvas,entries,origin,cell,float(canvas.get("day_minute")))
-		_draw_housing_label(canvas, map, origin, cell, entries)
+	var daylight := TDDaylight.sample(float(canvas.get("day_minute")))
 	for item: Dictionary in entries:
-		if item.get("label_at", Vector2.INF) == Vector2.INF: continue
-		var p: Dictionary = item.plot
-		var feet: Vector2 = item.label_at
+		var feet: Vector2 = item.get("label_at", Vector2.INF)
+		if not feet.is_finite(): continue
 		var width: float = item.rect.size.x
-		var kind := str(p.kind)
-		var active: bool=str(selected.get("id",""))==str(p.id)
-		var label: String="焰请八方" if p.id=="player_diner" and TDPlannedTown.approved(map) else str(p.name)
-		if p.has("branch_id") and p.get("construction",false): label+=" · 施工至第%d天"%int(p.ready_day)
-		if kind in ["urban_village","rich_district"]: label+=" · 居民院落"
-		var text_width: float=TDUI.font().get_string_size(label,HORIZONTAL_ALIGNMENT_LEFT,-1,14).x
-		var plate:=Rect2(feet+Vector2(-text_width*.5-7,5),Vector2(text_width+14,22))
-		canvas.draw_style_box(_label_style(active),plate)
-		canvas.draw_string(TDUI.font(),plate.position+Vector2(7,16),label,HORIZONTAL_ALIGNMENT_LEFT,-1,TDUI.FONT_CAPTION,Color("fff1cd"))
-		if active:
-			var at: Vector2=selected.get("interaction_point",feet)
-			canvas.draw_circle(at,14,Color("554b39"));canvas.draw_arc(at,15,0,TAU,24,Color("f4d789"),2)
-			canvas.draw_string(TDUI.font(),at+Vector2(-5,5),"E",HORIZONTAL_ALIGNMENT_LEFT,-1,TDUI.FONT_CAPTION,Color("fff0c4"))
-		if canvas.get("day_minute")!=null: TDDaylight.glow(canvas,feet+Vector2(-width*.3,-width*.35),float(TDDaylight.sample(float(canvas.get("day_minute"))).lamps),30)
-
-static var _labels: Dictionary={}
-static func _label_style(active: bool) -> StyleBoxFlat:
-	if not _labels.has(active):
-		var style:=StyleBoxFlat.new();style.bg_color=Color("6a503cdd") if active else Color("424b3a99")
-		style.set_corner_radius_all(3);_labels[active]=style
-	return _labels[active]
+		TDDaylight.glow(canvas, feet + Vector2(-width * .3, -width * .35), float(daylight.lamps), 30)

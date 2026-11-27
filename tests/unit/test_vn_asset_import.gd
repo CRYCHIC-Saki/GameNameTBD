@@ -41,7 +41,7 @@ func test_new_character_and_added_expression_keep_existing_cast() -> void:
 	var first: Dictionary = importer.commit(importer.prepare(source,"character","小李"))
 	assert_eq(first.error,"")
 	var cast: VNEngineCast = ResourceLoader.load(importer.path(Importer.CAST),"",ResourceLoader.CACHE_MODE_IGNORE)
-	assert_eq(cast.characters.size(),3)
+	assert_eq(cast.characters.size(),(load("res://"+Importer.CAST) as VNEngineCast).characters.size()+1)
 	assert_eq(cast.get_entry("aling").display_name,"阿铃")
 	assert_eq(cast.get_entry(first.character).display_name,"小李")
 	assert_eq(cast.get_entry(first.character).default_expression,"calm")

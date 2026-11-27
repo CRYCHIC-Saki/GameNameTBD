@@ -12,7 +12,7 @@ from shapely.affinity import affine_transform
 from shapely.geometry import LineString, Point, Polygon, box
 from shapely.ops import unary_union
 from building_footprints import EGRET, stamp_building, wall_clearance
-from town_contacts import stamp_rock
+from town_contacts import FIXTURES, stamp_fixture, stamp_rock
 from egret_cart_track import cart_track
 from egret_land_use import VENUE_USES, measure_routes, survey_districts
 
@@ -123,8 +123,10 @@ def sprite(key,x,y,w,h,name=None,plot=None,base=None,flip=False,z=0,shadow=False
             stamp_building(walls,EGRET[key],(x,y),(w,h),flip)
         elif key=="rock":
             stamp_rock(solids,sprite_alpha.crop((ax,ay,ax+aw,ay+ah)),(x,y),(w,h),flip)
+        elif key in FIXTURES:
+            stamp_fixture(solids,key,(x,y),(w,h),flip)
         else:
-            ImageDraw.Draw(solids).rectangle(footing,fill=1)
+            raise ValueError(f"Unclassified solid: {key}")
         if plot:
             ImageDraw.Draw(uses).rectangle(footing,fill=ord(VENUE_USES[plot[1]]))
         elif key in ("gable","twins"):
@@ -250,7 +252,7 @@ while start<west_edge.length-30:
         draw_shape("BrokenFoam",LineString([(px-foam.uniform(1,3.7),py+.5),(px,py)]).buffer(foam.uniform(.4,.95)),-11,color=foam.choice(["c3eae5ef","f4fcf2ef","95d7d8cf"]))
     start+=length+foam.uniform(1,6)
 
-hall_x,hall_y=305,312
+hall_x,hall_y=250,312
 # Rolling cobbled lanes link the three civic buildings and the gates in their reference positions.
 paths=[
     (52,[(77,-55),(62,105),(71,182),(122,237),(125,277),(95,323),(68,354),(79,379),(231,366),(359,343),(485,350),(569,365)]),
@@ -353,8 +355,8 @@ for i,y in enumerate([98,164,228,311,360,464,609,650,710,790,852,928,1028]):
     x=rim_x(y)+11
     sprite("bollard",x,y,13,21,f"QuayBollard{i+1:02}",base=(-4,-4,8,4),world=True)
 
-def building(key,x,y,w,h,name=None,plot=None,foot=.78):
-    sprite(key,x,y,w,h,name,plot,(-w*foot/2,-h*.29,w*foot,h*.29),shadow=True)
+def building(key,x,y,w,h,name=None,plot=None,foot=.78,flip=False):
+    sprite(key,x,y,w,h,name,plot,(-w*foot/2,-h*.29,w*foot,h*.29),shadow=True,flip=flip)
     bounds.append(pixel_rect(*placed(x,y),w*.85,h*.66))
 
 building("hall",hall_x,hall_y,232,261,"TownHall",("commercial_street:bank","bank","白鹭河市政厅 · 银行"))
@@ -375,11 +377,7 @@ for key,x,y,w,h,flip in [
     ("gable",1666,143,92,132,1),("twins",-26.5,191,135,110,0),
     ("gable",17.7,307,110,123,0),("twins",1451,638,143,117,0),("twins",1597,600,153,154,0),
     ("gable",602,929,169,139,0),("gable",474,973,101,97,1)]:
-    building(key,x,y,w,h)
-    if flip:
-        # Flipping the graphic keeps the symmetric wall footing fixed.
-        k=next(j for j in range(len(scene)-1,-1,-1) if scene[j].startswith('metadata/art'))
-        scene.insert(k,'flip_h = true')
+    building(key,x,y,w,h,flip=flip)
 # The basin ellipse is centred 37 px behind the sprite's front lip.
 sprite("fountain",square_x,square_y+37/SPACING,141,121,"Fountain",("plaza","plaza","彩石喷泉广场"),(-49,-23,98,23),shadow=True)
 sprite("well",405,758,64,91,"VillageWell",base=(-20,-14,40,14),shadow=True)

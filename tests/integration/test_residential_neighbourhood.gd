@@ -76,7 +76,7 @@ func test_actual_neighbourhood_notice_and_player_cottage_keep_separate_actions()
 	var app:TDApplication=load("res://src/app/main.tscn").instantiate()
 	app.settings_path="res://artifacts/residential/slots-%d/settings.json"%Time.get_ticks_usec()
 	add_child_autofree(app);var shell:=app.game_shell;shell.automatic_time=false
-	assert_true(shell.create_game("slot-01").ok);shell.guide.dialogue.finish_now();shell.profile.story.beat="done";shell.town.sync_characters(0)
+	assert_true(shell.create_game("slot-01","小镇食堂",false).ok);shell.guide.dialogue.finish_now();shell.profile.story.beat="done";shell.town.sync_characters(0)
 	await get_tree().process_frame
 	shell.profile.residence.stage="door";assert_true(shell.profile.unlock_residence().ok)
 	var before: Dictionary=shell.profile.snapshot()
@@ -93,7 +93,7 @@ func test_actual_neighbourhood_notice_and_player_cottage_keep_separate_actions()
 		assert_true(labels.contains("居民区"));assert_false(labels.contains("地块参考总价"))
 		assert_eq(shell.profile.snapshot(),before);shell._close_dialog()
 	shell.town.spawn_at_plot("player_cottage");driver.tap(KEY_E);assert_eq(shell.location,"cottage")
-	assert_true(shell.save_game().ok);shell.go_title();assert_true(shell.load_game("slot-01").ok)
+	assert_true(shell.profile.save().ok);shell.go_title();assert_true(shell.load_game("slot-01").ok)
 	assert_eq(shell.location,"cottage")
 	var restored: Dictionary=shell.profile.world.town_map.cottage
 	assert_eq(str(restored.id),str(before.residence.plot.id))

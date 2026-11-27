@@ -15,7 +15,6 @@ var last_result: TDOutcome
 var input_offset_sec: float = 0.0
 var day_san: float = -1.0
 var story_coach: bool = false
-var dual: bool = false
 var generation: int = 0
 var base_recipe_id: String = "tomato_egg"
 var session_namespace: String = ""
@@ -69,28 +68,48 @@ var _cut_beats: SpinBox
 var _pc_buttons: Dictionary = {}
 var _pending_plan_local_ids: Array = []
 var restart_allowed: Callable
+var start_allowed: Callable
 var _pc_amount: SpinBox
 var document_rules: bool = false
+var thermal_label := "控温"
 var stage_label: String = ""
 var active_technique: String = ""
+var food_stage: String = ""
+var plating_source: String = ""
+var _food_operation: TDCookingQTE
+var cut_target := ""
 var _scheduled_settings: Dictionary = {}
 var active_sheet_id: String = ""
 var _customer_feedback: Array=[]
 var judgement_feedback: Dictionary = {}
-var _feedback_token: String = ""
+var _feedback_serials: Dictionary = {}
 var automatic: bool = false
 var external_operator: String = ""
 var _automatic_preparation: Array = []
 var _automatic_target: String = ""
 
+# A simultaneous directional prompt can finish before the food is done heating.
+# Only the operation that introduced this illustration advances its transition.
+func food_progress() -> float:
+	if _food_operation == null: return 1.
+	var state: Dictionary
+	if _food_operation == thermal_qte: state = thermal_progress
+	elif _food_operation == qte: state = progress
+	else: return 1.
+	if state.get("qte_kind") == "charge":
+		return clampf(float(state.get("held_sec",0.)) / maxf(.001,float(state.get("perfect_center_sec",1.))),0.,1.)
+	return float(state.get("progress",0.))
+
 func start_automatic() -> TDOutcome:
+	if start_allowed.is_valid() and not start_allowed.call():
+		return TDOutcome.new(false,"OTHER_POT_IN_USE","请先完成或清空正在使用的锅。")
 	if qte!=null or thermal_qte!=null or (sheet!=null and sheet.running) or not session.is_cold(): return TDOutcome.new(false,"BUSY")
 	var dish:=snapshot()
 	if dish.get("failed_dish",false) or dish.ingredients.is_empty(): return TDOutcome.new(false,"UNKNOWN_RECIPE")
 	automatic=true;session.set_production_mode("automatic");_automatic_preparation=[]
 	var recipe: Dictionary=catalog.recipe_data(base_recipe_id)
 	for food: Dictionary in dish.ingredients.values():
-		if food.history.any(func(h:Dictionary)->bool:return h.get("operation")=="cut"): continue
+		if float(food.fine)>0.0: continue
 		var chart: String=str(recipe.get("preparation_sheets",{}).get(food.ingredient_id,""))
 		if not chart.is_empty(): _automatic_preparation.append({"target":food.id,"sheet":chart})
 	return _next_automatic_sheet()
@@ -124,7 +143,11 @@ func new_session(recipe_id: String, entry: Dictionary = {}) -> void:
 	if thermal_qte != null: thermal_qte.cancel()
 	thermal_qte = null; thermal_progress = {}
 	if sheet != null: sheet.cancel()
-	sheet = null; judgement_feedback.clear(); _feedback_token = ""; stage_label = ""; active_technique=""
+	sheet = null; judgement_feedback.clear(); _feedback_serials.clear(); stage_label = ""; active_technique=""
+	food_stage = ""
+	plating_source = ""
+	cut_target = ""
+	_food_operation = null
 	qte = null
 	_audio.stop()
 	_plate.cancel_drag()
@@ -150,7 +173,7 @@ func new_session(recipe_id: String, entry: Dictionary = {}) -> void:
 			required.append({"id": identity, "min_amount": amounts[identity], "min_fine": 0, "max_fine": 1})
 		for step: Dictionary in entry.plan.operations:
 			if _content.operations.has(step.operation) and step.operation != "plate" and step.operation not in steps: steps.append(step.operation)
-		options.custom_recipe = {"id": entry.id, "name": entry.name, "version": entry.version, "required_ingredients": required, "required_steps": steps, "allowed_ingredients": amounts.keys(), "variant_ids": []}
+		options.custom_recipe = {"id": entry.id, "name": entry.name, "art_recipe_id": recipe_id, "version": entry.version, "required_ingredients": required, "required_steps": steps, "allowed_ingredients": amounts.keys(), "variant_ids": []}
 	var identity: String = "lane-%d-%d" % [lane_index,generation]
 	if not session_namespace.is_empty(): identity=session_namespace+":"+identity
 	session = TDCookingSession.new(identity, generation, catalog.for_recipe(recipe_id), options)
@@ -169,6 +192,8 @@ func new_session(recipe_id: String, entry: Dictionary = {}) -> void:
 	refresh()
 
 func perform(kind: String, args: Dictionary = {}) -> TDOutcome:
+	if kind not in ["deliver","discard"] and start_allowed.is_valid() and not start_allowed.call():
+		return TDOutcome.new(false,"OTHER_POT_IN_USE","请先完成或清空正在使用的锅。")
 	if _closed or clock.paused: return TDOutcome.new(false, "PAUSED_OR_CLOSED")
 	var focus: Control = get_viewport().gui_get_focus_owner()
 	if focus != null: focus.release_focus()
@@ -194,10 +219,6 @@ func perform(kind: String, args: Dictionary = {}) -> TDOutcome:
 					if assistance.has(key): settings[key]=assistance[key]
 			_apply_day_san(settings)
 			settings.document_rules = document_rules
-			if document_rules and dual and settings.kind == "maintain":
-				var delta: float = -.16 if lane_index == 0 else .2
-				settings.target_min = clampf(float(settings.target_min)+delta,0,1)
-				settings.target_max = clampf(float(settings.target_max)+delta,0,1)
 		if settings.kind == "rhythm" and not pc_controls:
 			_audio.prepare(settings)
 			settings.lead_in_sec = float(settings.lead_in_sec) + _audio.begin()
@@ -221,6 +242,7 @@ func perform(kind: String, args: Dictionary = {}) -> TDOutcome:
 				thermal_qte = controller; thermal_progress = started.data
 			else:
 				qte = controller; progress = started.data
+				judgement_feedback.clear()
 			if settings.kind == "maintain": _heat.set_value_no_signal(float(settings.initial_value) * 100)
 		_status.text = "正在%s" % _content.operations[kind].name
 	elif not result.ok:
@@ -308,7 +330,7 @@ func cancel_operation() -> void:
 	_pending_plan_local_id = ""
 	_audio.stop()
 	progress = {}
-	judgement_feedback.clear(); _feedback_token = ""
+	judgement_feedback.clear(); _feedback_serials.clear()
 	_status.text = "已取消本次操作，已完成的历史不会撤销。"
 	refresh()
 
@@ -406,8 +428,7 @@ func refresh() -> void:
 	_heat.visible = qte != null and progress.get("qte_kind") == "maintain"
 	_primary.visible = qte != null and progress.get("qte_kind") in ["charge", "rhythm", "window"]
 	_direction_row.visible = qte != null and progress.get("qte_kind") == "sequence"
-	var key: String = "W" if lane_index == 0 else "↑"
-	if not dual: key = "空格"
+	var key := "空格"
 	_primary.text = "按住 / 按下 " + key
 	var kind: String = progress.get("qte_kind", "")
 	if _plate.visible:
@@ -440,11 +461,13 @@ func refresh() -> void:
 	if pc_controls: _refresh_pc(dish)
 
 func _refresh_targets() -> void:
+	if document_rules and pc_controls: return
 	var selected: String = _selected(_targets)
 	_targets.clear()
 	if session == null: return
-	for identity: String in snapshot().ingredients:
-		var item: Dictionary = snapshot().ingredients[identity]
+	var ingredients: Dictionary = snapshot().ingredients
+	for identity: String in ingredients:
+		var item: Dictionary = ingredients[identity]
 		_targets.add_item("%s · %s · 第%d份" % [item.name, "主锅" if item.batch_id == "main" else "备料碗", _targets.item_count + 1])
 		_targets.set_item_metadata(_targets.item_count - 1, identity)
 		if identity == selected: _targets.select(_targets.item_count - 1)
@@ -627,7 +650,7 @@ func _row(parent: Node) -> HBoxContainer:
 func bind_preparation(value: TDCookingSession) -> void:
 	if qte != null: qte.cancel()
 	if sheet != null: sheet.cancel()
-	sheet = null; judgement_feedback.clear(); _feedback_token = ""
+	sheet = null; judgement_feedback.clear(); _feedback_serials.clear()
 	qte = null
 	if session != null and session != value:
 		if session.result_ready.is_connected(_on_session_result): session.result_ready.disconnect(_on_session_result)
@@ -693,9 +716,9 @@ func _capture_feedback(data: Dictionary) -> void:
 	if not document_rules: return
 	var event: Dictionary = data.get("last_judgement",{})
 	if event.is_empty(): return
-	var token: String = str(data.get("operation_id",""))+":"+str(event.serial)
-	if token == _feedback_token: return
-	_feedback_token = token
+	var id := str(data.get("operation_id",""))
+	if int(event.serial) <= int(_feedback_serials.get(id,-1)): return
+	_feedback_serials[id] = int(event.serial)
 	judgement_feedback = event.duplicate(true)
 	judgement_feedback.operation_id = data.operation_id
 	judgement_feedback.shown_at_sec = float(event.at_sec)
@@ -721,10 +744,6 @@ func _align_pc(settings: Dictionary) -> Dictionary:
 		settings.target_sec = maxf(.5, at - clock.qte_sec)
 		settings.timeout_sec = settings.target_sec + .3
 		settings.sweep_period_sec = settings.target_sec * 4
-	if settings.kind == "maintain" and dual:
-		var offsets: Array = _content.pc_operations.get("dual_target_offsets",[-.15,.2])
-		settings.target_min = clampf(float(settings.target_min)+float(offsets[mini(lane_index,1)]),0,1)
-		settings.target_max = clampf(float(settings.target_max)+float(offsets[mini(lane_index,1)]),0,1)
 	if assist_windows:
 		for field: String in ["perfect_sec", "good_sec", "good_margin_sec"]:
 			if settings.has(field): settings[field] = float(settings[field]) * 1.5
@@ -739,6 +758,8 @@ func _apply_day_san(settings: Dictionary) -> void:
 			settings[field] = float(settings[field]) * scale
 
 func start_sheet(id: String) -> TDOutcome:
+	if start_allowed.is_valid() and not start_allowed.call():
+		return TDOutcome.new(false,"OTHER_POT_IN_USE","请先完成或清空正在使用的锅。")
 	if qte != null or thermal_qte != null: return TDOutcome.new(false, "BUSY")
 	var configured: Dictionary = _content.pc_operations.document_sheets if document_rules else _content.pc_operations.sheets
 	if not configured.has(id): return TDOutcome.new(false, "UNKNOWN_SHEET")
@@ -746,6 +767,9 @@ func start_sheet(id: String) -> TDOutcome:
 	var check := sheet.configure(configured[id], _content.operations,_content.pc_operations.document_rules.get("assistance",{}) if document_rules else {})
 	if not check.ok: return check
 	active_sheet_id = id
+	food_stage = str(configured[id].get("initial_food_stage", ""))
+	plating_source = ""
+	_food_operation = null
 	var bar: float = 240.0 / float(configured[id].bpm)
 	var origin: float = ceil((clock.qte_sec - beat_offset_sec + .5) / bar) * bar + beat_offset_sec
 	_status.text = "下个强拍开始 · 留白可以休息，控温仍会继续"
@@ -762,15 +786,26 @@ func _advance_pc(delta: float) -> void:
 		if automatic and not _automatic_target.is_empty() and qte==null and thermal_qte==null and sheet!=null and not sheet.running and float(snapshot().recovery_sec)<=.000001:
 			_next_automatic_sheet()
 		if sheet != null:
+			if sheet.next_in(clock.qte_sec) <= .000000001:
+				if qte != null and qte.update().data.ready_to_finish: _finish()
+				if thermal_qte != null and thermal_qte.update().data.ready_to_finish: _finish_thermal()
 			for event: Dictionary in sheet.due(clock.qte_sec):
 				_scheduled_settings = event.get("settings",{}).duplicate(true)
 				var args: Dictionary = event.parameters.duplicate(true)
 				if document_rules and event.operation == "cut":
 					if snapshot().ingredients.is_empty(): sheet.cancel(); break
 					args.instance_id = _automatic_target if not _automatic_target.is_empty() else snapshot().ingredients.keys()[0]; args.beats = _scheduled_settings.beats
+				if event.operation in ["heat","boil"]:
+					thermal_label = event.get("label","控温")
 				if event.operation not in ["heat","boil"] or qte==null:
 					stage_label = event.get("label",""); active_technique=event.get("technique",event.operation)
 				var result := perform(event.operation, args)
+				if result.ok and event.operation == "cut":
+					cut_target = str(args.get("instance_id",""))
+				if result.ok and event.has("food_stage"):
+					if event.operation=="plate": plating_source=food_stage
+					food_stage = event.food_stage
+					_food_operation = thermal_qte if event.operation in ["heat","boil"] else qte
 				_scheduled_settings.clear()
 				if not result.ok:
 					sheet.cancel(); _status.text = "节拍表已停止：" + _explain_error(result)
@@ -790,14 +825,17 @@ func _advance_pc(delta: float) -> void:
 		if thermal_qte != null:
 			thermal_progress = thermal_qte.update().data
 			if bool(thermal_progress.ready_to_finish) and (remaining > .000000001 or span == 0):
-				var result := thermal_qte.finish()
-				thermal_progress = result.data
-				_capture_feedback(thermal_progress)
-				last_result = session.complete_operation(result)
-				_status.text = "控温完成 · 稳定 %.0f%% · %s" % [float(result.data.quality) * 100, result.data.grade]
-				thermal_qte = null
+				_finish_thermal()
 		if remaining <= .000000001: break
 	refresh()
+
+func _finish_thermal() -> void:
+	var result := thermal_qte.finish()
+	thermal_progress = result.data
+	_capture_feedback(thermal_progress)
+	last_result = session.complete_operation(result)
+	_status.text = "控温完成 · 稳定 %.0f%% · %s" % [float(result.data.quality) * 100, result.data.grade]
+	thermal_qte = null
 
 func _build_pc() -> void:
 	# Keep the original developer widgets as compatibility harnesses, but the

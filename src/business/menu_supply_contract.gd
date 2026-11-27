@@ -1,7 +1,7 @@
 extends RefCounted
 ## Fixed supplier for the brand. Plans, invoices and credit belong to one save slot.
 const HOME := "player_diner"
-const UNLOCK_LEVEL := 3
+const CREDIT_BASE_LEVEL := 3
 const DEFAULT_PORTIONS := 5
 const MAX_PORTIONS := 99
 const BASE_CREDIT := 15000
@@ -18,12 +18,14 @@ func level() -> int:
 	return int(p.progression.progress().level)
 
 func credit() -> int:
-	return 0 if level() < UNLOCK_LEVEL else BASE_CREDIT + (level() - UNLOCK_LEVEL) * CREDIT_PER_LEVEL
+	var p: TDGameProfile = owner.get_ref()
+	return BASE_CREDIT + maxi(0,level()-CREDIT_BASE_LEVEL)*CREDIT_PER_LEVEL if p.story_feature_available("suppliers") else 0
 
 func set_enabled(value: bool) -> TDOutcome:
 	var p: TDGameProfile = owner.get_ref()
 	if p == null or not p._alive: return TDOutcome.new(false,"STALE_PROFILE")
-	if value and level() < UNLOCK_LEVEL: return TDOutcome.new(false,"SUPPLY_LOCKED","品牌达到%d级后解锁。"%UNLOCK_LEVEL)
+	if value and not p.story_feature_available("suppliers"):
+		return TDOutcome.new(false,"STORY_LOCKED",TDRevisedMainline.expansion_hint("suppliers"))
 	state.enabled = value
 	return TDOutcome.new(true,"SUPPLY_SWITCH","已开启次晨配送。" if value else "已关闭次晨配送。")
 
@@ -36,7 +38,7 @@ func store_ids() -> Array:
 	var ids: Array = [HOME]
 	var day := p.world.day
 	for id: String in p.branches.state.stores:
-		if p.branches.funded(id) and int(p.branches.state.stores[id].start_day)<=day: ids.append(id)
+		if p.branches.can_support_store(id) and p.branches.funded(id) and int(p.branches.state.stores[id].start_day)<=day: ids.append(id)
 	return ids
 
 func dishes(store: String) -> Array:
@@ -75,7 +77,8 @@ func ingredients(store: String, counts: Dictionary, rows: Array) -> Dictionary:
 func book(store: String, counts: Dictionary) -> TDOutcome:
 	var p: TDGameProfile = owner.get_ref()
 	if p == null or not p._alive: return TDOutcome.new(false,"STALE_PROFILE")
-	if not state.enabled or level() < UNLOCK_LEVEL: return TDOutcome.new(false,"SUPPLY_DISABLED","请先开启供应商。")
+	if not p.story_feature_available("suppliers"): return TDOutcome.new(false,"STORY_LOCKED",TDRevisedMainline.expansion_hint("suppliers"))
+	if not state.enabled: return TDOutcome.new(false,"SUPPLY_DISABLED","请先开启供应商。")
 	if not evening(): return TDOutcome.new(false,"SUPPLY_NOT_EVENING","18:00 后或打烊后可预订明日菜单。")
 	if store not in store_ids(): return TDOutcome.new(false,"UNKNOWN_SUPPLY_TARGET")
 	var rows := dishes(store)
@@ -91,7 +94,7 @@ func book(store: String, counts: Dictionary) -> TDOutcome:
 
 func holds_menu(store: String) -> bool:
 	var p: TDGameProfile = owner.get_ref()
-	return state.enabled and int(state.menu_day)==p.world.day and state.portions.has(store)
+	return p.story_feature_available("suppliers") and state.enabled and int(state.menu_day)==p.world.day and state.portions.has(store)
 
 func _unit_price(p: TDGameProfile, destination: String, item: String) -> int:
 	var best := 0
@@ -125,8 +128,9 @@ func morning() -> void:
 	var business := p.shop.snapshot()
 	var day := int(business.day)
 	if business.phase!="PREPARE" or day<=int(state.processed_day): return
+	if not p.story_feature_available("suppliers"): return
 	state.processed_day = day
-	if not state.enabled or level()<UNLOCK_LEVEL:
+	if not state.enabled:
 		state.plans.clear()
 		return
 	state.menu_day = day

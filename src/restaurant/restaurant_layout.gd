@@ -1,10 +1,13 @@
 class_name TDRestaurantLayout
 extends RefCounted
 
+signal appearance_changed
+
 static var import_code: String = ""
 
 const ZONE_OF := {"#": "facade", "+": "movement", ".": "movement", "R": "reception", "O": "ordering", "D": "dining"}
 const CHAR_OF := {"facade": "#", "movement": ".", "reception": "R", "ordering": "O", "dining": "D"}
+const COUNTERS := ["cashier","order_counter","welcome_desk"]
 const FLOOR_FINISHES: Array[String] = ["wood", "tile", "stone", "carpet", "floor_chinese", "floor_french", "floor_japanese"]
 const WALL_FINISHES: Array[String] = ["paper", "stripe", "floral", "brick", "wall_chinese", "wall_french", "wall_japanese"]
 
@@ -20,6 +23,7 @@ var _entrances: Array[Vector2i] = []
 var _pieces: Array = []
 var _staff: Dictionary = {}
 var crew := TDRestaurantCrew.new()
+var protected_access: Array[Vector2i] = []
 var _serial: int = 100
 
 # Shared decorations have one visual identity and count as wildcard furniture.
@@ -37,7 +41,7 @@ static var floor_error: String = ""
 static func make_sized(catalog: TDRestaurantCatalog, columns_value: int, rows_value: int, culture_id: String = "chinese") -> TDRestaurantLayout:
 	floor_error = ""
 	if catalog == null or columns_value < 8 or rows_value < 8:
-		floor_error = "店内至少要 8×8，才放得下迎宾台和收银台"
+		floor_error = "店内至少要 8×8，才放得下收银台"
 		return null
 	var style := TDRegionalInterior.style(culture_id)
 	if not catalog.has_style(style, "low"):
@@ -76,10 +80,6 @@ static func make_sized(catalog: TDRestaurantCatalog, columns_value: int, rows_va
 				zone = "dining"
 			layout._write_cell(x, y, zone, entrance_cell)
 	var style_id := "%s_low" % style
-	var welcome := layout._commit(-1, layout._make_piece("welcome", "welcome_desk", 2, 2, 0, style_id))
-	if not welcome.ok:
-		floor_error = welcome.message
-		return null
 	var cashier := layout._commit(-1, layout._make_piece("cashier", "cashier", 5, 2, 0, style_id))
 	if not cashier.ok:
 		floor_error = cashier.message
@@ -182,6 +182,7 @@ func set_surface_finish(finish_id: String) -> TDOutcome:
 				replacement[y * columns + x] = finish_id
 				count += 1
 	_finishes = replacement
+	appearance_changed.emit()
 	return TDOutcome.new(true, "FINISHED", "整屋%s已换成%s" % ["墙面" if wall else "地面", finish_name(finish_id)], {"surface": "wall" if wall else "floor", "cells": count})
 
 # Kept for old saved-layout tooling. The game catalog uses set_surface_finish.
@@ -196,6 +197,7 @@ func set_finish(x: int, y: int, finish_id: String) -> TDOutcome:
 	if _finishes.size() != columns * rows:
 		_blank_finishes()
 	_finishes[y * columns + x] = finish_id
+	appearance_changed.emit()
 	return TDOutcome.new(true, "FINISHED", "已换成%s" % finish_name(finish_id))
 
 static func finish_name(finish_id: String) -> String:
@@ -297,7 +299,20 @@ func sit_cell(piece: Dictionary) -> Vector2i:
 				best_distance = distance
 	return best
 
+func counter() -> Dictionary:
+	for kind: String in COUNTERS:
+		var current := piece_by_kind(kind)
+		if not current.is_empty(): return current
+	return {}
+
+func normalize_counters() -> void:
+	var keep := counter()
+	if not keep.is_empty():
+		_pieces = _pieces.filter(func(item: Dictionary) -> bool: return item.kind not in COUNTERS or item.id==keep.id)
+
 func place(kind: String, x: int, y: int, rotation: int, style_id: String = "") -> TDOutcome:
+	if kind in COUNTERS and _pieces.any(func(item: Dictionary) -> bool: return item.kind in COUNTERS):
+		return _fail("COUNTER_LIMIT","餐厅只摆放一个柜台，可移动现有柜台。")
 	var id := "piece-%d" % _serial
 	_serial += 1
 	var result := _commit(-1, _make_piece(id, kind, x, y, rotation, style_id if style_id != "" else _venue_style()))
@@ -310,6 +325,7 @@ func remove_piece(id: String) -> TDOutcome:
 	if index < 0:
 		return _fail("MISSING", "没有这件家具")
 	_pieces.remove_at(index)
+	appearance_changed.emit()
 	return TDOutcome.new(true, "REMOVED", "已拆除")
 
 func move_piece(id: String, x: int, y: int) -> TDOutcome:
@@ -344,6 +360,7 @@ func restyle_piece(id: String, next_culture: String, next_tier: String) -> TDOut
 	if index < 0:
 		return _fail("MISSING", "没有这件家具")
 	(_pieces[index] as Dictionary)["style_id"] = _item_style(str(_pieces[index].kind), "%s_%s" % [next_culture, next_tier])
+	appearance_changed.emit()
 	return TDOutcome.new(true, "RESTYLED", "这件家具已换风格")
 
 func apply_venue_style(next_culture: String, next_tier: String) -> TDOutcome:
@@ -354,6 +371,7 @@ func apply_venue_style(next_culture: String, next_tier: String) -> TDOutcome:
 	var style := _venue_style()
 	for item: Variant in _pieces:
 		(item as Dictionary)["style_id"] = _item_style(str(item.kind), style)
+	appearance_changed.emit()
 	return TDOutcome.new(true, "RESTYLED", "全店已换成%s%s" % [_catalog.culture_name(culture), _catalog.tier_name(tier)])
 
 func set_staff(role: String, hired: bool) -> TDOutcome:
@@ -383,6 +401,7 @@ func paint(x: int, y: int, symbol: String) -> TDOutcome:
 	var finish_fits := (next_wall and WALL_FINISHES.has(previous_finish)) or (not next_wall and FLOOR_FINISHES.has(previous_finish))
 	if not previous_finish.is_empty() and not finish_fits and _finishes.size() == columns * rows:
 		_finishes[y * columns + x] = ""
+	appearance_changed.emit()
 	return TDOutcome.new(true, "PAINTED", "格子已修改")
 
 func interact_code(id: String) -> String:
@@ -581,13 +600,21 @@ func _commit(index: int, built: Dictionary) -> TDOutcome:
 		if previous != null:
 			_pieces.insert(index, previous)
 		return checked
-	if checked.ok:
-		checked = TDOutcome.new(true, "PLACED", "已放置", {"id": String(built["id"])})
 	if index >= 0:
 		_pieces.insert(index, built)
 	else:
 		_pieces.append(built)
-	return checked
+	if not can_reach_protected_access():
+		_pieces.erase(built)
+		if previous != null: _pieces.insert(index, previous)
+		return _fail("BLOCKED_ACCESS", "请给店门、后厨和墙上的面板留出通道。")
+	appearance_changed.emit()
+	return TDOutcome.new(true, "PLACED", "已放置", {"id": String(built["id"])})
+
+func can_reach_protected_access() -> bool:
+	for cell: Vector2i in protected_access:
+		if path(entrance(),cell).is_empty(): return false
+	return true
 
 func _make_piece(id: String, kind: String, x: int, y: int, rotation: int, style_id: String, service_from_right: bool = false) -> Dictionary:
 	if _catalog == null:

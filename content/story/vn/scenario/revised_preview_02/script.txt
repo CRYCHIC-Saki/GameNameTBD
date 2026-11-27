@@ -1,0 +1,60 @@
+# start
+@bg old-stall with instant 0
+narrator: 【剧本预览】本场可查看完整台词，战斗和经营结果不写入正式进度。
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show aling proud at td:0.740000:1.555701:2.150000 with instant
+aling: 此处乃吾家闲置的摊位，今日便借你一用。排烟结界，展开！莫让你的火焰惊动四邻。
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 欸，那我就不客气啦！这里有番茄和鸡蛋，我们就比番茄炒蛋怎么样？
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show aling angry at td:0.740000:1.555701:2.150000 with instant
+aling: 吾先言明：番茄须大块，鸡蛋须嫩，略带甜味。若敢献上焦炭，休怪夜鸦笔下无情！
+@show hero proud at td:0.268170:1.464197:2.150000 with instant
+hero: 放心吧，这道菜我练了整整一个冬天，今天一定让你吃个满意！
+narrator: 两人正要开火，一位拿着麦克风的少女循着声音找了过来。她正用操纵电磁波传播的能力，为电视台进行现场报道。
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hina with instant
+@show hertz troubled at td:0.707320:1.555701:2.150000 with instant
+hertz: 两位，我是电视台主持人赫兹，正在调查这里的餐馆为什么全部停业。难得碰到有人比试，能让我做个现场报道吗？
+@show hero calm at td:0.268170:1.464197:2.150000 with instant
+hero: 好啊！不过我要先把这顿饭做好，采访的话，等吃饭的时候再问吧。
+narrator: 阿铃尝过焰子的炒蛋，原本准备好的评语迟迟没说出口，筷子倒是一直没停。
+@show hero angry at td:0.268170:1.464197:2.150000 with instant
+hero: 喂，先给我留两口呀！我做这顿饭是想填饱肚子，照你这个吃法，一会儿连盘子都省得洗了。
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hina with instant
+@show hertz happy at td:0.707320:1.555701:2.150000 with instant
+hertz: 刚到臻味港就赢下了一场比试，真是个不错的开头！焰子，你接下来还想挑战这里的其他厨师吗？
+@show hero calm at td:0.268170:1.464197:2.150000 with instant
+hero: 有机会的话当然想试试，我还想做道菜给那位公主尝尝呢。听说她很挑剔，我就更想知道，她到底喜欢吃什么了。
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show aling cry at td:0.740000:1.555701:2.150000 with instant
+aling: 此战是吾输了，夜鸦的威名竟折于一盘炒蛋……罢了，你这手艺值得引荐给罗金娜。
+@show hero puzzled at td:0.268170:1.464197:2.150000 with instant
+hero: 罗金娜是谁？也是这里的厨师吗？
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+@show aling calm at td:0.740000:1.555701:2.150000 with instant
+aling: 正是。她厨艺精湛，又经营着食材铺，今日恰好回店补货。待用过饭，吾便带你前去拜访。
+@end

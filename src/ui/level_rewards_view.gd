@@ -42,8 +42,10 @@ func setup(levels: TDLevelProgression, points: int) -> void:
 		_text(daily,"%d 家经营店 · 规模 %.1f 标准店 · 折算正利润 ¥%.2f/标准店"%[record.store_count,float(record.scale_milli)/1000,float(record.normalized_profit_cents)/100],TDUI.FONT_CAPTION,Color("65503a"))
 		if progress.at_cap: _text(daily,"满级后不再增加经验，上方分项保留当日映射明细。",TDUI.FONT_CAPTION,Color("65503a"))
 	_text(self,"每日至多 %d XP；收益越高，经验增幅越小。菜品名气、借款和补助不计入。"%int(levels.config.daily.max_xp),TDUI.FONT_CAPTION,Color("65503a"))
-	if progress.migrated: _text(self,"旧档成长从第 %d 天开始记录，历史进度和已解锁功能保留。"%int(progress.origin_day),TDUI.FONT_CAPTION,Color("65503a"))
+	if progress.migrated: _text(self,"旧档成长从第 %d 天开始记录，历史经营数据保留。"%int(progress.origin_day),TDUI.FONT_CAPTION,Color("65503a"))
 	_text(self,"等级奖励",TDUI.FONT_TITLE,Color("764019"))
+	var decor_catalog := TDRestaurantCatalog.new()
+	decor_catalog.load_file()
 	for level: int in range(2,int(progress.max_level)+1):
 		var reward := levels.reward_for(level)
 		var achieved := level<=int(progress.level)
@@ -51,8 +53,14 @@ func setup(levels: TDLevelProgression, points: int) -> void:
 		var badge := TDUI.label("Lv.%02d"%level,TDUI.FONT_SECTION,Color("764019") if achieved else Color("78674d"));badge.custom_minimum_size.x=90;badge.autowrap_mode=TextServer.AUTOWRAP_OFF;row.add_child(badge)
 		var details := VBoxContainer.new();details.size_flags_horizontal=Control.SIZE_EXPAND_FILL;row.add_child(details)
 		_text(details,"灵感 +%d%s"%[reward.inspiration,"  ·  里程碑奖励" if level%int(levels.config.rewards.milestone_every)==0 else ""],TDUI.FONT_BODY)
-		if level==TDGameProfile.MenuSupply.UNLOCK_LEVEL:
-			_text(details,"解锁供应商 · 按次日菜单配送",TDUI.FONT_CAPTION,Color("315836"))
+		for id: String in levels.config.get("decoration",{}):
+			if levels.decoration_level(id)!=level: continue
+			var item := decor_catalog.furniture(id)
+			var name_value := TDRestaurantLayout.finish_name(id) if item.is_empty() else str(item.name)
+			_text(details,"装修解锁 · "+name_value,TDUI.FONT_CAPTION,Color("315836"))
+		for milestone: Dictionary in TDRevisedMainline.EXPANSION_MILESTONES.values():
+			if level==int(milestone.level):
+				_text(details,"和味道主线 · 与阿铃对话后开放"+str(milestone.name),TDUI.FONT_CAPTION,Color("315836"))
 		for hook: Dictionary in levels.config.hooks:
 			if int(hook.level)!=level: continue
 			var kind := str({"feature":"功能资格","furniture":"家具资格","story":"剧情触发","event":"事件触发"}[hook.kind])
@@ -60,4 +68,3 @@ func setup(levels: TDLevelProgression, points: int) -> void:
 		var status := "已到账" if achieved else ("下一级" if level==int(progress.level)+1 else "未达成")
 		var status_label := TDUI.label(status,TDUI.FONT_BODY,Color("315836") if achieved else Color("78674d"))
 		status_label.autowrap_mode=TextServer.AUTOWRAP_OFF;row.add_child(status_label)
-	_text(self,"功能、家具和故事奖励将在后续公布；当前已开放功能保持可用。",TDUI.FONT_BODY,Color("65503a"))

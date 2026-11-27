@@ -143,28 +143,20 @@ func test_all_five_real_qtes_cook_plate_deliver_and_explain_two_customers() -> v
 	assert_eq(dish, lane.snapshot(), "scoring must be read only")
 	assert_gt(lane._feedback.text.length(), 30)
 
-func test_dual_input_routing_same_frame_pause_and_single_side_restart() -> void:
-	bench.set_dual(true)
-	var right: TDCookingLane = bench.lanes[1]
-	lane.perform("preheat"); right.perform("preheat")
-	_key(KEY_W); _key(KEY_UP)
-	bench.advance(.7)
-	_key(KEY_W, true, true)
-	assert_almost_eq(float(lane.progress.held_sec), .7, .00001)
-	assert_almost_eq(float(right.progress.held_sec), .7, .00001)
+func test_single_pot_ignores_other_bench_and_pause_freezes_input() -> void:
+	var right := bench.lanes[1]
+	assert_true(lane.perform("preheat").ok)
+	assert_eq(right.perform("add",{"ingredient_id":"egg"}).code,"OTHER_POT_IN_USE")
+	_key(KEY_SPACE); bench.advance(.7)
+	assert_almost_eq(float(lane.progress.held_sec),.7,.00001)
 	app.toggle_pause(); bench.advance(20)
-	assert_almost_eq(lane.clock.qte_sec, .7, .00001)
+	assert_almost_eq(lane.clock.qte_sec,.7,.00001)
 	app.toggle_pause()
-	_key(KEY_W, false); _key(KEY_UP, false)
-	_key(KEY_UP); bench.advance(.7); _key(KEY_UP, false)
+	_key(KEY_SPACE,false)
 	assert_null(right.qte)
-	var right_before: Dictionary = right.snapshot()
-	var old: String = lane.progress.operation_id
+	var old: String=lane.progress.operation_id
 	lane.cancel_operation(); lane.new_session("tomato_egg"); lane.perform("preheat")
-	assert_eq(lane.input_action("primary", true, 1, old).code, "STALE_OPERATION")
-	assert_eq(right_before, right.snapshot())
-	_key(KEY_SPACE); _key(KEY_SPACE, false)
-	assert_eq(float(lane.progress.held_sec), 0.0, "Space cannot feed two lanes in dual mode")
+	assert_eq(lane.input_action("primary",true,1,old).code,"STALE_OPERATION")
 
 func test_free_plating_mouse_signals_rework_spill_and_independent_other_dish() -> void:
 	lane.perform("add", {"ingredient_id": "egg"})

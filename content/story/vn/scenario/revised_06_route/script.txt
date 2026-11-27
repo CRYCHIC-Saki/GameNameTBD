@@ -1,0 +1,33 @@
+# start
+@bg ingredient-shop with instant 0
+// 原稿第 49 段 【高兴】焰子
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 好！等我成为一个成熟的厨师，就回来重新挑战你。到时候你可要好好尝尝我的菜！
+@hide aling with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+// 原稿第 50 段 【得意】罗金娜
+@show chen proud at td:0.789020:1.503413:2.150000 with instant
+chen: 那就说好了，我会在这里等你回来。路上用的食材先送你们一些，等你学成了，可要常来照顾我的生意。金娜姐挑食材的本事，你也尝过了吧？
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+@hide hina with instant
+// 原稿第 51 段 【高兴】阿铃
+@show aling happy at td:0.740000:1.555701:2.150000 with instant
+aling: 此行路途遥远，夜鸦愿为向导，与你同赴各地灶前。
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hina with instant
+// 原稿第 52 段 【得意】赫兹
+@show hertz proud at td:0.707320:1.555701:2.150000 with instant
+hertz: 从见习厨师开始，学会各地的料理，最后回来挑战公主，这段经历很适合做成追踪节目！你们愿意让我随行采访吗？沿途的厨师和他们的拿手菜，我也想介绍给观众。
+// 原稿第 53 段 【高兴】焰子
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 好啊，大家一起去吧！有阿铃带路，我就不用担心找不到那些店了。赫兹，你也可以跟着尝尝，我们先去维托那里！
+@end

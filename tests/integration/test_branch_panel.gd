@@ -7,7 +7,7 @@ func before_each() -> void:
 	app.settings_path="res://artifacts/branch-ui/%d/settings.json"%Time.get_ticks_usec()
 	add_child_autofree(app); shell=app.game_shell; shell.automatic_time=false
 	await get_tree().process_frame
-	assert_true(shell.create_game("slot-01","分店测试").ok)
+	assert_true(shell.create_game("slot-01","分店测试",false).ok)
 	shell.guide.dialogue.finish_now()
 	shell.profile.shop.world_adjustment(300000,"fixture","test")
 	# D063: selection is from owned cards, never free anonymous managers.
@@ -38,6 +38,25 @@ func pan_to_site(view: TDBranchPanel.SiteMap) -> void:
 	view._gui_input(drag)
 	middle.pressed = false
 	view._gui_input(middle)
+
+func test_completed_regional_branches_are_owned_before_staffing() -> void:
+	var branches := shell.profile.branches
+	var money := int(shell.profile.shop.snapshot().money_cents)
+	branches.install_completed_storefronts()
+	assert_eq(branches.state.stores.size(), 2)
+	for town: String in ["tokyo", "paris"]:
+		var shops := branches.plots(town)
+		assert_eq(shops.size(), 1)
+		if shops.is_empty(): continue
+		var id: String = shops[0].branch_id
+		assert_true(branches.is_built(id))
+		assert_true(shell.profile.employees.manager_for(id).is_empty())
+		assert_true(branches.state.stores[id].paused)
+		assert_true(branches.candidates(town, {}).is_empty())
+	branches.settle()
+	assert_eq(int(shell.profile.shop.snapshot().money_cents), money, "unopened stores do not accrue rent")
+	var checked := TDGameProfile.validate_save(shell.profile.snapshot())
+	assert_true(checked.ok, checked.code)
 
 func test_market_lawn_is_public_frontage_in_the_site_map() -> void:
 	shell.show_branch()
@@ -70,11 +89,11 @@ func test_real_entry_rectangle_drag_manager_selection_creation_and_reentry() -> 
 	assert_false(view.create_button.disabled)
 	view.create_button.pressed.emit()
 	await wait_process_frames(2)
-	assert_eq(shell.profile.branches.state.stores.size(),1)
-	assert_eq(shell.profile.branches.state.stores.values()[0].manager_id,"")
+	assert_eq(shell.profile.branches.state.stores.size(),before.branches.stores.size()+1)
+	assert_eq(shell.profile.branches.state.stores.values().back().manager_id,"")
 	assert_eq(int(before.shop.money_cents)-int(shell.profile.shop.snapshot().money_cents),30800)
 	shell._close_dialog(); shell.show_branch()
-	assert_eq(shell.profile.branches.state.stores.size(),1)
+	assert_eq(shell.profile.branches.state.stores.size(),before.branches.stores.size()+1)
 	assert_eq(panel().find_children("*","TDBranchPanel",true,false).size(),0)
 	var checked:=TDGameProfile.validate_save(shell.profile.snapshot()); assert_true(checked.ok,checked.code)
 
@@ -88,18 +107,18 @@ func test_cancel_and_protected_drag_do_not_change_profile() -> void:
 	assert_eq(shell.profile.snapshot(),before)
 
 func test_new_branch_and_menu_changes_only_persist_after_explicit_save() -> void:
-	assert_true(shell.save_game().ok)
+	assert_true(shell.profile.save().ok)
 	var original:=shell.profile.snapshot()
 	var opened:=shell.profile.branches.open_store("chengdu",[30,10,3,4],"cn","manager.steady","open-fixture")
 	assert_true(opened.ok,opened.code)
 	var store: TDProfileStore=shell.slots
 	var saved: TDOutcome=store.load_slot("slot-01")
 	assert_true(saved.ok)
-	assert_true(saved.data.branches.stores.is_empty())
+	assert_eq(saved.data.branches.stores.keys(),original.branches.stores.keys())
 	assert_eq(int(saved.data.shop.money_cents),int(original.shop.money_cents))
-	assert_true(shell.save_game().ok)
+	assert_true(shell.profile.save().ok)
 	saved=store.load_slot("slot-01")
-	assert_eq(saved.data.branches.stores.size(),1)
+	assert_eq(saved.data.branches.stores.size(),original.branches.stores.size()+1)
 	shell.profile.branches.configure_store(opened.data.store_id,shell.profile.branches.state.stores[opened.data.store_id].menu,0,true)
 	var restored:=TDGameProfile.new(); var result:=restored.restore(saved.data)
 	assert_true(result.ok,result.code)
@@ -165,6 +184,6 @@ func test_large_manager_roster_does_not_force_hiring_before_construction() -> vo
 	assert_false(view.create_button.disabled)
 	var roster:=shell.profile.employees.snapshot()
 	view._toggle_site();view._toggle_site();view.confirm();await wait_process_frames(2)
-	assert_eq(shell.profile.branches.state.stores.values()[0].manager_id,"")
+	assert_eq(shell.profile.branches.state.stores.values().back().manager_id,"")
 	assert_eq(shell.profile.employees.snapshot(),roster)
 	var checked:=TDGameProfile.validate_save(shell.profile.snapshot());assert_true(checked.ok,checked.code)

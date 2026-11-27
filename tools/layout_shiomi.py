@@ -3,6 +3,7 @@ the approved artist's 1536 x 1024 composition. No overview image is an input.
 Run with --sheets buildings.png vegetation.png surfaces.png village.png coast.png once to cut the kit.
 Subsequent layout builds reuse the project's packed art and region manifest.
 """
+from town_contacts import FIXTURES, stamp_fixture
 from building_footprints import SHIOMI, stamp_building
 import argparse
 import base64
@@ -139,7 +140,7 @@ objects = []
 def obj(art,x,y,w,plot="",kind="",name="",base=.20):
     objects.append(dict(art=art,x=x,y=y,w=w,plot=plot,kind=kind,title=name,base=base))
 
-obj("shrine",254,134,100,"landmark","landmark","坂下樱花参道")
+obj("shrine",254,134,100,"landmark","landmark","天妇罗神社")
 obj("torii",255,292,119,base=0)
 obj("produce",405,481,231,"market-neighborhood","market","町内食材铺")
 obj("stage",450,633,208,"plaza","plaza","滨町能舞台")
@@ -505,6 +506,8 @@ def write_map():
     scene=['[gd_scene format=4]','[ext_resource type="Script" path="res://src/town/outdoor_atmosphere.gd" id="outdoors"]',
      '[ext_resource type="TileSet" path="res://src/town/shiomi_tiles.tres" id="tiles"]',
      '[ext_resource type="Texture2D" path="res://assets/town/shiomi-sprites-v1.png" id="sheet"]',
+     '[ext_resource type="Texture2D" path="res://assets/town/shiomi-tempura-sign.png" id="tempura_sign"]',
+     '[ext_resource type="Texture2D" path="res://assets/town/shiomi-water-tub.png" id="water_tub"]',
      '[ext_resource type="Script" path="res://src/town/shiomi_ambience.gd" id="ambience"]',
      '[ext_resource type="Texture2D" path="res://assets/town/shiomi-detail-tiles.png" id="detail_sheet"]',
      *finish_resources,
@@ -554,18 +557,26 @@ def write_map():
             flipped=i%3==1 and key in {"shore","outcrop","crag","ledge"}
             cadastral.rock_contact(rock_mask,key,x,y,w,h,flipped)
             cadastral.rock_contact(walking_rocks,key,x,y,w,h,flipped,alpha.crop((rx,ry,rx+rw,ry+rh)))
+        if key=="wheel" and not hidden:
+            stamp_fixture(fixed,key,(x,y),(w,h))
         if base and not hidden:
             footprints.rectangle((x-bw/2,y-base,x+bw/2,y),fill=1)
             if key not in cadastral.ROCK_FEET:
                 scene += [f'metadata/base = Rect2({-bw/2:.2f},{-base:.2f},{bw:.2f},{base:.2f})']
                 if key in SHIOMI:
                     stamp_building(walls,SHIOMI[key],(x,y),(w,h))
+                elif key in FIXTURES:
+                    flipped=i%3==1 and key in {"sakura","pine","bamboo","dwarf"}
+                    stamp_fixture(fixed,key,(x,y),(w,h),flipped)
                 else:
-                    fixed_brush.rectangle((x-bw/2,y-base,x+bw/2,y),fill=1)
+                    raise ValueError(f"Unclassified solid: {key}")
         if key=="torii":
             for dx in [-41,41]: fixed_brush.rectangle((x+dx-4,y-7,x+dx+4,y),fill=1)
         if (key in BUILDING_SIZES or key=="house") and not finishes.paved_building(o):
             scene+=['metadata/grass_footing = true']
+        if key == "shrine":
+            scene += [f'[node name="TempuraSign" type="Sprite2D" parent="{label}"]',
+                      'position = Vector2(0, -100)', 'texture = ExtResource("tempura_sign")']
         if not hidden and (key in trees or key in {"house","produce","stage","bank","office","tower","fish","inn","bath","port","mill","shrine","torii"}):
             silhouette=alpha.crop((rx,ry,rx+rw,ry+rh)).resize((round(w),round(h)),Image.Resampling.NEAREST)
             if key in trees and i%3==1: silhouette=silhouette.transpose(Image.Transpose.FLIP_LEFT_RIGHT)

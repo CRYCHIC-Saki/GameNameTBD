@@ -1,6 +1,8 @@
 class_name TDShopView
 extends Control
 signal active_time_advanced(seconds: float)
+signal dish_finished(dish: Dictionary)
+var external_interactive: Callable
 var external_time_boundary: Callable
 var story_delivery: Callable
 var story_cooking_check: Callable
@@ -119,6 +121,12 @@ func _build_shell() -> void:
 	_holder=Control.new(); _holder.position=Vector2(12,174); _holder.size=Vector2(920,575); add_child(_holder)
 	var scroll:=ScrollContainer.new(); scroll.position=Vector2(953,166); scroll.size=Vector2(303,610); scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED; add_child(scroll)
 	_sidebar=VBoxContainer.new(); _sidebar.size_flags_horizontal=Control.SIZE_EXPAND_FILL; _sidebar.add_theme_constant_override("separation",10); scroll.add_child(_sidebar)
+	if embedded:
+		_holder.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		_holder.offset_left=8; _holder.offset_top=70; _holder.offset_right=-262; _holder.offset_bottom=-57
+		_holder.resized.connect(_fit_kitchen_world)
+		scroll.set_anchors_and_offsets_preset(Control.PRESET_RIGHT_WIDE)
+		scroll.offset_left=-252; scroll.offset_right=-8; scroll.offset_top=76; scroll.offset_bottom=-57
 	_page=PanelContainer.new(); _page.position=Vector2(18,166); _page.size=Vector2(913,610); add_child(_page)
 
 func _make_kitchen() -> void:
@@ -134,12 +142,14 @@ func _make_kitchen() -> void:
 	kitchen.station_handler=_station
 	kitchen.action_handler=_station_action
 	kitchen.time_boundary=_next_time_boundary
+	kitchen.other_interactive_kitchen=func()->bool: return external_interactive.is_valid() and external_interactive.call()
 	kitchen.single_fridge=true
 	kitchen.z_index=2
 	kitchen.back_requested.connect(request_back); kitchen.pause_requested.connect(func()->void:pause_requested.emit())
 	kitchen.time_advanced.connect(_on_time); kitchen.dish_delivered.connect(_on_dish)
 	kitchen.work_advanced.connect(_on_work)
-	_holder.add_child(kitchen); kitchen.world.scale=Vector2(.71875,.71875)
+	_holder.add_child(kitchen)
+	_fit_kitchen_world()
 	kitchen.world.get_node("Background").z_index=-1
 	kitchen.world.set_return_visible(false)
 	kitchen.world.cuisine_id=shop.cuisine_id
@@ -152,6 +162,7 @@ func _make_kitchen() -> void:
 		kitchen.world.dining_requested.connect(func()->void:back_requested.emit())
 	# Saved consumption tokens survive a reload. New sessions must not restart
 	# the old portable/lane identity counters in the same business day.
+	shop.merge_unprepared_stock()
 	var kitchen_scope:=shop.day_namespace()+"kitchen-%d"%int(shop.snapshot().serial)
 	kitchen.handling.session_namespace=kitchen_scope+":"
 	kitchen.handling.material_sink=shop.consume_materials
@@ -162,13 +173,20 @@ func _make_kitchen() -> void:
 	staff=TDKitchenStaff.new(shop,kitchen,_reset_pot)
 	kitchen.world.staff_source=staff.rows
 
+func _fit_kitchen_world() -> void:
+	if not is_instance_valid(kitchen) or not is_instance_valid(kitchen.world): return
+	var room_size := Vector2(1280,800)
+	var scale_factor := minf(_holder.size.x/room_size.x,_holder.size.y/room_size.y)
+	kitchen.world.scale=Vector2.ONE*scale_factor
+	kitchen.world.position=Vector2(0,maxf(0.0,(_holder.size.y-room_size.y*scale_factor)*.5))
+
 func refresh(force: bool = false) -> void:
 	if shop==null or _closed: return
 	var state: Dictionary=shop.snapshot()
 	var fame: int=0
 	for id: String in state.menu:
 		if state.menu[id].enabled: fame+=int(state.fame.get(id,0))
-	_title.text="小镇食堂  ·  第 %d 天     ¥ %.2f     人气 %d   菜品名气合计 %d" % [state.day,float(state.money_cents)/100.0,state.popularity,fame]
+	_title.text="餐厅  ·  第 %d 天     ¥ %.2f     人气 %d   菜品名气合计 %d" % [state.day,float(state.money_cents)/100.0,state.popularity,fame]
 	var boundary: bool=state.phase in ["PREPARE","SETTLED"]
 	_open_button.disabled=state.phase!="PREPARE" or _load_blocked
 	_save_button.disabled=not boundary or _load_blocked
@@ -221,7 +239,7 @@ func _planning_page(state: Dictionary) -> void:
 		var row:=HBoxContainer.new(); column.add_child(row)
 		var rename:=LineEdit.new(); rename.text=entry.name; rename.custom_minimum_size.x=250; row.add_child(rename)
 		row.add_child(TDUI.button("改名 / 保存新版本",func()->void:_show(shop.save_plan(rename.text,entry.plan,entry.id));refresh(true)))
-	column.add_child(TDUI.label("声望：本阶段未启用。菜品名气分别累计；店名气只统计当前上架菜。",TDUI.FONT_CAPTION,TDUI.MUTED))
+	column.add_child(TDUI.label("菜品名气分别累计。店名气随实际成交增长。",TDUI.FONT_CAPTION,TDUI.MUTED))
 
 func _summary_page(column: VBoxContainer, report: Dictionary) -> void:
 	for id: String in report.get("spoiled_units",{}):
@@ -264,7 +282,7 @@ func _summary_page(column: VBoxContainer, report: Dictionary) -> void:
 		var effect := "本单 %+.2f 元（小费 ¥%.2f，退款 ¥%.2f）    人气 %+d" % [float(row.money_cents) / 100.0, float(row.tip_cents) / 100.0, float(row.refunded_cents) / 100.0, int(row.popularity_delta)]
 		if shop.commerce!=null: effect="本单 %+.2f 元（小费 ¥%.2f，退款 ¥%.2f）"%[float(row.money_cents)/100,float(row.tip_cents)/100,float(row.refunded_cents)/100]
 		if int(row.fame_delta) != 0:
-			effect += "    名气 %+d" % int(row.fame_delta)
+			effect += "    菜品名气 %+d" % int(row.fame_delta)
 		body.add_child(TDUI.label(effect, TDUI.FONT_CAPTION))
 		if float(row.satisfaction) >= 0.0:
 			body.add_child(TDUI.label("评价 %.1f 分 · %d 星" % [float(row.satisfaction), int(row.stars)], TDUI.FONT_CAPTION))
@@ -312,7 +330,7 @@ func _orders_panel(state: Dictionary) -> void:
 	if not done.is_empty():
 		var last: Dictionary=done.back()
 		_sidebar.add_child(TDUI.label("最近一单 · "+_status_name(last.status),TDUI.FONT_BODY,TDUI.ORANGE))
-		if last.has("feedback"): _sidebar.add_child(TDUI.label(str(last.feedback)+(" 评价已记入账本。" if shop.commerce!=null else " 人气小幅下降。"),TDUI.FONT_CAPTION,TDUI.MUTED))
+		if last.has("feedback"): _sidebar.add_child(TDUI.label(str(last.feedback)+(" 人气小幅下降。" if int(last.get("popularity_delta", 0)) < 0 else " 评价已记入账本。"),TDUI.FONT_CAPTION,TDUI.MUTED))
 		if not last.score.is_empty():
 			_sidebar.add_child(TDUI.label("%.1f 分  ·  小费 ¥%.2f" % [last.score.satisfaction,float(last.tip_cents)/100],TDUI.FONT_BODY))
 			for reason: Dictionary in last.score.reasons.slice(0,3): _sidebar.add_child(TDUI.label(_feedback_text(str(reason.message)),TDUI.FONT_CAPTION,TDUI.MUTED))
@@ -395,10 +413,16 @@ func _station_action(id: String, action: String) -> void:
 	var index: int=1 if id in ["kitchen.stove.right","kitchen.steamer"] else 0
 	var lane: TDCookingLane=kitchen.lanes[index]
 	if staff!=null and staff.owns(index): _station_done(TDOutcome.new(false,"STAFF_BUSY","这口锅由厨师负责，完成后会端到出餐口。"));return
+	if kitchen.other_pot_in_use(index):
+		_station_done(TDOutcome.new(false,"OTHER_POT_IN_USE","请先完成或清空正在使用的锅。"))
+		return
 	if action=="retrieve":
 		if not lane.session.is_cold(): _station_done(TDOutcome.new(false,"COOKING_STARTED","已开始加工，只能继续制作或整锅丢弃。")); return
 		_show_pot_contents(index); return
 	if action!="open":
+		if kitchen.handling.hand_kind=="dish":
+			_station_done(TDOutcome.new(false,"DISH_IN_HAND","请将成品端到出餐口。"))
+			return
 		if kitchen.handling.hand_kind=="ingredient":
 			var result:=kitchen.handling.put_pot(lane.session)
 			if result.ok: _recognize(lane,id,false)
@@ -424,7 +448,7 @@ func _station_action(id: String, action: String) -> void:
 		choices.add_child(TDUI.button("取消",_close_popup));return
 	var selected:=_recognize(lane,method,true)
 	if not selected.ok: _station_done(selected); return
-	lane.document_rules=true; lane.dual=true
+	lane.document_rules=true
 	if shop.mastery(lane.base_recipe_id).automatic_available:
 		var column:=_dialog(shop.recipe_name(lane.base_recipe_id)+" · 已熟练")
 		column.add_child(TDUI.label("自动制作占用这口锅，按固定程序消耗食材、调味料和时间；完成后按 E 端盘。",TDUI.FONT_BODY))
@@ -440,6 +464,8 @@ func _begin_manual(lane: TDCookingLane, station_id: String) -> void:
 
 func start_automatic(index: int) -> TDOutcome:
 	if index<0 or index>=kitchen.lanes.size() or get_tree().paused or not shop.kitchen_available(): return TDOutcome.new(false,"KITCHEN_UNAVAILABLE")
+	if kitchen.other_pot_in_use(index):
+		return TDOutcome.new(false,"OTHER_POT_IN_USE","请先完成或清空正在使用的锅。")
 	if staff!=null and staff.owns(index): return TDOutcome.new(false,"STAFF_BUSY")
 	var lane: TDCookingLane=kitchen.lanes[index]
 	if not shop.mastery(lane.base_recipe_id).automatic_available: return TDOutcome.new(false,"NOT_MASTERED","手工制作评分80以上可积累手艺，满400后开放。")
@@ -575,7 +601,7 @@ func pantry_entries(group: String) -> Array:
 		if item.group!=group: continue
 		item.ingredient_id=food.ingredient_id;item.cold_id=food.id;item.units=roundi(float(food.amount)*1000)
 		item.expires_on=int(food.get("expires_on",day+1));item.remaining_days=maxi(0,int(item.expires_on)-day)
-		item.label="（已切配）" if not food.cuts.is_empty() else "（已取出原料）";entries.append(item)
+		item.label="（已切配）";entries.append(item)
 	return entries
 
 func pick_ingredient(id: String) -> TDOutcome:
@@ -606,6 +632,7 @@ func _sync_usage() -> void:
 		if dish.state=="plated":
 			var unlocked:=shop.observe_finished(dish)
 			if unlocked.code in ["RECIPE_UNLOCKED","MASTERY_GAINED"]: _show(unlocked)
+			if unlocked.ok: dish_finished.emit(dish)
 		var needs: Dictionary=service.material_needs(lane.catalog,lane.base_recipe_id,dish.steps)
 		var poured:=lane.session.inflight_materials()
 		for id: String in poured: needs[id]=maxi(0,int(needs.get(id,0))-int(poured[id]))
@@ -674,14 +701,15 @@ func _cleanup_terminal() -> void:
 	# Closing the shop is not closing the kitchen. Overnight has its own checkpoint.
 	pass
 
-func checkpoint_ready() -> TDOutcome:
+func checkpoint_ready(completed_recipe: String = "") -> TDOutcome:
 	if kitchen==null: return TDOutcome.new(true,"KITCHEN_CLEAR")
 	if staff!=null and not staff.jobs.is_empty(): return TDOutcome.new(false,"KITCHEN_BUSY","厨师还在处理食材或成品，请先完成或收夜整理。")
 	var busy: bool=kitchen.handling.hand!=null or kitchen.handling.board!=null
 	for lane: TDCookingLane in kitchen.lanes+[kitchen.prep]:
 		var dish:=lane.snapshot()
 		busy=busy or lane.qte!=null or lane.thermal_qte!=null or (lane.sheet!=null and lane.sheet.running)
-		busy=busy or (not dish.ingredients.is_empty() and dish.state not in ["delivered","discarded","cancelled"] and lane!=kitchen.prep)
+		var finished_banquet: bool = dish.state=="plated" and not completed_recipe.is_empty() and dish.recipe_id==completed_recipe
+		busy=busy or (not finished_banquet and not dish.ingredients.is_empty() and dish.state not in ["delivered","discarded","cancelled"] and lane!=kitchen.prep)
 	if busy: return TDOutcome.new(false,"KITCHEN_BUSY","厨房还有食材或菜品：请将原料/切配品放回冰箱，成品出餐或清理后再保存、休息。进行中的操作不会存档。")
 	return TDOutcome.new(true,"KITCHEN_CLEAR")
 
@@ -768,7 +796,7 @@ func _show_ledger() -> void:
 		for id: String in event.inventory_delta: stock.append("%s %+.2f份" % [_ingredient(id).name,float(event.inventory_delta[id])/1000.0])
 		var wasted: Array[String]=[]
 		for id: String in event.extra.get("waste",{}): wasted.append("%s %.2f份" % [_ingredient(id).name,float(event.extra.waste[id])/1000.0])
-		lines.append("第%d天 · %s  %+.2f元  %s%s" % [event.day,{"purchase":"采购","prepayment":"菜款","consumption":"耗料","tip":"小费","refund_cancel":"取消/超时退还","refund_served":"客诉退款","settlement":"日结","emergency_grant":"应急补助"}.get(event.kind,event.kind),float(event.cents)/100," / ".join(stock),"  已用料损耗："+" / ".join(wasted) if not wasted.is_empty() else ""])
+		lines.append("第%d天 · %s  %+.2f元  %s%s" % [event.day,{"purchase":"采购","prepayment":"菜款","consumption":"耗料","stock_return":"食材归库","tip":"小费","refund_cancel":"取消/超时退还","refund_served":"客诉退款","settlement":"日结","emergency_grant":"应急补助"}.get(event.kind,event.kind),float(event.cents)/100," / ".join(stock),"  已用料损耗："+" / ".join(wasted) if not wasted.is_empty() else ""])
 	text.text="\n".join(lines)
 	column.add_child(TDUI.button("关闭账本",_close_popup))
 

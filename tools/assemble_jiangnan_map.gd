@@ -55,6 +55,16 @@ func _assemble(input: Dictionary) -> int:
 	map.y_sort_enabled = true
 	var ground_material := ShaderMaterial.new()
 	ground_material.shader = load("res://src/town/jiangnan_ground_light.gdshader")
+	ground_material.set_shader_parameter("continuous_grass",load("res://assets/town/egret-grass.png"))
+	ground_material.set_shader_parameter("stone_sheet",load("res://assets/town/shiomi-ground-v1.png"))
+	var water_material := ShaderMaterial.new()
+	water_material.shader = preload("res://src/town/outdoor_water.gdshader")
+	water_material.set_shader_parameter("continuous_surface",load("res://assets/town/egret-sea.png"))
+	water_material.set_shader_parameter("resample_surface",true)
+	var quay_material := ShaderMaterial.new()
+	quay_material.shader = ground_material.shader
+	quay_material.set_shader_parameter("stone_sheet",ground_material.get_shader_parameter("stone_sheet"))
+	quay_material.set_shader_parameter("quay_face",true)
 	var tile_count := 0
 	for i: int in LAYERS.size():
 		var key: String = LAYERS[i]
@@ -62,7 +72,11 @@ func _assemble(input: Dictionary) -> int:
 		layer.name = key
 		layer.z_index = i-LAYERS.size()-1
 		layer.tile_set = tile_set
-		if key in ["Land", "Woodlands", "Squares", "Streets", "GroundDetails"]:
+		if key == "Water":
+			layer.material = water_material
+		elif key == "QuayWall":
+			layer.material = quay_material
+		elif key in ["Land", "Woodlands", "Squares", "Streets", "GroundDetails", "Wharf"]:
 			layer.material = ground_material
 		layer.scale = Vector2.ONE * float(input.tile_world) / tile_size
 		map.add_child(layer)

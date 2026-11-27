@@ -25,6 +25,22 @@ func test_regional_supplier_catalogue_tracks_unlocked_seasonings() -> void:
 	assert_has(ids,"miso")
 	assert_has(ids,"salt")
 	assert_does_not_have(ids,"oliveoil")
+
+func test_backpack_matches_unfiltered_factory_lists_in_catalogue_order() -> void:
+	var stock := {"tomato":4,"egg":3,"salt":1,"miso":2,"unknown":7,"oil":0}
+	p.world.supply.stock = stock.duplicate()
+	for region: String in ["chengdu","tokyo"]:
+		p.world.town_id = region
+		if region == "tokyo": assert_true(p.research.recommend_cuisine("pack-jp","jp").ok)
+		var expected: Array = []
+		for group: String in ["seasoning","vegetable","meat","fruit"]:
+			for item: Dictionary in p.world.factory_products(group):
+				if int(stock.get(item.id,0)) > 0:
+					expected.append({"supply":group,"id":item.id,"name":p.service.cooking.ingredient_data(item.id).name,"qty":stock[item.id]})
+		assert_false(expected.is_empty())
+		assert_eq(p.world.factory_goods(), expected)
+	p.world.supply.stock = {"salt":0}
+	assert_eq(p.world.factory_goods(), [])
 func season(index: int,cuisine: String,id: String,units: int=200) -> TDCookingLane:
 	# Explicit boundary fixture: clone an existing recipe's M6, not a newly playable dish.
 	assert_true(p.research.recommend_cuisine("material-test-"+cuisine,cuisine).ok)
@@ -33,7 +49,9 @@ func season(index: int,cuisine: String,id: String,units: int=200) -> TDCookingLa
 		if recipe.id=="service.tomato_egg": recipe["cuisine_id"]=cuisine
 	var catalog:=TDCookingCatalog.new();var loaded:=catalog.load_data(data,"D069 M6 boundary fixture");assert_true(loaded.ok,loaded.message)
 	var lane: TDCookingLane=kitchen.lanes[index];lane.catalog=catalog;lane.session_namespace=p.shop.day_namespace()+"material-test";lane.new_session("service.tomato_egg")
-	assert_true(p.shop.buy({id:units,"tomato":1000},"spice-%d"%index).ok)
+	var cart := {"tomato":1000}
+	if units>0: cart[id]=units
+	assert_true(p.shop.buy(cart,"spice-%d"%index).ok)
 	lane.session.set_material_sink(p.shop.consume_materials,p.shop.available)
 	var added:=lane.perform("add",{"ingredient_id":"tomato","amount":1});assert_true(added.ok,added.code)
 	lane._scheduled_settings={"kind":"sequence","pc_module":"M6","cabinet":true,"on_beat":true,"sequence":["spice:"+id],"timeout_sec":3.0,"lead_in_sec":1.0,"interval_sec":1.0,"beat_times_sec":[1.0],"hold_durations_sec":[.5],"pour_rate_per_sec":.2}
@@ -62,17 +80,23 @@ func test_real_cabinet_click_hold_deducts_foreign_material_and_updates_dish() ->
 	assert_eq(p.shop.available("miso"),100,"completion does not deduct twice")
 	assert_false(TDGuidedCookingView.spice_name("miso").is_empty())
 
-func test_dual_cabinets_empty_disable_pause_and_cancel_do_not_mix_state() -> void:
-	var left:=season(0,"jp","miso",30);var right:=season(1,"eu","oliveoil",200)
-	if left.qte==null or right.qte==null: return
-	kitchen.stage.lanes=[left,right];kitchen.stage.show();await wait_process_frames(2)
-	assert_has(left.spice_choices(),"miso");assert_has(right.spice_choices(),"oliveoil")
+func test_single_cabinet_empty_disable_pause_and_cancel_do_not_mix_state() -> void:
+	var left:=season(0,"jp","miso",30)
+	if left.qte==null: return
+	p.shop.receive_supply({"oliveoil":200},"oliveoil-test")
+	kitchen.stage.lanes=[left];kitchen.stage.show();await wait_process_frames(2)
+	assert_has(left.spice_choices(),"miso")
 	assert_false(kitchen.stage.spice_rect(0,"miso").intersects(kitchen.stage.spice_rect(1,"oliveoil")))
-	left.advance(1);right.advance(1);mouse(kitchen.stage.spice_rect(0,"miso").get_center(),true)
+	left.advance(1);mouse(kitchen.stage.spice_rect(0,"miso").get_center(),true)
 	left.advance(.2);mouse(Vector2(5,5),false)
 	assert_eq(p.shop.available("miso"),0);assert_eq(p.shop.available("oliveoil"),200)
 	mouse(kitchen.stage.spice_rect(0,"miso").get_center(),true)
-	assert_true("已用完" in kitchen.stage.feedback)
+	assert_true("已用完" in kitchen.stage.empty_spice_notice)
+	assert_gt(kitchen.stage.notice_until, kitchen.stage.beat_sec)
+	left.cancel_operation(); left.new_session("service.tomato_egg")
+	var right:=season(1,"eu","oliveoil",0)
+	assert_has(right.spice_choices(),"oliveoil")
+	kitchen.stage.lanes=[right]; right.advance(1)
 	mouse(kitchen.stage.spice_rect(1,"oliveoil").get_center(),true);right.advance(.1)
 	assert_eq(p.shop.available("oliveoil"),180)
 	right.set_paused(true);right.advance(10);assert_eq(p.shop.available("oliveoil"),180)

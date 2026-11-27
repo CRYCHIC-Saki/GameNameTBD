@@ -81,7 +81,8 @@ func test_real_branch_fridge_preparation_pause_and_main_stock_isolation() -> voi
 	get_tree().paused=false
 	assert_true(visit.shop_view.finish_night().ok)
 	assert_true(visit.shop_view.checkpoint_ready().ok)
-	assert_eq(visit.kitchen_session._s.cold_foods.size(),1)
+	assert_true(visit.kitchen_session._s.cold_foods.is_empty())
+	assert_eq(visit.kitchen_session.available("tomato"),stock)
 	var validation:=TDGameProfile.validate_save(profile.snapshot());assert_true(validation.ok,validation.code+" "+validation.message)
 
 func test_branch_economic_customer_queues_without_early_revenue_or_duplicate_stock() -> void:
@@ -197,7 +198,15 @@ func test_manual_branch_cooking_delivers_once_and_saves_at_boundary() -> void:
 	assert_eq(int(profile.shop._s.money_cents),paid)
 	assert_eq(profile.shop._s.inventory,main_stock)
 	assert_eq(profile.commerce.society.state.holds[order.id].status,"paid")
+	var branch: Dictionary = profile.branches.state.stores[id]
+	assert_eq(branch.daily.paid_orders, 1)
+	assert_almost_eq(float(branch.daily.satisfaction_total), float(visit.kitchen_session.order(order.id).score.satisfaction) / 100.0, 0.000001)
+	var awareness := float(branch.awareness)
+	assert_true(visit.kitchen_session.refund(order.id).ok)
+	assert_false(visit.kitchen_session.refund(order.id).ok)
+	assert_eq(branch.daily.paid_orders, 0)
 	assert_true(profile.shop.close_for_night().ok)
+	assert_eq(branch.awareness, awareness)
 	var raw:=profile.snapshot();var checked:=TDGameProfile.validate_save(raw)
 	assert_true(checked.ok,checked.code+" "+checked.message)
 	assert_true(profile.next_day().ok)
@@ -265,6 +274,9 @@ func test_japanese_branch_real_sushi_station_owns_its_stock_and_order() -> void:
 	profile.branches.advance_live_markets(900)
 	assert_eq(profile.snapshot(),snapshot,"same clock boundary does not spend or enqueue twice")
 	assert_true(profile.shop.close_for_night().ok)
+	var settled: Dictionary = profile.branches.state.stores[second].daily
+	assert_eq(settled.paid_orders, 1)
+	assert_almost_eq(float(settled.awareness_after), 0.35259481, 0.000001)
 	snapshot=profile.snapshot()
 	var verified:=TDGameProfile.validate_save(snapshot)
 	assert_true(verified.ok,verified.code+" "+verified.message)

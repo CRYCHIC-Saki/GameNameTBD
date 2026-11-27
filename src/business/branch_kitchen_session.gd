@@ -21,7 +21,8 @@ func sync_store() -> void:
 	if int(_s.day)!=day:
 		table_service.clear_on_restore()
 		_s.day=day;_s.orders=[];_s.elapsed_sec=0.0;_s.ledger=[];_s.seen={}
-	_s.phase="OPEN" if p.shop._s.phase=="OPEN" and not store.paused and p.employees.ready_for(store_id) and not store.daily.get("settled",false) else "PREPARE"
+	var staffed: bool = p.shop._s.phase=="OPEN" and not store.paused and p.employees.ready_for(store_id)
+	_s.phase="OPEN" if (staffed or network.training_open(store_id)) and not store.daily.get("settled",false) else "PREPARE"
 	_s.money_cents=int(p.shop._s.money_cents);_s.popularity=roundi(store.popularity)
 	for id: String in catalog.config.costs:
 		if not store.inventory.has(id):
@@ -110,8 +111,7 @@ func _complete_delivery(id: String, dish: Dictionary) -> TDOutcome:
 	var result:=super._complete_delivery(id,dish)
 	if result.ok:
 		var store: Dictionary=network.state.stores[store_id]
-		store.daily.served+=1
-		store.popularity=clampf(float(_s.popularity),0,100)
+		network.record_completed(store.daily, clampf(float(result.data.score.satisfaction) / 100.0, 0.0, 1.0))
 		network._pay_debt(store)
 		_s.money_cents=int(network.owner_profile().shop._s.money_cents)
 	return result
@@ -121,8 +121,18 @@ func cancel_order(id: String, reason: String="CANCELLED") -> TDOutcome:
 	var result:=super.cancel_order(id,reason)
 	if result.ok and row.has("branch_hold"):
 		network.owner_profile().commerce.society.release(row.branch_hold)
-		network.state.stores[store_id].popularity=clampf(float(_s.popularity),0,100)
 	return result
+
+func _apply_popularity(_delta: int, item: Dictionary) -> void:
+	item.popularity_delta = 0
+
+func refund(id: String) -> TDOutcome:
+	if network.state.stores[store_id].daily.get("settled", false):
+		return TDOutcome.new(false, "NOT_OPEN")
+	return super.refund(id)
+
+func material_cost_basis() -> Dictionary:
+	return network.state.stores[store_id].basis
 
 func _record(kind: String, cents: int, inventory_delta: Dictionary, reference: String, extra: Dictionary={}) -> void:
 	var p:=network.owner_profile();var store: Dictionary=network.state.stores[store_id]
@@ -136,6 +146,8 @@ func _record(kind: String, cents: int, inventory_delta: Dictionary, reference: S
 		var paid:=network._cash(cents,"branch:kitchen:%s:%d:%d"%[store_id,_s.day,_s.serial],"分店现场 · "+kind,store_id)
 		assert(paid.ok)
 		if kind in ["prepayment","tip","refund_served"]: store.daily.sales_cents+=cents
+		if kind == "prepayment": store.daily.paid_orders = int(store.daily.get("paid_orders", 0)) + 1
+		elif kind == "refund_served": store.daily.paid_orders = maxi(0, int(store.daily.get("paid_orders", 0)) - 1)
 	for id: String in inventory_delta:
 		var units: int=int(inventory_delta[id])
 		if units<0: store.daily.consumed_cents+=network._take(store,id,-units)
@@ -143,7 +155,11 @@ func _record(kind: String, cents: int, inventory_delta: Dictionary, reference: S
 			store.inventory[id]=int(store.inventory.get(id,0))+units
 			if not store.basis.has(id): store.basis[id]={"units":0,"value_cents":0}
 			store.basis[id].units+=units
-			TDFoodStock.add(store.lots,id,units,int(_s.day),int(stock_rules.get(id,{}).get("shelf_days",3)))
+			TDFoodStock.record_add(store.lots,id,units,int(_s.day),int(stock_rules.get(id,{}).get("shelf_days",3)),extra)
+			if kind=="stock_return":
+				var value := int(extra.inventory_cost_cents)
+				store.basis[id].value_cents+=value
+				store.daily.consumed_cents=maxi(0,int(store.daily.consumed_cents)-value)
 	_s.money_cents=int(p.shop._s.money_cents)
 	_s.ledger.append({"id":"%s:txn-%d"%[store_id,_s.serial],"day":int(_s.day),"kind":kind,"cents":cents,"inventory_delta":inventory_delta.duplicate(true),"reference":reference,"extra":extra.duplicate(true)})
 

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "parameter_status": "ASSUMPTION_AI_055",
   "settings": {
-    "chat_gain": 2,
+    "chat_gain": 5,
     "good_meal_score": 80,
     "bad_meal_score": 40,
     "good_meal_gain": 3,
@@ -91,7 +91,7 @@
     },
     {
       "id": "chen",
-      "name": "老陈",
+      "name": "罗金娜",
       "portrait": "chen",
       "town_id": "chengdu",
       "economic_binding": {
@@ -163,6 +163,170 @@
           "你做菜越来越有自己的样子。灰烬司祭也愿意偶尔听听你的做法。"
         ],
         "about": "我守着这间食材铺。客人把好材料拿回去，能端出一盘热菜，我就高兴。"
+      }
+    },
+    {
+      "id": "vito",
+      "name": "维托",
+      "portrait": "vito",
+      "town_id": "paris",
+      "story_only": true,
+      "economic_binding": {
+        "group_id": "commuter",
+        "family_index": 3,
+        "template_index": 0,
+        "preferred_taste": "salty"
+      },
+      "traits": [
+        "料理骑士",
+        "重视基本功"
+      ],
+      "biography": "在白鹭河畔研习朴实料理的骑士。",
+      "schedule": [
+        {
+          "until": 1560,
+          "zone": "offstage",
+          "activity": "stand",
+          "from": 480
+        }
+      ],
+      "dialogue": {
+        "stranger": [
+          "今天先把刀磨好。出炉的面包，再好的蘸料也救不了硬皮。",
+          "炖菜急不来。汤在锅边轻轻动的时候，火就够了。"
+        ],
+        "friend": [
+          "我给你留了一角面包。下回做炖菜，最后用它擦盘子。",
+          "我从前怕做砸了丢骑士的脸。如今我会把失败那锅的火候也记下来。"
+        ],
+        "close": [
+          "哪天歇业了就过来。我们各做一道菜，吃完再说谁洗锅。",
+          "有人肯告诉我汤咸了，比听一整厅的人称赞还让我安心。"
+        ],
+        "about": "对我来说，料理骑士的誓言很简单：经手的每一餐，都能让人端走吃完。"
+      }
+    },
+    {
+      "id": "hina",
+      "name": "日奈",
+      "portrait": "hina",
+      "town_id": "tokyo",
+      "story_only": true,
+      "economic_binding": {
+        "group_id": "leisure",
+        "family_index": 3,
+        "template_index": 0,
+        "preferred_taste": "umami"
+      },
+      "traits": [
+        "河畔料理店",
+        "讲究时令"
+      ],
+      "biography": "在和味道河畔经营料理店。",
+      "schedule": [
+        {
+          "until": 1560,
+          "zone": "offstage",
+          "activity": "stand",
+          "from": 480
+        }
+      ],
+      "dialogue": {
+        "stranger": [
+          "今天水涨了些，鱼贩收得比平时早。要买鱼就先去市场。",
+          "米先泡一会儿。我趁这个空当把门口的灯笼擦一擦。"
+        ],
+        "friend": [
+          "焰子，我留了点新煮的高汤。你来尝尝，看看盐该放多少。",
+          "我给你画了条近路。过小桥后闻到烤鱼香，就快到店了。"
+        ],
+        "close": [
+          "下雨的日子客人少。把帘子卷起来吧，我们边听雨边捏饭团。",
+          "你要是也累了，就坐柜台里面。热茶在我右手边。"
+        ],
+        "about": "我最喜欢天刚亮的河岸。整条街只有鱼筐碰到石阶的声音。"
+      }
+    },
+    {
+      "id": "luo",
+      "name": "罗厄",
+      "portrait": "luo",
+      "town_id": "chengdu",
+      "story_only": true,
+      "economic_binding": {
+        "group_id": "explorer",
+        "family_index": 4,
+        "template_index": 0,
+        "preferred_taste": "sweet"
+      },
+      "traits": [
+        "至味公主",
+        "留心滋味"
+      ],
+      "biography": "臻味港的至味公主，常在宫门外等新菜的消息。",
+      "schedule": [
+        {
+          "until": 1560,
+          "zone": "offstage",
+          "activity": "stand",
+          "from": 480
+        }
+      ],
+      "dialogue": {
+        "stranger": [
+          "厨师们总问我想吃什么。今天我想先听听你打算做什么。",
+          "港口比席间热闹多了。一会儿卖点心的人就要来了。"
+        ],
+        "friend": [
+          "你上次端来的那口味道，我回去还想了好一会儿。下次可以少摆一碟装饰。",
+          "我今天问了厨房怎么洗米。原来这一顿饭，在开火前就已经忙起来了。"
+        ],
+        "close": [
+          "哪天你做员工餐，给我留个凳子吧。我想尝尝你平时吃的那一份。",
+          "我带了宫里晒的茶叶。你做菜，我烧水，谁也不用等传话。"
+        ],
+        "about": "宫里有什么新鲜料理，消息总是先到门外。那股香气藏不住。"
+      }
+    },
+    {
+      "id": "hertz",
+      "name": "赫兹",
+      "portrait": "hertz",
+      "town_id": "chengdu",
+      "story_only": true,
+      "economic_binding": {
+        "group_id": "leisure",
+        "family_index": 5,
+        "template_index": 0,
+        "preferred_taste": "salty"
+      },
+      "traits": [
+        "电视台主持人",
+        "追踪小镇消息"
+      ],
+      "biography": "常在臻味港采访街坊的电视台主持人。",
+      "schedule": [
+        {
+          "until": 1560,
+          "zone": "offstage",
+          "activity": "stand",
+          "from": 480
+        }
+      ],
+      "dialogue": {
+        "stranger": [
+          "潮水在退，小心码头最后一级台阶。踩滑了可没人替你捞锅。",
+          "刚靠岸的船带来一船故事。你想知道哪条船准点，我倒可以告诉你。"
+        ],
+        "friend": [
+          "我在石阶上给你留了个地方。等装船的人走了，我们慢慢说。",
+          "船员把厨房叫作船上的第二个锚。听你讲开店，我有点懂了。"
+        ],
+        "close": [
+          "下趟船靠岸时我想带你去看厨房。那口歪锅煮出来的汤，你一定会喜欢。",
+          "你可以把灯留在门边。哪天我晚回来，看见亮着，就知道还能找你说会儿话。"
+        ],
+        "about": "我在码头认船先看吃水，再看帆。熟人走近时，光听脚步就够了。"
       }
     }
   ],

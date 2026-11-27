@@ -1,0 +1,20 @@
+{
+  "casual": {
+    "source": "C:\\Users\\myzpw\\Desktop\\蜂蜜水音乐\\NJU GAMING\\casual\\casual.wav",
+    "duration_sec": 166.2946485260771,
+    "sha256": "89a1b4a63f9a069b7ac6e1d06f24e22d93e92596a0e7a5fb613e42fac5274037",
+    "usage": "daily_and_cooking"
+  },
+  "cooking": {
+    "source": "C:\\Users\\myzpw\\Desktop\\蜂蜜水音乐\\NJU GAMING\\cooking\\cooking.wav",
+    "duration_sec": 102.91145124716553,
+    "sha256": "743e83f07ba19abaea0716a50e7de026cb1e79a21fbba6f3674f86a5a719e8c4",
+    "usage": "challenge_battle_and_story_preview"
+  },
+  "boss": {
+    "source": "C:\\Users\\myzpw\\Desktop\\蜂蜜水音乐\\NJU GAMING\\boss\\探寻至味的公主 ~Not enough！.wav",
+    "duration_sec": 496.2824716553288,
+    "sha256": "c698f8d6d1b321ebb63cf4be09090399bbfc4927bdebfddc1d8f8f45a7535075",
+    "usage": "luoe_challenge_and_final_boss_story_preview"
+  }
+}

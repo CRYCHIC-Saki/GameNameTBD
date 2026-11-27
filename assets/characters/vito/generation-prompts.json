@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "date": "2026-11-26",
+  "character_id": "vito",
+  "display_name": "维托",
+  "generator": "built-in image_gen",
+  "user_request": "给赫兹、维托也做出像素小人素材",
+  "reference_roles": [
+    {
+      "path": "assets/characters/mainline-20261126/vito/calm.png",
+      "sha256": "0b7ee6ccbce49d8595dfd5a0a69f2fec06e487193ee42b2de9b8b43420e4ace0",
+      "role": "用户角色原画的项目内原字节副本，身份与服饰参考"
+    },
+    {
+      "path": "assets/characters/ash-priest/archive/2026-10-29/ash-priest-idle-four-directions.png",
+      "sha256": "7b9875c2015d61af28f8cca325e951b16b41c11532ab2d9c7587c8fe4d7e4273",
+      "role": "既有已确认像素小人，仅风格、像素颗粒和布局参考"
+    },
+    {
+      "path": "assets/characters/luoe/archive/2026-11-08/luoe-idle-four-directions.png",
+      "sha256": "e9056b52635b5e3be2010eb6fe604cf438023e8e968a2c063eaebb19e7793f9d",
+      "role": "既有已确认像素小人，仅风格、像素颗粒和布局参考"
+    }
+  ],
+  "generations": [
+    {
+      "prompt": "Use case: stylized-concept.\nAsset type: a game-ready-looking FOUR-DIRECTION STATIC IDLE CHARACTER SPRITE SHEET, transparent PNG, matching the approved pixel characters of this same cute RPG.\nInput reference roles: image 1 is the ONLY source of the character identity, colors, outfit and signature details; image 2 (white-haired red priestess) and image 3 (purple-hatted magician) are ONLY visual-style references for block size, chibi proportions, outlines and the 2x2 four-direction layout. Never borrow their accessories or costumes.\nLAYOUT: exactly FOUR full-body figures, arranged as an even 2x2 grid. TOP LEFT true frontal view facing screen down, TOP RIGHT true back view facing away, BOTTOM LEFT strict left-facing profile, BOTTOM RIGHT strict right-facing profile. Full head and feet in each cell; equal height/scale, shared baseline within row; center each figure in its cell, leave comfortable transparent padding and wide separation. No animation steps, no labels, no grid lines.\nPIXEL STYLE IS CRITICAL: actual deliberately chunky low-resolution pixel drawing, visible enlarged square pixel clusters and stepped silhouettes like images 2 and 3, approximately 60-70 logical source pixels tall for each figure. Strong dark one-source-pixel outline, flat color areas with two or three shadow tones, simplified major hair tufts and cloth folds, crisp blocky eyes, no tiny illustrative details. Cute chibi about 2.5 heads tall, softly rounded jaw and compact SLIM body. Do not draw high-resolution anime with a merely jagged outline; internal details must also have large pixel blocks. No smooth antialias, gradients, brush texture, glossy rendered highlights or dithering.\nThe four directions must be genuinely distinct views of the SAME asymmetric character. Turn accessories with the body and observe near/far-side occlusion. Do not mirror both profiles blindly. Back must not show facial features or front necktie.\nBackdrop: genuine alpha transparency outside the sprites including between limbs/coat tails. No ground plane, shadow, border, UI, captions, watermark, weapons or extra characters.\nCHARACTER: VITO / 维托, the brown-haired green tomato-apron cook in image 1. Preserve the original friendly confident female character design.\nHair and face: chestnut-brown chin-length bob with heavy blunt side fringe COVERING her anatomical RIGHT eye (screen-LEFT in frontal view), one GREEN eye visibly open; small smile. A single longer side ponytail descends from anatomical LEFT side (screen-RIGHT in frontal view), tied with a small red tomato ornament. Do not expose two eyes in frontal view.\nHat: large soft CREAM/PALE PEACH gathered chef bonnet/beret with a small ruffled brim; DARK GREEN masquerade EYE MASK pinned to its anatomical LEFT side (screen-RIGHT), plus tiny red TOMATO accent. The mask stays ON THE HAT, NOT on her eyes. Simplify to a readable double-eye-hole green silhouette.\nOutfit: white shirt with puffed/rolled sleeves and dark-green cuffs, green shoulder straps with gold buttons, tiny gold-yellow neck ribbon. Long vivid GREEN APRON DRESS below knees, bold RED TOMATO graphics with dark-green calyx leaves, a small tomato pin high on apron chest. Wide dark-green waist tie. Large GOLD-YELLOW waist bow on anatomical LEFT hip (screen-RIGHT), its hanging ends and yellow underlayer peeking below apron. Small silver THREE-TINED DINING FORK tucked diagonally at anatomical RIGHT waist (screen-LEFT), not a sword or knife. Pale calf socks and tall dark-brown boots.\nPose: relaxed upright idle, both hands tucked at side waist pockets or behind hips like source, knees/feet together naturally. Apron remains fully readable. Back infer simple green crossed straps over white shirt and plain green back skirt with waist tie, show natural side ponytail and yellow bow on SAME anatomical left side; no front chest tomato or front fork inexplicably on back.\nOrientation: left-facing profile shows anatomical LEFT side, so ponytail, hat-mounted mask and large yellow bow are on the near side; right-facing profile shows anatomical RIGHT side, so the eye on this side remains largely obscured by fringe and fork is near-side, left accessories are appropriately partly occluded. Do not duplicate the mask/ponytail/bow on both cheeks.\nRender the apron tomato circles, mask, fork and bow as bold economical pixel motifs, no extra vegetables, basket, armor, weapon or held spoon.",
+      "referenced_image_paths": [
+        "F:/MyGameTBD/assets/characters/mainline-20261126/vito/calm.png",
+        "F:/MyGameTBD/assets/characters/ash-priest/archive/2026-10-29/ash-priest-idle-four-directions.png",
+        "F:/MyGameTBD/assets/characters/luoe/archive/2026-11-08/luoe-idle-four-directions.png"
+      ],
+      "transparent_background": true,
+      "generated_file": "C:/Users/Administrator/.codex/generated_images/01a17b72-580d-7c22-890d-2d1b45461a94/exec-b4e5f596-0322-4f52-90bf-ed2be03291e9.png",
+      "saved_file": "vito-idle-four-directions-v1.png",
+      "status": "DELIVERED_FOR_USER_REVIEW"
+    }
+  ],
+  "note": "提示词中的60–70逻辑像素高度和有限色阶仅为美术目标；未通过脚本重采样、量化或编辑图像。"
+}

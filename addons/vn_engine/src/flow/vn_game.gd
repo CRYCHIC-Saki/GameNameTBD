@@ -109,6 +109,13 @@ func state() -> int:
 
 
 func take_preparsed_script(script_path: String) -> VNEngineStoryScript:
+	# Hosted gameplay dialogue is parsed in memory by the same native parser.
+	# Never writes generated scripts, touches saves, or changes standalone playback.
+	var root := _vn_main()
+	if root != null and root.host_managed and root.has_meta("host"):
+		var host: Node = root.get_meta("host")
+		var hosted: VNEngineStoryScript = host.preparsed_script(script_path)
+		if hosted != null: return hosted
 	if _chapter_cache == null:
 		return null
 	if _chapter_cache.script_path != script_path:

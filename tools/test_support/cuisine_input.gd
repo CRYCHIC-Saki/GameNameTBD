@@ -1,10 +1,11 @@
 extends RefCounted
 ## Input timeline injection only; no result or grade injection.
-static func play(lesson: TDResearchLesson) -> bool:
+static func play(lesson: TDResearchLesson, observe: Callable = Callable()) -> bool:
 	var sent: Dictionary={}
 	for step: int in 16000:
 		var result:=lesson.advance(.05)
 		if not result.ok: return false
+		if observe.is_valid(): observe.call(lesson.active_lane())
 		if result.data.ready_to_finish: return true
 		drive(lesson.active_lane(),sent)
 	return false

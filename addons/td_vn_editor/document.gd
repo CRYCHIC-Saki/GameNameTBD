@@ -95,9 +95,10 @@ static func describe(raw: String) -> Dictionary:
 static func portrait_path(who: String, expression: String, outfit: String = "base", pose: String = "base", shot: String = "mid") -> String:
 	return "res://content/story/vn/portraits/%s/%s_%s_%s_%s_%s.tres" % [who, who, outfit, pose, expression, shot]
 
-static func backgrounds() -> PackedStringArray:
+static func backgrounds(include_legacy: bool = true) -> PackedStringArray:
 	var result := PackedStringArray()
 	for file: String in DirAccess.get_files_at(BG_ROOT):
+		if not include_legacy and file in ["arrival-coast-v1.tres", "restaurant-v1.tres", "dining-table-v1.tres", "soup-stall-v1.tres"]: continue
 		if file.ends_with(".tres"): result.append(file.get_basename())
 	result.sort(); return result
 
@@ -105,7 +106,7 @@ static func background_title(id: String) -> String:
 	return AssetImport.resource_title(BG_ROOT+id+".tres",str(AssetImport.BG_LABELS.get(id,id)))
 
 static func expression_title(who: String, expression: String) -> String:
-	return AssetImport.resource_title(portrait_path(who,expression),str({"calm":"平静","happy":"愉快"}.get(expression,expression)))
+	return AssetImport.resource_title(portrait_path(who,expression),str({"calm":"通常","angry":"生气","happy":"高兴","proud":"得意","cry":"哭哭","puzzled":"疑惑","troubled":"困扰","speechless":"无语","surprised":"疑惑（旧稿兼容）","sad":"困扰（旧稿兼容）"}.get(expression,expression)))
 
 static func cast_names() -> Dictionary:
 	var result := {"":"旁白"}
@@ -157,13 +158,13 @@ func validate() -> PackedStringArray:
 				if not args.is_valid_float() or float(args) < 0: error = "等待时间必须是非负秒数。"
 			"td_cg":
 				handoffs.append("td_cg " + args)
-				if args not in ["arrival", "hungry", "messenger"]: error = "本原生宿主只接入三段开篇 CG。"
+				error = "旧 CG 动画已停用，请改用背景页和旁白。"
 			"td_name":
 				handoffs.append("td_name " + args)
 				if args != "hero": error = "当前姓名输入仅支持主角 hero。"
 		if not error.is_empty(): issues.append("[ERROR] Line %d: %s" % [i+1, error])
 	if path == INTRO:
-		if handoffs != PackedStringArray(["td_cg arrival","td_cg hungry","td_cg messenger","td_name hero"]): issues.append("[ERROR] 开篇必须保留三段 CG 和一次命名，且顺序不变。")
+		if handoffs != PackedStringArray(["td_name hero"]): issues.append("[ERROR] 开篇使用静态背景与旁白，必须保留一次姓名输入。")
 		if substantive.is_empty() or substantive[-1] != "@end" or substantive.count("@end") != 1: issues.append("[ERROR] 开篇只能在最后结束。")
 		if not text().contains("{$hero}"): issues.append("[ERROR] 开篇必须保留姓名变量 {$hero}。")
 		for item: String in substantive:
@@ -285,7 +286,7 @@ func set_page_visual(anchor: int, kind: String, value: String, extra: String = "
 		"background": state.background = value
 		"actor":
 			if not state.actors.has(value):
-				state.actors[value] = {"id":value,"expression":"calm","outfit":"base","pose":"base","shot":"mid","position":TDVNLayout.encode(.3 if state.actors.is_empty() else .7,.85625)}
+				state.actors[value] = {"id":value,"expression":"calm","outfit":"base","pose":"base","shot":"mid","position":TDVNLayout.half_body("left" if state.actors.is_empty() else "right")}
 		"position":
 			if not state.actors.has(value) or TDVNLayout.parse(extra).is_empty(): return anchor
 			state.actors[value].position = extra

@@ -74,7 +74,7 @@ func _ready() -> void:
 	var tools := HBoxContainer.new(); left.add_child(tools)
 	step_tools = tools
 	action_menu = MenuButton.new(); action_menu.text = "＋ 添加步骤"; tools.add_child(action_menu)
-	for title: String in ["对白", "背景", "角色入场 / 表情", "角色退场", "等待", "节点", "选项", "跳转", "结束", "CG 演出", "输入姓名", "注释"]: action_menu.get_popup().add_item(title)
+	for title: String in ["对白", "背景", "角色入场 / 表情", "角色退场", "等待", "节点", "选项", "跳转", "结束", "静态 CG / 旁白", "输入姓名", "注释"]: action_menu.get_popup().add_item(title)
 	action_menu.get_popup().id_pressed.connect(add_step)
 	_button(tools,"↑",func() -> void: move_step(-1))
 	_button(tools,"↓",func() -> void: move_step(1))
@@ -307,7 +307,7 @@ func _fill_fields() -> void:
 			# Preserve less common native options when updating a basic show step.
 			for key: String in ["outfit","pose","shot"]: controls["native_"+key] = p.get(key,"")
 		"bg":
-			var options := {}; for id: String in Document.backgrounds(): options[id] = Document.background_title(id)
+			var options := {}; for id: String in Document.backgrounds(false): options[id] = Document.background_title(id)
 			_choice("background","背景",options,str(item.value).get_slice(" ",0))
 			_choice("transition","切换",{"fade":"淡入","instant":"立即"},"instant" if str(item.value).contains("instant") else "fade")
 			var last := str(item.value).split(" ",false)[-1]
@@ -380,7 +380,7 @@ func apply_fields() -> void:
 
 func add_step(kind: int) -> void:
 	_commit_fields()
-	var defaults := ["hero: 新的对白。","@bg arrival-coast-v1 with fade 0.5","@show hero calm at left with fade","@hide hero with fade","@wait 0.5","# node_"+str(Time.get_ticks_usec()),"- 选项文字 -> finish","@jump finish","@end","@td_cg arrival","@td_name hero","// 注释"]
+	var defaults := ["hero: 新的对白。","@bg harbor with instant 0","@show hero calm at left with fade","@hide hero with fade","@wait 0.5","# node_"+str(Time.get_ticks_usec()),"- 选项文字 -> finish","@jump finish","@end","@bg cg-black-soup with instant 0\nnarrator: 在这里写下画面的旁白。","@td_name hero","// 注释"]
 	selected = mini(selected+1,document.lines.size())
 	document.insert_line(selected,defaults[kind]); _refresh()
 
@@ -610,7 +610,7 @@ func show_palette(kind: String) -> void:
 	var names := Document.cast_names(); names.erase("")
 	if kind == "background":
 		names = {}
-		for id: String in Document.backgrounds(): names[id] = Document.background_title(id)
+		for id: String in Document.backgrounds(false): names[id] = Document.background_title(id)
 	palette.title = "选择背景" if kind == "background" else "选择角色"
 	for id: String in names:
 		var button := Button.new(); button.custom_minimum_size = Vector2(200,130); grid.add_child(button)

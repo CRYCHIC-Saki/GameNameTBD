@@ -1,0 +1,33 @@
+# start
+@bg riverside-diner with instant 0
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+// 原稿第 77 段 【无语】日奈
+@show hina speechless at td:0.740000:1.503413:2.150000 with instant
+hina: 鱼的火候很好，饭和汤上桌时也都还热着……看来我真成了来吃饭的客人。这次是你赢了，连让我挑毛病的机会都没留呢。
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hina with instant
+// 原稿第 78 段 【疑惑】赫兹
+@show hertz puzzled at td:0.707320:1.555701:2.150000 with instant
+hertz: 又赢过了一位当地高手！焰子，这里的料理和维托教你的很不一样，你觉得最难学的是什么？
+// 原稿第 79 段 【困扰】焰子
+@show hero troubled at td:0.268170:1.464197:2.150000 with instant
+hero: 是高汤吧。我总想把火开大一点，早点端上桌，结果香味还没出来，水倒先少了。幸好日奈教了我好多次，这回总算能连汤带香味一起端上来了。
+@hide aling with instant
+@hide chen with instant
+@hide luo with instant
+@hide vito with instant
+@hide hertz with instant
+// 原稿第 80 段 【通常】日奈
+@show hina calm at td:0.740000:1.503413:2.150000 with instant
+hina: 你学得很认真，我也很高兴。接下来还要去别的地方吧？记得把这份高汤笔记带上，遇到合适的食材，可以试着做些变化。
+// 原稿第 81 段 【高兴】焰子
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 我会的！下次回来，也让你尝尝我学到的新菜。
+@end

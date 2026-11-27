@@ -20,7 +20,7 @@ func after_each() -> void:
 	await get_tree().process_frame;await get_tree().process_frame
 
 func start() -> void:
-	var result:=shell.create_game("slot-01","灶间烟火")
+	var result:=shell.create_game("slot-01","灶间烟火",false)
 	shell.guide.dialogue.finish_now() # Fixture cancels the automatic arrival.
 	assert_true(result.ok,result.code)
 	driver.kitchen=shell.kitchen_view.kitchen
@@ -157,18 +157,16 @@ func test_market_inventory_menu_open_and_real_kitchen_delivery_three_day_save_lo
 		view.shop.close_early()
 		for remaining: Dictionary in view.shop.pending_orders(): view.shop.cancel_order(remaining.id)
 		kitchen.advance(.01);assert_eq(view.shop.snapshot().phase,"SETTLED")
-		assert_eq(shell.profile.progression.snapshot().last_day,day,"Real QTE day produces one level settlement")
-		assert_true(shell.profile.progression_error.ok,shell.profile.progression_error.code)
+		assert_eq(shell.profile.progression.snapshot().last_day,day-1,"Closing the shop does not grant experience")
 		assert_eq(int(shell.profile.commerce.cash_audit(int(view.shop.snapshot().money_cents)).difference_cents),0,"Taxes, wages and refunds conserve total cash.")
-		assert_true(shell.save_game().ok)
+		shell._sleep("chengdu",0)
+		assert_eq(shell.profile.progression.snapshot().last_day,day,"Sleeping settles the day once")
 		var before:Dictionary=shell.profile.snapshot()
 		shell.go_title();assert_true(shell.load_game("slot-01").ok)
-		assert_eq(shell.profile.shop.snapshot().day,day)
+		assert_eq(shell.profile.shop.snapshot().day,day+1)
 		assert_true(TDLevelProgression.same_value(shell.profile.progression.snapshot(),before.progression),"Real kitchen level progress survives restart")
 		assert_eq(JSON.parse_string(JSON.stringify(shell.profile.shop.snapshot())),JSON.parse_string(JSON.stringify(before.shop)))
 		assert_eq(JSON.parse_string(JSON.stringify(shell.profile.research.snapshot())),JSON.parse_string(JSON.stringify(before.research)))
-		assert_true(shell.profile.next_day().ok)
-		shell.kitchen_view._make_kitchen();shell.kitchen_view.kitchen.auto_advance=false
 
 func test_book_uses_real_kitchen_unlocks_within_slot_and_never_in_other_slot() -> void:
 	start();driver.tap(KEY_B);assert_not_null(shell.atlas)
@@ -179,9 +177,9 @@ func test_book_uses_real_kitchen_unlocks_within_slot_and_never_in_other_slot() -
 	assert_true(RESEARCH_DRIVER.play(shell.profile.research,token,get_tree().root))
 	await get_tree().process_frame
 	assert_has(shell.profile.research.snapshot().unlocked,"C03")
-	shell.close_atlas();assert_true(shell.save_game().ok)
+	shell.close_atlas();assert_true(shell.profile.save().ok)
 	var old:=shell.profile
-	shell.go_title();assert_true(shell.create_game("slot-02").ok);shell.guide.dialogue.finish_now()
+	shell.go_title();assert_true(shell.create_game("slot-02","小镇食堂",false).ok);shell.guide.dialogue.finish_now()
 	assert_eq(shell.profile.research.snapshot().unlocked,["C01","C02"])
 	assert_eq(old._research_candidate(old.research.snapshot()).code,"STALE_PROFILE")
 	shell.go_title();assert_true(shell.load_game("slot-01").ok)
@@ -204,10 +202,10 @@ func test_bank_world_interaction_and_buttons_use_the_profile_wallet() -> void:
 	if deposit==null: return
 	deposit.pressed.emit()
 	assert_eq(int(shell.profile.commerce.society.bank.account("player").deposit_cents),10000)
-	assert_true(shell.save_game().ok)
+	assert_true(shell.profile.save().ok)
 	shell.show_bank()
 	var stale_action: Callable=button("存入",shell._modal_box).pressed.get_connections()[0].callable
-	shell.go_title();assert_true(shell.create_game("slot-02").ok);shell.guide.dialogue.finish_now()
+	shell.go_title();assert_true(shell.create_game("slot-02","小镇食堂",false).ok);shell.guide.dialogue.finish_now()
 	var unchanged:=shell.profile.snapshot()
 	stale_action.call()
 	assert_eq(shell.profile.snapshot(),unchanged)
@@ -217,7 +215,7 @@ func test_bank_world_interaction_and_buttons_use_the_profile_wallet() -> void:
 	button("借款",shell._modal_box).pressed.emit()
 	assert_eq(int(shell.profile.commerce.society.bank.account("player").principal_cents),10000)
 	assert_eq(int(shell.profile.shop.snapshot().money_cents),30000)
-	assert_true(shell.save_game().ok)
+	assert_true(shell.profile.save().ok)
 	shell.go_title();assert_true(shell.load_game("slot-01").ok)
 	assert_eq(int(shell.profile.commerce.society.bank.account("player").deposit_cents),10000)
 
@@ -244,7 +242,7 @@ func test_pause_console_and_modal_prevent_underlay_input_and_keep_business_clock
 
 func test_slot_layout_round_trip_and_old_file_explicit_import_is_read_only() -> void:
 	start();assert_true(shell.profile.layout.apply_venue_style("chinese","high").ok)
-	var layout:=shell.profile.layout.to_dict();assert_true(shell.save_game().ok)
+	var layout:=shell.profile.layout.to_dict();assert_true(shell.profile.save().ok)
 	var old_shop:=TDShopStore.new(shell.legacy_shop_path,shell.profile.shop)
 	for day: int in 3:
 		assert_true(shell.profile.shop.open_day().ok)
@@ -266,6 +264,8 @@ func test_slot_layout_round_trip_and_old_file_explicit_import_is_read_only() -> 
 	assert_true(TDGameProfile.validate_save(shell.profile.snapshot()).ok)
 	assert_eq(FileAccess.get_file_as_bytes(shell.legacy_shop_path),shop_bytes)
 	assert_eq(FileAccess.get_file_as_bytes(shell.legacy_research_path),research_bytes)
+	assert_eq(shell.slots.load_slot("slot-02").code,"NOT_FOUND","Import only loads the legacy data")
+	shell._sleep("chengdu",0)
 	assert_eq(shell.import_legacy().code,"ALREADY_IMPORTED")
 	shell.go_title();assert_true(shell.load_game("slot-01").ok)
 	assert_eq(JSON.stringify(shell.profile.layout.to_dict()),JSON.stringify(layout))

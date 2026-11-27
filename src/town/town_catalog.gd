@@ -6,7 +6,7 @@ const PLAYABLE_IDS: Array[String] = ["london", "delhi", "paris", "stockholm", "m
 const ZONE_IDS: Array[String] = ["player_diner", "competitor", "market", "plaza", "urban_village", "rich_district", "commercial_street", "snack_street", "amusement", "zoo", "landmark"]
 const KITCHEN_INGREDIENTS: Array[String] = ["tomato", "egg", "beef", "noodles", "tofu", "bean_paste", "chicken", "peanut", "pork", "chili", "mushroom", "scallion", "sugar", "oil", "garlic", "pepper", "wine", "ginger", "salt", "vinegar", "soy_sauce", "starch"]
 const KITCHEN_CUTS: Array[String] = ["prepare", "service.slice", "service.strips", "service.dice", "service.small"]
-const RESERVED_PRIMARIES: Array[String] = ["egg|tomato", "beef|noodles", "bean_paste|tofu", "chicken|peanut", "chili|pork", "chicken|mushroom"]
+const RESERVED_PRIMARIES: Array[String] = ["egg|tomato", "bean_paste|tofu", "chicken|peanut"]
 
 var unlock_score: float = 60.0
 var off_menu_chance: float = 0.45
@@ -238,7 +238,7 @@ func _kitchen_cards(raw: Variant, dish_values: Dictionary) -> TDOutcome:
 		var chart := String(card.get("chart", ""))
 		if method == "stir" and chart != "service.tomato_egg":
 			return TDOutcome.new(false, "INVALID_CONTENT", String(dish_id))
-		if method == "steam" and chart != "service.qiguoji":
+		if method == "steam" and chart != TDKitchenLink.STEAM_CHART:
 			return TDOutcome.new(false, "INVALID_CONTENT", String(dish_id))
 		if method not in ["stir", "steam"]:
 			return TDOutcome.new(false, "INVALID_CONTENT", String(dish_id))

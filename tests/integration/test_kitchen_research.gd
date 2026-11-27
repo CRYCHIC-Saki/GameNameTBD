@@ -68,7 +68,7 @@ func test_runtime_data_valid_legacy_save_preserved_and_no_perfect_bypass() -> vo
 	assert_true(view.shop.validate_save(old).ok);assert_true(view.shop.restore(old).ok)
 	assert_eq(view.shop.snapshot().money_cents,old.money_cents);assert_eq(view.shop.available("rice"),0)
 	app._inherit_shop_recipes(old.unlocked);assert_true(app.research.has("C14"));assert_false(app.research.has("C13"))
-	view.shop.open_day();var fake:Dictionary={"recipe_id":"service.qiguoji","session_id":view.shop.day_namespace()+"probe","state":"plated"}
+	view.shop.open_day();var fake:Dictionary={"recipe_id":"study.steamed_egg","session_id":view.shop.day_namespace()+"probe","state":"plated"}
 	assert_eq(view.shop.observe_finished(fake).code,"RESEARCH_REQUIRED")
 
 func test_bad_progress_is_visible_and_cannot_be_silently_replaced() -> void:

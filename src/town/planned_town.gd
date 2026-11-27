@@ -273,10 +273,7 @@ static func _attach_reference_escort_stop(lanes: AStar2D, streets: PackedInt64Ar
 	return identity
 
 static func _reference_segment_clear(a: Vector2, b: Vector2, can_stand: Callable) -> bool:
-	var checks := maxi(1, ceili(a.distance_to(b) / .08))
-	for index: int in range(1, checks + 1):
-		if not can_stand.call(a.lerp(b, float(index) / checks)): return false
-	return true
+	return TDInteractionRange.ground_segment_clear(a,b,can_stand,.045)
 
 static func valid_districts(value: Variant) -> bool:
 	if not value is Array or value.is_empty(): return false

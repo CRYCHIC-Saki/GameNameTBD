@@ -1,5 +1,12 @@
 extends GutTest
 
+func legacy_config() -> Dictionary:
+	var config := TDLevelProgression.new().config.duplicate(true)
+	config.rules_version = 1
+	config.daily = TDLevelProgression.LEGACY_DAILY.duplicate()
+	config.decoration = {}
+	return config
+
 func report(profit: int = 3000, pop: float = 0, aware: float = 0, day: int = 1, count: int = 1) -> Dictionary:
 	var rows: Array=[]
 	for i: int in count:
@@ -7,7 +14,7 @@ func report(profit: int = 3000, pop: float = 0, aware: float = 0, day: int = 1, 
 	return {"day":day,"stores":rows}
 
 func test_profit_and_shop_net_growth_have_independent_nonnegative_contributions() -> void:
-	var rules:=TDLevelProgression.new()
+	var rules:=TDLevelProgression.new(legacy_config())
 	var result:=rules.evaluate(report(3000,2,3))
 	assert_true(result.ok);assert_eq(result.data.profit_xp,35);assert_eq(result.data.popularity_xp,6);assert_eq(result.data.awareness_xp,9);assert_eq(result.data.mapped_xp,50)
 	assert_eq(rules.evaluate(report(-3000,-2,-3)).data.mapped_xp,0)
@@ -17,7 +24,7 @@ func test_profit_and_shop_net_growth_have_independent_nonnegative_contributions(
 	assert_eq(rules.snapshot().total_xp,0,"Preview is read only")
 
 func test_portfolio_scale_does_not_multiply_daily_xp_and_losses_offset_profit() -> void:
-	var rules:=TDLevelProgression.new()
+	var rules:=TDLevelProgression.new(legacy_config())
 	for count: int in [1,10,1000]: assert_eq(rules.evaluate(report(3000,2,3,1,count)).data.mapped_xp,50)
 	var mixed:=report(3000,0,0,1,2);mixed.stores[1].profit_cents=-3000
 	assert_eq(rules.evaluate(mixed).data.profit_xp,0,"Take positive only after netting whole portfolio")
@@ -25,7 +32,7 @@ func test_portfolio_scale_does_not_multiply_daily_xp_and_losses_offset_profit() 
 	assert_eq(rules.evaluate(mixed).data.profit_xp,23)
 
 func test_extreme_income_and_full_metrics_remain_bounded() -> void:
-	var rules:=TDLevelProgression.new()
+	var rules:=TDLevelProgression.new(legacy_config())
 	var input:=report(1000000000000)
 	for key: String in ["popularity_before","popularity_after","awareness_before","awareness_after"]: input.stores[0][key]=100.0
 	var result:=rules.evaluate(input)
@@ -38,7 +45,7 @@ func test_extreme_income_and_full_metrics_remain_bounded() -> void:
 		assert_gte(xp,earlier);earlier=xp
 
 func test_daily_cursor_duplicate_conflict_and_xp_never_decrease() -> void:
-	var rules:=TDLevelProgression.new()
+	var rules:=TDLevelProgression.new(legacy_config())
 	assert_true(rules.settle(report()).ok)
 	var saved:=rules.snapshot()
 	assert_eq(rules.settle(report()).code,"ALREADY_APPLIED");assert_eq(rules.snapshot(),saved)
@@ -50,7 +57,7 @@ func test_daily_cursor_duplicate_conflict_and_xp_never_decrease() -> void:
 	assert_eq(rules.required_xp(1),60);assert_eq(rules.required_xp(2),84);assert_eq(rules.threshold(3),144)
 
 func test_metrics_use_full_day_net_and_saved_baseline_not_menu_or_recipe_fame() -> void:
-	var rules:=TDLevelProgression.new()
+	var rules:=TDLevelProgression.new(legacy_config())
 	rules.start(1,{"store-0":{"popularity":50.0,"awareness":35.0}})
 	var bad:=report();bad.stores[0].popularity_before=0
 	assert_eq(rules.settle(bad).code,"LEVEL_BASELINE_CONFLICT")
@@ -60,7 +67,7 @@ func test_metrics_use_full_day_net_and_saved_baseline_not_menu_or_recipe_fame() 
 	assert_eq(rules.snapshot().baselines["store-0"].popularity,50.0)
 
 func test_crossing_multiple_levels_caps_and_builds_once_only_reward_events() -> void:
-	var config:=TDLevelProgression.new().config.duplicate(true)
+	var config:=legacy_config()
 	config.max_level=5;config.curve={"base_xp":1,"linear_xp":0,"quadratic_xp":0}
 	var rules:=TDLevelProgression.new(config)
 	var result:=rules.settle(report())
@@ -72,7 +79,7 @@ func test_crossing_multiple_levels_caps_and_builds_once_only_reward_events() -> 
 	assert_eq(rules.snapshot().rewards.size(),4)
 
 func test_hook_entitlements_and_outbox_ack_survive_roundtrip() -> void:
-	var config:=TDLevelProgression.new().config.duplicate(true)
+	var config:=legacy_config()
 	config.curve={"base_xp":1,"linear_xp":0,"quadratic_xp":0}
 	for kind: String in ["feature","furniture","story","event"]: config.hooks.append({"id":"test-"+kind,"level":2,"kind":kind,"target_id":"TEST_ONLY."+kind})
 	var rules:=TDLevelProgression.new(config);rules.settle(report(100))
@@ -102,19 +109,19 @@ func test_corrupt_config_reports_and_unknown_save_versions_fail_without_mutation
 	assert_false(TDLevelProgression.new(config).error.ok)
 
 func test_old_save_baseline_starts_next_day_without_retrospective_rewards() -> void:
-	var rules:=TDLevelProgression.new();rules.start(101,{"store-0":{"popularity":50.0,"awareness":35.0}},true)
+	var rules:=TDLevelProgression.new(legacy_config());rules.start(101,{"store-0":{"popularity":50.0,"awareness":35.0}},true)
 	assert_eq(rules.snapshot().last_day,100);assert_eq(rules.progress().level,1);assert_eq(rules.progress().total_xp,0)
 	assert_true(rules.validate_save(rules.snapshot()).ok)
 	assert_false(rules.settle(report(3000,0,0,100)).ok)
 	assert_true(rules.settle(report(3000,0,0,101)).ok);assert_eq(rules.progress().total_xp,35)
 
 func test_long_run_history_bounded_and_independent_sessions_deterministic() -> void:
-	var a:=TDLevelProgression.new();var b:=TDLevelProgression.new();var untouched:=TDLevelProgression.new()
+	var a:=TDLevelProgression.new(legacy_config());var b:=TDLevelProgression.new(legacy_config());var untouched:=TDLevelProgression.new(legacy_config())
 	for day: int in range(1,101):
 		assert_true(a.settle(report(3000,0,0,day)).ok)
 		assert_true(b.settle(report(3000,0,0,day)).ok)
 	assert_eq(a.snapshot(),b.snapshot());assert_eq(a.snapshot().recent.size(),28)
 	assert_eq(a.progress().total_xp,3500);assert_eq(untouched.progress().total_xp,0)
-	var restored:=TDLevelProgression.new()
+	var restored:=TDLevelProgression.new(legacy_config())
 	var result:=restored.restore(JSON.parse_string(JSON.stringify(a.snapshot())))
 	assert_true(result.ok,result.code);assert_eq(restored.progress(),a.progress())

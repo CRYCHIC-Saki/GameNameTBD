@@ -11,6 +11,21 @@ func stock_and_open() -> String:
 	assert_true(shop.open_day().ok); shop.advance(1)
 	return str(shop.active_orders()[0].id)
 
+func test_frame_status_matches_live_orders_and_is_detached_from_the_shop() -> void:
+	var order_id := stock_and_open()
+	var before := shop.snapshot()
+	var frame := shop.frame_status()
+	for field: String in ["phase", "day", "money_cents", "popularity", "menu", "orders"]:
+		assert_eq(frame[field], before[field])
+	assert_eq(shop.current_phase(), "OPEN")
+	assert_false(frame.has("ledger"))
+	frame.menu.clear()
+	frame.orders[0].status = "changed"
+	var orders := shop.day_orders()
+	assert_eq(orders[0].id, order_id)
+	orders[0].customer.clear()
+	assert_eq(shop.snapshot(), before)
+
 func test_forecast_hand_calculated_range_popularity_and_limits() -> void:
 	# 360s, first arrival at 1s, 47.25s intervals => 8 expected arrivals.
 	assert_eq(shop.visitor_forecast(),{"day":1,"min_visitors":6,"max_visitors":10,"expected_visitors":8})
@@ -43,8 +58,8 @@ func test_forecast_is_read_only_survives_boundary_reload_and_never_draws_rng() -
 		shop.visitor_forecast(); shop.advance(80); restored.advance(80)
 	assert_eq(shop.snapshot(),restored.snapshot())
 
-func test_five_reviewed_recipes_and_bad_references() -> void:
-	assert_eq(catalog.config.offers.size(),6)
+func test_base_recipe_offers_and_bad_references() -> void:
+	assert_eq(catalog.config.offers.size(),3)
 	for offer: Dictionary in catalog.config.offers:
 		assert_ne(catalog.cooking.for_recipe(offer.id).recipe.scope,"TEST_ONLY")
 		assert_false(offer.source.is_empty())

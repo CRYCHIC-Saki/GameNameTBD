@@ -11,6 +11,9 @@ var duration_sec: float = 0.0
 var pre_roll_beats: float = 0.0
 var _tolerance: Dictionary = {}
 
+static func measured_pour_rate(group: Dictionary, bpm: float) -> float:
+	return float(group.get("pour_rate_per_sec",.2))*bpm/120.0
+
 func configure(sheet: Dictionary, operations: Dictionary, tolerance: Dictionary = {}) -> TDOutcome:
 	running = false
 	_tolerance=tolerance.duplicate(true)
@@ -49,6 +52,9 @@ func due(now_sec: float) -> Array:
 
 func next_in(now_sec: float) -> float:
 	return maxf(0, _origin + float(_events[_next].beat) * _interval - now_sec) if running else INF
+
+func next_label() -> String:
+	return str(_events[_next].get("label","下一拍")) if running else "完成"
 
 func cancel() -> void:
 	running = false
@@ -143,6 +149,7 @@ func _configure_beats(sheet: Dictionary, operations: Dictionary) -> TDOutcome:
 			# One extra beat between seasoning holds, so each pour can finish before the next prompt.
 			if definition.operation == "season" and g.form == "hold":
 				for index: int in relative.size(): relative[index] = float(relative[index]) + _interval * float(index)
+			settings.interval_sec = _interval
 			settings.beat_times_sec = relative
 			if definition.operation != "cut": settings.sequence = g.inputs.duplicate()
 			else:
@@ -150,13 +157,15 @@ func _configure_beats(sheet: Dictionary, operations: Dictionary) -> TDOutcome:
 				settings.cut_actions = g.inputs.duplicate()
 			if definition.operation == "season" and g.form == "hold":
 				settings.hold_durations_sec = g.durations.duplicate()
-				settings.pour_rate_per_sec = definition.get("pour_rate_per_sec",.2)
+				settings.pour_rate_per_sec = measured_pour_rate(definition,float(sheet.bpm))
 			if definition.operation == "season" and definition.get("free_seasoning",false):
 				if not _number(definition.get("free_duration_sec")) or float(definition.free_duration_sec)<1 or float(definition.free_duration_sec)>20: return TDOutcome.new(false,"INVALID_FREE_DURATION")
 				settings.free_seasoning=true
 				settings.free_duration_sec=definition.free_duration_sec
 				settings.pour_rate_per_sec=definition.get("pour_rate_per_sec",.2)
 		_events.append({"beat":origin_beat,"operation":definition.operation,"parameters":definition.parameters.duplicate(true),"settings":settings,"group":id,"label":definition.get("label",id),"technique":definition.get("technique",definition.operation)})
+		if definition.has("food_stage"):
+			_events.back()["food_stage"] = definition.food_stage
 	_events.sort_custom(func(a: Dictionary,b: Dictionary) -> bool: return a.beat < b.beat)
 	# Beat 1 may need an approach/ignition cue. Add whole-bar count-in only
 	# when needed; target coordinates and strong-beat phases stay unchanged.

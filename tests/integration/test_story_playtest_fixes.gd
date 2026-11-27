@@ -9,7 +9,7 @@ func before_each() -> void:
 	app.settings_path="res://artifacts/story-fixes/tests/%d/settings.json"%Time.get_ticks_usec()
 	autofree(app);get_tree().root.add_child(app)
 	shell=app.game_shell;shell.automatic_time=false
-	assert_true(shell.create_game("slot-01","试做食堂").ok);shell.guide.dialogue.finish_now()
+	assert_true(shell.create_game("slot-01","试做食堂",false).ok);shell.guide.dialogue.finish_now()
 	driver=DRIVER.new();driver.viewport=get_tree().root;driver.kitchen=shell.kitchen_view.kitchen
 	await get_tree().process_frame
 
@@ -89,7 +89,7 @@ func test_practice_retries_keep_real_stock_ledger_and_stop_after_tutorial() -> v
 	for record: Dictionary in records:
 		assert_eq(int(record.cents),0)
 		assert_eq(int(record.extra.inventory_cost_cents),0)
-	assert_true(shell.save_game().ok)
+	assert_true(shell.profile.save().ok)
 	shell.go_title();assert_true(shell.load_game("slot-01").ok)
 	view=shell.kitchen_view;shop=view.shop;shell.travel("kitchen")
 	var retried:=view.pick_ingredient("tomato")
@@ -109,8 +109,9 @@ func test_recoverable_food_is_counted_and_returning_does_not_duplicate_grants() 
 	assert_false(shell.guide._trail.visible,"Tracking must not draw over the fridge controls")
 	view._close_popup()
 	assert_eq(shop.snapshot().ledger,ledger)
-	assert_eq(shop.available("tomato"),0)
-	assert_true(view.pick_stored(shop.snapshot().cold_foods[0].id).ok)
+	assert_eq(shop.available("tomato"),1000)
+	assert_true(shop.snapshot().cold_foods.is_empty())
+	assert_true(view.pick_ingredient("tomato").ok)
 	driver.station("kitchen.board");assert_true(view.choose_cut("chunk").ok)
 	driver.play(12);driver.station("kitchen.board")
 	assert_true(view.return_ingredient().ok)

@@ -2,6 +2,7 @@ class_name TDRedrawArt
 extends RefCounted
 ## Read-only versioned artwork. IDs and all simulation data remain authoritative elsewhere.
 const INDEX: String="res://assets/redraw-v1/index.json"
+const EMPTY_PLATE_REGION := Rect2(1114,895,256,178)
 const EMOTIONS: Array[String]=["calm","happy","surprised","puzzled","angry","sad"]
 static var _index: Dictionary={}
 static var _cache: Dictionary={}
@@ -15,7 +16,9 @@ static func catalog() -> Dictionary:
 		for id: String in _index.ingredient_ids:
 			var cell_index: int = _index.ingredient_slots[id]
 			_index.ingredients[id] = {"path":"res://assets/redraw-v1/ingredients-%d.png" % (cell_index/30),"index":cell_index%30}
-		for i: int in _index.dish_ids.size(): _index.dishes[_index.dish_ids[i]]={"path":"res://assets/redraw-v1/dishes-%d.png"%(i/20),"index":i%20}
+		for id: String in _index.dish_ids:
+			var slot: int = int(_index.get("dish_slots", {}).get(id, _index.dish_ids.find(id)))
+			_index.dishes[id] = {"path":"res://assets/redraw-v1/dishes-%d.png" % (slot/20),"index":slot%20}
 	return _index
 
 static func image(path: String) -> Image:
@@ -43,22 +46,13 @@ static func cell(path: String,index: int,columns: int,rows: int,trim: bool=true)
 		_cache[key]=result
 	return _cache[key]
 
-static func portrait(who: String,emotion: String="") -> Texture2D:
-	var key: String={"焰子":"hero","阿铃":"aling","灰烬司祭":"chen","罗厄":"luo"}.get(who,who)
-	if not catalog().portraits.has(key): return null
-	var index: int=maxi(0,EMOTIONS.find(emotion))
-	var path: String=catalog().portraits[key]
-	var cache_key: String="portrait:"+key+":"+str(index)
-	if not _cache.has(cache_key):
-		var source:=image(path)
-		var dimensions:=Vector2i(source.get_width()/3,source.get_height()/2)
-		# Preserve the complete original composition and decorative background.
-		var bounds:=Rect2i(Vector2i.ZERO,dimensions)
-		for i: int in 6:
-			var result:=AtlasTexture.new();result.atlas=load(path)
-			result.region=Rect2(Vector2i(i%3,i/3)*dimensions+bounds.position,bounds.size)
-			result.filter_clip=true;_cache["portrait:"+key+":"+str(i)]=result
-	return _cache[cache_key]
+static func portrait(who: String, emotion: String = "") -> Texture2D:
+	var key: String = {"焰子":"hero","阿铃":"aling","罗金娜":"chen","灰烬司祭":"chen","罗厄":"luo","维托":"vito","赫兹":"hertz","日奈":"hina","希娜":"hina"}.get(who,who)
+	if key not in ["hero","aling","chen","luo","vito","hertz","hina"]: return null
+	var mood: String = {"surprised":"puzzled","sad":"troubled","":"calm"}.get(emotion,emotion)
+	var path := "res://content/story/vn/portraits/%s/%s_base_base_%s_mid.tres" % [key,key,mood]
+	if not ResourceLoader.exists(path): path = "res://content/story/vn/portraits/%s/%s_base_base_calm_mid.tres" % [key,key]
+	return load(path) as Texture2D
 
 static func ingredient(id: String) -> Texture2D:
 	var key: String=id if catalog().ingredients.has(id) else {"peanut_oil":"oil","peppercorn":"pepper","cooking_wine":"wine","shanxi_vinegar":"vinegar"}.get(id,id)
@@ -67,7 +61,45 @@ static func ingredient(id: String) -> Texture2D:
 	# Ingredient regions already contain the measured visible bounds of the artwork.
 	return cell(str(entry.path),int(entry.index),6,5,false)
 
+static var _recipe_icons: Dictionary = {}
+
+static func _dish_key(id: String) -> String:
+	if _recipe_icons.is_empty():
+		var atlas: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://content/research/recipe_atlas.json"))
+		for key: String in atlas.runtime_mapping:
+			_recipe_icons[str(atlas.runtime_mapping[key])] = key
+			_recipe_icons[str(atlas.charts[key].recipe_id)] = key
+	var short_id := id.trim_prefix("study.").trim_prefix("service.").trim_prefix("lesson.").trim_prefix("recipe.").trim_prefix("phase3.")
+	return _recipe_icons.get(id,_recipe_icons.get(short_id,short_id))
+
 static func dish(id: String) -> Texture2D:
-	var entry: Dictionary=catalog().dishes.get(id,{})
+	var key := _dish_key(id)
+	if key=="E21": return cell("res://assets/kitchen/mushroom-soup.png",0,2,1)
+	var entry: Dictionary = catalog().dishes.get(key,{})
 	if entry.is_empty(): return null
-	return cell(str(entry.path),int(entry.index),5,4)
+	return cell(str(entry.path),int(entry.index),5,4,false)
+
+static func cooking_food(id: String) -> Texture2D:
+	var key := _dish_key(id)
+	if key=="E21": return cell("res://assets/kitchen/mushroom-soup.png",1,2,1)
+	var ids: Array = catalog().dish_ids
+	var slot := ids.find(key)
+	if slot < 0:
+		return null
+	return cell("res://assets/kitchen/cooking-food.png",slot,8,8,false)
+
+static func scrambled_egg() -> Texture2D:
+	return cell("res://assets/kitchen/cooking-food.png",63,8,8,false)
+
+# A finished, unrecognised dish still has cooked food and a plate. Pantry icons
+# include their containers and only represent ingredients before cooking.
+static func serving_art(empty_plate: bool = false) -> Texture2D:
+	if not empty_plate: return cooking_food("C01")
+	var key := "empty_plate"
+	if not _cache.has(key):
+		var texture := AtlasTexture.new()
+		texture.atlas = preload("res://assets/kitchen/closeup-cookware-v2.png")
+		texture.region = EMPTY_PLATE_REGION
+		texture.filter_clip = true
+		_cache[key] = texture
+	return _cache[key]

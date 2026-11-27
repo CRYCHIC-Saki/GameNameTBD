@@ -1,0 +1,38 @@
+// D078: home_door; source: opening.json / homecoming.json. Visual presentation only.
+# start
+@bg home with instant 0
+
+# beat_0
+@hide chen with instant
+@hide luo with instant
+@show aling calm at td:0.740000:1.555701:2.150000 with instant
+aling: 到了。门轴有些响，窗边有风，床铺倒是干净。
+
+# beat_1
+@show hero surprised at td:0.268170:1.464197:2.150000 with instant
+hero: 这间屋子……是给我的？
+
+# beat_2
+@hide chen with instant
+@hide luo with instant
+@show aling happy at td:0.740000:1.555701:2.150000 with instant
+aling: 给赤焰之手的临时据点。放心，灰烬司祭说屋子不用交租——食材依然不可赊账。
+
+# beat_3
+@show hero happy at td:0.268170:1.464197:2.150000 with instant
+hero: 有一口锅，有一张床。这场讨伐，忽然像是能认真做下去了。
+
+# beat_4
+@hide chen with instant
+@hide luo with instant
+@show aling calm at td:0.740000:1.555701:2.150000 with instant
+aling: 钥匙收好。以后收工就回这里，靠近床按 E，保存今日的记录，或休息到明天。
+
+# beat_5
+@hide chen with instant
+@hide luo with instant
+@show aling happy at td:0.740000:1.555701:2.150000 with instant
+aling: 明日的灶火归你。今夜，夜鸦准许你熄灯。
+
+# finish
+@end

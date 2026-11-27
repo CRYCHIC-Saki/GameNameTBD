@@ -1,0 +1,286 @@
+{
+  "schema": 1,
+  "decision": "D078-R1",
+  "gameplay_locations": "preserved",
+  "backgrounds": {
+    "town-china": {
+      "title": "臻味港",
+      "image": "res://assets/vn-painterly-v1/town-china.png",
+      "size": [
+        1672,
+        941
+      ]
+    },
+    "town-japan": {
+      "title": "和味道",
+      "image": "res://assets/vn-painterly-v1/town-japan.png",
+      "size": [
+        1672,
+        941
+      ]
+    },
+    "town-europe": {
+      "title": "稀味郡",
+      "image": "res://assets/vn-painterly-v1/town-europe.png",
+      "size": [
+        1672,
+        941
+      ]
+    },
+    "town-mexico": {
+      "title": "墨西哥 · 暖色广场",
+      "image": "res://assets/vn-painterly-v1/town-mexico.png",
+      "size": [
+        1672,
+        941
+      ]
+    },
+    "town-seasia": {
+      "title": "东南亚 · 河畔街市",
+      "image": "res://assets/vn-painterly-v1/town-seasia.png",
+      "size": [
+        1672,
+        941
+      ]
+    },
+    "harbor": {
+      "title": "码头 · 清晨",
+      "image": "res://assets/vn-painterly-v1/harbor.png",
+      "size": [
+        1672,
+        941
+      ]
+    },
+    "restaurant": {
+      "title": "餐厅 · 堂内",
+      "image": "res://assets/vn-painterly-v1/restaurant.png",
+      "size": [
+        1672,
+        941
+      ]
+    },
+    "home": {
+      "title": "小屋 · 室内",
+      "image": "res://assets/vn-painterly-v1/home.png",
+      "size": [
+        1672,
+        941
+      ]
+    },
+    "cg-black-soup": {
+      "title": "CG · 黎明圣羹",
+      "image": "res://assets/vn-painterly-v1/cg-black-soup.png",
+      "size": [
+        1672,
+        941
+      ]
+    },
+    "cg-kitchen": {
+      "title": "CG · 唤醒旧灶",
+      "image": "res://assets/vn-painterly-v1/cg-kitchen.png",
+      "size": [
+        1672,
+        941
+      ]
+    },
+    "old-stall": {
+      "title": "旧摊私下试做",
+      "image": "res://assets/vn-painterly-v1/cg-kitchen.png"
+    },
+    "ingredient-shop": {
+      "title": "罗金娜食材铺",
+      "image": "res://assets/vn-painterly-v1/ingredient-shop.png"
+    },
+    "knight-hall": {
+      "title": "旧骑士馆",
+      "image": "res://assets/vn-painterly-v1/knight-hall.png"
+    },
+    "riverside-diner": {
+      "title": "河畔料理店",
+      "image": "res://assets/vn-painterly-v1/riverside-diner.png"
+    },
+    "harbor-square": {
+      "title": "港口广场",
+      "image": "res://assets/vn-painterly-v1/harbor-square.png"
+    },
+    "palace": {
+      "title": "王宫会客厅",
+      "image": "res://assets/vn-painterly-v1/palace.png"
+    }
+  },
+  "chapters": {
+    "intro": {
+      "path": "res://content/story/vn/scenario/intro/script.txt",
+      "beats": 9,
+      "background": "harbor",
+      "title": "序章 · 赤焰之手，空腹降临"
+    },
+    "soup": {
+      "path": "res://content/story/vn/scenario/soup/script.txt",
+      "beats": 7,
+      "background": "town-china",
+      "title": "第一口异端 · 黎明圣羹"
+    },
+    "after_taste": {
+      "path": "res://content/story/vn/scenario/after_taste/script.txt",
+      "beats": 14,
+      "background": "town-china",
+      "title": "第一口异端 · 尝出异常"
+    },
+    "awaken": {
+      "path": "res://content/story/vn/scenario/awaken/script.txt",
+      "beats": 8,
+      "background": "restaurant",
+      "title": "唤醒旧灶"
+    },
+    "verdict_good": {
+      "path": "res://content/story/vn/scenario/verdict_good/script.txt",
+      "beats": 17,
+      "background": "restaurant",
+      "title": "第一位食客 · 回来的记忆"
+    },
+    "verdict_bad": {
+      "path": "res://content/story/vn/scenario/verdict_bad/script.txt",
+      "beats": 16,
+      "background": "restaurant",
+      "title": "第一位食客 · 尚有破绽"
+    },
+    "setup": {
+      "path": "res://content/story/vn/scenario/setup/script.txt",
+      "beats": 6,
+      "background": "restaurant",
+      "title": "讨伐军本部"
+    },
+    "home_invite": {
+      "path": "res://content/story/vn/scenario/home_invite/script.txt",
+      "beats": 6,
+      "background": "home",
+      "title": "小屋 · 夜鸦的邀请"
+    },
+    "home_late": {
+      "path": "res://content/story/vn/scenario/home_late/script.txt",
+      "beats": 5,
+      "background": "home",
+      "title": "小屋 · 夜深归来"
+    },
+    "home_door": {
+      "path": "res://content/story/vn/scenario/home_door/script.txt",
+      "beats": 6,
+      "background": "home",
+      "title": "小屋 · 门前"
+    },
+    "revised_00": {
+      "title": "第一场 空腹来到臻味港",
+      "path": "res://content/story/vn/scenario/revised_00/script.txt"
+    },
+    "revised_01": {
+      "title": "第二场 夜鸦的试炼",
+      "path": "res://content/story/vn/scenario/revised_01/script.txt"
+    },
+    "revised_03": {
+      "title": "第二场 夜鸦的试炼",
+      "path": "res://content/story/vn/scenario/revised_03/script.txt"
+    },
+    "revised_04": {
+      "title": "第三场 罗金娜的建议",
+      "path": "res://content/story/vn/scenario/revised_04/script.txt"
+    },
+    "revised_06": {
+      "title": "第三场 罗金娜的建议",
+      "path": "res://content/story/vn/scenario/revised_06/script.txt"
+    },
+    "revised_07": {
+      "title": "第四场 朴实无华的料理骑士",
+      "path": "res://content/story/vn/scenario/revised_07/script.txt"
+    },
+    "revised_09": {
+      "title": "第四场 朴实无华的料理骑士",
+      "path": "res://content/story/vn/scenario/revised_09/script.txt"
+    },
+    "revised_11": {
+      "title": "第四场 朴实无华的料理骑士",
+      "path": "res://content/story/vn/scenario/revised_11/script.txt"
+    },
+    "revised_11_route": {
+      "title": "第四场 朴实无华的料理骑士",
+      "path": "res://content/story/vn/scenario/revised_11_route/script.txt"
+    },
+    "revised_12": {
+      "title": "第五场 河畔的料理店",
+      "path": "res://content/story/vn/scenario/revised_12/script.txt"
+    },
+    "revised_14": {
+      "title": "第五场 河畔的料理店",
+      "path": "res://content/story/vn/scenario/revised_14/script.txt"
+    },
+    "revised_16": {
+      "title": "第五场 河畔的料理店",
+      "path": "res://content/story/vn/scenario/revised_16/script.txt"
+    },
+    "revised_17": {
+      "title": "第六场 重返罗金娜的厨房",
+      "path": "res://content/story/vn/scenario/revised_17/script.txt"
+    },
+    "revised_19": {
+      "title": "第六场 重返罗金娜的厨房",
+      "path": "res://content/story/vn/scenario/revised_19/script.txt"
+    },
+    "revised_20": {
+      "title": "第七场 至味公主的邀约",
+      "path": "res://content/story/vn/scenario/revised_20/script.txt"
+    },
+    "revised_22": {
+      "title": "第八场 公主尝到的新滋味",
+      "path": "res://content/story/vn/scenario/revised_22/script.txt"
+    },
+    "revised_24": {
+      "title": "第八场 公主尝到的新滋味",
+      "path": "res://content/story/vn/scenario/revised_24/script.txt"
+    },
+    "revised_preview_01": {
+      "title": "第一场 空腹来到臻味港（预览）",
+      "path": "res://content/story/vn/scenario/revised_preview_01/script.txt"
+    },
+    "revised_preview_02": {
+      "title": "第二场 夜鸦的试炼（预览）",
+      "path": "res://content/story/vn/scenario/revised_preview_02/script.txt"
+    },
+    "revised_preview_03": {
+      "title": "第三场 罗金娜的建议（预览）",
+      "path": "res://content/story/vn/scenario/revised_preview_03/script.txt"
+    },
+    "revised_preview_04": {
+      "title": "第四场 朴实无华的料理骑士（预览）",
+      "path": "res://content/story/vn/scenario/revised_preview_04/script.txt"
+    },
+    "revised_preview_05": {
+      "title": "第五场 河畔的料理店（预览）",
+      "path": "res://content/story/vn/scenario/revised_preview_05/script.txt"
+    },
+    "revised_preview_06": {
+      "title": "第六场 重返罗金娜的厨房（预览）",
+      "path": "res://content/story/vn/scenario/revised_preview_06/script.txt"
+    },
+    "revised_preview_07": {
+      "title": "第七场 至味公主的邀约（预览）",
+      "path": "res://content/story/vn/scenario/revised_preview_07/script.txt"
+    },
+    "revised_preview_08": {
+      "title": "第八场 公主尝到的新滋味（预览）",
+      "path": "res://content/story/vn/scenario/revised_preview_08/script.txt"
+    },
+    "revised_06_route": {
+      "title": "第三场 罗金娜的建议",
+      "path": "res://content/story/vn/scenario/revised_06_route/script.txt"
+    },
+    "revised_00_return": {
+      "title": "第一场 空腹来到臻味港",
+      "path": "res://content/story/vn/scenario/revised_00_return/script.txt"
+    }
+  },
+  "retired_runtime_animation": [
+    "src/story/arrival_cutscene.tscn",
+    "src/story/arrival_cutscene.gd"
+  ],
+  "art_style": "A: 动画赛璐璐，线条干净、色块清爽；用户于2026-11-23选定"
+}

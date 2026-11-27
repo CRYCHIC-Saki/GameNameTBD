@@ -6,7 +6,7 @@ func before_each() -> void:
 	app=load("res://src/app/main.tscn").instantiate();app.settings_path="res://artifacts/branch-visit/%d/settings.json"%Time.get_ticks_usec()
 	add_child_autofree(app);shell=app.game_shell;shell.automatic_time=false
 	await get_tree().process_frame
-	var created:=shell.create_game("slot-01","分店巡视测试");assert_true(created.ok,created.code+": "+created.message)
+	var created:=shell.create_game("slot-01","分店巡视测试",false);assert_true(created.ok,created.code+": "+created.message)
 	shell.guide.dialogue.finish_now();shell.profile.shop.world_adjustment(300000,"fixture","test")
 	jiangnan_site=TDRegionMigration.find_site(shell.profile.world.town_map,[26,9,3,4])
 func after_each() -> void:
@@ -114,9 +114,8 @@ func test_real_payment_ui_no_manager_choice_and_cancel_is_read_only() -> void:
 	panel.begin_site();panel.map_view.choose_town("chengdu");panel.selected_rect=jiangnan_site.duplicate();panel._update_quote();panel.site_button.pressed.emit()
 	assert_false(panel.create_button.disabled);assert_eq(panel.manager_box.find_children("ManagerCards","",true,false).size(),0)
 	panel.create_button.pressed.emit();await wait_process_frames(2)
-	assert_eq(shell.profile.branches.paid_ids().size(),1)
-	if shell.profile.branches.paid_ids().is_empty(): return
-	var store: Dictionary=shell.profile.branches.state.stores.values()[0]
+	assert_eq(shell.profile.branches.paid_ids().size(),before.branches.stores.size()+1)
+	var store: Dictionary=shell.profile.branches.state.stores.values().back()
 	assert_eq(store.manager_id,"");assert_true(shell.profile.employees.assigned(store.id).is_empty())
 	assert_eq(int(before.shop.money_cents)-int(shell.profile.shop.snapshot().money_cents),30800)
 	assert_true(TDGameProfile.validate_save(shell.profile.snapshot()).ok)

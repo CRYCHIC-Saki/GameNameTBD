@@ -7,6 +7,8 @@ const EPSILON := 0.000000001
 const INTEGRATION_HZ := 240.0
 const KINDS := ["charge", "rhythm", "window", "maintain", "sequence"]
 const DIRECTIONS := ["up", "left", "down", "right"]
+const MISSED_BEAT_GAP_FACTOR := 0.84
+const MIN_BEAT_BREATH_SEC := 0.08
 
 var _identity: Dictionary = {}
 var _config: Dictionary = {}
@@ -518,6 +520,7 @@ func _rhythm_press(timestamp_sec: float, action: String = "primary") -> TDOutcom
 		if candidate <= float(_config.good_sec) + EPSILON and candidate < distance:
 			nearest = index
 			distance = candidate
+		if _config.get("document_rules",false): break
 	if nearest < 0:
 		_errors += 1
 		_combo = 0
@@ -526,6 +529,8 @@ func _rhythm_press(timestamp_sec: float, action: String = "primary") -> TDOutcom
 	var judgement := "good"
 	var correct: bool = _cut_actions.is_empty() or action == _cut_actions[nearest]
 	var direction_ok: bool = _cut_actions.is_empty() or action != "primary" or _cut_direction == _cut_targets[nearest]
+	if _config.get("document_rules",false) and not (correct and direction_ok):
+		return _reject_current_note(action,nearest,adjusted,"WRONG_DIRECTION" if correct else "WRONG_KEY")
 	if not correct or not direction_ok:
 		judgement = "miss"; _miss += 1
 	elif distance <= float(_config.perfect_sec) + EPSILON:
@@ -536,7 +541,7 @@ func _rhythm_press(timestamp_sec: float, action: String = "primary") -> TDOutcom
 	_judgements[nearest] = judgement
 	if judgement != "miss" and _config.get("directional_cut", false):
 		if action == "primary": _cut_directions.append(_cut_direction)
-		else: _cut_direction = posmod(_cut_direction + (-1 if action == "rotate_left" else 1),3)
+		else: _cut_direction = _cut_targets[nearest] if not _cut_actions.is_empty() else posmod(_cut_direction + (-1 if action == "rotate_left" else 1),3)
 	_combo = _combo + 1 if judgement != "miss" else 0
 	_max_combo = maxi(_max_combo, _combo)
 	_judge(judgement,"WRONG_KEY" if not correct else ("WRONG_DIRECTION" if not direction_ok else "TIMING"),action,nearest,adjusted-_beats[nearest])
@@ -723,6 +728,30 @@ func _judge(grade: String, reason: String, action: String, index: int = -1, erro
 	_judgement_serial += 1
 	_last_judgement = {"serial":_judgement_serial,"grade":grade,"reason":reason,"action":action,
 		"beat_index":index,"error_sec":error,"at_sec":_clock.qte_sec if at < 0 else at}
+	if grade == "miss":
+		_tighten_remaining_beats(index)
+
+func _tighten_remaining_beats(missed_index: int) -> void:
+	if automatic or _config.get("free_seasoning", false) or not _config.get("document_rules", false) or _beats.size() < 2:
+		return
+	# Keep the cue that is being played in place. Compress only later gaps.
+	var anchor := missed_index if missed_index >= 0 else _judgements.find("pending")
+	if anchor < 0 or anchor >= _beats.size() - 1:
+		return
+	var good := float(_config.good_sec)
+	var holds: Array = _config.get("hold_durations_sec", [])
+	var original_previous := _beats[anchor]
+	var original_end: float = _beats.back()
+	for index: int in range(anchor + 1, _beats.size()):
+		var original := _beats[index]
+		var gap := original - original_previous
+		var minimum := 2.0 * good + MIN_BEAT_BREATH_SEC
+		if not holds.is_empty():
+			minimum += float(holds[index - 1]) * 1.5
+		if _judgements[index] == "pending":
+			_beats[index] = _beats[index - 1] + minf(gap, maxf(minimum, gap * MISSED_BEAT_GAP_FACTOR))
+		original_previous = original
+	_duration_sec -= original_end - _beats.back()
 
 func _running_gate() -> String:
 	if not _valid:
@@ -846,14 +875,18 @@ func _timed_sequence_press(action: String, timestamp_sec: float) -> TDOutcome:
 	var distance: float = INF
 	for index: int in _beats.size():
 		var offset: float = absf(adjusted - _beats[index])
-		if _judgements[index] == "pending" and offset <= float(_config.interval_sec) * .5 + EPSILON and offset < distance:
+		var window := float(_config.good_sec) if _config.get("document_rules",false) else float(_config.interval_sec)*.5
+		if _judgements[index] == "pending" and offset <= window + EPSILON and offset < distance:
 			nearest = index; distance = offset
+		if _config.get("document_rules",false) and _judgements[index] == "pending": break
 	if nearest < 0:
 		_errors += 1; _combo = 0
 		_judge("miss","OUTSIDE_WINDOW",action)
 		return _outcome(false, "OUTSIDE_WINDOW")
-	_actual_actions.append({"action": action, "beat_index": nearest, "error_sec": adjusted - _beats[nearest]})
 	var correct: bool = action == _steps[nearest]
+	if _config.get("document_rules",false) and not correct:
+		return _reject_current_note(action,nearest,adjusted,"WRONG_KEY")
+	_actual_actions.append({"action": action, "beat_index": nearest, "error_sec": adjusted - _beats[nearest]})
 	var grade: String = "miss"
 	if correct and distance <= float(_config.perfect_sec) + EPSILON:
 		grade = "perfect"; _perfect += 1
@@ -869,6 +902,13 @@ func _timed_sequence_press(action: String, timestamp_sec: float) -> TDOutcome:
 	if not _judgements.has("pending"):
 		_resolved = true; _reason = "BEAT_SEQUENCE_COMPLETE"
 	return _outcome(true, "JUDGED")
+
+func _reject_current_note(action: String, index: int, adjusted_sec: float, reason: String) -> TDOutcome:
+	# Keep the current cue available for a corrected input until its window closes.
+	_errors += 1
+	_combo = 0
+	_judge("miss",reason,action,index,adjusted_sec-_beats[index])
+	return _outcome(false,reason)
 
 func _integrate_attraction(duration: float, sample_time: float) -> void:
 	# Exact solution within an absolute grid cell: partitioning a frame does not
