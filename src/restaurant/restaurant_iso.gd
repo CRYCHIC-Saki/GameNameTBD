@@ -35,6 +35,7 @@ var layout: TDRestaurantLayout:
 			layout = next
 			if layout != null: layout.appearance_changed.connect(_surfaces_changed)
 		_surfaces_changed()
+var decoration_panel_height := TDDecorationPanel.PANEL_HEIGHT
 var editing: bool = false:
 	set(value):
 		if value == editing: return
@@ -125,9 +126,9 @@ func sync(player: Node2D, guests: Array, frozen: bool=false) -> void:
 			var grid:=player_point/float(layout.cell_px)
 			_camera.position=project(grid.x,grid.y)+Vector2(0,-30) if not editing else project(layout.columns*.5,layout.rows*.5)
 			var view:=get_viewport_rect().size
-			var zoom: float=minf(1.0,minf((view.x-80)/((layout.columns+layout.rows)*HALF_W),maxf(200,view.y-TDDecorationPanel.PANEL_HEIGHT-82)/((layout.columns+layout.rows)*HALF_H+WALL_HEIGHT))) if editing else 1.18
+			var zoom: float=minf(1.0,minf((view.x-80)/((layout.columns+layout.rows)*HALF_W),maxf(200,view.y-decoration_panel_height-82)/((layout.columns+layout.rows)*HALF_H+WALL_HEIGHT))) if editing else 1.18
 			_camera.zoom=Vector2.ONE*zoom
-			if editing: _camera.position+=Vector2(0,(TDDecorationPanel.PANEL_HEIGHT*.5-9)/zoom)
+			if editing: _camera.position+=Vector2(0,(decoration_panel_height*.5-9)/zoom)
 			else: _camera.position.x+=56.0/zoom
 			# Context menus and pointer picking need the final camera transform this frame.
 			_camera.force_update_scroll()

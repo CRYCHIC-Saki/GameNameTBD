@@ -757,6 +757,7 @@ func _build_decoration_ui(layer: CanvasLayer) -> void:
 	_decor_panel.catalog=catalog;_decor_panel.culture=_culture;_decor_panel.tier=_tier
 	_decor_panel.progression=decoration_progression
 	layer.add_child(_decor_panel);_decor_panel.hide()
+	_decor_panel.minimum_size_changed.connect(_fit_bar,CONNECT_DEFERRED)
 	_decor_panel.item_chosen.connect(_choose_decoration)
 	_decor_panel.category_changed.connect(_cancel_decoration)
 	_decor_panel.done.connect(_toggle_edit)
@@ -830,7 +831,7 @@ func _position_context() -> void:
 	if extent.x<80: point.x-=(80-extent.x)*.5;extent.x=80
 	var view:=get_viewport().get_visible_rect().size
 	_context_menu.size=extent
-	_context_menu.position=Vector2(clampf(point.x,18,maxf(18,view.x-extent.x-18)),clampf(point.y,18,maxf(18,view.y-TDDecorationPanel.PANEL_HEIGHT-extent.y-18)))
+	_context_menu.position=Vector2(clampf(point.x,18,maxf(18,view.x-extent.x-18)),clampf(point.y,18,maxf(18,view.y-_decor_panel.size.y-extent.y-18)))
 	_delete_button.position=Vector2(-16,-16)
 	_rotate_button.position=Vector2(extent.x-16,-16)
 
@@ -1238,16 +1239,18 @@ func _add_service_button(row: HFlowContainer, text: String, action: Callable) ->
 	_service_buttons.append(button)
 
 func _fit_bar() -> void:
-	if _bar == null:
-		return
+	if _closed or not is_inside_tree() or _bar==null: return
 	if _drag_candidate: _reset_drag()
-	var height := TDDecorationPanel.PANEL_HEIGHT if _editing else (68.0 if player_mode else 168.0)
 	var view_size := get_viewport().get_visible_rect().size
+	var decor_height := TDDecorationPanel.PANEL_HEIGHT
+	if _decor_panel!=null:
+		_decor_panel.size=Vector2(view_size.x,decor_height)
+		decor_height=_decor_panel.size.y
+		_decor_panel.position=Vector2(0,view_size.y-decor_height)
+	if _iso!=null: _iso.decoration_panel_height=decor_height
+	var height := decor_height if _editing else (68.0 if player_mode else 168.0)
 	_bar.size = Vector2(view_size.x, height)
 	_bar.position = Vector2(0, view_size.y - height)
-	if _decor_panel!=null:
-		_decor_panel.position=Vector2(0,view_size.y-TDDecorationPanel.PANEL_HEIGHT)
-		_decor_panel.size=Vector2(view_size.x,TDDecorationPanel.PANEL_HEIGHT)
 	_position_context()
 	if _bar_box != null:
 		_bar_box.size = Vector2(view_size.x - 20, height - 16)

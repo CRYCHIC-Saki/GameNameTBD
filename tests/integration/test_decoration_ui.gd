@@ -116,6 +116,10 @@ func test_failed_rotation_from_menu_keeps_layout_and_reports_reason() -> void:
 	assert_true(room._decor_panel._info.text.contains("重叠"))
 
 func test_catalog_resize_category_cancel_and_pause_input() -> void:
+	# A taller system font can grow the panel past its nominal height.
+	room._decor_panel._info.add_theme_font_size_override("font_size",42)
+	await wait_process_frames(3)
+	assert_gt(room._decor_panel.size.y,TDDecorationPanel.PANEL_HEIGHT)
 	for dimensions: Vector2i in [Vector2i(1024,720),Vector2i(1600,1000)]:
 		viewport.size=dimensions;await wait_process_frames(4)
 		var rect:=room._decor_panel.get_global_rect()
