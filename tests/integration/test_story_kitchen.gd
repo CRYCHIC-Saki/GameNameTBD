@@ -7,7 +7,11 @@ var driver: RefCounted
 func before_each() -> void:
 	app=load("res://src/app/main.tscn").instantiate()
 	app.settings_path="res://artifacts/story-tests/%d/settings.json"%Time.get_ticks_usec()
-	autofree(app);get_tree().root.add_child(app)
+	# Keep real mouse input above GUT's own output panel.
+	var game_layer := CanvasLayer.new()
+	game_layer.layer=130
+	autofree(game_layer);get_tree().root.add_child(game_layer)
+	game_layer.add_child(app)
 	shell=app.game_shell;shell.automatic_time=false
 	assert_true(shell.create_game("slot-01","试做食堂",false).ok);shell.guide.dialogue.finish_now()
 	driver=DRIVER.new();driver.viewport=get_tree().root;driver.kitchen=shell.kitchen_view.kitchen
