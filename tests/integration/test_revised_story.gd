@@ -1430,10 +1430,12 @@ func test_expansion_milestones_unlock_in_order_and_final_appointment_waits_until
 				var cook: Dictionary=p.employees.market_rows("tokyo","cook")[0]
 				assert_true(p.employees.sign_employee(cook.id,"training-hire",cook.offer_key).ok)
 				assert_true(p.employees.assign(cook.id,site).ok)
-				assert_eq(p.employees.assign(cook.id,p.branches.preset_in("paris")).code,"STORY_LOCKED")
+				var europe_site := p.branches.preset_in("paris")
+				assert_true(p.branches.can_support_store(europe_site))
+				assert_eq(p.employees.assign(cook.id,europe_site).code,"CUISINE_MISMATCH")
 			"suppliers":
 				assert_true(p.menu_supply.set_enabled(true).ok)
-				assert_eq(p.menu_supply.store_ids(),["player_diner",site])
+				assert_eq(p.menu_supply.store_ids(),["player_diner",site,p.branches.preset_in("paris")])
 			"branches":
 				assert_ne(p.branches.quote("chengdu",[1,1,3,3],"cn").code,"STORY_LOCKED")
 	p.progression._state.level=20
