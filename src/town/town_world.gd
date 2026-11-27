@@ -415,7 +415,7 @@ func _interact() -> void:
 				plot = neighbor
 				break
 	var is_at_service_door := false
-	if player_mode and not plot.is_empty() and plot.has("approach_x") and plot.has("approach_y"):
+	if player_mode and not plot.is_empty() and plot.kind!="harbor" and plot.has("approach_x") and plot.has("approach_y"):
 		var approach := _origin() + (Vector2(plot.approach_x,plot.approach_y) + Vector2.ONE * .5) * cell_size()
 		is_at_service_door = _player.position.distance_to(approach) < CrowdStands.DOOR_CLEARANCE * .8
 	var story_person := _story_faced() if player_mode and not is_at_service_door else ""

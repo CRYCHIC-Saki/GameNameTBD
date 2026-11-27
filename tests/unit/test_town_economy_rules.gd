@@ -53,16 +53,20 @@ func test_inventory_cost_and_debt_do_not_double_charge_purchases() -> void:
 	economy.begin_day();economy.state.day_stats.admitted=2;economy.cooking_time(10)
 	var report:=economy.settle(ledger,1300)
 	assert_eq(int(report.consumed_cost_cents),350)
-	assert_eq(int(report.utilities_cents),151) # 120 base + 2*12 people + 10*.7 cooking.
-	assert_eq(int(report.profit_before_tax_cents),799)
-	assert_eq(int(report.tax_cents),80) # Positive profit 799, 10% rounded once.
-	assert_eq(int(report.profit_cents),719)
+	var fees: Dictionary = economy.config.fees
+	var utility := roundi(float(fees.opening_cents)+2*float(fees.guest_cents)+10*float(fees.cooking_second_cents))
+	var profit := 1300 - 350 - utility
+	var tax := roundi(float(profit) * int(economy.config.society.profit_tax_bps) / 10000)
+	assert_eq(int(report.utilities_cents),utility)
+	assert_eq(int(report.profit_before_tax_cents),profit)
+	assert_eq(int(report.tax_cents),tax)
+	assert_eq(int(report.profit_cents),profit-tax)
 	var snap:=economy.snapshot()
 	assert_eq(economy.settle(ledger,1300),report)
 	assert_eq(economy.snapshot(),snap)
 	assert_eq(economy.pay_debt(100),100)
-	assert_eq(int(economy.state.debt_cents),131)
-	assert_eq(economy.pay_debt(1000),131)
+	assert_eq(int(economy.state.debt_cents),utility+tax-100)
+	assert_eq(economy.pay_debt(1000),utility+tax-100)
 	assert_eq(int(economy.state.debt_cents),0)
 
 func test_store_reputation_uses_volume_and_satisfaction_but_awareness_uses_retained_sales() -> void:

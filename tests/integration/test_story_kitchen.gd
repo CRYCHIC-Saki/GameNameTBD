@@ -73,7 +73,7 @@ func test_real_closed_kitchen_inputs_complete_and_feed_opening_story() -> void:
 	grant();shell.travel("kitchen")
 	var view:=shell.kitchen_view;var kitchen:=view.kitchen
 	var money:=int(view.shop.snapshot().money_cents)
-	var sugar_before:=view.shop.available("sugar")
+	var salt_before:=view.shop.available("salt")
 	for lane: TDCookingLane in kitchen.lanes+[kitchen.prep]: lane.beat_offset_sec=0
 	# First attempt is wasted; the actual second attempt must still be playable.
 	for id: String in ["tomato","egg"]:
@@ -95,7 +95,7 @@ func test_real_closed_kitchen_inputs_complete_and_feed_opening_story() -> void:
 	assert_eq(float(view.shop.snapshot().elapsed_sec),0.0)
 	assert_true(view.shop.active_orders().is_empty())
 	assert_gt(float(shell.profile.commerce.state.day_stats.cooking_seconds),0.0)
-	assert_lt(view.shop.available("sugar"),sugar_before,"M6 really consumed held seasoning")
+	assert_lt(view.shop.available("salt"),salt_before,"M6 really consumed the recipe's held salt")
 	shell.travel("restaurant");assert_eq(shell.profile.story.score,-1,"Leaving is not delivery")
 	shell.travel("kitchen");driver.station("kitchen.stove.left");driver.station("kitchen.serve")
 	assert_eq(shell.profile.story.score,-1,"Putting on the pass is not feeding Aling")
@@ -156,6 +156,7 @@ func test_after_hours_costs_carry_once_and_old_books_stay_frozen() -> void:
 	economy.cooking_time(20)
 	assert_eq(int(economy.state.after_hours_cost_cents),roundi(cost*.5))
 	assert_eq(economy.state.books.back(),book)
+	preload("res://tools/test_support/native_dialogue.gd").completed_mainline(profile)
 	assert_true(shell.profile.save().ok)
 	shell.go_title();assert_true(shell.load_game("slot-01").ok)
 	profile=shell.profile;shop=profile.shop;economy=profile.commerce

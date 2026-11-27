@@ -102,7 +102,9 @@ func test_table_four_corner_rotations_keep_center_footprint_and_restore() -> voi
 	assert_eq(room.layout.piece(id),original)
 
 func test_failed_rotation_from_menu_keeps_layout_and_reports_reason() -> void:
-	assert_true(room.place_kind("cashier",8,7).ok)
+	var placed := room.place_kind("booth",8,7)
+	assert_true(placed.ok,placed.code)
+	if not placed.ok: return
 	var id:=room._selected
 	assert_true(room.place_kind("stool",8,8).ok)
 	room._select_furniture(id);await wait_process_frames(4)
@@ -133,7 +135,9 @@ func test_catalog_resize_category_cancel_and_pause_input() -> void:
 	get_tree().paused=false
 
 func test_move_preview_is_readonly_and_preserves_identity_and_style() -> void:
-	assert_true(room.place_kind("cashier",8,7).ok)
+	var placed := room.place_kind("booth",8,7)
+	assert_true(placed.ok,placed.code)
+	if not placed.ok: return
 	var id:=room._selected
 	assert_true(room.layout.restyle_piece(id,"japanese","high").ok)
 	var before:=room.layout.to_dict()

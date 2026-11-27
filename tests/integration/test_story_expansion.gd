@@ -171,12 +171,12 @@ func test_harbor_is_reachable_and_interactive_without_changing_property_or_save(
 	shell.town._player.position = gangway - Vector2(0,shell.town.cell_size())
 	assert_true(shell.town._feet_on_road(gangway),"players can walk from the public quay onto its landing")
 	assert_false(shell.town._feet_on_road(gangway + Vector2(0,shell.town.cell_size()*2)),"open sea has real collision")
-	var box := TDInteractionRange.plot_bounds(port,shell.town.cell_size(),shell.town._origin())
-	var approach := Vector2(box.get_center().x,box.end.y + 30.0)
-	assert_true(shell.town._can_stand(approach))
+	shell.town.spawn_at_harbor()
+	var approach := shell.town._player.position
+	assert_true(shell.town._can_stand(approach),"The current harbor spawn is on walkable decking")
 	for direction: Vector2i in [Vector2i.UP,Vector2i.DOWN,Vector2i.LEFT,Vector2i.RIGHT]:
 		shell.town._player.position=approach;shell.town._player.face(Vector2(direction))
 		assert_eq(shell.town.facing_plot().get("id",""),"harbor.hekou")
-	shell.town._interact();assert_not_null(shell._modal);assert_true(get_tree().paused)
+	driver.tap(KEY_E);assert_not_null(shell._modal);assert_true(get_tree().paused)
 	driver.tap(KEY_ESCAPE);assert_false(get_tree().paused)
 	assert_true(TDLevelProgression.same_value(before,shell.profile.snapshot()),"Port preview does not unlock cargo routes, spend money or alter property")

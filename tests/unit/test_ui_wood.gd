@@ -34,13 +34,14 @@ func test_blackface_family_is_used_by_native_controls_and_dialogue_paper_is_in_f
 	assert_gt(view._panel.z_index,view._right_portrait.z_index)
 	view.finish_now()
 
-func test_expression_regions_keep_full_square_compositions_including_original_decorations() -> void:
+func test_expression_regions_keep_the_full_authored_canvas() -> void:
 	for who: String in ["hero","aling","chen","luo"]:
-		for i: int in TDRedrawArt.EMOTIONS.size():
-			var art:=TDStoryArt.portrait(who,TDRedrawArt.EMOTIONS[i]) as AtlasTexture
-			assert_true(art.atlas.resource_path.begins_with("res://assets/ui-wood-v1/portrait-"))
-			var dimensions:=Vector2(art.atlas.get_width()/3,art.atlas.get_height()/2)
-			assert_eq(art.region,Rect2(Vector2(i%3,i/3)*dimensions,dimensions),"no cutout or alpha trim")
+		for emotion: String in TDRedrawArt.EMOTIONS:
+			var art := TDStoryArt.portrait(who,emotion) as AtlasTexture
+			assert_not_null(art,who + " " + emotion)
+			if art==null: continue
+			assert_true(art.atlas.resource_path.begins_with("res://assets/characters/mainline-20261126/"+who+"/"))
+			assert_eq(art.region,Rect2(Vector2.ZERO,art.atlas.get_size()),"no cutout or alpha trim")
 
 func test_enlarged_reply_choices_do_not_overlap_prompt_or_hint() -> void:
 	var viewport:=SubViewport.new();viewport.size=Vector2i(1280,800);add_child_autofree(viewport)
