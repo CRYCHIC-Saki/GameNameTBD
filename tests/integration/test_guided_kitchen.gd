@@ -125,7 +125,7 @@ func test_unexpected_space_is_a_real_m3_mistake() -> void:
 	assert_eq(int(lane.progress.wrong),1)
 	assert_eq(lane.progress.judgements[0],"pending")
 
-func test_mistake_and_stalled_frame_leave_following_notes_on_their_beats() -> void:
+func test_stalled_frame_preserves_the_retimed_cues_after_a_mistake() -> void:
 	station("kitchen.supply.tomato"); station("kitchen.board")
 	var lane := kitchen.prep
 	assert_true(wait_for_module(lane,"M1",5))
@@ -133,14 +133,19 @@ func test_mistake_and_stalled_frame_leave_following_notes_on_their_beats() -> vo
 	kitchen.advance(float(notes[0])-float(lane.progress.elapsed_sec))
 	tap(KEY_D)
 	assert_eq(lane.progress.judgements,["pending","pending","pending"])
+	var after_wrong: Array = lane.progress.beat_times_sec.duplicate()
+	assert_eq(after_wrong[0],notes[0])
+	assert_lt(float(after_wrong[1]),float(notes[1]))
 	var before := lane.clock.qte_sec
 	kitchen._last_ticks = Time.get_ticks_usec()-3000000
 	kitchen._sync_time()
 	assert_almost_eq(lane.clock.qte_sec-before,TDFullKitchen.MAX_INTERACTIVE_DELTA,.001)
-	assert_eq(lane.progress.beat_times_sec,notes)
+	assert_eq(lane.progress.beat_times_sec,after_wrong)
 	assert_eq(lane.progress.judgements,["pending","pending","pending"])
-	kitchen.advance(float(notes[1])-float(lane.progress.elapsed_sec))
+	var expires := float(notes[0])+float(lane.qte._config.good_sec)+.001
+	kitchen.advance(expires-float(lane.progress.elapsed_sec))
 	assert_eq(lane.progress.judgements[0],"miss")
+	kitchen.advance(float(lane.progress.beat_times_sec[1])-float(lane.progress.elapsed_sec))
 	tap(KEY_D)
 	assert_eq(lane.judgement_feedback.grade,"perfect")
 
