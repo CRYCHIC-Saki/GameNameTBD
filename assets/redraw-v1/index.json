@@ -358,5 +358,15 @@
     "J18": 57,
     "J19": 58,
     "J20": 59
+  },
+  "standalone_dishes": {
+    "E21": {
+      "path": "res://assets/kitchen/mushroom-soup.png",
+      "index": 0,
+      "cooking_index": 1,
+      "columns": 2,
+      "rows": 1,
+      "trim": true
+    }
   }
 }

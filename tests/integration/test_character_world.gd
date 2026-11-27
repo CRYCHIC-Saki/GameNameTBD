@@ -38,7 +38,7 @@ func test_clock_story_pause_daily_chat_and_hidden_town_schedule() -> void:
 	shell.advance_world_time(25)
 	assert_ne(people.runtime.chen.cell,old,"Town routes continue while its scene is hidden")
 	for person: Dictionary in people.visible_people():
-		assert_true(shell.profile.world.town_map.is_road(person.cell.x,person.cell.y))
+		assert_true(shell.town._npc_can_stand(shell.town._person_feet(person)),str(person.id))
 	assert_false(people.definitions.has("linxia"))
 
 func test_profile_clock_relationship_roundtrip_legacy_and_slot_isolation() -> void:

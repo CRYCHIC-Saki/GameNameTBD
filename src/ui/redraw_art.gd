@@ -19,6 +19,10 @@ static func catalog() -> Dictionary:
 		for id: String in _index.dish_ids:
 			var slot: int = int(_index.get("dish_slots", {}).get(id, _index.dish_ids.find(id)))
 			_index.dishes[id] = {"path":"res://assets/redraw-v1/dishes-%d.png" % (slot/20),"index":slot%20}
+		var standalone: Dictionary = _index.get("standalone_dishes", {})
+		for id: String in standalone:
+			if not _index.dishes.has(id): _index.dish_ids.append(id)
+			_index.dishes[id] = standalone[id]
 	return _index
 
 static func image(path: String) -> Image:
@@ -74,14 +78,15 @@ static func _dish_key(id: String) -> String:
 
 static func dish(id: String) -> Texture2D:
 	var key := _dish_key(id)
-	if key=="E21": return cell("res://assets/kitchen/mushroom-soup.png",0,2,1)
 	var entry: Dictionary = catalog().dishes.get(key,{})
 	if entry.is_empty(): return null
-	return cell(str(entry.path),int(entry.index),5,4,false)
+	return cell(str(entry.path),int(entry.index),int(entry.get("columns",5)),int(entry.get("rows",4)),bool(entry.get("trim",false)))
 
 static func cooking_food(id: String) -> Texture2D:
 	var key := _dish_key(id)
-	if key=="E21": return cell("res://assets/kitchen/mushroom-soup.png",1,2,1)
+	var entry: Dictionary = catalog().dishes.get(key,{})
+	if entry.has("cooking_index"):
+		return cell(str(entry.path),int(entry.cooking_index),int(entry.columns),int(entry.rows),bool(entry.trim))
 	var ids: Array = catalog().dish_ids
 	var slot := ids.find(key)
 	if slot < 0:

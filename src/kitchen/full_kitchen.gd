@@ -563,9 +563,10 @@ func _refresh_guided() -> void:
 
 func _input_guided(event: InputEvent) -> void:
 	if event.is_action_pressed("world_interact") and not event.is_echo():
+		get_viewport().set_input_as_handled()
 		if lesson_mode: back_requested.emit()
 		else: close_bench()
-		get_viewport().set_input_as_handled(); return
+		return
 	if not stage.feedback.is_empty(): return
 	var active: Array=_guided_lanes()
 	if event is InputEventMouseMotion or event is InputEventMouseButton:

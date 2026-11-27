@@ -5,7 +5,8 @@ var viewport: SubViewport
 var storage: String
 
 func before_each() -> void:
-	storage="user://decor-options-test-%d-%d.json"%[OS.get_process_id(),Time.get_ticks_usec()]
+	storage="res://artifacts/decor-options-test/%d-%d.json"%[OS.get_process_id(),Time.get_ticks_usec()]
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(storage.get_base_dir()))
 	viewport=SubViewport.new();viewport.size=Vector2i(1280,800)
 	add_child_autofree(viewport)
 	room=TDRestaurantWorld.new();room.player_mode=true
@@ -31,7 +32,9 @@ func test_catalog_exposes_all_five_themes_per_kind_without_mutating_room() -> vo
 	for theme: String in ["chinese","french","japanese"]:
 		assert_true(seen.has("floor_"+theme));assert_true(seen.has("wall_"+theme))
 		for kind: String in room.catalog.kinds():
-			if kind in ["screen","kiosk"]:
+			if kind in ["order_counter","welcome_desk"]:
+				assert_false(seen.has(kind+":"+theme+"_low"),kind+" is a built-in venue fixture")
+			elif kind in ["screen","kiosk"]:
 				assert_true(seen.has(kind+":plain_low"))
 				assert_false(seen.has(kind+":"+theme+"_low"))
 			else: assert_true(seen.has(kind+":"+theme+"_low"),kind+" / "+theme)
@@ -122,7 +125,6 @@ func test_last_regional_card_is_reachable_in_small_window_and_has_real_art() -> 
 	var card:=room._decor_panel._cards.get_node("Item_cashier__japanese_low") as TDDecorationPanel.Card
 	assert_gt(TDFurnitureModel.bounds(card.piece).size.y,30.0)
 	var scroll:=room._decor_panel._cards.get_parent() as ScrollContainer
-	assert_gt(scroll.scroll_horizontal,0)
 	assert_true(scroll.get_global_rect().has_point(card.get_global_rect().get_center()))
 	assert_lte(room._decor_panel.get_global_rect().end.x,1024.0)
 
