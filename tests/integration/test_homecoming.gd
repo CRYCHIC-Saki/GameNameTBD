@@ -24,9 +24,16 @@ func follow_home() -> void:
 	var start:=town.escort_position()
 	town._player.position=start+Vector2(500,0);town._tick_escort(5)
 	assert_eq(town.escort_position(),start);assert_true(town._escort_waiting)
-	for step: int in 400:
+	for step: int in 1000:
 		if shell.profile.residence.stage!="following": break
-		town._player.position=town.escort_position();town._tick_escort(.5)
+		var guide_feet := town.escort_position()
+		var behind := -Vector2(town._escort_facing)
+		for direction: Vector2 in [behind,behind.orthogonal(),-behind.orthogonal(),-behind]:
+			var follow_position := guide_feet + direction*58.0
+			if direction.is_zero_approx() or not town._can_stand(follow_position): continue
+			town._player.position = follow_position
+			break
+		town._tick_escort(.1)
 	assert_eq(shell.profile.residence.stage,"door","Real road route reaches cottage")
 
 func interact_at_home() -> void:
